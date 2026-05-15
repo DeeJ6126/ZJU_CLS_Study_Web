@@ -1,32 +1,94 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import AppSidebar from './components/AppSidebar.vue';
+import CourseDetailPage from './components/CourseDetailPage.vue';
+import ResourcePage from './components/ResourcePage.vue';
 import SettingsPanel from './components/SettingsPanel.vue';
+import { getCourseDetail, supportedCourseCodes } from './data/courseDetails.js';
 import { navigationItems } from './data/navigation.js';
+import { getResourceCourseByCode } from './data/resourceData.js';
+import { buildResourceRoute, parseResourceHash, defaultCourseDetailTab } from './data/resourcePaths.js';
 import { defaultThemeId, themes } from './data/themes.js';
 
 const activeSection = ref(navigationItems[0].id);
 const isSidebarOpen = ref(false);
 const isSettingsOpen = ref(false);
 const activeThemeId = ref(defaultThemeId);
+const activeCourseCode = ref('');
+const activeCourseTabId = ref(defaultCourseDetailTab);
+const activeCourseItemId = ref('');
+const activeSourceCourse = ref(null);
 
 const activeTheme = computed(
   () => themes.find((theme) => theme.id === activeThemeId.value) ?? themes[0],
 );
+const activeCourse = computed(() => getCourseDetail(activeSourceCourse.value));
+const topbarTitle = computed(() => {
+  if (isSettingsOpen.value) {
+    return '设置';
+  }
+
+  if (activeCourse.value) {
+    return activeCourse.value.code;
+  }
+
+  return activeSection.value === 'resources' ? '资源中心' : '初版导航结构';
+});
+
+function syncRouteFromHash() {
+  const route = parseResourceHash(window.location.hash);
+  activeCourseCode.value = supportedCourseCodes.includes(route.courseCode) ? route.courseCode : '';
+  activeCourseTabId.value = route.tabId;
+  activeCourseItemId.value = route.itemId;
+
+  if (activeCourseCode.value) {
+    activeSection.value = 'resources';
+    isSettingsOpen.value = false;
+  } else if (route.section === 'resources') {
+    activeSection.value = 'resources';
+    isSettingsOpen.value = false;
+  }
+}
 
 function selectNavigation(id) {
   activeSection.value = id;
+  activeCourseCode.value = '';
+  activeCourseTabId.value = defaultCourseDetailTab;
+  activeCourseItemId.value = '';
   isSettingsOpen.value = false;
   isSidebarOpen.value = false;
+
+  if (id === 'resources') {
+    window.location.hash = buildResourceRoute();
+  } else if (window.location.hash) {
+    window.history.pushState('', document.title, window.location.pathname + window.location.search);
+  }
 }
 
 function openSettings() {
+  activeCourseCode.value = '';
+  activeCourseTabId.value = defaultCourseDetailTab;
+  activeCourseItemId.value = '';
   isSettingsOpen.value = true;
   isSidebarOpen.value = false;
+
+  if (window.location.hash) {
+    window.history.pushState('', document.title, window.location.pathname + window.location.search);
+  }
 }
 
 function selectTheme(id) {
   activeThemeId.value = id;
+}
+
+function backToResources() {
+  activeCourseCode.value = '';
+  activeCourseTabId.value = defaultCourseDetailTab;
+  activeCourseItemId.value = '';
+  activeSection.value = 'resources';
+  isSettingsOpen.value = false;
+
+  window.location.hash = buildResourceRoute();
 }
 
 onMounted(() => {
@@ -34,7 +96,24 @@ onMounted(() => {
   if (themes.some((theme) => theme.id === storedTheme)) {
     activeThemeId.value = storedTheme;
   }
+
+  syncRouteFromHash();
+  window.addEventListener('hashchange', syncRouteFromHash);
 });
+
+onBeforeUnmount(() => {
+  window.removeEventListener('hashchange', syncRouteFromHash);
+});
+
+watch(activeCourseCode, async (courseCode) => {
+  activeSourceCourse.value = null;
+
+  if (!courseCode) {
+    return;
+  }
+
+  activeSourceCourse.value = await getResourceCourseByCode(courseCode);
+}, { immediate: true });
 
 watch(activeThemeId, (themeId) => {
   document.documentElement.dataset.theme = themeId;
@@ -61,7 +140,7 @@ watch(activeThemeId, (themeId) => {
         </button>
         <div class="topbar__identity">
           <span>生命科学学子学习平台</span>
-          <strong>{{ isSettingsOpen ? '设置' : '初版导航结构' }}</strong>
+          <strong>{{ topbarTitle }}</strong>
         </div>
       </header>
 
@@ -72,9 +151,19 @@ watch(activeThemeId, (themeId) => {
         @select-theme="selectTheme"
       />
 
+      <CourseDetailPage
+        v-else-if="activeCourse"
+        :course="activeCourse"
+        :active-tab-id="activeCourseTabId"
+        :active-item-id="activeCourseItemId"
+        @back="backToResources"
+      />
+
+      <ResourcePage v-else-if="activeSection === 'resources'" />
+
       <template v-else>
         <div class="intro-panel">
-          <p class="intro-panel__eyebrow">Life Science Learning Platform</p>
+          <p class="intro-panel__eyebrow">生命科学学习平台</p>
           <h1>把课程资源、朋辈支持和实验室机会放在同一个清晰入口。</h1>
           <p>
             当前版本先完成侧边栏与信息架构。右侧区域保留为后续资源卡片、活动投稿、
