@@ -1,22 +1,100 @@
 :root {
   color-scheme: light;
-  --color-ink: #17211c;
-  --color-muted: #617068;
-  --color-soft: #f4f7f2;
+  --color-ink: #1f2328;
+  --color-muted: #59636e;
+  --color-soft: #f6f8fa;
   --color-surface: #ffffff;
-  --color-sidebar: #10251f;
-  --color-sidebar-raised: #16342c;
-  --color-line: rgba(23, 33, 28, 0.12);
-  --color-primary: #2f7d63;
-  --color-primary-strong: #165a45;
-  --color-accent: #d86f45;
-  --color-lab: #dcebe3;
-  --shadow-soft: 0 18px 60px rgba(16, 37, 31, 0.12);
+  --color-surface-translucent: rgba(255, 255, 255, 0.92);
+  --color-sidebar: #f6f8fa;
+  --color-sidebar-raised: #ffffff;
+  --color-sidebar-text: #24292f;
+  --color-sidebar-muted: #656d76;
+  --color-line: rgba(31, 35, 40, 0.14);
+  --color-primary: #2f6f55;
+  --color-primary-strong: #1f513f;
+  --color-accent: #bf6a3d;
+  --color-lab: #e7f0ec;
+  --color-input: #f6f8fa;
+  --color-input-border: #d0d7de;
+  --color-avatar-text: #ffffff;
+  --color-theme-option: rgba(255, 255, 255, 0.78);
+  --color-theme-option-active: #f0f6f3;
+  --shadow-soft: 0 18px 60px rgba(31, 35, 40, 0.1);
   --radius-sm: 8px;
   --radius-md: 14px;
   --sidebar-width: 292px;
   --font-heading: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
   --font-body: "HarmonyOS Sans SC", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+}
+
+html[data-theme="plant-green"] {
+  color-scheme: light;
+  --color-ink: #17211c;
+  --color-muted: #617068;
+  --color-soft: #f4f7f2;
+  --color-surface: #ffffff;
+  --color-surface-translucent: rgba(255, 255, 255, 0.78);
+  --color-sidebar: #10251f;
+  --color-sidebar-raised: #16342c;
+  --color-sidebar-text: rgba(246, 252, 248, 0.92);
+  --color-sidebar-muted: rgba(220, 235, 227, 0.62);
+  --color-line: rgba(23, 33, 28, 0.12);
+  --color-primary: #2f7d63;
+  --color-primary-strong: #165a45;
+  --color-accent: #d86f45;
+  --color-lab: #dcebe3;
+  --color-input: rgba(255, 255, 255, 0.88);
+  --color-input-border: rgba(23, 33, 28, 0.16);
+  --color-theme-option: rgba(255, 255, 255, 0.76);
+  --color-theme-option-active: #eef7f2;
+  --shadow-soft: 0 18px 60px rgba(16, 37, 31, 0.12);
+}
+
+html[data-theme="life-blue"] {
+  color-scheme: light;
+  --color-ink: #122033;
+  --color-muted: #5c6f88;
+  --color-soft: #f2f7ff;
+  --color-surface: #ffffff;
+  --color-surface-translucent: rgba(255, 255, 255, 0.82);
+  --color-sidebar: #0f2440;
+  --color-sidebar-raised: #19375f;
+  --color-sidebar-text: rgba(246, 251, 255, 0.94);
+  --color-sidebar-muted: rgba(219, 234, 254, 0.64);
+  --color-line: rgba(18, 32, 51, 0.14);
+  --color-primary: #2563eb;
+  --color-primary-strong: #1d4ed8;
+  --color-accent: #14b8a6;
+  --color-lab: #dbeafe;
+  --color-input: rgba(255, 255, 255, 0.9);
+  --color-input-border: rgba(37, 99, 235, 0.2);
+  --color-theme-option: rgba(255, 255, 255, 0.78);
+  --color-theme-option-active: #eff6ff;
+  --shadow-soft: 0 18px 60px rgba(15, 36, 64, 0.14);
+}
+
+html[data-theme="silent-black"] {
+  color-scheme: dark;
+  --color-ink: #e6edf3;
+  --color-muted: #8b949e;
+  --color-soft: #0d1117;
+  --color-surface: #151b23;
+  --color-surface-translucent: rgba(21, 27, 35, 0.88);
+  --color-sidebar: #080b0f;
+  --color-sidebar-raised: #151b23;
+  --color-sidebar-text: #e6edf3;
+  --color-sidebar-muted: #8b949e;
+  --color-line: rgba(230, 237, 243, 0.14);
+  --color-primary: #58a6ff;
+  --color-primary-strong: #79c0ff;
+  --color-accent: #f0883e;
+  --color-lab: #1f2937;
+  --color-input: #0d1117;
+  --color-input-border: #30363d;
+  --color-avatar-text: #080b0f;
+  --color-theme-option: rgba(21, 27, 35, 0.9);
+  --color-theme-option-active: #1f2937;
+  --shadow-soft: 0 18px 60px rgba(0, 0, 0, 0.34);
 }
 
 * {
@@ -31,8 +109,8 @@ body {
   min-width: 320px;
   margin: 0;
   background:
-    linear-gradient(90deg, rgba(47, 125, 99, 0.06) 1px, transparent 1px) 0 0 / 34px 34px,
-    linear-gradient(180deg, #f7faf5 0%, #eef5f0 100%);
+    linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 8%, transparent) 1px, transparent 1px) 0 0 / 34px 34px,
+    linear-gradient(180deg, var(--color-surface) 0%, var(--color-soft) 100%);
   color: var(--color-ink);
   font-family: var(--font-body);
   font-size: 16px;

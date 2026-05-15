@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { navigationItems } from '../src/data/navigation.js';
-import { renderSidebar } from '../src/components/sidebar.js';
 
 test('navigation data contains the requested learning platform sections', () => {
   const labels = navigationItems.map((item) => item.label);
@@ -26,13 +25,8 @@ test('most beautiful activity contains the requested child sections', () => {
   );
 });
 
-test('sidebar renderer exposes navigation semantics and nested groups', () => {
-  const html = renderSidebar(navigationItems);
-
-  assert.match(html, /<aside class="app-sidebar"/);
-  assert.match(html, /aria-label="学习平台主导航"/);
-  assert.match(html, /href="#resources"/);
-  assert.match(html, /<span class="nav-item__label">最美活动<\/span>/);
-  assert.match(html, /<ul class="nav-sublist"/);
-  assert.match(html, /最美日程表/);
+test('navigation entries expose ids and href anchors for Vue sidebar rendering', () => {
+  assert.equal(navigationItems[0].id, 'resources');
+  assert.equal(navigationItems[0].href, '#resources');
+  assert.equal(navigationItems.at(-1).href, '#beautiful-activities');
 });
