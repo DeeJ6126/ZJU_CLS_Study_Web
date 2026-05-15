@@ -1,7 +1,7 @@
 .intro-panel {
   max-width: 880px;
-  margin: clamp(28px, 6vw, 72px) 0 30px;
-  padding-bottom: 28px;
+  margin: clamp(24px, 5vw, 58px) 0 26px;
+  padding-bottom: 22px;
   border-bottom: 1px solid var(--color-line);
 }
 
@@ -10,16 +10,15 @@
   margin: 0;
   color: var(--color-primary-strong);
   font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
+  font-weight: 900;
 }
 
 .intro-panel h1 {
   max-width: 760px;
-  margin: 10px 0 16px;
+  margin: 8px 0 14px;
   font-family: var(--font-heading);
-  font-size: clamp(34px, 6vw, 62px);
-  line-height: 1.12;
+  font-size: clamp(34px, 5.4vw, 58px);
+  line-height: 1.1;
   letter-spacing: 0;
 }
 
@@ -27,28 +26,26 @@
   max-width: 720px;
   margin: 0;
   color: var(--color-muted);
-  font-size: 17px;
 }
 
 .section-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 16px;
+  gap: 12px;
 }
 
 .section-card {
-  min-height: 190px;
-  padding: 22px;
+  min-height: 178px;
+  padding: 18px;
   border: 1px solid var(--color-line);
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.76);
-  box-shadow: 0 10px 30px rgba(23, 33, 28, 0.06);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-translucent);
 }
 
 .section-card h2 {
-  margin: 10px 0 8px;
+  margin: 8px 0 8px;
   font-family: var(--font-heading);
-  font-size: 24px;
+  font-size: 23px;
   line-height: 1.25;
 }
 
@@ -61,5 +58,5 @@
   padding-top: 14px;
   color: var(--color-accent) !important;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 900;
 }
