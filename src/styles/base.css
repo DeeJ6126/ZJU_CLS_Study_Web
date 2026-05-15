@@ -1,0 +1,66 @@
+:root {
+  color-scheme: light;
+  --color-ink: #17211c;
+  --color-muted: #617068;
+  --color-soft: #f4f7f2;
+  --color-surface: #ffffff;
+  --color-sidebar: #10251f;
+  --color-sidebar-raised: #16342c;
+  --color-line: rgba(23, 33, 28, 0.12);
+  --color-primary: #2f7d63;
+  --color-primary-strong: #165a45;
+  --color-accent: #d86f45;
+  --color-lab: #dcebe3;
+  --shadow-soft: 0 18px 60px rgba(16, 37, 31, 0.12);
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --sidebar-width: 292px;
+  --font-heading: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+  --font-body: "HarmonyOS Sans SC", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background:
+    linear-gradient(90deg, rgba(47, 125, 99, 0.06) 1px, transparent 1px) 0 0 / 34px 34px,
+    linear-gradient(180deg, #f7faf5 0%, #eef5f0 100%);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid rgba(216, 111, 69, 0.78);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
