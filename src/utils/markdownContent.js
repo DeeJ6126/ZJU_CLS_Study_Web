@@ -1,3 +1,5 @@
+import { publicAssetPath } from './publicPath.js';
+
 function normalizeValue(value) {
   const trimmed = value.trim();
 
@@ -69,7 +71,7 @@ export function bodyToParagraphs(body = '') {
 }
 
 export async function fetchMarkdownDocument(url) {
-  const response = await fetch(url);
+  const response = await fetch(publicAssetPath(url));
 
   if (!response.ok) {
     throw new Error(`Failed to load markdown: ${url}`);

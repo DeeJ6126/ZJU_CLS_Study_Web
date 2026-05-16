@@ -201,6 +201,34 @@
   line-height: 1.2;
 }
 
+.course-overview-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.course-overview-fields div {
+  display: grid;
+  gap: 5px;
+  padding: 13px;
+  border: 1px solid var(--detail-border);
+  border-radius: var(--radius-sm);
+  background: var(--detail-list-bg);
+}
+
+.course-overview-fields dt {
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.course-overview-fields dd {
+  margin: 0;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
 .teacher-list {
   display: grid;
   gap: 12px;
@@ -319,6 +347,13 @@
   transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
+.learning-card a {
+  min-height: 110px;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
 .learning-card:hover,
 .paper-row-card:hover {
   border-color: var(--detail-border-strong);
@@ -337,6 +372,13 @@
   padding: clamp(22px, 4vw, 38px);
 }
 
+.article-detail-card__head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .article-detail-card__meta {
   color: var(--detail-accent);
   font-weight: 900;
@@ -348,7 +390,10 @@
 }
 
 .course-action-link,
-.paper-actions a {
+.paper-actions a,
+.favorite-button,
+.comment-form button,
+.contribution-box button {
   width: fit-content;
   min-height: 40px;
   display: inline-flex;
@@ -360,6 +405,98 @@
   background: var(--detail-action-bg);
   color: var(--detail-action-text);
   font-weight: 950;
+}
+
+.favorite-button {
+  background: var(--detail-surface);
+  color: var(--detail-link);
+  cursor: pointer;
+}
+
+.favorite-button.is-active {
+  background: var(--detail-action-bg);
+  color: var(--detail-action-text);
+}
+
+.favorite-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.contribution-box,
+.comment-section {
+  display: grid;
+  gap: 14px;
+  padding: clamp(18px, 3vw, 26px);
+  border: 1px solid var(--detail-border);
+  border-radius: var(--radius-md);
+  background: var(--detail-surface);
+  box-shadow: var(--detail-shadow);
+}
+
+.contribution-box {
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+  align-items: end;
+}
+
+.contribution-box p,
+.comment-empty,
+.permission-note {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.contribution-box form,
+.comment-form,
+.comment-form label {
+  display: grid;
+  gap: 8px;
+}
+
+.contribution-box label span,
+.comment-form label span {
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.contribution-box input,
+.comment-form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-color: var(--detail-border);
+  background: var(--detail-list-bg);
+  resize: vertical;
+}
+
+.contribution-box__notice {
+  grid-column: 1 / -1;
+  font-weight: 900;
+}
+
+.comment-list {
+  display: grid;
+  gap: 10px;
+}
+
+.comment-item {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--detail-border);
+  border-radius: var(--radius-sm);
+  background: var(--detail-list-bg);
+}
+
+.comment-item p {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.comment-item span {
+  color: var(--detail-accent);
+  font-size: 12px;
+  font-weight: 900;
 }
 
 .paper-list {
@@ -460,6 +597,15 @@
   }
 
   .paper-detail__head {
+    flex-direction: column;
+  }
+
+  .article-detail-card__head,
+  .contribution-box {
+    grid-template-columns: 1fr;
+  }
+
+  .article-detail-card__head {
     flex-direction: column;
   }
 

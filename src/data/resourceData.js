@@ -1,4 +1,5 @@
 import { buildResourceSections, getCourseByCode, parseCourseCsv } from './resourceCatalog.js';
+import { publicAssetPath } from '../utils/publicPath.js';
 export { programOptions, resourceProgramMeta } from './resourceCatalog.js';
 
 const resourceSummaryUrl = '/resource/summary/introduction.csv';
@@ -9,7 +10,7 @@ export async function loadResourceCatalog() {
     return catalogCache;
   }
 
-  const response = await fetch(resourceSummaryUrl);
+  const response = await fetch(publicAssetPath(resourceSummaryUrl));
 
   if (!response.ok) {
     throw new Error(`Failed to load resource catalog: ${resourceSummaryUrl}`);

@@ -1,4 +1,5 @@
 import { buildCourseRoute, courseMaterialPaths } from './resourcePaths.js';
+import { buildCourseOverviewFields } from '../services/courseOverviewService.js';
 
 const courseContentIndexes = {
   BIO2110F: {
@@ -39,6 +40,7 @@ export function getCourseDetail(course) {
     courseType: course.type,
     semester: course.suggestedYear ? `${course.suggestedYear} 年级建议修读` : '建议修读年级待整理',
     overview: course.introduction || '课程简介待整理。',
+    overviewFields: buildCourseOverviewFields(course),
     content,
     experiences: withRoutes(course.code, 'experiences', content.experiences),
     materials: withRoutes(course.code, 'materials', content.materials),

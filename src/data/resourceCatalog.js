@@ -135,7 +135,12 @@ function normalizeCourse(row, index, headerIndex = new Map()) {
     affiliation: valueByHeader(row, headerIndex, '课程归属', 9),
     tag: valueByHeader(row, headerIndex, '课程标识', 10),
     recognition: valueByHeader(row, headerIndex, '认定类别', 11),
+    exemptionAllowed: valueByHeader(row, headerIndex, '是否允许申请免听', 12),
+    makeupAllowed: valueByHeader(row, headerIndex, '是否允许补考', 13),
     suggestedYear: valueByHeader(row, headerIndex, '建议修读年级', 14),
+    honorCourse: valueByHeader(row, headerIndex, '是否荣誉课程', 15),
+    ckcCourse: valueByHeader(row, headerIndex, '是否竺可桢学院课程', 16),
+    sportsCategory: valueByHeader(row, headerIndex, '是否体育分项', 17),
     sourceCode: valueByHeader(row, headerIndex, '对应课程代码', 18),
     introduction: valueByHeader(row, headerIndex, '课程简介', 19),
   };

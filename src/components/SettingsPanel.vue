@@ -1,5 +1,6 @@
 <script setup>
-import { profile } from '../data/profile.js';
+import AuthStatusBadges from './account/AuthStatusBadges.vue';
+import UserSwitcher from './account/UserSwitcher.vue';
 
 defineProps({
   themes: {
@@ -10,50 +11,62 @@ defineProps({
     type: String,
     required: true,
   },
+  users: {
+    type: Array,
+    required: true,
+  },
+  activeUserId: {
+    type: String,
+    required: true,
+  },
+  accountState: {
+    type: Object,
+    required: true,
+  },
+  badges: {
+    type: Array,
+    required: true,
+  },
 });
 
-const emit = defineEmits(['select-theme']);
+const emit = defineEmits(['select-theme', 'select-user']);
 </script>
 
 <template>
   <section class="settings-page" aria-labelledby="settings-title">
     <div class="settings-header">
-      <p class="settings-header__eyebrow">Settings</p>
-      <h1 id="settings-title">设置</h1>
-      <p>登录系统后续会接入 CC98 验证码认证与浙大邮箱认证。当前先整理账号展示与主题偏好。</p>
+      <p class="settings-header__eyebrow">设置</p>
+      <h1 id="settings-title">账号状态与主题</h1>
+      <p>这里先保留前端账号骨架和主题偏好，后续接入真实登录后可以直接替换测试账号来源。</p>
     </div>
 
     <div class="settings-layout">
       <article class="settings-section account-section">
         <div class="settings-section__title">
-          <span>账号</span>
-          <small>Profile</small>
+          <span>账号状态</span>
+          <small>前端测试</small>
         </div>
 
-        <div class="account-card">
-          <div class="account-fields" aria-label="账号信息">
-            <label class="profile-field">
-              <span>昵称</span>
-              <input type="text" :value="profile.nickname" readonly />
-            </label>
-            <label class="profile-field">
-              <span>CC98 昵称</span>
-              <input type="text" :value="profile.cc98Nickname" readonly />
-            </label>
+        <div class="account-status-card">
+          <div>
+            <p class="settings-section__kicker">当前身份</p>
+            <h2>{{ accountState.label }}</h2>
+            <p>{{ accountState.description }}</p>
+            <AuthStatusBadges :badges="badges" />
           </div>
 
-          <div class="profile-picture" aria-label="头像">
-            <span class="profile-picture__title">头像</span>
-            <div class="avatar-preview" aria-hidden="true">{{ profile.avatarInitials }}</div>
-            <button class="avatar-edit" type="button" disabled>暂未开放</button>
-          </div>
+          <UserSwitcher
+            :users="users"
+            :active-user-id="activeUserId"
+            @select-user="emit('select-user', $event)"
+          />
         </div>
       </article>
 
       <article class="settings-section theme-section">
         <div class="settings-section__title">
           <span>主题</span>
-          <small>Appearance</small>
+          <small>全站生效</small>
         </div>
 
         <div class="theme-grid" role="radiogroup" aria-label="主题选择">

@@ -63,71 +63,29 @@
   font-weight: 900;
 }
 
-.account-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 210px;
-  gap: clamp(22px, 5vw, 64px);
-  align-items: start;
-}
-
-.account-fields {
-  display: grid;
-  gap: 16px;
-}
-
-.profile-field {
-  display: grid;
-  gap: 7px;
-}
-
-.profile-field span,
-.profile-picture__title {
-  color: var(--color-ink);
-  font-size: 16px;
+.settings-section__kicker {
+  margin: 0 0 6px;
+  color: var(--color-primary-strong);
+  font-size: 12px;
   font-weight: 900;
 }
 
-.profile-field input {
-  width: 100%;
-  min-height: 46px;
-  padding: 0 12px;
-  border: 1px solid var(--color-input-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-input);
-  color: var(--color-ink);
-  font: inherit;
-}
-
-.profile-picture {
+.account-status-card {
   display: grid;
-  justify-items: center;
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+  gap: 18px;
+  align-items: end;
 }
 
-.profile-picture__title {
-  justify-self: start;
-}
-
-.avatar-preview {
-  width: 158px;
-  aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--color-input-border);
-  border-radius: var(--radius-md);
-  background: var(--color-primary);
-  color: var(--color-avatar-text);
+.account-status-card h2 {
+  margin: 0 0 8px;
   font-family: var(--font-heading);
-  font-size: 40px;
-  font-weight: 900;
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1.12;
 }
 
-.avatar-edit {
-  min-height: 38px;
-  padding: 0 12px;
-  border: 1px solid var(--color-input-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-input);
+.account-status-card p {
+  margin: 0 0 12px;
   color: var(--color-muted);
 }
 
@@ -187,11 +145,7 @@
 }
 
 @media (max-width: 760px) {
-  .account-card {
+  .account-status-card {
     grid-template-columns: 1fr;
-  }
-
-  .profile-picture {
-    justify-items: start;
   }
 }
