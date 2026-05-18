@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import { getCourseDetail } from '../src/data/courseDetails.js';
-import { getCourseByCode, parseCourseCsv } from '../src/data/resourceCatalog.js';
+import { getCourseDetail } from '../src/data/courses/courseDetails.js';
+import { getCourseByCode, parseCourseCsv } from '../src/data/courses/resourceCatalog.js';
 import { buildCourseOverviewFields } from '../src/services/courseOverviewService.js';
 
 const csv = readFileSync('public/resource/summary/introduction.csv', 'utf8');
@@ -42,4 +42,13 @@ test('course detail model exposes overview fields instead of per-course overview
   assert.equal(course.overviewFields.some((field) => field.label === '开课部门'), false);
   assert.equal('learningPath' in course, false);
   assert.equal('focusRange' in course, false);
+});
+
+test('course overview uses only the first-row summary surface', () => {
+  const course = getCourseDetail(sourceCourse);
+
+  assert.deepEqual(
+    course.summaryFacts.map((field) => field.label),
+    ['学分', '总学时', '课程类型', '建议修读年级'],
+  );
 });

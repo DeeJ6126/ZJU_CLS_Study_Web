@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { defaultThemeId, themes } from '../src/data/themes.js';
-import { profile } from '../src/data/profile.js';
+import { defaultThemeId, themes } from '../src/data/config/themes.js';
+import { profile } from '../src/data/legacy/profile.js';
 
 test('theme catalog contains named themes and defaults to minimalist white', () => {
   assert.equal(defaultThemeId, 'minimal-white');

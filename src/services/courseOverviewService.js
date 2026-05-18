@@ -37,3 +37,16 @@ export function buildCourseOverviewFields(course) {
     .filter((field) => !excludedLabels.has(field.label))
     .filter((field) => field.value !== undefined && field.value !== null && String(field.value).trim() !== '');
 }
+
+export function buildSummaryFacts(course) {
+  if (!course) {
+    return [];
+  }
+
+  return [
+    { key: 'credits', label: '学分', value: course.credits },
+    { key: 'totalHours', label: '总学时', value: course.totalHours },
+    { key: 'type', label: '课程类型', value: course.type },
+    { key: 'suggestedYear', label: '建议修读年级', value: course.suggestedYear },
+  ].filter((field) => field.value !== undefined && field.value !== null && String(field.value).trim() !== '');
+}

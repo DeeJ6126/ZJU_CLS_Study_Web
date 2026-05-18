@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { navigationItems } from '../src/data/navigation.js';
+import { navigationItems } from '../src/data/config/navigation.js';
 
 test('navigation data contains the requested learning platform sections', () => {
   const labels = navigationItems.map((item) => item.label);

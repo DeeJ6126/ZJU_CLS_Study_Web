@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue';
 import CommentSection from './CommentSection.vue';
 import ContributionBox from './ContributionBox.vue';
 import FavoriteButton from './FavoriteButton.vue';
-import { buildCourseRoute, courseDetailTabs } from '../data/resourcePaths.js';
+import { buildCourseRoute, courseDetailTabs } from '../data/courses/resourcePaths.js';
 import { createFavoriteKey } from '../services/favoriteService.js';
 import {
   bodyToParagraphs,
@@ -52,7 +52,6 @@ const props = defineProps({
 
 const emit = defineEmits(['back', 'toggle-favorite', 'add-comment', 'submit-contribution']);
 
-const overviewContent = ref(null);
 const tabItems = ref({
   experiences: [],
   materials: [],
@@ -66,17 +65,6 @@ const activeTab = computed(
 );
 const activeCollection = computed(() => tabItems.value[activeTab.value.id] ?? []);
 const activeItem = computed(() => activeCollection.value.find((item) => item.id === props.activeItemId) ?? null);
-const teacher = computed(() => overviewContent.value?.teacher ?? {
-  name: '待整理',
-  role: '任课教师',
-  note: '后续可补充教师主页、授课风格、考核说明与办公时间。',
-});
-const factFields = computed(() => {
-  const preferredLabels = ['学分', '总学时', '课程类型', '建议修读年级'];
-  return preferredLabels
-    .map((label) => props.course.overviewFields.find((field) => field.label === label))
-    .filter(Boolean);
-});
 const activeItemFavoriteKey = computed(() => {
   if (!activeItem.value || !['experiences', 'materials'].includes(activeTab.value.id)) {
     return '';
@@ -115,26 +103,24 @@ function emitComment(text) {
   });
 }
 
-function emitContribution(title) {
+function emitContribution(payload) {
   emit('submit-contribution', {
     tabId: activeTab.value.id,
-    title,
+    ...payload,
   });
-}
-
-async function loadOverview() {
-  const document = await fetchMarkdownDocument(props.course.content.overviewUrl);
-  overviewContent.value = {
-    teacher: {
-      name: document.frontmatter.teacherName || '待整理',
-      role: document.frontmatter.teacherRole || '任课教师',
-      note: document.frontmatter.teacherNote || '课程授课信息待整理。',
-    },
-  };
 }
 
 async function loadCollection(tabId) {
   const sourceItems = props.course[tabId] ?? [];
+
+  if (!sourceItems.length) {
+    tabItems.value = {
+      ...tabItems.value,
+      [tabId]: [],
+    };
+    return;
+  }
+
   const documents = await Promise.all(sourceItems.map(async (sourceItem) => {
     const document = await fetchMarkdownDocument(sourceItem.url);
     return {
@@ -161,10 +147,6 @@ async function ensureActiveContent() {
   loadError.value = '';
 
   try {
-    if (!overviewContent.value) {
-      await loadOverview();
-    }
-
     if (activeTab.value.id !== 'overview' && !tabItems.value[activeTab.value.id]?.length) {
       await loadCollection(activeTab.value.id);
     }
@@ -178,7 +160,6 @@ async function ensureActiveContent() {
 watch(
   () => props.course.code,
   () => {
-    overviewContent.value = null;
     tabItems.value = {
       experiences: [],
       materials: [],
@@ -228,45 +209,13 @@ watch(
 
         <aside class="course-detail__facts" aria-label="课程概况">
           <dl>
-            <div v-for="field in factFields" :key="field.label">
+            <div v-for="field in course.summaryFacts" :key="field.key">
               <dt>{{ field.label }}</dt>
               <dd>{{ field.value }}</dd>
             </div>
           </dl>
         </aside>
       </header>
-
-      <section class="course-detail__section course-detail__section--teachers" aria-labelledby="teacher-title">
-        <div>
-          <p class="course-detail__kicker">授课信息</p>
-          <h2 id="teacher-title">任课老师</h2>
-        </div>
-        <div class="teacher-list">
-          <article class="teacher-card">
-            <div class="teacher-card__avatar" aria-hidden="true">
-              {{ teacher.name.slice(0, 1) }}
-            </div>
-            <div>
-              <h3>{{ teacher.name }}</h3>
-              <p>{{ teacher.role }}</p>
-              <span>{{ teacher.note }}</span>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="course-detail__section" aria-labelledby="overview-fields-title">
-        <div>
-          <p class="course-detail__kicker">培养方案信息</p>
-          <h2 id="overview-fields-title">课程总览</h2>
-        </div>
-        <dl class="course-overview-fields">
-          <div v-for="field in course.overviewFields" :key="field.key">
-            <dt>{{ field.label }}</dt>
-            <dd>{{ field.value }}</dd>
-          </div>
-        </dl>
-      </section>
     </template>
 
     <section v-else-if="activeTab.id === 'experiences'" class="course-subpage" aria-labelledby="experience-title">
@@ -297,15 +246,17 @@ watch(
       </template>
 
       <template v-else>
-        <header class="subpage-header">
-          <p class="course-detail__kicker">学习心得</p>
-          <h1 id="experience-title">同学经验卡片</h1>
-          <p>卡片只保留作者和简介，点击后进入完整心得页。</p>
+        <header class="subpage-header subpage-header--compact">
+          <div>
+            <p class="course-detail__kicker">学习心得</p>
+            <h1 id="experience-title">学习心得</h1>
+          </div>
+          <ContributionBox tab-label="学习心得" :can-submit="canSubmit" @submit-contribution="emitContribution" />
         </header>
-        <ContributionBox tab-label="学习心得" :can-submit="canSubmit" @submit-contribution="emitContribution" />
         <p v-if="isLoading" class="resource-empty">正在加载学习心得...</p>
         <p v-else-if="loadError" class="resource-empty">{{ loadError }}</p>
-        <div class="three-column-cards">
+        <p v-else-if="!activeCollection.length" class="resource-empty">暂无学习心得，欢迎认证用户投稿。</p>
+        <div v-else class="three-column-cards">
           <article v-for="item in activeCollection" :key="item.id" class="learning-card">
             <a :href="item.href">
               <strong>{{ item.author }}</strong>
@@ -352,15 +303,17 @@ watch(
       </template>
 
       <template v-else>
-        <header class="subpage-header">
-          <p class="course-detail__kicker">复习资料</p>
-          <h1 id="material-title">资料入口</h1>
-          <p>用卡片归档资料说明，后续可接入 Markdown、PDF、网页笔记或外部工具。</p>
+        <header class="subpage-header subpage-header--compact">
+          <div>
+            <p class="course-detail__kicker">复习资料</p>
+            <h1 id="material-title">复习资料</h1>
+          </div>
+          <ContributionBox tab-label="复习资料" :can-submit="canSubmit" @submit-contribution="emitContribution" />
         </header>
-        <ContributionBox tab-label="复习资料" :can-submit="canSubmit" @submit-contribution="emitContribution" />
         <p v-if="isLoading" class="resource-empty">正在加载复习资料...</p>
         <p v-else-if="loadError" class="resource-empty">{{ loadError }}</p>
-        <div class="three-column-cards">
+        <p v-else-if="!activeCollection.length" class="resource-empty">暂无复习资料，欢迎认证用户投稿。</p>
+        <div v-else class="three-column-cards">
           <article v-for="item in activeCollection" :key="item.id" class="learning-card">
             <a :href="item.href">
               <strong>{{ item.author }}</strong>
@@ -401,15 +354,17 @@ watch(
       </template>
 
       <template v-else>
-        <header class="subpage-header">
-          <p class="course-detail__kicker">历年试卷</p>
-          <h1 id="paper-title">试卷归档</h1>
-          <p>横向卡片用于承载年份、教师、考试类型和后续题型分析。</p>
+        <header class="subpage-header subpage-header--compact">
+          <div>
+            <p class="course-detail__kicker">历年试卷</p>
+            <h1 id="paper-title">历年试卷</h1>
+          </div>
+          <ContributionBox tab-label="历年试卷" :can-submit="canSubmit" @submit-contribution="emitContribution" />
         </header>
-        <ContributionBox tab-label="历年试卷" :can-submit="canSubmit" @submit-contribution="emitContribution" />
         <p v-if="isLoading" class="resource-empty">正在加载历年试卷...</p>
         <p v-else-if="loadError" class="resource-empty">{{ loadError }}</p>
-        <div class="paper-list">
+        <p v-else-if="!activeCollection.length" class="resource-empty">暂无历年试卷，欢迎认证用户投稿。</p>
+        <div v-else class="paper-list">
           <a v-for="paper in activeCollection" :key="paper.id" class="paper-row-card" :href="paper.href">
             <span>
               <strong>{{ paper.title }}</strong>

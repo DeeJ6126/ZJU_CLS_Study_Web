@@ -6,7 +6,7 @@ import {
   buildResourceRoute,
   courseMaterialPaths,
   parseResourceHash,
-} from '../src/data/resourcePaths.js';
+} from '../src/data/courses/resourcePaths.js';
 
 test('resource route helpers keep course URLs under the resources route', () => {
   assert.equal(buildResourceRoute(), '#resources');

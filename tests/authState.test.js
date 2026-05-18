@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { defaultUserId, getTestUserById, testUsers } from '../src/data/testUsers.js';
+import { defaultUserId, getTestUserById, testUsers } from '../src/data/config/testUsers.js';
 import {
   canComment,
   canFavorite,

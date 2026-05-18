@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
-import { loadResourceCatalog, programOptions, resourceProgramMeta } from '../data/resourceData.js';
+import { loadResourceCatalog, programOptions, resourceProgramMeta } from '../data/courses/resourceData.js';
 
 const collapsedSections = reactive({});
 const collapsedGroups = reactive({});

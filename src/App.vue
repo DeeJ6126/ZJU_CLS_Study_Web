@@ -6,13 +6,13 @@ import AppSidebar from './components/AppSidebar.vue';
 import CourseDetailPage from './components/CourseDetailPage.vue';
 import ResourcePage from './components/ResourcePage.vue';
 import SettingsPanel from './components/SettingsPanel.vue';
-import { getCourseDetail, supportedCourseCodes } from './data/courseDetails.js';
-import { seedMessages } from './data/mockMessages.js';
-import { navigationItems } from './data/navigation.js';
-import { getResourceCourseByCode } from './data/resourceData.js';
-import { buildResourceRoute, defaultCourseDetailTab, parseResourceHash } from './data/resourcePaths.js';
-import { defaultUserId, getTestUserById, testUsers } from './data/testUsers.js';
-import { defaultThemeId, themes } from './data/themes.js';
+import { getCourseDetail } from './data/courses/courseDetails.js';
+import { seedMessages } from './data/config/mockMessages.js';
+import { navigationItems } from './data/config/navigation.js';
+import { getResourceCourseByCode } from './data/courses/resourceData.js';
+import { buildResourceRoute, defaultCourseDetailTab, parseResourceHash } from './data/courses/resourcePaths.js';
+import { defaultUserId, getTestUserById, testUsers } from './data/config/testUsers.js';
+import { defaultThemeId, themes } from './data/config/themes.js';
 import {
   canComment,
   canFavorite,
@@ -100,7 +100,7 @@ function readJsonStorage(key, fallback) {
 
 function syncRouteFromHash() {
   const route = parseResourceHash(window.location.hash);
-  activeCourseCode.value = supportedCourseCodes.includes(route.courseCode) ? route.courseCode : '';
+  activeCourseCode.value = route.courseCode || '';
   activeCourseTabId.value = route.tabId;
   activeCourseItemId.value = route.itemId;
 
@@ -220,7 +220,7 @@ function addComment({ key, text, tabId, itemTitle }) {
   ];
 }
 
-function submitContribution({ tabId, title }) {
+function submitContribution({ tabId, title, subtitle = '', cc98Name = '', cc98Link = '', body = '', materialLink = '' }) {
   if (!userCanSubmit.value) {
     return;
   }
@@ -231,6 +231,11 @@ function submitContribution({ tabId, title }) {
       courseCode: activeCourseCode.value,
       tabId,
       title,
+      subtitle,
+      cc98Name,
+      cc98Link,
+      body,
+      materialLink,
     }),
     ...messages.value,
   ];

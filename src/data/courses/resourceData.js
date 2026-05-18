@@ -1,5 +1,5 @@
 import { buildResourceSections, getCourseByCode, parseCourseCsv } from './resourceCatalog.js';
-import { publicAssetPath } from '../utils/publicPath.js';
+import { publicAssetPath } from '../../utils/publicPath.js';
 export { programOptions, resourceProgramMeta } from './resourceCatalog.js';
 
 const resourceSummaryUrl = '/resource/summary/introduction.csv';

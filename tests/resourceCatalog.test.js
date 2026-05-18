@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import { buildResourceSections, getCourseByCode, parseCourseCsv } from '../src/data/resourceCatalog.js';
+import { buildResourceSections, getCourseByCode, parseCourseCsv } from '../src/data/courses/resourceCatalog.js';
 
 const csv = readFileSync('public/resource/summary/introduction.csv', 'utf8');
 const courses = parseCourseCsv(csv);

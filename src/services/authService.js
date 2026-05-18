@@ -91,13 +91,31 @@ export function canFavorite(user) {
   return isAuthenticated(user);
 }
 
-export function createSubmissionMessage({ fromUser, courseCode, tabId, title }) {
+export function createSubmissionMessage({
+  fromUser,
+  courseCode,
+  tabId,
+  title,
+  subtitle = '',
+  cc98Name = '',
+  cc98Link = '',
+  body = '',
+  materialLink = '',
+}) {
+  const extra = [
+    subtitle ? `副标题：${subtitle}` : '',
+    cc98Name ? `CC98：${cc98Name}` : '',
+    cc98Link ? `CC98链接：${cc98Link}` : '',
+    materialLink ? `资料链接：${materialLink}` : '',
+    body ? `内容：${body}` : '',
+  ].filter(Boolean).join('；');
+
   return {
     id: `submission-${courseCode}-${tabId}-${Date.now()}`,
     toRole: 'developer',
     fromUserId: fromUser.id,
     title: '新的投稿申请',
-    body: `${fromUser.nickname} 想在 ${courseCode} 的${tabId === 'experiences' ? '学习心得' : tabId === 'materials' ? '复习资料' : '历年试卷'}中投稿：${title}`,
+    body: `${fromUser.nickname} 想在 ${courseCode} 的${tabId === 'experiences' ? '学习心得' : tabId === 'materials' ? '复习资料' : '历年试卷'}中投稿：${title}${extra ? `。${extra}` : ''}`,
     createdAt: new Date().toISOString(),
     read: false,
   };

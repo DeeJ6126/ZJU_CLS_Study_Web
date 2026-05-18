@@ -318,6 +318,11 @@
   padding: clamp(22px, 4vw, 34px);
 }
 
+.subpage-header--compact {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
 .subpage-header h1,
 .article-detail-card h1,
 .paper-detail h1 {
@@ -393,7 +398,8 @@
 .paper-actions a,
 .favorite-button,
 .comment-form button,
-.contribution-box button {
+.contribution-trigger,
+.contribution-form button {
   width: fit-content;
   min-height: 40px;
   display: inline-flex;
@@ -423,7 +429,6 @@
   opacity: 0.55;
 }
 
-.contribution-box,
 .comment-section {
   display: grid;
   gap: 14px;
@@ -434,33 +439,24 @@
   box-shadow: var(--detail-shadow);
 }
 
-.contribution-box {
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
-  align-items: end;
-}
-
-.contribution-box p,
 .comment-empty,
 .permission-note {
   margin: 0;
   color: var(--color-muted);
 }
 
-.contribution-box form,
 .comment-form,
 .comment-form label {
   display: grid;
   gap: 8px;
 }
 
-.contribution-box label span,
 .comment-form label span {
   color: var(--color-muted);
   font-size: 12px;
   font-weight: 900;
 }
 
-.contribution-box input,
 .comment-form textarea {
   width: 100%;
   padding: 10px 12px;
@@ -469,9 +465,121 @@
   resize: vertical;
 }
 
-.contribution-box__notice {
-  grid-column: 1 / -1;
+.contribution-entry {
+  justify-self: end;
+}
+
+.contribution-trigger {
+  cursor: pointer;
+}
+
+.contribution-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.contribution-modal__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.42);
+  cursor: pointer;
+}
+
+.contribution-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: min(760px, 100%);
+  max-height: min(86vh, 760px);
+  overflow: auto;
+  padding: clamp(18px, 3vw, 26px);
+  border: 1px solid var(--detail-border);
+  border-radius: var(--radius-md);
+  background: var(--detail-surface);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.26);
+}
+
+.contribution-modal__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--detail-border);
+}
+
+.contribution-modal__head h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(28px, 4vw, 40px);
+}
+
+.contribution-modal__close {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--detail-border);
+  border-radius: var(--radius-sm);
+  background: var(--detail-list-bg);
+  color: var(--color-ink);
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.contribution-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.contribution-form label {
+  display: grid;
+  gap: 7px;
+}
+
+.contribution-form label span {
+  color: var(--color-muted);
+  font-size: 12px;
   font-weight: 900;
+}
+
+.contribution-form input,
+.contribution-form textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--detail-border);
+  border-radius: var(--radius-sm);
+  background: var(--detail-list-bg);
+  color: var(--color-ink);
+  font: inherit;
+}
+
+.contribution-form textarea {
+  resize: vertical;
+}
+
+.contribution-form__wide,
+.contribution-box__notice,
+.contribution-form__actions {
+  grid-column: 1 / -1;
+}
+
+.contribution-box__notice {
+  margin: 0;
+  color: var(--detail-accent);
+  font-weight: 900;
+}
+
+.contribution-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .comment-list {
@@ -601,7 +709,8 @@
   }
 
   .article-detail-card__head,
-  .contribution-box {
+  .subpage-header--compact,
+  .contribution-form {
     grid-template-columns: 1fr;
   }
 

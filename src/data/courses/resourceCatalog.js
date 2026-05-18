@@ -198,6 +198,7 @@ export function getCourseByCode(courses, courseCode) {
 export function buildResourceSections(courses) {
   const basicCourses = withLinks(courses.filter((course) => course.category === '专业基础课程'), 'basic');
   const generalCourses = withLinks(courses.filter((course) => course.category === '通识'), 'general');
+
   const professionalCourses = courses.filter((course) => course.category === '专业课');
   const majorCodes = new Set([...MAJOR_REQUIRED_CODES, ...MAJOR_PRACTICE_CODES, ...MAJOR_THESIS_CODES]);
   const majorCourses = withLinks(professionalCourses.filter((course) => majorCodes.has(course.code)), 'major');
