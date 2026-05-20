@@ -23,7 +23,6 @@ function createTestStore() {
 test('cc98 registration stores a hashed password and consumes a valid code', async () => {
   const store = createTestStore();
   const result = await registerCc98(store, {
-    cc98Name: 'cc98_bio_visitor',
     code: 'bio-cc98',
     password: 'test',
   });
@@ -39,7 +38,6 @@ test('cc98 registration stores a hashed password and consumes a valid code', asy
 test('cc98 registration rejects invalid code and duplicate cc98 name', async () => {
   const store = createTestStore();
   const invalid = await registerCc98(store, {
-    cc98Name: 'cc98_missing',
     code: 'missing',
     password: 'pass-123456',
   });
@@ -48,12 +46,10 @@ test('cc98 registration rejects invalid code and duplicate cc98 name', async () 
   assert.equal(invalid.status, 400);
 
   await registerCc98(store, {
-    cc98Name: 'cc98_bio_visitor',
     code: 'bio-cc98',
     password: 'pass-123456',
   });
   const duplicate = await registerCc98(store, {
-    cc98Name: 'cc98_bio_visitor',
     code: 'bio-cc98-extra',
     password: 'pass-abcdef',
   });
@@ -65,7 +61,6 @@ test('cc98 registration rejects invalid code and duplicate cc98 name', async () 
 test('cc98 login creates a session and logout invalidates it', async () => {
   const store = createTestStore();
   await registerCc98(store, {
-    cc98Name: 'cc98_bio_visitor',
     code: 'bio-cc98',
     password: 'pass-123456',
   });

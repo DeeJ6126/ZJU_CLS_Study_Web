@@ -70,21 +70,21 @@ export function createSession(store, userId) {
   return sessionId;
 }
 
-export async function registerCc98(store, { cc98Name, code, password }) {
-  const normalizedName = normalizeText(cc98Name);
+export async function registerCc98(store, { code, password }) {
   const normalizedCode = normalizeText(code);
-
-  if (!normalizedName || !normalizedCode || !validatePassword(password)) {
-    return { ok: false, status: 400, message: '请填写 CC98 名字、有效验证码和至少 4 位密码。' };
-  }
-
-  if (store.findUserByCc98Name(normalizedName)) {
-    return { ok: false, status: 409, message: '该 CC98 名字已注册。' };
-  }
 
   const verificationCode = store.findVerificationCode(normalizedCode);
   if (!verificationCode || verificationCode.usedByUserId) {
     return { ok: false, status: 400, message: '验证码无效或已使用。' };
+  }
+
+  const normalizedName = normalizeText(verificationCode.cc98Name);
+  if (!normalizedName || !validatePassword(password)) {
+    return { ok: false, status: 400, message: '请填写有效验证码和至少 4 位密码。' };
+  }
+
+  if (store.findUserByCc98Name(normalizedName)) {
+    return { ok: false, status: 409, message: '该 CC98 名字已注册。' };
   }
 
   const user = store.createUser({

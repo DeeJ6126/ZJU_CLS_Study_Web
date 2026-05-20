@@ -24,4 +24,5 @@ test('auth dialog keeps cc98 and school email tabs while disabling email flow', 
   assert.match(dialog, /学校邮箱注册\/登录暂未开放/);
   assert.match(dialog, /submit-register-cc98/);
   assert.match(dialog, /submit-login-cc98/);
+  assert.match(dialog, /v-if="props.mode === 'login'"/);
 });

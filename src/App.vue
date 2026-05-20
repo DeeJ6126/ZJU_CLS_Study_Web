@@ -178,8 +178,8 @@ async function refreshCurrentUser() {
   }
 }
 
-async function registerCc98({ cc98Name, code, password }) {
-  const result = await registerCc98Account({ cc98Name, code, password });
+async function registerCc98({ code, password }) {
+  const result = await registerCc98Account({ code, password });
   if (!result.ok) {
     authDialogMessage.value = result.message;
     return;

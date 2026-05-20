@@ -23,7 +23,6 @@ const title = computed(() => (props.mode === 'login' ? '登录' : '注册'));
 
 function submitRegisterCc98() {
   emit('submit-register-cc98', {
-    cc98Name: cc98Name.value,
     code: code.value,
     password: password.value,
   });
@@ -68,7 +67,7 @@ watch(() => props.mode, () => {
     </div>
 
     <form v-if="activeTab === 'cc98'" class="auth-dialog__body" @submit.prevent="props.mode === 'login' ? submitLoginCc98() : submitRegisterCc98()">
-      <label>
+      <label v-if="props.mode === 'login'">
         <span>CC98名字</span>
         <input v-model="cc98Name" type="text" autocomplete="username" />
       </label>

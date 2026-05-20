@@ -23,7 +23,6 @@ test('auth http server registers, logs in, returns current user, and logs out', 
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        cc98Name: 'cc98_bio_visitor',
         code: 'bio-cc98',
         password: 'test',
       }),

@@ -18,10 +18,10 @@ export function fetchCurrentUser() {
   return requestJson('/api/auth/me');
 }
 
-export function registerCc98Account({ cc98Name, code, password }) {
+export function registerCc98Account({ code, password }) {
   return requestJson('/api/auth/register/cc98', {
     method: 'POST',
-    body: JSON.stringify({ cc98Name, code, password }),
+    body: JSON.stringify({ code, password }),
   });
 }
 
