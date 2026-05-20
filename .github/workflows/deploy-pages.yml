@@ -31,10 +31,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Test
+        run: npm test
+
       - name: Build
         run: npm run build
         env:
           GITHUB_PAGES: true
+
+      - name: Harness
+        run: npm run harness
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

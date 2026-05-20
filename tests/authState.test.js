@@ -5,12 +5,14 @@ import { defaultUserId, getTestUserById, testUsers } from '../src/data/config/te
 import {
   canComment,
   canFavorite,
+  canRequestCc98PrototypeVerification,
   canSubmitResource,
   createCommentMessage,
   createSubmissionMessage,
   getAccountState,
   getVerificationBadges,
 } from '../src/services/authService.js';
+import { mergeUserAuthOverride } from '../src/services/accountStateService.js';
 import { getNextAvatarColor } from '../src/services/avatarService.js';
 import { createFavoriteKey, isFavorited, toggleFavorite } from '../src/services/favoriteService.js';
 
@@ -50,6 +52,29 @@ test('verification badges stay compatible with future backend auth providers', (
   assert.deepEqual(getVerificationBadges(getTestUserById('cc98-user')), ['CC98认证']);
   assert.deepEqual(getVerificationBadges(getTestUserById('email-user')), ['邮箱认证']);
   assert.deepEqual(getVerificationBadges(getTestUserById('dual-user')), ['CC98认证', '邮箱认证']);
+});
+
+test('cc98 front-end prototype override enables the existing verified-user model', () => {
+  const prototypeUser = mergeUserAuthOverride(getTestUserById('guest'), {
+    guest: {
+      verifications: { cc98: true },
+      cc98Nickname: 'cc98_bio_visitor',
+    },
+  });
+
+  assert.equal(getAccountState(prototypeUser).label, 'CC98认证');
+  assert.deepEqual(getVerificationBadges(prototypeUser), ['CC98认证']);
+  assert.equal(canSubmitResource(prototypeUser), true);
+  assert.equal(canComment(prototypeUser), true);
+  assert.equal(canFavorite(prototypeUser), true);
+  assert.equal(canRequestCc98PrototypeVerification(prototypeUser), false);
+});
+
+test('cc98 prototype form visibility stays in the auth service', () => {
+  assert.equal(canRequestCc98PrototypeVerification(getTestUserById('guest')), true);
+  assert.equal(canRequestCc98PrototypeVerification(getTestUserById('email-user')), true);
+  assert.equal(canRequestCc98PrototypeVerification(getTestUserById('cc98-user')), false);
+  assert.equal(canRequestCc98PrototypeVerification(getTestUserById('developer')), false);
 });
 
 test('favorite helpers keep favorites keyed by content type and item id', () => {

@@ -1,0 +1,10 @@
+{
+  "description": "Front-end permission states used for account center and contribution affordances.",
+  "cases": [
+    { "userKind": "guest", "canSubmit": false, "canComment": false, "canFavorite": false },
+    { "userKind": "cc98", "canSubmit": true, "canComment": true, "canFavorite": true },
+    { "userKind": "email", "canSubmit": true, "canComment": true, "canFavorite": true },
+    { "userKind": "dual", "canSubmit": true, "canComment": true, "canFavorite": true },
+    { "userKind": "developer", "canSubmit": true, "canComment": true, "canFavorite": true }
+  ]
+}

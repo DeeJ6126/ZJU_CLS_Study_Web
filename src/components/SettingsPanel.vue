@@ -1,6 +1,5 @@
 <script setup>
 import AuthStatusBadges from './account/AuthStatusBadges.vue';
-import UserSwitcher from './account/UserSwitcher.vue';
 
 defineProps({
   themes: {
@@ -8,14 +7,6 @@ defineProps({
     required: true,
   },
   activeThemeId: {
-    type: String,
-    required: true,
-  },
-  users: {
-    type: Array,
-    required: true,
-  },
-  activeUserId: {
     type: String,
     required: true,
   },
@@ -29,7 +20,7 @@ defineProps({
   },
 });
 
-const emit = defineEmits(['select-theme', 'select-user']);
+const emit = defineEmits(['select-theme']);
 </script>
 
 <template>
@@ -37,7 +28,7 @@ const emit = defineEmits(['select-theme', 'select-user']);
     <div class="settings-header">
       <p class="settings-header__eyebrow">设置</p>
       <h1 id="settings-title">账号状态与主题</h1>
-      <p>这里先保留前端账号骨架和主题偏好，后续接入真实登录后可以直接替换测试账号来源。</p>
+      <p>这里管理主题偏好；账号注册与登录请使用页面底部入口。</p>
     </div>
 
     <div class="settings-layout">
@@ -55,11 +46,6 @@ const emit = defineEmits(['select-theme', 'select-user']);
             <AuthStatusBadges :badges="badges" />
           </div>
 
-          <UserSwitcher
-            :users="users"
-            :active-user-id="activeUserId"
-            @select-user="emit('select-user', $event)"
-          />
         </div>
       </article>
 

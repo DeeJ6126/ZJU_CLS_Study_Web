@@ -1,0 +1,29 @@
+{
+  "projectName": "life-science-study-platform",
+  "brandName": "生科智学 / 生命科学学子学习平台",
+  "devServer": {
+    "host": "127.0.0.1",
+    "port": 5174,
+    "url": "http://127.0.0.1:5174/"
+  },
+  "previewServer": {
+    "host": "127.0.0.1",
+    "port": 4174,
+    "url": "http://127.0.0.1:4174/"
+  },
+  "paths": {
+    "agentsEntry": "AGENTS.md",
+    "harnessDocs": "docs/harness",
+    "source": "src",
+    "publicContent": "public",
+    "tests": "tests",
+    "reports": "harness/reports",
+    "artifacts": "harness/artifacts"
+  },
+  "commands": {
+    "test": "npm test",
+    "build": "npm run build",
+    "harness": "npm run harness",
+    "browser": "npm run harness:browser"
+  }
+}

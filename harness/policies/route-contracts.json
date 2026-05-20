@@ -1,0 +1,8 @@
+{
+  "description": "Course resources must remain addressable by stable course-code hash routes.",
+  "resourceRoot": "resources",
+  "courseRoutePattern": "#resources/#{courseCode}",
+  "nestedRoutePattern": "#resources/#{courseCode}/#{tabId}/#{itemId}",
+  "courseCodeSource": "public/resource/summary/introduction.csv",
+  "suggestion": "Use buildCourseRoute(course.code) from src/data/courses/resourcePaths.js."
+}

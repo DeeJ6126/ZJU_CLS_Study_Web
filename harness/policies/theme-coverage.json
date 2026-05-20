@@ -1,0 +1,16 @@
+{
+  "description": "Every configured theme must expose the core UI tokens used by layout, resource cards, and course detail views.",
+  "defaultThemeSelector": ":root",
+  "themeSelectorTemplate": "html[data-theme=\"{themeId}\"]",
+  "requiredTokens": [
+    "--color-ink",
+    "--color-surface",
+    "--color-sidebar",
+    "--color-primary",
+    "--color-accent",
+    "--resource-card-title",
+    "--resource-card-border-hover",
+    "--detail-link",
+    "--detail-action-bg"
+  ]
+}

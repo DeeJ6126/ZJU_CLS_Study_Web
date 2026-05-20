@@ -1,0 +1,4 @@
+{
+  "description": "Theme IDs expected to be present in src/data/config/themes.js and src/styles/base.css.",
+  "themeIds": ["minimal-white", "plant-green", "life-blue", "silent-black", "tech-innovation"]
+}

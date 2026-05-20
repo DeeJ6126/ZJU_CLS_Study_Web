@@ -5,11 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5174 --strictPort",
+    "server": "node server/server.js",
     "test": "node --test",
     "build": "vite build",
-    "preview": "vite preview --host 127.0.0.1 --port 4174 --strictPort"
+    "preview": "vite preview --host 127.0.0.1 --port 4174 --strictPort",
+    "harness": "node harness/scripts/run-harness.mjs",
+    "harness:architecture": "node harness/scripts/check-architecture.mjs",
+    "harness:routes": "node harness/scripts/check-routes.mjs",
+    "harness:content": "node harness/scripts/check-content-location.mjs",
+    "harness:themes": "node harness/scripts/check-themes.mjs",
+    "harness:report": "node harness/scripts/collect-report.mjs",
+    "harness:browser": "node harness/scripts/run-browser-harness.mjs"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@vitejs/plugin-vue": "^6.0.7",
     "vite": "^7.0.0"
   },

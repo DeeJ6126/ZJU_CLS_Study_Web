@@ -1,5 +1,5 @@
 export function isAuthenticated(user) {
-  return Boolean(user && user.role !== 'guest');
+  return Boolean(user && (user.role !== 'guest' || user.verifications?.cc98 || user.verifications?.email));
 }
 
 export function isVerifiedUser(user) {
@@ -89,6 +89,10 @@ export function canComment(user) {
 
 export function canFavorite(user) {
   return isAuthenticated(user);
+}
+
+export function canRequestCc98PrototypeVerification(user) {
+  return Boolean(user && user.role !== 'developer' && !user.verifications?.cc98);
 }
 
 export function createSubmissionMessage({

@@ -1,0 +1,14 @@
+{
+  "description": "User-facing long-form content belongs in public/, not Vue components.",
+  "scanRoots": ["src/components", "src/App.vue"],
+  "publicContentRoots": [
+    "public/resource",
+    "public/showcase",
+    "public/lab",
+    "public/navigator",
+    "public/peer"
+  ],
+  "maxCjkCharactersPerLine": 90,
+  "maxLiteralCharacters": 280,
+  "suggestion": "Move course materials, study notes, papers, and long descriptions into public/ Markdown, CSV, or JSON files."
+}

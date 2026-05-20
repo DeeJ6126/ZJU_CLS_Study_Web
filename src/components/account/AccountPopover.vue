@@ -1,18 +1,9 @@
 <script setup>
 import AuthStatusBadges from './AuthStatusBadges.vue';
-import UserSwitcher from './UserSwitcher.vue';
 
 defineProps({
   user: {
     type: Object,
-    required: true,
-  },
-  users: {
-    type: Array,
-    required: true,
-  },
-  activeUserId: {
-    type: String,
     required: true,
   },
   accountState: {
@@ -23,9 +14,13 @@ defineProps({
     type: Array,
     required: true,
   },
+  isGuest: {
+    type: Boolean,
+    required: true,
+  },
 });
 
-const emit = defineEmits(['select-user', 'change-avatar']);
+const emit = defineEmits(['change-avatar', 'logout', 'open-login', 'open-register-cc98', 'open-register-email']);
 </script>
 
 <template>
@@ -66,10 +61,12 @@ const emit = defineEmits(['select-user', 'change-avatar']);
       </div>
     </div>
 
-    <UserSwitcher
-      :users="users"
-      :active-user-id="activeUserId"
-      @select-user="emit('select-user', $event)"
-    />
+    <div v-if="isGuest" class="account-popover__actions">
+      <button type="button" @click="emit('open-register-cc98')">CC98注册</button>
+      <button type="button" @click="emit('open-register-email')">浙大邮箱注册</button>
+      <button type="button" @click="emit('open-login')">登录</button>
+    </div>
+
+    <button v-else class="account-popover__logout" type="button" @click="emit('logout')">退出登录</button>
   </aside>
 </template>

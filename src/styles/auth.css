@@ -145,6 +145,79 @@
   text-align: center;
 }
 
+.cc98-verification {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 140px auto;
+  gap: 10px;
+  align-items: end;
+  margin: 16px 0;
+  padding: 14px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-soft);
+}
+
+.cc98-verification__copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cc98-verification__copy strong {
+  font-family: var(--font-heading);
+  line-height: 1.2;
+}
+
+.cc98-verification__copy span,
+.cc98-verification label span {
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.cc98-verification label {
+  display: grid;
+  gap: 6px;
+}
+
+.cc98-verification input,
+.cc98-verification button {
+  min-height: 38px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  font: inherit;
+}
+
+.cc98-verification input {
+  min-width: 0;
+  padding: 0 10px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.cc98-verification button {
+  padding: 0 12px;
+  background: var(--color-primary);
+  color: var(--color-avatar-text);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.cc98-verification__message {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.cc98-verification__message.is-success {
+  color: var(--color-primary-strong);
+}
+
+.cc98-verification__message.is-error {
+  color: var(--color-danger, #b3261e);
+}
+
 .auth-badges {
   display: flex;
   flex-wrap: wrap;
@@ -202,6 +275,128 @@
   color: var(--color-muted);
 }
 
+.auth-dialog button,
+.auth-dialog input,
+.account-popover__logout,
+.account-popover__actions button {
+  min-height: 40px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  font: inherit;
+}
+
+.auth-dialog {
+  position: fixed;
+  right: 24px;
+  bottom: 86px;
+  z-index: 30;
+  width: min(420px, calc(100vw - 48px));
+  padding: 16px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--detail-shadow-hover);
+}
+
+.auth-dialog__header,
+.auth-dialog__tabs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.auth-dialog__header h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+}
+
+.auth-dialog__close {
+  padding: 0 10px;
+  background: var(--color-soft);
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.auth-dialog__tabs {
+  justify-content: flex-start;
+  margin-top: 14px;
+}
+
+.auth-dialog__tabs button {
+  padding: 0 12px;
+  background: var(--color-soft);
+  color: var(--color-ink);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.auth-dialog__tabs button.is-active {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-avatar-text);
+}
+
+.auth-dialog__body {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.auth-dialog__body label {
+  display: grid;
+  gap: 6px;
+}
+
+.auth-dialog__body label span {
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.auth-dialog__body input {
+  width: 100%;
+  padding: 0 10px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.auth-dialog__body button[type="submit"],
+.account-popover__logout,
+.account-popover__actions button:first-child {
+  background: var(--color-primary);
+  color: var(--color-avatar-text);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.account-popover__actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.account-popover__actions button {
+  padding: 0 10px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.auth-dialog__message,
+.auth-dialog__disabled {
+  margin: 0;
+  color: var(--color-muted);
+  font-weight: 800;
+}
+
+.account-popover__logout {
+  width: 100%;
+  margin-top: 16px;
+}
+
 @media (max-width: 760px) {
   .topbar__actions {
     width: 100%;
@@ -209,6 +404,20 @@
   }
 
   .account-popover__main {
+    grid-template-columns: 1fr;
+  }
+
+  .cc98-verification {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-dialog {
+    right: 14px;
+    bottom: 76px;
+    width: calc(100vw - 28px);
+  }
+
+  .account-popover__actions {
     grid-template-columns: 1fr;
   }
 }

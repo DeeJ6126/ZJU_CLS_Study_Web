@@ -1,0 +1,8 @@
+{
+  "description": "Current auth is a front-end skeleton; real security must be enforced by a future backend.",
+  "permissionService": "src/services/authService.js",
+  "uiCanShowPermissionHints": true,
+  "frontendOnlySecurityWarning": "Do not treat front-end permission checks as real authentication or authorization.",
+  "verifiedUserCapabilities": ["submit-resource", "comment", "favorite"],
+  "guestCapabilities": ["browse-public-resources"]
+}

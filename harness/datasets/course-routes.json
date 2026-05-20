@@ -1,0 +1,9 @@
+{
+  "description": "Critical course route cases used by harness and browser checks.",
+  "cases": [
+    {
+      "courseCode": "BIO2110F",
+      "expectedRoute": "#resources/#BIO2110F"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import AuthDialog from './components/account/AuthDialog.vue';
 import AccountPopover from './components/account/AccountPopover.vue';
 import MailboxPopover from './components/account/MailboxPopover.vue';
 import AppSidebar from './components/AppSidebar.vue';
@@ -23,6 +24,7 @@ import {
   getVerificationBadges,
   messageBelongsToUser,
 } from './services/authService.js';
+import { fetchCurrentUser, loginCc98Account, logoutAccount, registerCc98Account } from './services/authApiClient.js';
 import { getNextAvatarColor } from './services/avatarService.js';
 import { toggleFavorite } from './services/favoriteService.js';
 
@@ -31,8 +33,8 @@ const isSidebarOpen = ref(false);
 const isSettingsOpen = ref(false);
 const isAccountPanelOpen = ref(false);
 const isMailboxOpen = ref(false);
+const authDialogMode = ref('');
 const activeThemeId = ref(defaultThemeId);
-const activeUserId = ref(defaultUserId);
 const activeCourseCode = ref('');
 const activeCourseTabId = ref(defaultCourseDetailTab);
 const activeCourseItemId = ref('');
@@ -58,19 +60,19 @@ const commentsByKey = ref({
 });
 const messages = ref([...seedMessages]);
 const avatarOverrides = ref({});
+const currentUserState = ref(getTestUserById(defaultUserId));
+const authDialogMessage = ref('');
 
 const activeTheme = computed(
   () => themes.find((theme) => theme.id === activeThemeId.value) ?? themes[0],
 );
-const currentUser = computed(() => {
-  const user = getTestUserById(activeUserId.value);
-  return {
-    ...user,
-    avatarColor: avatarOverrides.value[user.id] ?? user.avatarColor,
-  };
-});
+const currentUser = computed(() => ({
+  ...currentUserState.value,
+  avatarColor: avatarOverrides.value[currentUserState.value.id] ?? currentUserState.value.avatarColor,
+}));
 const accountState = computed(() => getAccountState(currentUser.value));
 const verificationBadges = computed(() => getVerificationBadges(currentUser.value));
+const isGuest = computed(() => accountState.value.id === 'guest');
 const activeCourse = computed(() => getCourseDetail(activeSourceCourse.value));
 const userCanSubmit = computed(() => canSubmitResource(currentUser.value));
 const userCanComment = computed(() => canComment(currentUser.value));
@@ -151,15 +153,56 @@ function selectTheme(id) {
   activeThemeId.value = id;
 }
 
-function selectUser(id) {
-  activeUserId.value = id;
-}
-
 function changeAvatarColor() {
   avatarOverrides.value = {
     ...avatarOverrides.value,
     [currentUser.value.id]: getNextAvatarColor(currentUser.value.avatarColor),
   };
+}
+
+function openAuthDialog(mode) {
+  authDialogMode.value = mode;
+  authDialogMessage.value = '';
+  closeTopbarPanels();
+}
+
+function closeAuthDialog() {
+  authDialogMode.value = '';
+  authDialogMessage.value = '';
+}
+
+async function refreshCurrentUser() {
+  const result = await fetchCurrentUser();
+  if (result.ok) {
+    currentUserState.value = result.user;
+  }
+}
+
+async function registerCc98({ cc98Name, code, password }) {
+  const result = await registerCc98Account({ cc98Name, code, password });
+  if (!result.ok) {
+    authDialogMessage.value = result.message;
+    return;
+  }
+  authDialogMessage.value = '注册成功，请使用 CC98 名字和密码登录。';
+  authDialogMode.value = 'login';
+}
+
+async function loginCc98({ cc98Name, password }) {
+  const result = await loginCc98Account({ cc98Name, password });
+  if (!result.ok) {
+    authDialogMessage.value = result.message;
+    return;
+  }
+  currentUserState.value = result.user;
+  closeAuthDialog();
+}
+
+async function logoutCurrentUser() {
+  const result = await logoutAccount();
+  if (result.ok) {
+    currentUserState.value = result.user;
+  }
 }
 
 function toggleAccountPanel() {
@@ -247,15 +290,11 @@ onMounted(() => {
     activeThemeId.value = storedTheme;
   }
 
-  const storedUserId = window.localStorage.getItem('study-platform-user');
-  if (testUsers.some((user) => user.id === storedUserId)) {
-    activeUserId.value = storedUserId;
-  }
-
   favoriteKeys.value = readJsonStorage('study-platform-favorites', []);
   commentsByKey.value = readJsonStorage('study-platform-comments', commentsByKey.value);
   avatarOverrides.value = readJsonStorage('study-platform-avatars', {});
 
+  refreshCurrentUser();
   syncRouteFromHash();
   window.addEventListener('hashchange', syncRouteFromHash);
 });
@@ -279,10 +318,6 @@ watch(activeThemeId, (themeId) => {
   window.localStorage.setItem('study-platform-theme', themeId);
 }, { immediate: true });
 
-watch(activeUserId, (userId) => {
-  window.localStorage.setItem('study-platform-user', userId);
-});
-
 watch(favoriteKeys, (keys) => {
   window.localStorage.setItem('study-platform-favorites', JSON.stringify(keys));
 });
@@ -294,6 +329,7 @@ watch(commentsByKey, (comments) => {
 watch(avatarOverrides, (overrides) => {
   window.localStorage.setItem('study-platform-avatars', JSON.stringify(overrides));
 });
+
 </script>
 
 <template>
@@ -338,12 +374,14 @@ watch(avatarOverrides, (overrides) => {
           <AccountPopover
             v-if="isAccountPanelOpen"
             :user="currentUser"
-            :users="testUsers"
-            :active-user-id="activeUserId"
             :account-state="accountState"
             :badges="verificationBadges"
-            @select-user="selectUser"
+            :is-guest="isGuest"
             @change-avatar="changeAvatarColor"
+            @logout="logoutCurrentUser"
+            @open-login="openAuthDialog('login')"
+            @open-register-cc98="openAuthDialog('register-cc98')"
+            @open-register-email="openAuthDialog('register-email')"
           />
 
           <MailboxPopover
@@ -357,12 +395,9 @@ watch(avatarOverrides, (overrides) => {
         v-if="isSettingsOpen"
         :themes="themes"
         :active-theme-id="activeTheme.id"
-        :users="testUsers"
-        :active-user-id="activeUserId"
         :account-state="accountState"
         :badges="verificationBadges"
         @select-theme="selectTheme"
-        @select-user="selectUser"
       />
 
       <CourseDetailPage
@@ -405,6 +440,15 @@ watch(avatarOverrides, (overrides) => {
           </section>
         </div>
       </template>
+
+      <AuthDialog
+        v-if="authDialogMode"
+        :mode="authDialogMode"
+        :message="authDialogMessage"
+        @close="closeAuthDialog"
+        @submit-register-cc98="registerCc98"
+        @submit-login-cc98="loginCc98"
+      />
     </main>
   </div>
 </template>

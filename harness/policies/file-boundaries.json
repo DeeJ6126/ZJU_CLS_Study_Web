@@ -1,0 +1,23 @@
+{
+  "description": "Module ownership rules for the study platform harness.",
+  "rules": [
+    {
+      "id": "components-display-only",
+      "path": "src/components",
+      "mustNotContain": ["verifications", "role ===", "role !=="],
+      "suggestion": "Move authentication and permission decisions into src/services/authService.js."
+    },
+    {
+      "id": "auth-service-owns-permissions",
+      "path": "src/services/authService.js",
+      "mustContain": ["canSubmitResource", "canComment", "canFavorite"],
+      "suggestion": "Keep submission, comment, and favorite permission predicates centralized."
+    },
+    {
+      "id": "app-composes-auth-service",
+      "path": "src/App.vue",
+      "mustContain": ["canSubmitResource", "canComment", "canFavorite"],
+      "suggestion": "App.vue should compose permission predicates from authService, not duplicate them."
+    }
+  ]
+}

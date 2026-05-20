@@ -1,0 +1,5 @@
+{
+  "description": "Fields required by the submission modal.",
+  "requiredFields": ["title", "cc98Link", "body"],
+  "optionalFields": ["subtitle", "cc98Name", "image", "materialLink"]
+}
