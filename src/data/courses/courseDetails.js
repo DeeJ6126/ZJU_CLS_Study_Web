@@ -1,7 +1,25 @@
-import { buildCourseRoute } from './resourcePaths.js';
+import { buildCourseRoute, courseMaterialPaths } from './resourcePaths.js';
 import { buildCourseOverviewFields, buildSummaryFacts } from '../../services/courseOverviewService.js';
 
-export const supportedCourseCodes = [];
+const courseContentIndexes = {
+  BIO2110F: {
+    overviewUrl: courseMaterialPaths.BIO2110F.overviewFile,
+    experiences: ['1', '2', '3'].map((id) => ({
+      id,
+      url: `${courseMaterialPaths.BIO2110F.experiences}/${id}.md`,
+    })),
+    materials: ['1', '2', '3'].map((id) => ({
+      id,
+      url: `${courseMaterialPaths.BIO2110F.materials}/${id}.md`,
+    })),
+    papers: ['1'].map((id) => ({
+      id,
+      url: `${courseMaterialPaths.BIO2110F.papers}/${id}.md`,
+    })),
+  },
+};
+
+export const supportedCourseCodes = Object.keys(courseContentIndexes);
 
 function withRoutes(courseCode, tabId, items) {
   return items.map((item) => ({
@@ -15,7 +33,7 @@ export function getCourseDetail(course) {
     return null;
   }
 
-  const content = {
+  const content = courseContentIndexes[course.code] ?? {
     overviewUrl: '',
     experiences: [],
     materials: [],

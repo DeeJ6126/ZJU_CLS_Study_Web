@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
+import { cc98TestVerificationCodes } from '../src/data/config/cc98VerificationCodes.js';
 import { verifyCc98Code } from '../src/services/cc98VerificationService.js';
 
 test('cc98 front-end prototype code succeeds with normalized input', () => {
@@ -18,6 +19,20 @@ test('cc98 front-end prototype code matching is case insensitive', () => {
 
   assert.equal(result.ok, true);
   assert.equal(result.provider, 'cc98');
+});
+
+test('cc98 disposable test batch exposes stable single-use codes', () => {
+  assert.equal(cc98TestVerificationCodes.length, 30);
+  assert.deepEqual(cc98TestVerificationCodes[0], {
+    code: 'zjubio-test-001',
+    cc98Nickname: 'zjubio_test_001',
+    label: 'zjubio disposable test code 001',
+  });
+  assert.deepEqual(cc98TestVerificationCodes.at(-1), {
+    code: 'zjubio-test-030',
+    cc98Nickname: 'zjubio_test_030',
+    label: 'zjubio disposable test code 030',
+  });
 });
 
 test('cc98 front-end prototype code rejects empty and unknown input', () => {

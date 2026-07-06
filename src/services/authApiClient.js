@@ -15,23 +15,23 @@ async function requestJson(path, options = {}) {
 }
 
 export function fetchCurrentUser() {
-  return requestJson('/api/auth/me');
+  return requestJson('api/auth/me');
 }
 
 export function registerCc98Account({ code, password }) {
-  return requestJson('/api/auth/register/cc98', {
+  return requestJson('api/auth/register/cc98', {
     method: 'POST',
     body: JSON.stringify({ code, password }),
   });
 }
 
 export function loginCc98Account({ cc98Name, password }) {
-  return requestJson('/api/auth/login/cc98', {
+  return requestJson('api/auth/login/cc98', {
     method: 'POST',
     body: JSON.stringify({ cc98Name, password }),
   });
 }
 
 export function logoutAccount() {
-  return requestJson('/api/auth/logout', { method: 'POST' });
+  return requestJson('api/auth/logout', { method: 'POST' });
 }

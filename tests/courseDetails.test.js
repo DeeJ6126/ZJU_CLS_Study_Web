@@ -9,16 +9,19 @@ const csv = readFileSync('public/resource/summary/introduction.csv', 'utf8');
 const courses = parseCourseCsv(csv);
 const sourceCourse = getCourseByCode(courses, 'BIO2110F');
 
-test('BIO2110F detail model uses the shared empty resource framework', () => {
+test('BIO2110F detail model exposes restored microbiology resource entries', () => {
   const course = getCourseDetail(sourceCourse);
 
   assert.equal(course.name, '微生物学（甲）');
   assert.equal(course.code, 'BIO2110F');
   assert.match(course.overview, /微生物学课程是国家理科基地生物学专业的主干课程/);
-  assert.deepEqual(course.experiences, []);
-  assert.deepEqual(course.materials, []);
-  assert.deepEqual(course.papers, []);
-  assert.equal(course.content.overviewUrl, '');
+  assert.equal(course.content.overviewUrl, '/resource/courses/basic/BIO2110F_microbiology-a/overview/index.md');
+  assert.equal(course.experiences.length, 3);
+  assert.equal(course.materials.length, 3);
+  assert.equal(course.papers.length, 1);
+  assert.equal(course.experiences[0].url, '/resource/courses/basic/BIO2110F_microbiology-a/experiences/1.md');
+  assert.equal(course.materials[0].href, '#resources/#BIO2110F/#materials/#1');
+  assert.equal(course.papers[0].url, '/resource/courses/basic/BIO2110F_microbiology-a/papers/1.md');
 });
 
 test('every parsed course can create a clickable detail model by course code', () => {
