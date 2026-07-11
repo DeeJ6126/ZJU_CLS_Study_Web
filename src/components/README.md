@@ -1,4 +1,4 @@
-# src/components
+﻿# src/components
 
 Vue display components.
 
@@ -25,5 +25,6 @@ Components should render props, hold local UI state, and emit events upward. Kee
 ```bash
 npm.cmd test
 npm.cmd run build
-npm.cmd run harness:architecture
+npm.cmd run check:architecture
 ```
+

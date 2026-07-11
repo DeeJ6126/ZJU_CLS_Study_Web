@@ -1,0 +1,4430 @@
+﻿{
+  "generatedAt": "2026-05-09T11:12:00.982299",
+  "sourceQuestionBank": "question-bank.json",
+  "exams": [
+    {
+      "id": "midterm-24",
+      "title": "2024 春夏期中卷",
+      "sourcePdf": "24春夏-期中.pdf",
+      "summary": {
+        "totalQuestions": 51,
+        "autoFilled": 51,
+        "exactMatches": 30,
+        "highMatches": 4,
+        "reviewMatches": 2,
+        "unmatched": 15
+      },
+      "questions": [
+        {
+          "number": 1,
+          "prompt": "was the first to describe microorganisms, while was the first person to see bacteria.",
+          "options": [
+            {
+              "key": "A",
+              "text": "Antoni van Leeuwenhoek / Robert Hook"
+            },
+            {
+              "key": "B",
+              "text": "Antoni van Leeuwenhoek / Robert Koch"
+            },
+            {
+              "key": "C",
+              "text": "Robert Hooke / Antoni van Leeuwenhoek"
+            },
+            {
+              "key": "D",
+              "text": "Robert Koch / Antoni van Leeuwenhoek"
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "罗伯特·胡克在《显微图谱》中首次描述了微生物（如霉菌），而安东尼·范·列文虎克是第一个观察到细菌的人。这一历史顺序区分了两者对微生物学的早期贡献。",
+            "optionExplanations": {
+              "A": "顺序颠倒，列文虎克发现细菌晚于胡克描述微生物。",
+              "B": "科赫是后来的细菌学奠基人，不是第一个看到细菌的。",
+              "C": "正确，胡克先描述微生物，列文虎克后见细菌。",
+              "D": "科赫时代较晚。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-01-q-042",
+            "sourceChapterId": 1
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 2,
+          "prompt": "Robert Koch contributed to the field of microbiology by being the first person to",
+          "options": [
+            {
+              "key": "A",
+              "text": "develop the tuberculin test only."
+            },
+            {
+              "key": "B",
+              "text": "formulate four postulates for definitively linking a specific microorganism to a specific disease only."
+            },
+            {
+              "key": "C",
+              "text": "use agar as a solidifying agent in growth media only."
+            },
+            {
+              "key": "D",
+              "text": "develop the tuberculin test, formulate four postulates for definitively linking a specific microorganism to a specific disease, and use agar as a solidifying agent in growth media."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "罗伯特·科赫在微生物学领域贡献卓著，包括开发结核菌素、提出科赫法则以及推广琼脂培养基的使用。选项A、B和C都因包含“仅”字而片面，只有D完整概括了他的成就。",
+            "optionExplanations": {
+              "A": "仅提及结核菌素，忽略了其他贡献。",
+              "B": "仅提及科赫法则，忽略了其他贡献。",
+              "C": "仅提及琼脂，忽略了其他贡献。",
+              "D": "正确，涵盖了科赫的三项主要贡献。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-01-q-025",
+            "sourceChapterId": 1
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 3,
+          "prompt": "What was Pasteur's purpose in using a swan-necked flask rather than a traditional Erlenmeyer flask for his experiments on spontaneous generation?",
+          "options": [
+            {
+              "key": "A",
+              "text": "to prevent air from entering"
+            },
+            {
+              "key": "B",
+              "text": "to be able to boil and sterilize the liquid medium"
+            },
+            {
+              "key": "C",
+              "text": "to prevent large debris and microbes from entering"
+            },
+            {
+              "key": "D",
+              "text": "all of the above"
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "巴斯德使用鹅颈瓶的目的是允许空气进入，但弯曲的颈部可以阻挡空气中的尘埃和微生物落入培养液中。这证明了生命不能自发产生，而是来自已有的微生物。",
+            "optionExplanations": {
+              "A": "错误，鹅颈瓶设计允许空气自由进入。",
+              "B": "错误，普通烧瓶也能煮沸灭菌，这不是鹅颈瓶特有的目的。",
+              "C": "正确，弯曲颈部物理阻挡了微生物和颗粒物进入液体。",
+              "D": "错误，因为选项A和B的描述不准确。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.3802,
+            "stemRatio": 0.4191,
+            "optionRatio": 0.203,
+            "sourceQuestionId": "chapter-13-q-011",
+            "sourceChapterId": 13
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 4,
+          "prompt": "Which of the following is/are characteristic of all cellular organisms?",
+          "options": [
+            {
+              "key": "A",
+              "text": "Communication"
+            },
+            {
+              "key": "B",
+              "text": "Evolution"
+            },
+            {
+              "key": "C",
+              "text": "Motility"
+            },
+            {
+              "key": "D",
+              "text": "Communication, evolution, and motility"
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "所有细胞生物都通过遗传变异和自然选择经历进化，这是生命的普遍特征。运动能力和通讯机制并非所有生物共有，例如许多植物不能运动。",
+            "optionExplanations": {
+              "A": "通讯并非所有生物具备的普遍特征。",
+              "B": "正确，进化是所有细胞生物的共性。",
+              "C": "许多生物如植物缺乏运动能力。",
+              "D": "包含非普遍特征，因此不准确。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-01-q-009",
+            "sourceChapterId": 1
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 5,
+          "prompt": "Which individual compared rRNA sequences to generate the tree of life, establishing the three-domain system?",
+          "options": [
+            {
+              "key": "A",
+              "text": "Frederick Griffith"
+            },
+            {
+              "key": "B",
+              "text": "Carl Woese"
+            },
+            {
+              "key": "C",
+              "text": "Robert Hooke"
+            },
+            {
+              "key": "D",
+              "text": "Robert Koch"
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "卡尔·沃斯（Carl Woese）通过比较核糖体RNA（rRNA）序列，发现了古菌域，并建立了三域系统分类法。这是现代微生物系统发育学的基础。",
+            "optionExplanations": {
+              "A": "格里菲斯发现了细菌转化现象。",
+              "B": "正确，沃斯利用rRNA序列分析建立了三域系统。",
+              "C": "胡克最早观察并命名了细胞。",
+              "D": "科赫提出了确定病原体的科赫法则。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4047,
+            "stemRatio": 0.4434,
+            "optionRatio": 0.2286,
+            "sourceQuestionId": "chapter-24-q-027",
+            "sourceChapterId": 24
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 6,
+          "prompt": "Microorganisms play key roles in the cycling of important nutrients in plant nutrition, particularly those of",
+          "options": [
+            {
+              "key": "A",
+              "text": "carbon only."
+            },
+            {
+              "key": "B",
+              "text": "nitrogen only."
+            },
+            {
+              "key": "C",
+              "text": "sulfur only."
+            },
+            {
+              "key": "D",
+              "text": "carbon, nitrogen, and sulfur."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "微生物在生物地球化学循环中起关键作用，参与碳、氮和硫等多种重要营养元素的转化与循环。选项A、B和C虽然正确但不够全面，只有D涵盖了所有主要元素。",
+            "optionExplanations": {
+              "A": "仅涵盖碳循环，不全面。",
+              "B": "仅涵盖氮循环，不全面。",
+              "C": "仅涵盖硫循环，不全面。",
+              "D": "正确，涵盖了微生物参与的所有主要营养元素循环。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-01-q-028",
+            "sourceChapterId": 1
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 7,
+          "prompt": "Griffith's transformation in Streptococcus pneumoniae led to the discovery of",
+          "options": [
+            {
+              "key": "A",
+              "text": "DNA as the molecular basis of heredity."
+            },
+            {
+              "key": "B",
+              "text": "mRNA as the template for protein synthesis."
+            },
+            {
+              "key": "C",
+              "text": "polysaccharides as the major component of capsules."
+            },
+            {
+              "key": "D",
+              "text": "Archaea as the third domain of life."
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "格里菲斯的肺炎链球菌转化实验表明存在一种“转化因子”，后续研究证实该因子是DNA。这为确定DNA是遗传物质奠定了基础。",
+            "optionExplanations": {
+              "A": "正确，该实验开启了寻找遗传物质的研究，最终确认为DNA。",
+              "B": "错误，与mRNA作为蛋白质合成模板的功能无关。",
+              "C": "错误，虽然荚膜是多糖，但这并非转化实验的主要发现意义。",
+              "D": "错误，这与古菌域的发现无关。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4942,
+            "stemRatio": 0.5399,
+            "optionRatio": 0.2862,
+            "sourceQuestionId": "chapter-30-q-014",
+            "sourceChapterId": 30
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 8,
+          "prompt": "An organism of the genus Staphylococcus is , while an organism of the genus Escherichia is .",
+          "options": [
+            {
+              "key": "A",
+              "text": "spherical / rod shaped"
+            },
+            {
+              "key": "B",
+              "text": "rod shaped / coiled"
+            },
+            {
+              "key": "C",
+              "text": "spherical / coiled"
+            },
+            {
+              "key": "D",
+              "text": "soiled / spherical"
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "manual-correction",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "Staphylococcus 的名称来自葡萄串状球菌，细胞形态为球形；Escherichia coli 属于杆菌，细胞呈杆状。因此正确搭配是 spherical / rod shaped。",
+            "optionExplanations": {
+              "A": "正确，Staphylococcus 为球菌，Escherichia 为杆菌。",
+              "B": "错误，Staphylococcus 不是杆状，Escherichia 也不是螺旋形。",
+              "C": "错误，Escherichia 不是螺旋形。",
+              "D": "错误，soiled 不是细菌形态描述，且顺序也不对。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "high",
+            "score": 0.9421,
+            "stemRatio": 0.9326,
+            "optionRatio": 0.9853,
+            "sourceQuestionId": "chapter-02-q-001",
+            "sourceChapterId": 2
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 9,
+          "prompt": "When medical devices are left in the body, bacteria may grow on them as , which makes them especially resistant to treatment.",
+          "options": [
+            {
+              "key": "A",
+              "text": "biofilms"
+            },
+            {
+              "key": "B",
+              "text": "liquids"
+            },
+            {
+              "key": "C",
+              "text": "populations"
+            },
+            {
+              "key": "D",
+              "text": "communities"
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "gpt-5-manual-audit",
+            "generatedAt": "2026-06-11T00:00:00+08:00",
+            "explanation": "长期留置在体内的医疗器械表面容易被细菌附着并形成生物膜。生物膜中的细胞被胞外聚合物基质保护，代谢状态也更不均一，因此对抗生素和宿主免疫清除更耐受。",
+            "optionExplanations": {
+              "A": "正确。Biofilms 是附着在表面并被基质包裹的微生物群体，是医疗器械相关感染的重要原因。",
+              "B": "错误。Liquids 只是物理状态，不能解释附着、保护和耐药性增强。",
+              "C": "错误。Populations 只表示种群数量概念，不特指表面附着和生物膜结构。",
+              "D": "错误。Communities 可泛指群落，但本题强调医疗器械表面的耐受性结构，专门术语是 biofilms。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-01-q-052",
+            "sourceChapterId": 1
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 10,
+          "prompt": "Archaea and Bacteria are unified as prokaryotes in lacking which Eukarya contain, such as mitochondria.",
+          "options": [
+            {
+              "key": "A",
+              "text": "membranes"
+            },
+            {
+              "key": "B",
+              "text": "nuclei"
+            },
+            {
+              "key": "C",
+              "text": "membrane-enclosed organelles"
+            },
+            {
+              "key": "D",
+              "text": "nuclei and membrane-enclosed organelles"
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "原核生物（古菌和细菌）与真核生物的主要区别在于缺乏细胞核以及膜包被的细胞器（如线粒体）。选项D完整概括了这两大缺失特征。",
+            "optionExplanations": {
+              "A": "原核生物有细胞膜，并非缺乏所有膜。",
+              "B": "仅提到细胞核，未涵盖线粒体等细胞器。",
+              "C": "仅提到细胞器，未涵盖细胞核。",
+              "D": "正确，同时指出了无核和无膜包被细胞器。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-01-q-045",
+            "sourceChapterId": 1
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 11,
+          "prompt": "The cell wall of a gram-positive bacterium is composed of a thick layer.",
+          "options": [
+            {
+              "key": "A",
+              "text": "protein"
+            },
+            {
+              "key": "B",
+              "text": "poly-b-hydroxybutyric acid (PHB)"
+            },
+            {
+              "key": "C",
+              "text": "lipopolysaccharides (LPS)"
+            },
+            {
+              "key": "D",
+              "text": "peptidoglycan"
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "革兰氏阳性菌细胞壁的主要特征是含有厚厚的肽聚糖层，能保留结晶紫染料。脂多糖存在于革兰氏阴性菌的外膜中。",
+            "optionExplanations": {
+              "A": "蛋白质存在但不是定义性的厚层结构。",
+              "B": "PHB是胞内储存颗粒，非细胞壁成分。",
+              "C": "脂多糖特异性存在于革兰氏阴性菌。",
+              "D": "正确，厚肽聚糖层是阳性菌的核心特征。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 0.9975,
+            "stemRatio": 1.0,
+            "optionRatio": 0.9864,
+            "sourceQuestionId": "chapter-02-q-014",
+            "sourceChapterId": 2
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 12,
+          "prompt": "Which of the following statements is TRUE?",
+          "options": [
+            {
+              "key": "A",
+              "text": "Fimbridd are generally longer and less numerous than flagella."
+            },
+            {
+              "key": "B",
+              "text": "Fimbriae are involved in genetic exchange between cells."
+            },
+            {
+              "key": "C",
+              "text": "Hami are common in Bacteria but not found in Archaea."
+            },
+            {
+              "key": "D",
+              "text": "Fimbriae are usually shorter than flagella, whereas pili are involved in genetic exchange."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "菌毛通常比鞭毛短且数量多，主要用于附着；而性菌毛较长，专门用于遗传物质交换（接合）。哈米主要存在于古菌中。该选项准确区分了菌毛和菌毛的功能及形态差异。",
+            "optionExplanations": {
+              "A": "错误，菌毛通常比鞭毛短且更多。",
+              "B": "错误，遗传交换主要由性菌毛介导。",
+              "C": "错误，哈米常见于古菌而非细菌。",
+              "D": "正确，准确描述了菌毛和菌毛的区别。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 0.9985,
+            "stemRatio": 1.0,
+            "optionRatio": 0.9918,
+            "sourceQuestionId": "chapter-02-q-021",
+            "sourceChapterId": 2
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 13,
+          "prompt": "Transport proteins located in the cytoplasmic membrane are necessary when",
+          "options": [
+            {
+              "key": "A",
+              "text": "diffusion will not allow adequate amounts of a substance to enter the cell."
+            },
+            {
+              "key": "B",
+              "text": "movement into the cell is against a concentration gradient."
+            },
+            {
+              "key": "C",
+              "text": "the level of nutrients in nature is very low."
+            },
+            {
+              "key": "D",
+              "text": "nutrient concentration is very low in the environment, transport is needed against the concentration gradient, or diffusion is not possible."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "当物质无法自由扩散、需逆浓度梯度或环境浓度极低时，必须依赖膜转运蛋白进行主动运输或促进扩散。选项D涵盖了所有需要转运蛋白的情形。",
+            "optionExplanations": {
+              "A": "仅提及扩散不足，未涵盖逆浓度梯度的情况。",
+              "B": "仅提及逆梯度，未涵盖低浓度顺梯度但速率慢的情况。",
+              "C": "描述模糊，未指明具体的运输机制需求。",
+              "D": "正确，全面概括了需要转运蛋白的三种条件。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 0.9906,
+            "stemRatio": 1.0,
+            "optionRatio": 0.9476,
+            "sourceQuestionId": "chapter-02-q-009",
+            "sourceChapterId": 2
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 14,
+          "prompt": "Based on the table of attributes given below, which of the following statements are FALSE about the two organisms? Characteristic Bacterium A Bacterium B Endospore formation yes no Capsule no yes Type IV pili yes no Flagella no no Morphology bacillus bacillus",
+          "options": [
+            {
+              "key": "A",
+              "text": "Bacterium A is more resistant to heat and ultraviolet light."
+            },
+            {
+              "key": "B",
+              "text": "Bacterium B likely forms a slime layer better than Bacterium A."
+            },
+            {
+              "key": "C",
+              "text": "Bacterium B is likely to exhibit motility."
+            },
+            {
+              "key": "D",
+              "text": "Both bacteria may attach to surfaces."
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "运动能力通常依赖鞭毛或 IV 型菌毛，表中两种细菌均缺乏这些结构。芽孢确实赋予细菌 A 耐热和抗紫外线能力。荚膜有助于形成粘液层并促进附着。因此关于细菌 B 运动的陈述是错误的。",
+            "optionExplanations": {
+              "A": "该陈述正确，芽孢具有极强的抗逆性。",
+              "B": "该陈述正确，荚膜可形成粘液层保护细菌。",
+              "C": "错误陈述，因缺乏运动器官，细菌 B 不具运动性。",
+              "D": "该陈述正确，IV 型菌毛和荚膜均有助于附着。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-02-q-040",
+            "sourceChapterId": 2
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 15,
+          "prompt": "A chemoorganotroph and a chemolithotroph in the same environment would NOT compete for",
+          "options": [
+            {
+              "key": "A",
+              "text": "oxygen."
+            },
+            {
+              "key": "B",
+              "text": "carbon."
+            },
+            {
+              "key": "C",
+              "text": "nitrogen."
+            },
+            {
+              "key": "D",
+              "text": "phosphorous."
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "化能异养菌利用有机碳，而化能自养菌利用无机碳（如 CO2），两者的碳源不同。它们在其他营养元素如氮、磷或氧气上可能存在竞争。因此它们不会竞争碳源。",
+            "optionExplanations": {
+              "A": "错误，两者若需氧呼吸都会竞争氧气。",
+              "B": "正确，碳源类型不同（有机 vs 无机），互不竞争。",
+              "C": "错误，氮源通常是通用的（如铵盐、硝酸盐）。",
+              "D": "错误，磷源也是通用的生长因子。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-03-q-020",
+            "sourceChapterId": 3
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 16,
+          "prompt": "If ∆Go' is positive, the reaction is",
+          "options": [
+            {
+              "key": "A",
+              "text": "exergonic and requires the input of energy."
+            },
+            {
+              "key": "B",
+              "text": "endergonic and requires the input of energy."
+            },
+            {
+              "key": "C",
+              "text": "exergonic and energy will be released."
+            },
+            {
+              "key": "D",
+              "text": "endergonic and energy will be released."
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "当吉布斯自由能变化（∆Go'）为正值时，反应是非自发的吸能反应（endergonic）。这意味着反应需要输入能量才能进行。",
+            "optionExplanations": {
+              "A": "错误，放能反应（exergonic）对应负∆G。",
+              "B": "正确，正∆G代表吸能反应，需能量输入。",
+              "C": "错误，放能反应释放能量且∆G为负值。",
+              "D": "错误，吸能反应不释放能量，而是消耗能量。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "review",
+            "score": 0.8758,
+            "stemRatio": 0.8485,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-03-q-013",
+            "sourceChapterId": 3
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 17,
+          "prompt": "If an oxidation reaction occurs,",
+          "options": [
+            {
+              "key": "A",
+              "text": "simultaneous reduction of a different compound will also occur, because electrons do not generally exist alone in solution."
+            },
+            {
+              "key": "B",
+              "text": "another oxidation reaction will occur for a complete reaction, because one oxidation event is considered a half reaction."
+            },
+            {
+              "key": "C",
+              "text": "a cell is undergoing aerobic respiration, because oxygen is being used."
+            },
+            {
+              "key": "D",
+              "text": "a reduction reaction would not occur, because they are opposite reaction mechanisms."
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "氧化还原反应总是成对发生，电子不会单独存在，失去电子必伴随另一物质获得电子。选项 B、C 和 D 错误地认为氧化可以独立发生或与氧气使用直接绑定。因此 A 正确描述了氧化还原的耦合性。",
+            "optionExplanations": {
+              "A": "正确，电子守恒要求氧化必伴随还原。",
+              "B": "错误，氧化半反应必须与还原半反应配对。",
+              "C": "错误，无氧条件下也可发生氧化反应。",
+              "D": "错误，氧化和还原是耦合的，不可能只发生一个。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-03-q-018",
+            "sourceChapterId": 3
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 18,
+          "prompt": "An organism aerobically respires glucose to obtain energy. Glucose is the and oxygen is the",
+          "options": [
+            {
+              "key": "A",
+              "text": "Electron donor/electron acceptor."
+            },
+            {
+              "key": "B",
+              "text": "Electron donor/electron donor."
+            },
+            {
+              "key": "C",
+              "text": "Electron acceptor/electron donor."
+            },
+            {
+              "key": "D",
+              "text": "Electron acceptor/electron acceptor."
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "在有氧呼吸中，葡萄糖被氧化失去电子，作为电子供体。氧气接受电子被还原，作为最终电子受体。因此葡萄糖是供体，氧气是受体。",
+            "optionExplanations": {
+              "A": "正确，葡萄糖提供电子，氧气接受电子。",
+              "B": "错误，氧气不是电子供体。",
+              "C": "错误，角色颠倒。",
+              "D": "错误，葡萄糖不是电子受体。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4247,
+            "stemRatio": 0.452,
+            "optionRatio": 0.3005,
+            "sourceQuestionId": "chapter-13-q-007",
+            "sourceChapterId": 13
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 19,
+          "prompt": "An organism that oxidizes hydrogen and fixes CO2 is a",
+          "options": [
+            {
+              "key": "A",
+              "text": "Chemoorganoheterotroph."
+            },
+            {
+              "key": "B",
+              "text": "Photoorganoheterotroph."
+            },
+            {
+              "key": "C",
+              "text": "Chemolithoautotroph."
+            },
+            {
+              "key": "D",
+              "text": "Photolithoautotroph."
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "利用无机物（氢气）氧化获取能量属于化能营养，固定二氧化碳说明碳源为无机碳，因此是化能无机自养生物。该分类对应Chemolithoautotroph。",
+            "optionExplanations": {
+              "A": "错误，有机物作为能源和碳源。",
+              "B": "错误，光能作为能源。",
+              "C": "正确，化学能、无机电子供体、无机碳源。",
+              "D": "错误，光能作为能源。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4753,
+            "stemRatio": 0.5169,
+            "optionRatio": 0.2861,
+            "sourceQuestionId": "chapter-33-q-010",
+            "sourceChapterId": 33
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 20,
+          "prompt": "Enzymes catalyze chemical reactions by",
+          "options": [
+            {
+              "key": "A",
+              "text": "lowering the activation energy, thus increasing the rate of the reaction."
+            },
+            {
+              "key": "B",
+              "text": "increasing the activation energy, thus increasing the rate of the reaction."
+            },
+            {
+              "key": "C",
+              "text": "making the reaction exergonic."
+            },
+            {
+              "key": "D",
+              "text": "releasing free energy."
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "酶通过降低反应的活化能来加速化学反应速率，但不改变反应的自由能变化或平衡状态。这是酶催化作用的基本原理。",
+            "optionExplanations": {
+              "A": "正确，降低活化能加速反应。",
+              "B": "错误，增加活化能会减慢反应。",
+              "C": "错误，酶不改变反应的热力学性质。",
+              "D": "错误，酶本身不释放自由能。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4724,
+            "stemRatio": 0.507,
+            "optionRatio": 0.3145,
+            "sourceQuestionId": "chapter-03-q-013",
+            "sourceChapterId": 3
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 21,
+          "prompt": "Which statement is FALSE regarding enzymes?",
+          "options": [
+            {
+              "key": "A",
+              "text": "All enzymatic reactions are theoretically reversible."
+            },
+            {
+              "key": "B",
+              "text": "Endergonic reactions are coupled with exergonic reactions to gain enough energy to occur."
+            },
+            {
+              "key": "C",
+              "text": "Prosthetic groups and coenzymes are small nonprotein molecules that are a part of many enzymes."
+            },
+            {
+              "key": "D",
+              "text": "The part of the enzyme where the substrate binds is called the redox site."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "酶与底物结合的部位称为活性位点（active site），而非氧化还原位点。其他选项关于可逆性、能量偶联及辅因子的描述均符合生化原理。",
+            "optionExplanations": {
+              "A": "正确，理论上大多数酶促反应是可逆的。",
+              "B": "正确，吸能反应常与放能反应偶联。",
+              "C": "正确，辅基和辅酶是非蛋白小分子。",
+              "D": "错误，结合部位叫活性位点。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.6824,
+            "stemRatio": 0.764,
+            "optionRatio": 0.3104,
+            "sourceQuestionId": "chapter-18-q-014",
+            "sourceChapterId": 18
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 22,
+          "prompt": "The exact composition of media is known. media inhibit the growth of some microbes. media are used to culture fastidious microbes, particularly pathogens.",
+          "options": [
+            {
+              "key": "A",
+              "text": "complex / Differential / Selective"
+            },
+            {
+              "key": "B",
+              "text": "complex / Enriched / Differential"
+            },
+            {
+              "key": "C",
+              "text": "defined / Selective / Enriched"
+            },
+            {
+              "key": "D",
+              "text": "defined / Enriched / Differential"
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "成分明确的培养基称为限定培养基；抑制某些微生物生长的为选择性培养基；用于培养苛养菌的为富集培养基。顺序对应定义、选择、富集。",
+            "optionExplanations": {
+              "A": "错误，成分明确不是复杂培养基。",
+              "B": "错误，同上。",
+              "C": "正确，对应定义、选择、富集。",
+              "D": "错误，顺序不对。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4197,
+            "stemRatio": 0.4719,
+            "optionRatio": 0.1817,
+            "sourceQuestionId": "chapter-16-q-038",
+            "sourceChapterId": 16
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 23,
+          "prompt": "The time interval required for the formation of two cells from one is called the",
+          "options": [
+            {
+              "key": "A",
+              "text": "generation time."
+            },
+            {
+              "key": "B",
+              "text": "growth time."
+            },
+            {
+              "key": "C",
+              "text": "growth rate."
+            },
+            {
+              "key": "D",
+              "text": "division rate."
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "一个细胞分裂成两个细胞所需的时间间隔被称为代时（generation time）。选项 B、C、D 并非描述该特定时间间隔的标准术语。代时是衡量细菌生长速度的关键指标。",
+            "optionExplanations": {
+              "A": "正确。代时是指细胞数量翻倍所需的时间。",
+              "B": "生长时间通常指整个培养周期，非特指一代。",
+              "C": "生长速率指单位时间内的增长量，非时间间隔。",
+              "D": "分裂速率是频率概念，非时间间隔。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-05-q-003",
+            "sourceChapterId": 5
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 24,
+          "prompt": "When attempting to determine viable cell counts of a heat-sensitive bacterial isolate, which cell counting method should be avoided?",
+          "options": [
+            {
+              "key": "A",
+              "text": "Spread-plate method"
+            },
+            {
+              "key": "B",
+              "text": "Pour-plate method"
+            },
+            {
+              "key": "C",
+              "text": "Live staining and direct counting with a microscope"
+            },
+            {
+              "key": "D",
+              "text": "Both spread- and pour-plate methods"
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "倾注平板法需要将熔化的琼脂冷却至约 45-50°C 后混合，高温可能杀死热敏感细菌。涂布平板法使用已凝固的琼脂表面，温度较低。显微镜计数不涉及加热步骤。因此应避免使用倾注平板法。",
+            "optionExplanations": {
+              "A": "涂布平板法在室温或低温下进行，对热敏感菌较安全。",
+              "B": "正确。倾注法涉及温热琼脂，可能损伤热敏感菌。",
+              "C": "显微镜计数通常使用冷染色剂，不涉及高温。",
+              "D": "涂布法是安全的，无需避免。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-05-q-007",
+            "sourceChapterId": 5
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 25,
+          "prompt": "A microbe growing in a refrigerator is likely",
+          "options": [
+            {
+              "key": "A",
+              "text": "psychrophilic."
+            },
+            {
+              "key": "B",
+              "text": "mesophilic."
+            },
+            {
+              "key": "C",
+              "text": "psychrotolerant or psychrophilic."
+            },
+            {
+              "key": "D",
+              "text": "ayperthermophilic."
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "能够在冰箱低温环境下生长的微生物主要包括嗜冷菌和耐冷菌。嗜冷菌的最适生长温度较低，而耐冷菌虽偏好较高温度但也能在低温下存活。因此，这两类微生物都有可能出现在冷藏环境中。",
+            "optionExplanations": {
+              "A": "嗜冷菌可以生长，但并非唯一可能，耐冷菌也可。",
+              "B": "嗜中温菌通常不能在冰箱温度下显著生长。",
+              "C": "涵盖了两类能在低温下存活的微生物类型，最为准确。",
+              "D": "超嗜热菌需要在高温下生长，无法在冰箱存活。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 0.9974,
+            "stemRatio": 1.0,
+            "optionRatio": 0.9853,
+            "sourceQuestionId": "chapter-05-q-016",
+            "sourceChapterId": 5
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 26,
+          "prompt": "If heterotrophic bacteria were grown in a minimal glucose medium and transferred during exponential growth phase into complex LB medium, the cells would have a relatively",
+          "options": [
+            {
+              "key": "A",
+              "text": "short exponential phase because it already is in exponential growth phase."
+            },
+            {
+              "key": "B",
+              "text": "high growth yield compared to cells transferred during stationary growth phase."
+            },
+            {
+              "key": "C",
+              "text": "long lag phase because it has to adjust to a different chemical environment/medium."
+            },
+            {
+              "key": "D",
+              "text": "short lag phase because of the abundance of available nutrients."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "处于指数生长期的细菌代谢旺盛，当被转移到营养丰富的LB培养基时，由于新环境中提供了充足的现成营养物质，细胞无需重新合成大量酶系即可快速分裂。因此，相比于饥饿或静止期细胞，它们经历的滞后期非常短。",
+            "optionExplanations": {
+              "A": "指数期长度受营养限制影响，与当前是否处于指数期无直接因果关系。",
+              "B": "生长得率取决于碳源转化效率，转移时机不是决定得率高低的唯一因素。",
+              "C": "从简单培养基转入复杂培养基通常减少适应时间，不会导致长滞后期。",
+              "D": "对数期细胞活性高，LB培养基营养丰富，细胞可迅速恢复分裂，滞后期短。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.3846,
+            "stemRatio": 0.4373,
+            "optionRatio": 0.1447,
+            "sourceQuestionId": "chapter-17-q-018",
+            "sourceChapterId": 17
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 27,
+          "prompt": "Which of the following statements is FALSE?,",
+          "options": [
+            {
+              "key": "A",
+              "text": "In the death phase, bacterial growth may cease as a result of oxygen and nutrient depletion."
+            },
+            {
+              "key": "B",
+              "text": "The generation time of bacteria may vary from species to species."
+            },
+            {
+              "key": "C",
+              "text": "Bacteria typically divide by binary fission, producing two daughter cells."
+            },
+            {
+              "key": "D",
+              "text": "In the lag phase, cell death exceeds cell division."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "迟缓期是细菌适应新环境的阶段，此时细胞体积增大但分裂尚未开始，死亡率并未超过分裂率。死亡相才是细胞死亡超过分裂的时期。其他选项关于代时、二分裂和死亡相原因的描述均正确。",
+            "optionExplanations": {
+              "A": "正确，死亡期确实因缺氧缺营养导致生长停止。",
+              "B": "正确，不同细菌代时差异很大。",
+              "C": "正确，二分裂是典型繁殖方式。",
+              "D": "错误，迟缓期主要是代谢活跃准备分裂，而非死亡超过分裂。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-05-q-032",
+            "sourceChapterId": 5
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 28,
+          "prompt": "A bacterium possessing will produce O2 bubbles when placed in the presence of hydrogen peroxide.",
+          "options": [
+            {
+              "key": "A",
+              "text": "catalase"
+            },
+            {
+              "key": "B",
+              "text": "superoxide dismutase"
+            },
+            {
+              "key": "C",
+              "text": "superoxide reductase"
+            },
+            {
+              "key": "D",
+              "text": "peroxidase"
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "过氧化氢酶（catalase）能将过氧化氢分解为水和氧气，产生可见气泡。超氧化物歧化酶处理的是超氧阴离子，产物是过氧化氢。过氧化物酶通常利用电子供体还原过氧化氢，不主要释放氧气气体。因此，产生氧气气泡是过氧化氢酶的特征。",
+            "optionExplanations": {
+              "A": "正确，催化过氧化氢分解产生氧气气泡。",
+              "B": "错误，SOD 将超氧阴离子转化为过氧化氢，不直接产气。",
+              "C": "错误，超氧化物还原酶不是标准术语且作用不同。",
+              "D": "错误，过氧化物酶通常消耗电子供体还原过氧化氢，不释放氧气。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-05-q-022",
+            "sourceChapterId": 5
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 29,
+          "prompt": "The sigma subunit of RNA polymerase functions to",
+          "options": [
+            {
+              "key": "A",
+              "text": "form RNA polymerase-DNA complexes."
+            },
+            {
+              "key": "B",
+              "text": "locate, recognize, and bind to promoter regions."
+            },
+            {
+              "key": "C",
+              "text": "terminate mRNA synthesis of genes at their stop sites."
+            },
+            {
+              "key": "D",
+              "text": "do both A and B."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "σ亚基的主要作用是识别启动子序列并引导RNA聚合酶全酶与之结合，从而形成特异的转录起始复合物。因此，它既负责定位和识别启动子（选项B），也协助形成RNA聚合酶与DNA的稳定复合物（选项A）。转录终止则由其他机制介导，与σ亚基无关。故选项D涵盖了其完整功能。",
+            "optionExplanations": {
+              "A": "σ亚基增强了聚合酶与DNA的结合能力，促进特异性复合物的形成。",
+              "B": "识别启动子是σ亚基最核心的特异性功能，确保转录在正确位置开始。",
+              "C": "转录终止过程涉及ρ因子或内在终止子结构，并非σ亚基的功能。",
+              "D": "综合了A和B的正确描述，因为σ亚基通过识别启动子来促成复合物的形成。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.6594,
+            "stemRatio": 0.7381,
+            "optionRatio": 0.3011,
+            "sourceQuestionId": "chapter-04-q-035",
+            "sourceChapterId": 4
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 30,
+          "prompt": "Which statement below provides an explanation of why a lagging strand (rather than two leading strands) exists during DNA replication?",
+          "options": [
+            {
+              "key": "A",
+              "text": "New nucleotides can be added only to a 3' (-OH) end."
+            },
+            {
+              "key": "B",
+              "text": "Only one primer can exist at a time."
+            },
+            {
+              "key": "C",
+              "text": "There is only one DNA polymerase per cell."
+            },
+            {
+              "key": "D",
+              "text": "There is only one replisome per cell."
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "DNA聚合酶只能向新链的3'端添加核苷酸，决定了合成方向只能是5'至3'。由于DNA双螺旋结构是反向平行的，复制叉移动时只有一条链能连续合成，另一条必须分段合成形成后随链。",
+            "optionExplanations": {
+              "A": "正确，这是DNA合成的基本化学限制，导致两条链合成方式不同。",
+              "B": "错误，后随链需要多个引物来启动冈崎片段。",
+              "C": "错误，细胞内存在多种DNA聚合酶。",
+              "D": "错误，复制体的数量不是决定单双链合成模式的原因。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4608,
+            "stemRatio": 0.4854,
+            "optionRatio": 0.3487,
+            "sourceQuestionId": "chapter-04-q-011",
+            "sourceChapterId": 4
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 31,
+          "prompt": "DNA-binding proteins interact predominantly within which portion of a double-stranded DNA helix?",
+          "options": [
+            {
+              "key": "A",
+              "text": "Major groove"
+            },
+            {
+              "key": "B",
+              "text": "Minor groove"
+            },
+            {
+              "key": "C",
+              "text": "3' end"
+            },
+            {
+              "key": "D",
+              "text": "Supercoil"
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "DNA 结合蛋白主要通过识别大沟中的氢键供体和受体模式来特异性结合序列。大沟暴露了更多的化学信息，使得区分不同的碱基对成为可能。小沟虽然也可结合，但特异性识别主要发生在大沟。",
+            "optionExplanations": {
+              "A": "大沟暴露更多碱基边缘信息，利于特异性识别。",
+              "B": "小沟信息较少，特异性识别能力较弱。",
+              "C": "末端不是主要的相互作用区域。",
+              "D": "超螺旋是高级结构，不是局部结合位点。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-04-q-003",
+            "sourceChapterId": 4
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 32,
+          "prompt": "Supercoiling is important for DNA structure because",
+          "options": [
+            {
+              "key": "A",
+              "text": "it holds together the antiparallel strands of DNA in the double helix."
+            },
+            {
+              "key": "B",
+              "text": "it provides energy for transcription."
+            },
+            {
+              "key": "C",
+              "text": "it condenses The DNA so that it can fit inside the cell."
+            },
+            {
+              "key": "D",
+              "text": "it prevents RNA from pairing with DNA in the double helix."
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "细菌染色体 DNA 长度远超细胞尺寸，超螺旋结构能有效压缩 DNA，使其能够容纳在细胞内。虽然它也影响转录活性，但其首要的结构意义在于空间压缩。维持双链结合主要靠氢键，而非超螺旋。",
+            "optionExplanations": {
+              "A": "双链结合主要靠氢键和疏水作用。",
+              "B": "超螺旋储存能量，但不是转录的主要驱动力来源。",
+              "C": "压缩体积是超螺旋的关键功能。",
+              "D": "防止 RNA 配对不是超螺旋的主要目的。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-04-q-005",
+            "sourceChapterId": 4
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 33,
+          "prompt": "Many pharmaceutical drugs specifically inhibit transcription in Bacteria but not Archaea or Eukarya. Why would drugs that inhibit transcription in only affect Bacteria and not Archaea even though they are both prokaryotes?",
+          "options": [
+            {
+              "key": "A",
+              "text": "Archaea and Eukarya have very similar ribosomes that are different than bacterial ribosomes."
+            },
+            {
+              "key": "B",
+              "text": "Bacteria lack a nucleus."
+            },
+            {
+              "key": "C",
+              "text": "Archaea lack operons."
+            },
+            {
+              "key": "D",
+              "text": "Archaea and Eukarya have very similar RNA polymerases that are different than bacterial RNA polymerases."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "尽管古菌和细菌都是原核生物，但古菌的转录机制（特别是 RNA 聚合酶）与真核生物更为相似，而与细菌差异较大。针对细菌 RNA 聚合酶的抑制剂无法结合古菌的酶，因此不影响古菌。这反映了进化上的亲缘关系差异。",
+            "optionExplanations": {
+              "A": "题目问转录，核糖体涉及翻译。",
+              "B": "两者都无核膜，但这与药物靶点无关。",
+              "C": "古菌也有操纵子结构。",
+              "D": "RNA 聚合酶结构的差异决定了药物的选择性。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "high",
+            "score": 0.9944,
+            "stemRatio": 0.9931,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-04-q-006",
+            "sourceChapterId": 4
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 34,
+          "prompt": "How are plasmids different than chromosomes?",
+          "options": [
+            {
+              "key": "A",
+              "text": "Plasmids are always small, linear pieces of DNA."
+            },
+            {
+              "key": "B",
+              "text": "Plasmids are composed of single-stranded DNA."
+            },
+            {
+              "key": "C",
+              "text": "Plasmids contain genes that are NOT essential for cellular growth and replication."
+            },
+            {
+              "key": "D",
+              "text": "Plasmids carry unimportant genes that are of little significance for the ecology and metabolism of an organism."
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "质粒是染色体外的小型 DNA，通常呈环状双链结构，而非总是线性。它们携带的基因对抗生素抗性等有利性状重要，但对细胞基本生长和复制并非必需。染色体则包含维持生命所必需的核心基因。",
+            "optionExplanations": {
+              "A": "质粒通常是环状双链 DNA，也有线性。",
+              "B": "质粒通常是双链 DNA。",
+              "C": "质粒基因非生存必需，这是关键区别。",
+              "D": "质粒基因可能对生态适应很重要，并非无意义。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-04-q-007",
+            "sourceChapterId": 4
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 35,
+          "prompt": "Transfer RNA (tRNA) molecules",
+          "options": [
+            {
+              "key": "A",
+              "text": "function to transfer ribonucleotides to RNA polymerase during transcription."
+            },
+            {
+              "key": "B",
+              "text": "function to transfer the correct amino acids to the ribosome during translation."
+            },
+            {
+              "key": "C",
+              "text": "containlodons that bind to ribosomes during translation."
+            },
+            {
+              "key": "D",
+              "text": "are only present in the nucleus or eukaryotes."
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "tRNA 的主要功能是在翻译过程中将正确的氨基酸运送到核糖体。每个 tRNA 携带特定氨基酸并通过反密码子识别 mRNA 上的密码子。它不在转录中转移核苷酸。",
+            "optionExplanations": {
+              "A": "错误，tRNA 转移氨基酸而非核苷酸。",
+              "B": "正确，描述了 tRNA 的核心功能。",
+              "C": "错误，mRNA 含有密码子，tRNA 含反密码子。",
+              "D": "错误，tRNA 存在于细胞质中。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 0.9988,
+            "stemRatio": 1.0,
+            "optionRatio": 0.9932,
+            "sourceQuestionId": "chapter-04-q-016",
+            "sourceChapterId": 4
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 36,
+          "prompt": "You are studying a protein in Salmonella typhimurtum that you believe is a toxin. Whenever you attempt to purify the protein from lysed cell cultures, you get two forms of the protein. One form is smaller than the other and is missing 15 amino acids from the N-terminus compared to thelarger form. This leads you to hypothesize that",
+          "options": [
+            {
+              "key": "A",
+              "text": "there are two termination sites in the mRNA."
+            },
+            {
+              "key": "B",
+              "text": "the protein requires chaperonins to fold properly."
+            },
+            {
+              "key": "C",
+              "text": "the protein is secreted and folds outside of the cell."
+            },
+            {
+              "key": "D",
+              "text": "you need to redo the experiment because there should only be one form."
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "许多细菌毒素在分泌前会带有 N 端的信号肽序列，用于引导蛋白穿过细胞膜。在分泌过程中，信号肽会被蛋白酶切除，导致成熟蛋白比前体蛋白短。因此，观察到缺失 N 端氨基酸的较小形式表明该蛋白被分泌到细胞外。",
+            "optionExplanations": {
+              "A": "终止位点不同会导致长度差异，但通常不涉及 N 端特异性缺失 15AA 的模式。",
+              "B": "伴侣蛋白帮助折叠，不改变氨基酸序列长度。",
+              "C": "正确。信号肽切除是分泌蛋白成熟的常见机制。",
+              "D": "结果符合生物学规律，无需重做。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "high",
+            "score": 0.9962,
+            "stemRatio": 0.9954,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-04-q-043",
+            "sourceChapterId": 4
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 37,
+          "prompt": "Viral genomes can be",
+          "options": [
+            {
+              "key": "A",
+              "text": "linear or circular."
+            },
+            {
+              "key": "B",
+              "text": "double-stranded or single-stranded."
+            },
+            {
+              "key": "C",
+              "text": "composed of RNA or DNA."
+            },
+            {
+              "key": "D",
+              "text": "all of the above."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "病毒基因组具有极高的多样性，其遗传物质既可以是DNA也可以是RNA，结构上可为单链或双链，形态上可为线性或环状。因此前三项描述均正确。",
+            "optionExplanations": {
+              "A": "部分病毒基因组呈环状，其余多为线性。",
+              "B": "病毒核酸存在单链和双链两种形式。",
+              "C": "病毒根据遗传物质不同分为DNA病毒和RNA病毒。",
+              "D": "综合上述特征，该选项涵盖了病毒基因组的所有可能性。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4965,
+            "stemRatio": 0.55,
+            "optionRatio": 0.2527,
+            "sourceQuestionId": "chapter-08-q-001",
+            "sourceChapterId": 8
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 38,
+          "prompt": "Viral replication is",
+          "options": [
+            {
+              "key": "A",
+              "text": "independent of the host cell's DNA but dependent on the host cell's enzymes and metabolism."
+            },
+            {
+              "key": "B",
+              "text": "independent of both the host cell's DNA and the host cell's enzymes and metabolism."
+            },
+            {
+              "key": "C",
+              "text": "dependent on the host cell's DNA and RNA."
+            },
+            {
+              "key": "D",
+              "text": "dependent on the host cell's DNA, RNA, enzymes, and metabolism."
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "病毒缺乏独立的代谢系统，必须依赖宿主细胞的酶和代谢机制进行复制。然而，病毒的遗传物质复制通常基于其自身的核酸模板，而非宿主的 DNA。这使得病毒能够独立于宿主基因组进行增殖。",
+            "optionExplanations": {
+              "A": "正确，依赖宿主酶和代谢，但不依赖宿主 DNA 模板。",
+              "B": "错误，病毒高度依赖宿主的酶和代谢。",
+              "C": "错误，病毒通常使用自身核酸作为模板。",
+              "D": "错误，病毒复制不直接依赖宿主 DNA 序列。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-08-q-001",
+            "sourceChapterId": 8
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 39,
+          "prompt": "Viral replication occurs",
+          "options": [
+            {
+              "key": "A",
+              "text": "intracellularly."
+            },
+            {
+              "key": "B",
+              "text": "extracellularly."
+            },
+            {
+              "key": "C",
+              "text": "both intracellularly and extracellularly."
+            },
+            {
+              "key": "D",
+              "text": "either intracellularly or extracellularly, depending on the virus involved."
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "病毒是专性细胞内寄生生物，其复制过程必须在宿主细胞内进行。这包括核酸的复制和蛋白质的合成。组装后的病毒颗粒释放到细胞外，但复制本身发生在细胞内。",
+            "optionExplanations": {
+              "A": "正确，病毒必须在活细胞内完成复制周期。",
+              "B": "错误，病毒无法在细胞外独立复制。",
+              "C": "错误，复制仅限于细胞内。",
+              "D": "错误，所有病毒复制均在细胞内开始。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-08-q-002",
+            "sourceChapterId": 8
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 40,
+          "prompt": "Cellular recepters may be composed of",
+          "options": [
+            {
+              "key": "A",
+              "text": "proteins."
+            },
+            {
+              "key": "B",
+              "text": "carbohydrates."
+            },
+            {
+              "key": "C",
+              "text": "lipids."
+            },
+            {
+              "key": "D",
+              "text": "combinations of proteins, carbohydrates, and/or lipids."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "细胞受体成分多样，包括蛋白质、糖类、脂质或其复合物。病毒利用这些分子作为吸附位点。单一成分描述不全面。",
+            "optionExplanations": {
+              "A": "不完整，仅是部分受体成分。",
+              "B": "不完整，仅是部分受体成分。",
+              "C": "不完整，仅是部分受体成分。",
+              "D": "正确，涵盖了所有可能的组合形式。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "high",
+            "score": 0.9778,
+            "stemRatio": 0.973,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-08-q-009",
+            "sourceChapterId": 8
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 41,
+          "prompt": "A prophage replicates",
+          "options": [
+            {
+              "key": "A",
+              "text": "along with its host while the lytic genes are expressed."
+            },
+            {
+              "key": "B",
+              "text": "along with its host while the lytic genes are not expressed."
+            },
+            {
+              "key": "C",
+              "text": "independently of its host while the lytic genes are expressed."
+            },
+            {
+              "key": "D",
+              "text": "independently of its host while the lytic genes are not expressed."
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "前噬菌体整合在宿主基因组中，随宿主复制。溶原状态下裂解基因被抑制。",
+            "optionExplanations": {
+              "A": "错误，裂解基因不表达。",
+              "B": "正确，随宿主复制且裂解基因沉默。",
+              "C": "错误，依赖宿主复制。",
+              "D": "错误，依赖宿主复制。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-08-q-017",
+            "sourceChapterId": 8
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 42,
+          "prompt": "When a solution composed of bacteria and infectious virions are mixed and spread on an agar plate, form where viruses lyse the host cells.",
+          "options": [
+            {
+              "key": "A",
+              "text": "insertion sequences"
+            },
+            {
+              "key": "B",
+              "text": "plaques"
+            },
+            {
+              "key": "C",
+              "text": "prophages"
+            },
+            {
+              "key": "D",
+              "text": "colonies"
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "当噬菌体裂解细菌时，在琼脂平板上会形成透明的空斑，称为噬菌斑（plaques）。这些区域表示细菌被清除，而非细菌菌落。插入序列和前噬菌体是分子概念，不是宏观现象。",
+            "optionExplanations": {
+              "A": "插入序列是 DNA 元件，不可见",
+              "B": "正确，噬菌斑是裂解形成的透明区",
+              "C": "前噬菌体是整合的 DNA，不可见",
+              "D": "菌落是细菌生长形成的，非裂解区"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-08-q-035",
+            "sourceChapterId": 8
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 43,
+          "prompt": "The growth of viruses in a culture is described as a one-step growth curve, because",
+          "options": [
+            {
+              "key": "A",
+              "text": "virion numbers show no increase during intracellular replication and can only be counted after the virions burst from the host cell."
+            },
+            {
+              "key": "B",
+              "text": "there is only one step in the viral life cycle which leads to only one replicative cycle in a culture."
+            },
+            {
+              "key": "C",
+              "text": "assembly and release actually occur in one step."
+            },
+            {
+              "key": "D",
+              "text": "the eclipse phase prevents the plating and enumeration of virions although new virions are produced at a steady rate during the eclipse phase."
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "一步生长曲线描述了同步感染后，胞内复制阶段病毒颗粒数不增加，直到裂解释放才计数。这是因为在隐晦期新病毒尚未组装完成或释放，导致无法检测。其他选项对生命周期的描述有误或不准确。因此A正确解释了为何称为“一步”。",
+            "optionExplanations": {
+              "A": "准确描述了胞内复制期间不可计数，仅在裂解后计数的特性。",
+              "B": "病毒生命周期包含多个步骤，并非只有一步。",
+              "C": "组装和释放是分开的过程，且不是曲线命名的原因。",
+              "D": "隐晦期确实阻止计数，但稳态产生速率不是“一步”名称的来源。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-08-q-051",
+            "sourceChapterId": 8
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 44,
+          "prompt": "Attenuation is a transcriptional control mechanism that relies on",
+          "options": [
+            {
+              "key": "A",
+              "text": "attenuator molecules binding to mRNA."
+            },
+            {
+              "key": "B",
+              "text": "effector proteins to control the binding of RNA polymerase."
+            },
+            {
+              "key": "C",
+              "text": "transcriptional feedback inhibition."
+            },
+            {
+              "key": "D",
+              "text": "the secondary structure of the mRNA leader."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "衰减作用是一种转录调控机制，主要依赖于mRNA前导序列形成的二级结构。当核糖体翻译速度改变时，会影响终止子或抗终止子结构的形成，从而决定转录是否提前终止。",
+            "optionExplanations": {
+              "A": "不存在特定的衰减分子结合mRNA。",
+              "B": "该机制不通过效应蛋白直接控制RNA聚合酶结合。",
+              "C": "虽然涉及反馈，但核心机制是RNA二级结构而非直接抑制。",
+              "D": "正确，依赖mRNA前导区的茎环结构变化。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.5209,
+            "stemRatio": 0.5641,
+            "optionRatio": 0.3242,
+            "sourceQuestionId": "chapter-06-q-029",
+            "sourceChapterId": 6
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 45,
+          "prompt": "The is a bacterial regulatory mechanism used to survive nutrient-poor conditions, antibiotic exposure, and environmental stresses.",
+          "options": [
+            {
+              "key": "A",
+              "text": "catabolite repression"
+            },
+            {
+              "key": "B",
+              "text": "heat shock response"
+            },
+            {
+              "key": "C",
+              "text": "stringent response"
+            },
+            {
+              "key": "D",
+              "text": "two-component system"
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "严谨反应是细菌在营养匮乏或环境压力下启动的调节机制。它通过合成(p)ppGpp信号分子来重新分配资源，帮助细菌在恶劣条件下生存。",
+            "optionExplanations": {
+              "A": "分解代谢物阻遏主要涉及碳源优先利用。",
+              "B": "热休克反应主要针对高温应激。",
+              "C": "正确，针对营养缺乏和多种环境压力。",
+              "D": "双组分系统是广泛机制，不如严谨反应具体。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4283,
+            "stemRatio": 0.4724,
+            "optionRatio": 0.2273,
+            "sourceQuestionId": "chapter-06-q-038",
+            "sourceChapterId": 6
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 46,
+          "prompt": "When histidine is added to a culture already growing exponentially in a medium without histidine, what occurs?",
+          "options": [
+            {
+              "key": "A",
+              "text": "All cellular growth ceases."
+            },
+            {
+              "key": "B",
+              "text": "Growth continues, but the production of enzymes required for the synthesis of histidine ceases."
+            },
+            {
+              "key": "C",
+              "text": "Growth continues, but the production of enzymes required for the synthesis of histidine increases."
+            },
+            {
+              "key": "D",
+              "text": "The cell returns to the lag stage of growth to synthesize the proteins necessary for the metabolism of histidine."
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "当环境中存在组氨酸时，细菌无需自身合成，因此会关闭相关合成酶的基因表达以节省能量。细胞生长会继续，因为获得了必需的营养物质。",
+            "optionExplanations": {
+              "A": "加入营养物质不会导致生长停止。",
+              "B": "正确，产物充足导致合成酶基因被抑制。",
+              "C": "不需要增加合成酶的表达。",
+              "D": "不会回到迟缓期，只是代谢调节。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "review",
+            "score": 0.9249,
+            "stemRatio": 0.9159,
+            "optionRatio": 0.966,
+            "sourceQuestionId": "chapter-06-q-002",
+            "sourceChapterId": 6
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 47,
+          "prompt": "In negative control of transcription by the lac operon, how does the presence of an inducer affect transcription?",
+          "options": [
+            {
+              "key": "A",
+              "text": "The inducer binds to the operator."
+            },
+            {
+              "key": "B",
+              "text": "The inducer does not bind to the operator."
+            },
+            {
+              "key": "C",
+              "text": "The inducer causes the repressor to bind to the operator."
+            },
+            {
+              "key": "D",
+              "text": "The inducer prevents the repressor from binding to the operator."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "在乳糖操纵子的负控系统中，诱导物与阻遏蛋白结合，引起其构象变化。这导致阻遏蛋白无法结合操纵基因，从而解除抑制并允许转录进行。因此诱导物阻止了阻遏蛋白与操纵基因的结合。",
+            "optionExplanations": {
+              "A": "诱导物结合阻遏蛋白，而非直接结合操纵基因。",
+              "B": "陈述正确但未说明具体作用机制。",
+              "C": "这与诱导物的作用相反。",
+              "D": "正确，描述了诱导物解除阻遏的机制。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-06-q-014",
+            "sourceChapterId": 6
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 48,
+          "prompt": "What occurs when an inducer is added to an environment containing an organism with a metabolic pathway) controlled by a repressor?",
+          "options": [
+            {
+              "key": "A",
+              "text": "The inducer combines with the repressor and activates the pathway."
+            },
+            {
+              "key": "B",
+              "text": "The inducer combines with the repressor and inactivates the pathway."
+            },
+            {
+              "key": "C",
+              "text": "The inducer combines with the substrate and blocks induction."
+            },
+            {
+              "key": "D",
+              "text": "The inducer does not combine with, but functions as a chaperone molecule for, the enzyme-substrate complex."
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "gpt-5-manual-audit",
+            "generatedAt": "2026-06-11T00:00:00+08:00",
+            "explanation": "在由阻遏蛋白负调控的代谢途径中，诱导物通常与阻遏蛋白结合，使阻遏蛋白不能再有效阻断转录。结果是相关基因表达增加，代谢途径被诱导开启。",
+            "optionExplanations": {
+              "A": "正确。诱导物结合阻遏蛋白后解除阻遏，最终效果是激活该代谢途径。",
+              "B": "错误。诱导物会使阻遏蛋白失活，但不会使代谢途径失活。",
+              "C": "错误。诱导物的典型作用对象是调控蛋白，不是底物。",
+              "D": "错误。诱导物不是酶-底物复合物的伴侣蛋白。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-06-q-011",
+            "sourceChapterId": 6
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 49,
+          "prompt": "Which of the following do NOT bind to the promoter sequence during regulation?",
+          "options": [
+            {
+              "key": "A",
+              "text": "Activators"
+            },
+            {
+              "key": "B",
+              "text": "Inducers"
+            },
+            {
+              "key": "C",
+              "text": "Repressors"
+            },
+            {
+              "key": "D",
+              "text": "None of these binds directly to the promoter sequence."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "严格来说，启动子序列是RNA聚合酶的结合位点。阻遏蛋白和激活蛋白分别结合操纵基因和激活位点，而非启动子本身。诱导物是小分子，不结合DNA。因此没有选项中的物质直接结合启动子序列。",
+            "optionExplanations": {
+              "A": "激活蛋白结合激活位点，非启动子核心序列。",
+              "B": "诱导物是小分子，不结合DNA。",
+              "C": "阻遏蛋白结合操纵基因，非启动子核心序列。",
+              "D": "正确，这些分子均不直接结合启动子序列。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 0.9996,
+            "stemRatio": 1.0,
+            "optionRatio": 0.9976,
+            "sourceQuestionId": "chapter-06-q-012",
+            "sourceChapterId": 6
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 50,
+          "prompt": "The most frequent way in which small regulatory RNA molecules exert their effects is by",
+          "options": [
+            {
+              "key": "A",
+              "text": "base pairing with other RNA molecules that have regions of complementary sequence."
+            },
+            {
+              "key": "B",
+              "text": "binding to a repressor and repressing enzyme transcription."
+            },
+            {
+              "key": "C",
+              "text": "acting as an inducer that then binds to an activator protein to allow transcription to proceed."
+            },
+            {
+              "key": "D",
+              "text": "signal transduction."
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "小分子调节 RNA（sRNA）主要通过碱基互补配对与靶 mRNA 结合，从而影响其稳定性或翻译效率。这种机制不需要蛋白质作为中介直接结合 DNA 或酶。结合阻遏蛋白或作为诱导剂不是 sRNA 最常见的直接作用方式。",
+            "optionExplanations": {
+              "A": "正确，碱基配对是 sRNA 发挥作用的主要机制。",
+              "B": "sRNA 通常不直接结合阻遏蛋白来抑制转录。",
+              "C": "诱导剂通常是代谢物，而非 sRNA 的主要角色。",
+              "D": "信号转导是一个广泛概念，不是 sRNA 的具体作用方式。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-06-q-019",
+            "sourceChapterId": 6
+          },
+          "answerSource": "reference"
+        },
+        {
+          "number": 51,
+          "prompt": "Pathogenic bacteria such as E. coli 0157:H7 and Staphylococcus aureus have a strong selection pressure to refrain from activating an immune response until their numbers are great. is thus an effective way these pathogens control production of certain virulence factors.",
+          "options": [
+            {
+              "key": "A",
+              "text": "Attenuation"
+            },
+            {
+              "key": "B",
+              "text": "Differentiation"
+            },
+            {
+              "key": "C",
+              "text": "Signal transduction"
+            },
+            {
+              "key": "D",
+              "text": "Quorum sensing"
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "群体感应使细菌能够感知种群密度并协调基因表达。只有当细菌数量达到阈值时，才会激活毒力因子的产生，以避免过早引发宿主免疫反应。",
+            "optionExplanations": {
+              "A": "衰减作用不基于种群密度。",
+              "B": "分化通常指形态变化，非此处主要机制。",
+              "C": "信号转导概念过于宽泛。",
+              "D": "正确，基于密度的群体感应调控毒力因子。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.3655,
+            "stemRatio": 0.3582,
+            "optionRatio": 0.3989,
+            "sourceQuestionId": "chapter-09-q-010",
+            "sourceChapterId": 9
+          },
+          "answerSource": "reference"
+        }
+      ]
+    },
+    {
+      "id": "midterm-25",
+      "title": "2025 春夏期中卷",
+      "sourcePdf": "25春夏-期中.pdf",
+      "summary": {
+        "totalQuestions": 50,
+        "autoFilled": 50,
+        "exactMatches": 2,
+        "highMatches": 4,
+        "reviewMatches": 6,
+        "unmatched": 38
+      },
+      "questions": [
+        {
+          "number": 1,
+          "prompt": "Which of the following groups consist of organisms made up of prokaryotic cells?",
+          "options": [
+            {
+              "key": "A",
+              "text": "protozoa and animals"
+            },
+            {
+              "key": "B",
+              "text": "Bacteria and fungi"
+            },
+            {
+              "key": "C",
+              "text": "Archaea and fungi"
+            },
+            {
+              "key": "D",
+              "text": "Bacteria andArchaea"
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "原核生物主要包括细菌和古菌，它们没有成形的细胞核。真菌、原生动物和动物都属于真核生物，具有完整的细胞核结构。",
+            "optionExplanations": {
+              "A": "原生动物和动物均为真核生物。",
+              "B": "真菌属于真核生物。",
+              "C": "真菌属于真核生物。",
+              "D": "正确，细菌和古菌均为原核生物。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.5921,
+            "stemRatio": 0.6567,
+            "optionRatio": 0.2978,
+            "sourceQuestionId": "chapter-26-q-042",
+            "sourceChapterId": 26
+          }
+        },
+        {
+          "number": 2,
+          "prompt": "Who is credited with using rRNA sequence comparisons to develop the three-domain system of life?",
+          "options": [
+            {
+              "key": "A",
+              "text": "Robert Hooke"
+            },
+            {
+              "key": "B",
+              "text": "Frederick Griffith"
+            },
+            {
+              "key": "C",
+              "text": "Robert Koch"
+            },
+            {
+              "key": "D",
+              "text": "Carl Woese"
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "卡尔·沃斯利用 16S rRNA 序列分析建立了生命的三域系统。其他科学家如胡克发现了细胞，但未涉及分子分类。",
+            "optionExplanations": {
+              "A": "发现细胞结构",
+              "B": "细菌转化实验",
+              "C": "病原菌理论",
+              "D": "三域系统提出者"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4083,
+            "stemRatio": 0.4467,
+            "optionRatio": 0.2336,
+            "sourceQuestionId": "chapter-24-q-015",
+            "sourceChapterId": 24
+          }
+        },
+        {
+          "number": 3,
+          "prompt": "Which of the following is NOT a property/process of all living cells?",
+          "options": [
+            {
+              "key": "A",
+              "text": "transcription"
+            },
+            {
+              "key": "B",
+              "text": "differentiation"
+            },
+            {
+              "key": "C",
+              "text": "evolution"
+            },
+            {
+              "key": "D",
+              "text": "metabolism"
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "转录、代谢和进化是所有活细胞的基本特征。分化通常指多细胞生物或特定发育阶段的细胞特化，并非所有单细胞生物的普遍属性。",
+            "optionExplanations": {
+              "A": "基因表达必需过程",
+              "B": "仅部分细胞具有",
+              "C": "生命基本特征",
+              "D": "能量转换必需"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.6333,
+            "stemRatio": 0.7107,
+            "optionRatio": 0.2803,
+            "sourceQuestionId": "chapter-30-q-018",
+            "sourceChapterId": 30
+          }
+        },
+        {
+          "number": 4,
+          "prompt": "Regarding early life on Earth, ____",
+          "options": [
+            {
+              "key": "A",
+              "text": "microbial life existed for billions of years before plant and animal life."
+            },
+            {
+              "key": "B",
+              "text": "microbial life, plant life, and animal life all appeared at about the same time."
+            },
+            {
+              "key": "C",
+              "text": "microbial life existed long before animals but has been around for about the same amount of time as plants."
+            },
+            {
+              "key": "D",
+              "text": "it is impossible to determine which type of life first appeared."
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "地质和化石证据显示微生物在地球上存在了数十亿年。植物和动物等复杂生命形式出现的时间远晚于微生物。这证实了微生物生命先于动植物长期存在的事实。",
+            "optionExplanations": {
+              "A": "符合科学共识，微生物是最早的生命形式。",
+              "B": "植物出现时间也远晚于微生物，并非同时。",
+              "C": "三者出现时间跨度巨大，并非同时。",
+              "D": "化石证据足以确定微生物最早出现。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "high",
+            "score": 0.9626,
+            "stemRatio": 1.0,
+            "optionRatio": 0.7923,
+            "sourceQuestionId": "chapter-01-q-006",
+            "sourceChapterId": 1
+          }
+        },
+        {
+          "number": 5,
+          "prompt": "Transparent double-sided dishes used for growing microbes are most commonly called ____",
+          "options": [
+            {
+              "key": "A",
+              "text": "baker dishes."
+            },
+            {
+              "key": "B",
+              "text": "Petri dishes."
+            },
+            {
+              "key": "C",
+              "text": "sterilization plates."
+            },
+            {
+              "key": "D",
+              "text": "culture medium plates."
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "实验室中用于培养微生物的标准透明双盖容器称为培养皿（Petri dishes）。这是微生物学中最标准的术语。",
+            "optionExplanations": {
+              "A": "正确，这是标准术语。",
+              "B": "无此专业术语。",
+              "C": "描述不准确，非通用名称。",
+              "D": "描述功能而非具体名称。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 0.9775,
+            "stemRatio": 1.0,
+            "optionRatio": 0.875,
+            "sourceQuestionId": "chapter-01-q-014",
+            "sourceChapterId": 1
+          }
+        },
+        {
+          "number": 6,
+          "prompt": "What was Pasteur's purpose in using a swan-necked flask rather than a traditional Erlenmeyer flask for his experiments on spontaneous generation?",
+          "options": [
+            {
+              "key": "A",
+              "text": "to prevent air from entering"
+            },
+            {
+              "key": "B",
+              "text": "to be able to boil and sterilize the liquid medium"
+            },
+            {
+              "key": "C",
+              "text": "to prevent large debris and microbes from entering"
+            },
+            {
+              "key": "D",
+              "text": "all of the above"
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "鹅颈瓶的设计允许空气流通，但弯曲处能阻挡微生物和尘埃进入。这证明了微生物来自空气而非自然发生，同时未完全隔绝空气。",
+            "optionExplanations": {
+              "A": "空气可自由进入",
+              "B": "普通烧瓶也能煮沸",
+              "C": "阻挡微生物和尘埃",
+              "D": "包含错误选项 A"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.3802,
+            "stemRatio": 0.4191,
+            "optionRatio": 0.203,
+            "sourceQuestionId": "chapter-13-q-011",
+            "sourceChapterId": 13
+          }
+        },
+        {
+          "number": 7,
+          "prompt": "Which is the only group of microorganisms that contains lipopolysaccharides (LPS)?",
+          "options": [
+            {
+              "key": "A",
+              "text": "gram-positive bacteria"
+            },
+            {
+              "key": "B",
+              "text": "Bacteria"
+            },
+            {
+              "key": "C",
+              "text": "gram-negative bacteria"
+            },
+            {
+              "key": "D",
+              "text": "Archaea"
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "脂多糖（LPS）仅存在于革兰氏阴性细菌的外膜中。革兰氏阳性菌无外膜，古菌的膜脂化学结构也完全不同。",
+            "optionExplanations": {
+              "A": "肽聚糖层厚无外膜",
+              "B": "范围太广含阳性菌",
+              "C": "特有外膜成分",
+              "D": "醚键脂质结构"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.5522,
+            "stemRatio": 0.5641,
+            "optionRatio": 0.498,
+            "sourceQuestionId": "chapter-14-q-013",
+            "sourceChapterId": 14
+          }
+        },
+        {
+          "number": 8,
+          "prompt": "The cytoplasmic membrane is the ____",
+          "options": [
+            {
+              "key": "A",
+              "text": "permeability barrier of the cell."
+            },
+            {
+              "key": "B",
+              "text": "primary support structure of the cell."
+            },
+            {
+              "key": "C",
+              "text": "source of nutrient production."
+            },
+            {
+              "key": "D",
+              "text": "structure that identifies a cell as eukaryotic or prokaryotic."
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "细胞质膜的主要作用是作为选择性通透屏障，调节物质运输。细胞壁提供支撑，且原核和真核细胞均拥有细胞膜。",
+            "optionExplanations": {
+              "A": "控制物质进出",
+              "B": "细胞壁的作用",
+              "C": "代谢途径的功能",
+              "D": "两者共有结构"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.612,
+            "stemRatio": 0.6585,
+            "optionRatio": 0.4002,
+            "sourceQuestionId": "chapter-02-q-006",
+            "sourceChapterId": 2
+          }
+        },
+        {
+          "number": 9,
+          "prompt": "The periplasm is a(n) ____",
+          "options": [
+            {
+              "key": "A",
+              "text": "region between the cytoplasmic membrane and the outer membrane of gram-negative Bacteria."
+            },
+            {
+              "key": "B",
+              "text": "part of the outer cell membrane of gram-negative organisms."
+            },
+            {
+              "key": "C",
+              "text": "part of the inner cell membrane of gram-negative organisms."
+            },
+            {
+              "key": "D",
+              "text": "alternate name for the inner cell membrane of any prokaryotic cell."
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "周质空间特指革兰氏阴性菌细胞质膜与外膜之间的区域。该区域含有肽聚糖层及多种水解酶和结合蛋白。其他选项将周质误认为是膜的一部分或名称混淆。",
+            "optionExplanations": {
+              "A": "正确，定义了革兰氏阴性菌周质空间的准确位置。",
+              "B": "错误，周质是膜间的空间，而非外膜本身。",
+              "C": "错误，周质不是内膜的一部分。",
+              "D": "错误，周质不是内膜的别名，且主要存在于革兰氏阴性菌。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.5228,
+            "stemRatio": 0.5854,
+            "optionRatio": 0.238,
+            "sourceQuestionId": "chapter-01-q-018",
+            "sourceChapterId": 1
+          }
+        },
+        {
+          "number": 10,
+          "prompt": "Which of these statements is true?",
+          "options": [
+            {
+              "key": "A",
+              "text": "The gram-positive wall contains a thick peptidoglycan layer but is about as complex as the gram-negative wall."
+            },
+            {
+              "key": "B",
+              "text": "The gram-positive wall contains a thick peptidoglycan layer but is less complex than the gram-negative wall."
+            },
+            {
+              "key": "C",
+              "text": "The gram-positive wall contains a thick peptidoglycan layer and is more complex than the gram-negative wall."
+            },
+            {
+              "key": "D",
+              "text": "The gram-negative wall contains a thick peptidoglycan layer and is more complex than the gram-positive wall."
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "革兰氏阳性菌细胞壁含有厚厚的肽聚糖层，但缺乏外膜结构。相比之下，革兰氏阴性菌具有外膜、脂多糖等成分，结构更为复杂。因此阳性菌壁相对较简单。",
+            "optionExplanations": {
+              "A": "错误，阳性菌壁结构不如阴性菌复杂。",
+              "B": "正确，描述了肽聚糖厚度及结构复杂度的对比。",
+              "C": "错误，阳性菌壁并不比阴性菌更复杂。",
+              "D": "错误，阴性菌的肽聚糖层较薄。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.8342,
+            "stemRatio": 0.9565,
+            "optionRatio": 0.2769,
+            "sourceQuestionId": "chapter-05-q-017",
+            "sourceChapterId": 5
+          }
+        },
+        {
+          "number": 11,
+          "prompt": "Which statement is true regarding endospores and sporulation?",
+          "options": [
+            {
+              "key": "A",
+              "text": "Sporulation is a type of reproduction and is an alternative to binary fission."
+            },
+            {
+              "key": "B",
+              "text": "Calcium complexed with dipicolinic acid helps to dehydrate a developing endospore."
+            },
+            {
+              "key": "C",
+              "text": "Endospores readily take up stain and thus are often seen as stained circles within vegetative cells."
+            },
+            {
+              "key": "D",
+              "text": "The three steps of sporulation are activation, germination, and outgrowth."
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "芽孢形成是生存机制而非繁殖方式，不增加个体数量。钙离子与吡啶二羧酸（DPA）复合物有助于芽孢脱水并提供耐热性。萌发过程才包含激活、萌发和生长这三个步骤。",
+            "optionExplanations": {
+              "A": "错误，芽孢形成不是繁殖，不增加个体数量。",
+              "B": "正确，Ca-DPA复合物对芽孢脱水和耐热至关重要。",
+              "C": "错误，芽孢抗染色，通常需特殊染色法才能看见。",
+              "D": "错误，这是萌发的步骤，不是形成的步骤。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.6709,
+            "stemRatio": 0.7664,
+            "optionRatio": 0.2358,
+            "sourceQuestionId": "chapter-18-q-014",
+            "sourceChapterId": 18
+          }
+        },
+        {
+          "number": 12,
+          "prompt": "Bacteria stain as gram positive or gram negative because of differences in the cell ____",
+          "options": [
+            {
+              "key": "A",
+              "text": "wall."
+            },
+            {
+              "key": "B",
+              "text": "cytoplasm."
+            },
+            {
+              "key": "C",
+              "text": "nucleus."
+            },
+            {
+              "key": "D",
+              "text": "chromosome."
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "革兰氏染色差异主要取决于细胞壁中肽聚糖层的厚度和结构。阳性菌壁厚保留结晶紫，阴性菌壁薄易脱色。",
+            "optionExplanations": {
+              "A": "正确，细胞壁结构决定染料保留能力。",
+              "B": "细胞质不影响表面染色特性。",
+              "C": "原核生物无成形的细胞核。",
+              "D": "染色体位置与表面染色反应无关。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "high",
+            "score": 0.99,
+            "stemRatio": 0.9878,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-02-q-012",
+            "sourceChapterId": 2
+          }
+        },
+        {
+          "number": 13,
+          "prompt": "Which of the following statements about transport mechanisms is incorrect?",
+          "options": [
+            {
+              "key": "A",
+              "text": "ABC transporters consist of a substrate-binding protein, a transmembrane transporter, and an ATP-hydrolyzing protein."
+            },
+            {
+              "key": "B",
+              "text": "Simple transport, group translocation, and ABC transport systems all require energy."
+            },
+            {
+              "key": "C",
+              "text": "Proton motive force, ATP, or another energy-rich compound can be used to provide the energy required for active transport."
+            },
+            {
+              "key": "D",
+              "text": "Active transport moves molecules from areas of high concentration to areas of low concentration."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "主动运输是将物质逆浓度梯度运输，即从低浓度向高浓度移动。选项D描述的是被动运输的特征，因此是不正确的陈述。ABC转运体结构和能量来源的描述均符合事实。",
+            "optionExplanations": {
+              "A": "正确，描述了ABC转运体的三个组成部分。",
+              "B": "正确，这些系统都属于需要能量的主动运输。",
+              "C": "正确，列出了主动运输可用的能量来源。",
+              "D": "错误，主动运输是从低浓度到高浓度，此选项描述反了。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.6551,
+            "stemRatio": 0.7521,
+            "optionRatio": 0.213,
+            "sourceQuestionId": "chapter-01-q-002",
+            "sourceChapterId": 1
+          }
+        },
+        {
+          "number": 14,
+          "prompt": "The tetraether molecule within the membrane structure of the ____ yields a lipid____.",
+          "options": [
+            {
+              "key": "A",
+              "text": "Archaea / monolayer"
+            },
+            {
+              "key": "B",
+              "text": "Bacteria / bilayer"
+            },
+            {
+              "key": "C",
+              "text": "Archaea / bilayer"
+            },
+            {
+              "key": "D",
+              "text": "Bacteria / monolayer"
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "古菌的细胞膜含有独特的醚键脂质，部分含有四醚分子。这种四醚分子贯穿整个膜结构，形成单层膜以增强极端环境下的稳定性。细菌通常由脂肪酸酯键形成双层膜结构。",
+            "optionExplanations": {
+              "A": "正确，古菌的四醚脂质形成单层膜结构。",
+              "B": "错误，细菌通常形成酯键双层膜。",
+              "C": "错误，古菌四醚脂质形成单层而非双层。",
+              "D": "错误，细菌不形成四醚单层膜。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4539,
+            "stemRatio": 0.4966,
+            "optionRatio": 0.2592,
+            "sourceQuestionId": "chapter-13-q-039",
+            "sourceChapterId": 13
+          }
+        },
+        {
+          "number": 15,
+          "prompt": "Which is NOT a function of capsules or slime layers?",
+          "options": [
+            {
+              "key": "A",
+              "text": "evasion of destruction by immune cells"
+            },
+            {
+              "key": "B",
+              "text": "protection from osmotic lysis"
+            },
+            {
+              "key": "C",
+              "text": "attachment to solid surfaces"
+            },
+            {
+              "key": "D",
+              "text": "development and maintenance of biofilms"
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "荚膜或粘液层的主要功能包括帮助细菌附着于表面、形成生物膜以及逃避宿主免疫细胞的吞噬。防止渗透性裂解主要是细胞壁中肽聚糖的功能，而非荚膜的主要作用。因此保护从渗透性裂解不是荚膜的功能。",
+            "optionExplanations": {
+              "A": "荚膜具有抗吞噬作用，可帮助细菌逃避免疫细胞破坏。",
+              "B": "防止渗透压导致的细胞破裂主要由坚韧的细胞壁负责。",
+              "C": "荚膜多糖有助于细菌粘附在固体表面或物体上。",
+              "D": "胞外聚合物是生物膜形成和维持的关键结构成分。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.5545,
+            "stemRatio": 0.614,
+            "optionRatio": 0.2832,
+            "sourceQuestionId": "chapter-07-q-040",
+            "sourceChapterId": 7
+          }
+        },
+        {
+          "number": 16,
+          "prompt": "Chemolithotrophy involves ____",
+          "options": [
+            {
+              "key": "A",
+              "text": "oxidation of organic compounds."
+            },
+            {
+              "key": "B",
+              "text": "oxidation of inorganic compounds."
+            },
+            {
+              "key": "C",
+              "text": "reduction of organic compounds."
+            },
+            {
+              "key": "D",
+              "text": "metabolic autotrophy."
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "化能无机营养型（Chemolithotrophy）是指微生物通过氧化无机化合物获取能量。有机化合物的氧化属于化能有机营养，而自养涉及碳源而非能量来源的定义。",
+            "optionExplanations": {
+              "A": "这是化能有机营养的特征。",
+              "B": "正确，定义涉及无机物氧化产能。",
+              "C": "还原通常不用于产能代谢的主要描述。",
+              "D": "自养指碳源利用方式，非能量来源。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "exact",
+            "score": 1.0,
+            "stemRatio": 1.0,
+            "optionRatio": 1.0,
+            "sourceQuestionId": "chapter-01-q-022",
+            "sourceChapterId": 1
+          }
+        },
+        {
+          "number": 17,
+          "prompt": "During fermentation,ATP is usually produced by ____",
+          "options": [
+            {
+              "key": "A",
+              "text": "oxidative phosphorylation."
+            },
+            {
+              "key": "B",
+              "text": "the citric acid cycle."
+            },
+            {
+              "key": "C",
+              "text": "the proton motive force."
+            },
+            {
+              "key": "D",
+              "text": "substrate-level phosphorylation."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "发酵过程中不涉及电子传递链，因此不通过氧化磷酸化产生ATP。ATP主要在糖酵解阶段通过底物水平磷酸化直接生成。这是发酵区别于有氧呼吸和无氧呼吸的关键特征之一。",
+            "optionExplanations": {
+              "A": "氧化磷酸化需要电子传递链和最终电子受体，发酵中不存在。",
+              "B": "三羧酸循环通常在有氧条件下运行，且主要产生还原力而非大量ATP。",
+              "C": "质子动力势驱动氧化磷酸化，发酵过程不依赖此机制合成ATP。",
+              "D": "底物水平磷酸化是在代谢反应中直接将高能磷酸基团转移给ADP的过程。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.47,
+            "stemRatio": 0.5149,
+            "optionRatio": 0.2658,
+            "sourceQuestionId": "chapter-04-q-024",
+            "sourceChapterId": 4
+          }
+        },
+        {
+          "number": 18,
+          "prompt": "If '0GD is positive, ____",
+          "options": [
+            {
+              "key": "A",
+              "text": "the reaction is exergonic and requires the input of energy."
+            },
+            {
+              "key": "B",
+              "text": "the reaction is endergonic and requires the input of energy."
+            },
+            {
+              "key": "C",
+              "text": "the reaction is endergonic and energy will be released."
+            },
+            {
+              "key": "D",
+              "text": "the reaction is exergonic and energy will be released."
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "吉布斯自由能变化（ΔG）为正值表示该反应是非自发的吸能反应。这意味着反应不能自发进行，必须从外界输入能量才能发生。相反，负值则代表放能反应。",
+            "optionExplanations": {
+              "A": "放能反应（exergonic）的ΔG应为负值，会释放能量。",
+              "B": "吸能反应（endergonic）的ΔG为正值，需要吸收能量才能进行。",
+              "C": "吸能反应不会释放能量，而是消耗能量。",
+              "D": "放能反应会释放能量，其ΔG值为负。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.5338,
+            "stemRatio": 0.4706,
+            "optionRatio": 0.8219,
+            "sourceQuestionId": "chapter-03-q-013",
+            "sourceChapterId": 3
+          }
+        },
+        {
+          "number": 19,
+          "prompt": "In aerobic respiration, when an organism uses lactose for energy, lactose acts as the ____ and oxygen acts as the ____.",
+          "options": [
+            {
+              "key": "A",
+              "text": "Electron donor/electron donor"
+            },
+            {
+              "key": "B",
+              "text": "Electron donor/electron acceptor"
+            },
+            {
+              "key": "C",
+              "text": "Electron acceptor/electron donor"
+            },
+            {
+              "key": "D",
+              "text": "Electron acceptor/electron acceptor"
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "在有氧呼吸中，有机底物如乳糖被氧化分解，失去电子作为电子供体。氧气作为最终的电子受体接受电子并被还原成水。这种电子流动驱动了质子梯度的建立。",
+            "optionExplanations": {
+              "A": "氧气在呼吸链末端接受电子，不是电子供体。",
+              "B": "有机物提供电子，氧气接受电子，符合呼吸作用定义。",
+              "C": "有机物是被氧化的物质，应作为电子供体而非受体。",
+              "D": "氧气是电子受体，乳糖是电子供体，两者角色不同。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4024,
+            "stemRatio": 0.4096,
+            "optionRatio": 0.3697,
+            "sourceQuestionId": "chapter-13-q-032",
+            "sourceChapterId": 13
+          }
+        },
+        {
+          "number": 20,
+          "prompt": "In the process of cellular respiration, glucose is broken down into pyruvate via ____, and pyruvate is further oxidized to CO2 through ____.",
+          "options": [
+            {
+              "key": "A",
+              "text": "glycolysis / fermentation"
+            },
+            {
+              "key": "B",
+              "text": "the citric acid cycle (CAC) / glycolysis"
+            },
+            {
+              "key": "C",
+              "text": "Glycolysis / the citric acid cycle (CAC)"
+            },
+            {
+              "key": "D",
+              "text": "the citric acid cycle (CAC) / the glyoxylate cycle"
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "葡萄糖分解为丙酮酸的代谢途径称为糖酵解，发生在细胞质中。丙酮酸随后进入线粒体，在三羧酸循环中被彻底氧化为二氧化碳。这是细胞呼吸的核心代谢步骤。",
+            "optionExplanations": {
+              "A": "发酵虽然涉及糖酵解，但丙酮酸不会被完全氧化为CO2。",
+              "B": "三羧酸循环处理的是丙酮酸之后的步骤，不是葡萄糖到丙酮酸。",
+              "C": "糖酵解将葡萄糖转化为丙酮酸，三羧酸循环将其氧化为CO2。",
+              "D": "乙醛酸循环是某些微生物的特殊途径，不是通用的丙酮酸氧化路径。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.3908,
+            "stemRatio": 0.4257,
+            "optionRatio": 0.2316,
+            "sourceQuestionId": "chapter-24-q-036",
+            "sourceChapterId": 24
+          }
+        },
+        {
+          "number": 21,
+          "prompt": "One example of an electron acceptor that can be used in anaerobic respiration is ____.",
+          "options": [
+            {
+              "key": "A",
+              "text": "Oxygen"
+            },
+            {
+              "key": "B",
+              "text": "Pyruvate"
+            },
+            {
+              "key": "C",
+              "text": "Nitrate"
+            },
+            {
+              "key": "D",
+              "text": "Water"
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "厌氧呼吸使用电子传递链，但最终电子受体不是氧气。硝酸盐、硫酸盐等无机物常作为替代受体参与产能过程。氧气专用于有氧呼吸，水则是其代谢产物。",
+            "optionExplanations": {
+              "A": "氧气是有氧呼吸的最终电子受体。",
+              "B": "丙酮酸通常参与发酵过程，而非典型的厌氧呼吸无机受体。",
+              "C": "硝酸盐是常见的厌氧呼吸最终电子受体。",
+              "D": "水是有氧呼吸的产物，不是受体。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.8948,
+            "stemRatio": 1.0,
+            "optionRatio": 0.4154,
+            "sourceQuestionId": "chapter-03-q-041",
+            "sourceChapterId": 3
+          }
+        },
+        {
+          "number": 22,
+          "prompt": "In the context of a microorganism's metabolism, during glycolysis, which of the following is true?",
+          "options": [
+            {
+              "key": "A",
+              "text": "the crucial product is CO2;ATP is a waste product."
+            },
+            {
+              "key": "B",
+              "text": "the crucial product is ATP; the fermentation products are waste products."
+            },
+            {
+              "key": "C",
+              "text": "the crucial product is not relevant because glycolysis is not a major pathway."
+            },
+            {
+              "key": "D",
+              "text": "the crucial product is ethanol or lactate;ATP is a waste product."
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "糖酵解的主要目的是产生能量（ATP）和代谢前体。在厌氧条件下，发酵产物如乙醇或乳酸是为了再生NAD+，通常被视为代谢废物。二氧化碳主要在后续步骤产生。",
+            "optionExplanations": {
+              "A": "糖酵解不直接产生CO2。",
+              "B": "ATP是主要能量产物，发酵副产物通常视为废物。",
+              "C": "糖酵解是核心代谢途径。",
+              "D": "乙醇或乳酸是发酵产物，ATP是有用产物而非废物。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.5407,
+            "stemRatio": 0.6265,
+            "optionRatio": 0.1499,
+            "sourceQuestionId": "chapter-15-q-045",
+            "sourceChapterId": 15
+          }
+        },
+        {
+          "number": 23,
+          "prompt": "For microorganisms, growth is generally defined as an increase in ____.",
+          "options": [
+            {
+              "key": "A",
+              "text": "the number of colonies present in a culture"
+            },
+            {
+              "key": "B",
+              "text": "the size of individual organisms"
+            },
+            {
+              "key": "C",
+              "text": "the number of cells"
+            },
+            {
+              "key": "D",
+              "text": "the life span of individual cells"
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "微生物生长通常指群体数量的增加，即细胞数目的增多。虽然个体细胞会变大，但定义侧重于繁殖导致的数量增长。这是微生物学中的标准定义。",
+            "optionExplanations": {
+              "A": "菌落数是测量方法，不是生长的定义本身。",
+              "B": "个体大小增加是细胞周期的一部分，但微生物生长指群体。",
+              "C": "微生物生长定义为细胞数量的增加。",
+              "D": "寿命与生长定义无关。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4509,
+            "stemRatio": 0.4901,
+            "optionRatio": 0.2723,
+            "sourceQuestionId": "chapter-13-q-007",
+            "sourceChapterId": 13
+          }
+        },
+        {
+          "number": 24,
+          "prompt": "The time interval required for the formation of two cells from one is called the ____.",
+          "options": [
+            {
+              "key": "A",
+              "text": "growth rate"
+            },
+            {
+              "key": "B",
+              "text": "growth time"
+            },
+            {
+              "key": "C",
+              "text": "generation time"
+            },
+            {
+              "key": "D",
+              "text": "all of the above"
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "代时是指一个细胞分裂成两个子细胞所需的时间。这是微生物生长动力学中的标准术语。它反映了微生物繁殖的速度。",
+            "optionExplanations": {
+              "A": "生长率是单位时间内的增长量。",
+              "B": "生长时间不是标准术语。",
+              "C": "代时准确描述了细胞倍增所需时间。",
+              "D": "并非所有选项都正确。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.9089,
+            "stemRatio": 1.0,
+            "optionRatio": 0.494,
+            "sourceQuestionId": "chapter-05-q-003",
+            "sourceChapterId": 5
+          }
+        },
+        {
+          "number": 25,
+          "prompt": "The time between inoculation and the beginning of growth is usually called the ____.",
+          "options": [
+            {
+              "key": "A",
+              "text": "log phase"
+            },
+            {
+              "key": "B",
+              "text": "lag phase"
+            },
+            {
+              "key": "C",
+              "text": "death phase"
+            },
+            {
+              "key": "D",
+              "text": "dormant phase"
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "迟缓期（延滞期）是接种后微生物适应新环境、准备分裂但尚未开始指数增长的阶段。对数期是快速生长期。此阶段细胞体积增大但不分裂。",
+            "optionExplanations": {
+              "A": "对数期是细胞快速分裂的阶段。",
+              "B": "迟缓期是接种后到开始生长前的适应阶段。",
+              "C": "衰亡期是细胞死亡超过分裂的时期。",
+              "D": "休眠期不是生长曲线的标准分期名称。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "review",
+            "score": 0.9675,
+            "stemRatio": 1.0,
+            "optionRatio": 0.8194,
+            "sourceQuestionId": "chapter-05-q-005",
+            "sourceChapterId": 5
+          }
+        },
+        {
+          "number": 26,
+          "prompt": "Under what conditions would a lag phase NOT occur?",
+          "options": [
+            {
+              "key": "A",
+              "text": "when a stationary phase culture is transferred into fresh medium"
+            },
+            {
+              "key": "B",
+              "text": "when a culture subjected to UV light is transferred into fresh medium"
+            },
+            {
+              "key": "C",
+              "text": "when an exponentially growing culture is transferred into fresh medium"
+            },
+            {
+              "key": "D",
+              "text": "when a culture is transferred from a rich medium to minimal medium"
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "当对数生长期的细菌被转移到新鲜培养基中时，它们已处于活跃分裂状态且适应了营养环境，因此通常不会经历滞后期。其他情况如静止期、受损或营养改变都需要时间适应和修复。",
+            "optionExplanations": {
+              "A": "静止期细胞需要恢复代谢活性，会产生滞后期。",
+              "B": "UV损伤需要修复机制启动，会产生滞后期。",
+              "C": "指数生长期细胞代谢活跃，直接转入新培养基可继续生长。",
+              "D": "从富营养到贫营养需要合成新酶，会产生滞后期。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4481,
+            "stemRatio": 0.48,
+            "optionRatio": 0.3025,
+            "sourceQuestionId": "chapter-15-q-028",
+            "sourceChapterId": 15
+          }
+        },
+        {
+          "number": 27,
+          "prompt": "Superoxide dismutase is indispensable to ____.",
+          "options": [
+            {
+              "key": "A",
+              "text": "aerobes"
+            },
+            {
+              "key": "B",
+              "text": "aerotolerant anaerobes"
+            },
+            {
+              "key": "C",
+              "text": "obligate anaerobes"
+            },
+            {
+              "key": "D",
+              "text": "all of the above"
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "超氧化物歧化酶（SOD）用于清除氧气代谢产生的有毒超氧化物自由基。好氧菌依赖有氧呼吸，必须拥有SOD才能生存；专性厌氧菌缺乏此酶，无法在有氧环境下存活。",
+            "optionExplanations": {
+              "A": "好氧菌进行有氧呼吸产生ROS，必须依赖SOD解毒。",
+              "B": "耐氧厌氧菌虽不利用氧，但通常也有SOD，但不如好氧菌依赖性强。",
+              "C": "专性厌氧菌通常缺乏SOD，遇氧即死。",
+              "D": "因专性厌氧菌不需要或缺乏该酶，故排除。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4458,
+            "stemRatio": 0.4737,
+            "optionRatio": 0.3185,
+            "sourceQuestionId": "chapter-05-q-025",
+            "sourceChapterId": 5
+          }
+        },
+        {
+          "number": 28,
+          "prompt": "Which of the following habitats is most likely to harbor an extremophile?",
+          "options": [
+            {
+              "key": "A",
+              "text": "garden soil at neutral pH"
+            },
+            {
+              "key": "B",
+              "text": "permanently ice-covered lake"
+            },
+            {
+              "key": "C",
+              "text": "human skin"
+            },
+            {
+              "key": "D",
+              "text": "freshwater pond"
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "极端微生物生活在极端环境中，如极寒、高温或高盐。永久冰封的湖泊属于低温极端环境，适合嗜冷菌生存，而其他选项均为温和环境。",
+            "optionExplanations": {
+              "A": "中性pH土壤是普通微生物的常见栖息地。",
+              "B": "冰下湖泊温度极低，属于极端环境，易发现嗜冷极端微生物。",
+              "C": "人体皮肤环境相对温和，适合正常菌群。",
+              "D": "淡水池塘通常为中性温和环境。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.5985,
+            "stemRatio": 0.6667,
+            "optionRatio": 0.2879,
+            "sourceQuestionId": "chapter-16-q-016",
+            "sourceChapterId": 16
+          }
+        },
+        {
+          "number": 29,
+          "prompt": "A pure culture ____.",
+          "options": [
+            {
+              "key": "A",
+              "text": "is sterile"
+            },
+            {
+              "key": "B",
+              "text": "is a population of identical cells"
+            },
+            {
+              "key": "C",
+              "text": "is made of a clearly defined chemical medium"
+            },
+            {
+              "key": "D",
+              "text": "was cultured for a certified stock culture"
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "纯培养是指由单个微生物细胞繁殖而来的、遗传背景相同的细胞群体。它包含大量细胞而非仅一个，且含有活细胞所以不是无菌的。",
+            "optionExplanations": {
+              "A": "纯培养含有微生物，不是无菌状态。",
+              "B": "正确，指单一物种的细胞群体。",
+              "C": "培养基成分不决定是否为纯培养。",
+              "D": "纯培养是群体，不是单个细胞。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "high",
+            "score": 0.9667,
+            "stemRatio": 1.0,
+            "optionRatio": 0.8152,
+            "sourceQuestionId": "chapter-01-q-020",
+            "sourceChapterId": 1
+          }
+        },
+        {
+          "number": 30,
+          "prompt": "In a disc diffusion assay, the zone of inhibition will be ____ for organisms more resistant to an antimicrobial agent.",
+          "options": [
+            {
+              "key": "A",
+              "text": "Absent"
+            },
+            {
+              "key": "B",
+              "text": "Smaller"
+            },
+            {
+              "key": "C",
+              "text": "Larger"
+            },
+            {
+              "key": "D",
+              "text": "yellow"
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "抑菌圈的大小与微生物对抗生素的敏感性成正比。耐药性越强，抗生素扩散抑制生长的范围越小，因此抑菌圈会更小。",
+            "optionExplanations": {
+              "A": "完全耐药可能无抑菌圈，但“更耐药”通常指范围变小。",
+              "B": "耐药性越高，药物抑制效果越差，抑菌圈直径越小。",
+              "C": "抑菌圈越大代表越敏感。",
+              "D": "颜色不是抑菌圈的判断标准。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.3858,
+            "stemRatio": 0.393,
+            "optionRatio": 0.3529,
+            "sourceQuestionId": "chapter-24-q-039",
+            "sourceChapterId": 24
+          }
+        },
+        {
+          "number": 31,
+          "prompt": "Which of the following characteristics can apply to viral genomes?",
+          "options": [
+            {
+              "key": "A",
+              "text": "Linear or circular"
+            },
+            {
+              "key": "B",
+              "text": "Double-stranded or single-stranded"
+            },
+            {
+              "key": "C",
+              "text": "Composed of RNA or DNA"
+            },
+            {
+              "key": "D",
+              "text": "All of the above"
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "病毒基因组具有高度多样性，可以是DNA或RNA，单链或双链，以及线性或环状结构。因此所有描述均适用于病毒基因组。",
+            "optionExplanations": {
+              "A": "病毒核酸可以是线状或环状。",
+              "B": "病毒核酸可以是单链或双链。",
+              "C": "病毒遗传物质可以是DNA或RNA。",
+              "D": "以上所有特征在病毒界中均存在。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.6591,
+            "stemRatio": 0.748,
+            "optionRatio": 0.254,
+            "sourceQuestionId": "chapter-06-q-030",
+            "sourceChapterId": 6
+          }
+        },
+        {
+          "number": 32,
+          "prompt": "The packaging mechanism of T4 DNA involves cutting of DNA from ____.",
+          "options": [
+            {
+              "key": "A",
+              "text": "circular genetic elements"
+            },
+            {
+              "key": "B",
+              "text": "linear genetic elements"
+            },
+            {
+              "key": "C",
+              "text": "DNA concatamers"
+            },
+            {
+              "key": "D",
+              "text": "none of these they are all transcribed directly from inserted viral DNA"
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "T4噬菌体复制时形成多联体DNA（concatemers）。包装机制将这些长链DNA切割成单位长度的基因组装入衣壳。因此是从DNA串联体上切割。",
+            "optionExplanations": {
+              "A": "T4 DNA不是环状遗传元件。",
+              "B": "虽然最终是线性的，但包装前是串联体。",
+              "C": "正确，T4通过切割DNA串联体进行包装。",
+              "D": "错误，涉及DNA切割而非直接转录。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "review",
+            "score": 0.9423,
+            "stemRatio": 1.0,
+            "optionRatio": 0.6794,
+            "sourceQuestionId": "chapter-08-q-016",
+            "sourceChapterId": 8
+          }
+        },
+        {
+          "number": 33,
+          "prompt": "A prophage replicates ____.",
+          "options": [
+            {
+              "key": "A",
+              "text": "along with its host as long as the genes activating its lytic genes are not expressed"
+            },
+            {
+              "key": "B",
+              "text": "along with its host as long as the genes activating its lytic genes are being expressed"
+            },
+            {
+              "key": "C",
+              "text": "independently of its host as long as the genes activating its lytic genes are being expressed"
+            },
+            {
+              "key": "D",
+              "text": "independently of its host as long as the genes activating its lytic genes are not being expressed"
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "原噬菌体整合于宿主基因组中，随宿主细胞分裂同步复制。此过程要求裂解相关基因处于抑制状态，以维持溶原性循环。",
+            "optionExplanations": {
+              "A": "正确，溶原状态下随宿主复制且裂解基因被抑制。",
+              "B": "若裂解基因表达则进入裂解循环，不再随宿主稳定复制。",
+              "C": "原噬菌体不独立复制，依赖宿主。",
+              "D": "同上，依赖宿主复制。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "review",
+            "score": 0.9527,
+            "stemRatio": 1.0,
+            "optionRatio": 0.737,
+            "sourceQuestionId": "chapter-08-q-017",
+            "sourceChapterId": 8
+          }
+        },
+        {
+          "number": 34,
+          "prompt": "A virus that kills its host is said to be ____.",
+          "options": [
+            {
+              "key": "A",
+              "text": "virulent or lysogenic, but not temperate"
+            },
+            {
+              "key": "B",
+              "text": "Temperate"
+            },
+            {
+              "key": "C",
+              "text": "lysogenic"
+            },
+            {
+              "key": "D",
+              "text": "lytic or virulent"
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "能够感染并迅速杀死宿主细胞的病毒被称为烈性或裂解性病毒。温和或溶原性病毒通常会整合到宿主DNA中而不立即致死。",
+            "optionExplanations": {
+              "A": "溶原性通常不立即杀死宿主。",
+              "B": "温和噬菌体可建立溶原状态而不杀死宿主。",
+              "C": "溶原性指整合状态，不一定致死。",
+              "D": "正确，裂解性或烈性病毒导致宿主死亡。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "review",
+            "score": 0.9357,
+            "stemRatio": 1.0,
+            "optionRatio": 0.6429,
+            "sourceQuestionId": "chapter-08-q-014",
+            "sourceChapterId": 8
+          }
+        },
+        {
+          "number": 35,
+          "prompt": "Which method is commonly employed to quantify bacteriophages?",
+          "options": [
+            {
+              "key": "A",
+              "text": "Plaque assay"
+            },
+            {
+              "key": "B",
+              "text": "Spread-plate"
+            },
+            {
+              "key": "C",
+              "text": "Streak-plate"
+            },
+            {
+              "key": "D",
+              "text": "Spot titering"
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "噬斑测定法是微生物学中定量计数噬菌体的标准方法。通过统计平板上形成的噬菌斑数量来计算噬菌体滴度。",
+            "optionExplanations": {
+              "A": "正确，噬斑测定法用于定量噬菌体。",
+              "B": "涂布平板法主要用于细菌计数。",
+              "C": "划线分离法用于纯化菌种。",
+              "D": "点样滴定法虽可用但不如噬斑测定法通用和精确。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.5297,
+            "stemRatio": 0.6,
+            "optionRatio": 0.2095,
+            "sourceQuestionId": "chapter-09-q-028",
+            "sourceChapterId": 9
+          }
+        },
+        {
+          "number": 36,
+          "prompt": "Which of the following statements about plaque assays is incorrect?",
+          "options": [
+            {
+              "key": "A",
+              "text": "Viral titers are expressed as plaque-forming units (PFU)."
+            },
+            {
+              "key": "B",
+              "text": "Top agar containing a dilution of virions and bacteria is poured on an agar plate."
+            },
+            {
+              "key": "C",
+              "text": "Plaques are clear zones seen because viruses lysed the host cells in the area."
+            },
+            {
+              "key": "D",
+              "text": "Plaque assays are used to quantify lysogenic phages as well as lytic phages."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "噬斑测定法依赖于病毒裂解宿主细胞形成透明区域。溶原性噬菌体通常整合入宿主且不裂解细胞，因此难以用此法直接定量。选项A、B、C均为噬斑测定的正确描述。",
+            "optionExplanations": {
+              "A": "正确，滴度单位为PFU。",
+              "B": "正确，使用顶层琼脂混合病毒和细菌。",
+              "C": "正确，噬斑因宿主裂解而形成透明区。",
+              "D": "错误，噬斑测定主要针对裂解性噬菌体，溶原性噬菌体通常不形成典型清晰噬斑。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.7105,
+            "stemRatio": 0.8,
+            "optionRatio": 0.3026,
+            "sourceQuestionId": "chapter-01-q-002",
+            "sourceChapterId": 1
+          }
+        },
+        {
+          "number": 37,
+          "prompt": "Which of the following accurately describes the process of T4 bacteriophage penetration into an Escherichia coli cell?",
+          "options": [
+            {
+              "key": "A",
+              "text": "The envelope fuses with the cell membrane, allowing the phage nucleocapsid to enter the cell."
+            },
+            {
+              "key": "B",
+              "text": "Integrase makes a pore in the cell wall, the tail sheath contracts, and the phage DNA is injected into the cell."
+            },
+            {
+              "key": "C",
+              "text": "T4 lysozyme makes a pore in the cell wall, the tail sheath contracts, and the phage DNA is injected into the cell."
+            },
+            {
+              "key": "D",
+              "text": "T4 lysozyme facilitates membrane fusion, allowing the phage to enter the cell."
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "T4噬菌体无包膜，通过尾部收缩将DNA注入宿主细胞。其尾部的溶菌酶活性可降解细胞壁肽聚糖形成孔洞，随后鞘收缩将DNA注入。",
+            "optionExplanations": {
+              "A": "T4无包膜，不发生膜融合。",
+              "B": "整合酶用于整合基因组，不负责穿孔。",
+              "C": "正确描述了溶菌酶作用及尾部收缩注射DNA的过程。",
+              "D": "T4无包膜，不涉及膜融合。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4941,
+            "stemRatio": 0.552,
+            "optionRatio": 0.2301,
+            "sourceQuestionId": "chapter-11-q-034",
+            "sourceChapterId": 11
+          }
+        },
+        {
+          "number": 38,
+          "prompt": "Which of the following is true about Archaea and Bacteria, given that they lack a nucleus?",
+          "options": [
+            {
+              "key": "A",
+              "text": "They use RNA polymerase for transcription."
+            },
+            {
+              "key": "B",
+              "text": "They use polysomes to make multiple copies of a protein."
+            },
+            {
+              "key": "C",
+              "text": "They supercoil their chromosomes."
+            },
+            {
+              "key": "D",
+              "text": "They perform coupled transcription and translation."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "原核生物（细菌和古菌）无核膜，转录和翻译可在同一空间同时进行。这种偶联过程是缺乏细胞核的直接结果。",
+            "optionExplanations": {
+              "A": "真核生物也使用RNA聚合酶，非特有。",
+              "B": "多聚核糖体在真核中也存在。",
+              "C": "染色体超螺旋在真核中也存在。",
+              "D": "因无核膜阻隔，转录未结束即可开始翻译，这是原核特征。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.5581,
+            "stemRatio": 0.6015,
+            "optionRatio": 0.3606,
+            "sourceQuestionId": "chapter-25-q-035",
+            "sourceChapterId": 25
+          }
+        },
+        {
+          "number": 39,
+          "prompt": "Which of the following is a characteristic of RNA polymerase activity that is not true for DNA polymerase activity?",
+          "options": [
+            {
+              "key": "A",
+              "text": "Precursor nucleotides can contain adenine, guanine, or cytosine."
+            },
+            {
+              "key": "B",
+              "text": "Growth of nucleotide sequence occurs only in the 5'→3'direction."
+            },
+            {
+              "key": "C",
+              "text": "Newly synthesized strands are antiparallel to their template strand."
+            },
+            {
+              "key": "D",
+              "text": "A nucleotide primer is unnecessary."
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "RNA聚合酶能从头起始合成RNA链，不需要引物。而DNA聚合酶必须依赖引物提供3'-OH末端才能延伸。",
+            "optionExplanations": {
+              "A": "两者碱基组成相似（除U/T外）。",
+              "B": "两者合成方向均为5'到3'。",
+              "C": "两者新链均与模板反向平行。",
+              "D": "RNA聚合酶无需引物，DNA聚合酶需要，这是关键区别。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.5507,
+            "stemRatio": 0.6279,
+            "optionRatio": 0.199,
+            "sourceQuestionId": "chapter-32-q-038",
+            "sourceChapterId": 32
+          }
+        },
+        {
+          "number": 40,
+          "prompt": "When comparing genes from Archaea, Bacteria, and Eukarva, which statement is true?",
+          "options": [
+            {
+              "key": "A",
+              "text": "Genes in Archaea involved in DNA replication, transcription, and translation are more similar to those of Eukarya, while those encoding metabolic functions other than information processing are more similar to those of Bacteria."
+            },
+            {
+              "key": "B",
+              "text": "Almost all archaeal genes are more similar to bacterial genes than to eukaryotic genes."
+            },
+            {
+              "key": "C",
+              "text": "Archaeal genes are almost universally unique; very few are similar to either eukaryotic or bacterial genes."
+            },
+            {
+              "key": "D",
+              "text": "Almost all archaeal genes are more similar to eukaryotic genes than to bacterial genes."
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "古菌的遗传信息处理系统（复制、转录、翻译）与真核生物更相似，而代谢相关基因则更接近细菌。这反映了古菌的嵌合进化特征。",
+            "optionExplanations": {
+              "A": "准确描述了古菌基因组的嵌合特性。",
+              "B": "忽略了信息处理基因与真核的相似性。",
+              "C": "古菌基因并非独一无二，有同源性。",
+              "D": "忽略了代谢基因与细菌的相似性。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4349,
+            "stemRatio": 0.4459,
+            "optionRatio": 0.3851,
+            "sourceQuestionId": "chapter-13-q-031",
+            "sourceChapterId": 13
+          }
+        },
+        {
+          "number": 41,
+          "prompt": "Housekeeping genes are present in ____.",
+          "options": [
+            {
+              "key": "A",
+              "text": "chromosomes"
+            },
+            {
+              "key": "B",
+              "text": "plasmids"
+            },
+            {
+              "key": "C",
+              "text": "chromosomes and plasmids"
+            },
+            {
+              "key": "D",
+              "text": "neither chromosomes nor plasmids"
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "管家基因编码维持细胞基本生命活动所需的蛋白质，通常位于主染色体上。质粒通常携带非必需的辅助基因。",
+            "optionExplanations": {
+              "A": "正确，管家基因位于染色体上维持基本功能。",
+              "B": "质粒通常携带适应性基因而非管家基因。",
+              "C": "管家基因主要定义在染色体上。",
+              "D": "显然错误，基因存在于核酸分子中。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.5299,
+            "stemRatio": 0.5902,
+            "optionRatio": 0.2555,
+            "sourceQuestionId": "chapter-27-q-016",
+            "sourceChapterId": 27
+          }
+        },
+        {
+          "number": 42,
+          "prompt": "Promoters are specific sequences of ____ that are recognized by ____.",
+          "options": [
+            {
+              "key": "A",
+              "text": "RNA / DNA polymerase"
+            },
+            {
+              "key": "B",
+              "text": "RNA / RNA polymerase (coreenzyme)"
+            },
+            {
+              "key": "C",
+              "text": "DNA / RNA polymerase (coreenzyme)"
+            },
+            {
+              "key": "D",
+              "text": "DNA / sigma factor"
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "启动子是DNA上的特定序列，而非RNA。σ因子是RNA聚合酶全酶的一部分，负责特异性识别并结合启动子，核心酶本身无法完成此功能。",
+            "optionExplanations": {
+              "A": "启动子是DNA序列，不是RNA。",
+              "B": "启动子是DNA序列，不是RNA。",
+              "C": "核心酶缺乏特异性，不能识别启动子。",
+              "D": "正确，启动子是DNA序列，由σ因子识别。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.7564,
+            "stemRatio": 0.7838,
+            "optionRatio": 0.6319,
+            "sourceQuestionId": "chapter-04-q-013",
+            "sourceChapterId": 4
+          }
+        },
+        {
+          "number": 43,
+          "prompt": "Proteins interact predominantly within which portion of a double-stranded DNA helix?",
+          "options": [
+            {
+              "key": "A",
+              "text": "major groove"
+            },
+            {
+              "key": "B",
+              "text": "minor groove"
+            },
+            {
+              "key": "C",
+              "text": "telomere"
+            },
+            {
+              "key": "D",
+              "text": "supercoil"
+            }
+          ],
+          "answerKey": "A",
+          "aiExplanation": {
+            "model": "qwen3.5-flash",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "DNA 结合蛋白主要通过识别大沟中的氢键供体和受体模式来特异性结合序列。大沟暴露了更多的化学信息，使得区分不同的碱基对成为可能。小沟虽然也可结合，但特异性识别主要发生在大沟。",
+            "optionExplanations": {
+              "A": "大沟暴露更多碱基边缘信息，利于特异性识别。",
+              "B": "小沟信息较少，特异性识别能力较弱。",
+              "C": "末端不是主要的相互作用区域。",
+              "D": "超螺旋是高级结构，不是局部结合位点。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "high",
+            "score": 0.9104,
+            "stemRatio": 0.9371,
+            "optionRatio": 0.7885,
+            "sourceQuestionId": "chapter-04-q-003",
+            "sourceChapterId": 4
+          }
+        },
+        {
+          "number": 44,
+          "prompt": "Which of the following is incorrect regarding DNA and RNA synthesis?",
+          "options": [
+            {
+              "key": "A",
+              "text": "DNA is the template for both DNA and RNA synthesis."
+            },
+            {
+              "key": "B",
+              "text": "Both processes require an RNA primer to begin."
+            },
+            {
+              "key": "C",
+              "text": "The template strand is antiparallel to the newly synthesized strand."
+            },
+            {
+              "key": "D",
+              "text": "The overall direction of chain growth is from the 5' end to the 3' end."
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "题目要求选出错误的描述。DNA复制需要RNA引物，但转录（RNA合成）不需要引物即可从头开始合成。其他选项关于模板和方向的描述均正确。",
+            "optionExplanations": {
+              "A": "DNA确实作为DNA和RNA合成的模板。",
+              "B": "错误，RNA合成不需要引物。",
+              "C": "模板链与新合成链总是反向平行的。",
+              "D": "核酸链的合成方向均为5'端到3'端。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "review",
+            "score": 0.9111,
+            "stemRatio": 0.9706,
+            "optionRatio": 0.6402,
+            "sourceQuestionId": "chapter-04-q-023",
+            "sourceChapterId": 4
+          }
+        },
+        {
+          "number": 45,
+          "prompt": "Termination of RNA synthesis is ultimately determined by ____.",
+          "options": [
+            {
+              "key": "A",
+              "text": "CG-rich sequences followed byAT-rich sequences."
+            },
+            {
+              "key": "B",
+              "text": "specific nucleotide sequences on the DNA."
+            },
+            {
+              "key": "C",
+              "text": "common termination sequences."
+            },
+            {
+              "key": "D",
+              "text": "special protein factors."
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "转录终止的信号最终来源于DNA模板上的特定核苷酸序列。这些序列要么形成发夹结构引起内在终止，要么作为蛋白质因子的结合位点。",
+            "optionExplanations": {
+              "A": "仅描述了内在终止的结构特征，不够全面。",
+              "B": "正确，所有终止机制的基础都是DNA特定序列。",
+              "C": "表述过于笼统，不如B准确。",
+              "D": "仅适用于ρ依赖型终止，内在终止不需要蛋白因子。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.8843,
+            "stemRatio": 1.0,
+            "optionRatio": 0.3572,
+            "sourceQuestionId": "chapter-04-q-024",
+            "sourceChapterId": 4
+          }
+        },
+        {
+          "number": 46,
+          "prompt": "AT-rich DNA will melt ____.",
+          "options": [
+            {
+              "key": "A",
+              "text": "at a higher temperature than GC-rich DNA."
+            },
+            {
+              "key": "B",
+              "text": "in accordance with the animal or plant from which it was taken."
+            },
+            {
+              "key": "C",
+              "text": "at a lower temperature than GC-rich DNA."
+            },
+            {
+              "key": "D",
+              "text": "usually at the same temperature as GC-rich DNA, with some minor variations."
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "G-C碱基对含有三个氢键，而A-T碱基对只含有两个氢键。因此，富含A-T的DNA双链稳定性较差，解链温度低于富含G-C的DNA。",
+            "optionExplanations": {
+              "A": "错误，GC含量高熔点才更高。",
+              "B": "熔解温度主要取决于碱基组成比例。",
+              "C": "正确，AT配对氢键少，更容易在低温下解开。",
+              "D": "碱基组成不同会导致显著的熔解温度差异。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "review",
+            "score": 0.7832,
+            "stemRatio": 0.8333,
+            "optionRatio": 0.5547,
+            "sourceQuestionId": "chapter-04-q-004",
+            "sourceChapterId": 4
+          }
+        },
+        {
+          "number": 47,
+          "prompt": "The amino acid alanine is coded for by these codons GCU, GCC, GCG. This is an example of ____.",
+          "options": [
+            {
+              "key": "A",
+              "text": "the wobble hypothesis."
+            },
+            {
+              "key": "B",
+              "text": "the degeneracy of the genetic code."
+            },
+            {
+              "key": "C",
+              "text": "the universality of the genetic code."
+            },
+            {
+              "key": "D",
+              "text": "missense mutations."
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "遗传密码的简并性是指多个不同的密码子编码同一种氨基酸的特性。丙氨酸由三个密码子编码，这正是简并性的典型例子。",
+            "optionExplanations": {
+              "A": "摆动假说解释的是tRNA反密码子与密码子的配对灵活性。",
+              "B": "正确，多个密码子对应同一氨基酸即为简并性。",
+              "C": "通用性指几乎所有生物共用同一套密码子表。",
+              "D": "错义突变指基因突变导致编码的氨基酸发生改变。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4661,
+            "stemRatio": 0.5176,
+            "optionRatio": 0.2314,
+            "sourceQuestionId": "chapter-27-q-041",
+            "sourceChapterId": 27
+          }
+        },
+        {
+          "number": 48,
+          "prompt": "Which of the following mechanisms allows pathogenic bacteria like Escherichia coli O157:H7 and Staphylococcus aureus to regulate the production of certain virulence factors until their population is sufficiently large?",
+          "options": [
+            {
+              "key": "A",
+              "text": "Attenuation"
+            },
+            {
+              "key": "B",
+              "text": "Differentiation"
+            },
+            {
+              "key": "C",
+              "text": "Signal transduction"
+            },
+            {
+              "key": "D",
+              "text": "Quorum sensing"
+            }
+          ],
+          "answerKey": "D",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "群体感应是细菌通过化学信号分子感知种群密度的机制。当密度达到阈值时，细菌协调表达毒力因子。大肠杆菌和金黄色葡萄球菌利用此机制确保在足够数量时才释放毒素。",
+            "optionExplanations": {
+              "A": "衰减作用涉及转录提前终止，与密度无关。",
+              "B": "分化指细胞形态改变，非密度依赖调控。",
+              "C": "信号转导范围更广，不特指群体行为。",
+              "D": "正确，群体感应专门用于基于密度的基因调控。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4293,
+            "stemRatio": 0.4857,
+            "optionRatio": 0.1723,
+            "sourceQuestionId": "chapter-12-q-027",
+            "sourceChapterId": 12
+          }
+        },
+        {
+          "number": 49,
+          "prompt": "To repress transcription, corepressors bind to ____, and inducers bind to ____ proteins.",
+          "options": [
+            {
+              "key": "A",
+              "text": "repressor proteins / inducer"
+            },
+            {
+              "key": "B",
+              "text": "repressor proteins / repressor"
+            },
+            {
+              "key": "C",
+              "text": "RNA polymerase / inducer"
+            },
+            {
+              "key": "D",
+              "text": "RNA polymerase / repressor"
+            }
+          ],
+          "answerKey": "B",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "辅阻遏物与阻遏蛋白结合使其具有活性，从而抑制转录。诱导物与阻遏蛋白结合使其失活，从而允许转录进行。两者的作用靶点均为阻遏蛋白。",
+            "optionExplanations": {
+              "A": "诱导物结合的是阻遏蛋白，而非诱导蛋白。",
+              "B": "正确，辅阻遏物和诱导物均结合阻遏蛋白以改变其构象。",
+              "C": "它们不直接结合RNA聚合酶。",
+              "D": "同上，主要作用于阻遏蛋白。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4581,
+            "stemRatio": 0.493,
+            "optionRatio": 0.2992,
+            "sourceQuestionId": "chapter-06-q-005",
+            "sourceChapterId": 6
+          }
+        },
+        {
+          "number": 50,
+          "prompt": "For the lac operon in Escherichia coli, under conditions in which glucose is absent and lactose is present, which of the following is true?",
+          "options": [
+            {
+              "key": "A",
+              "text": "CRP and cAMP together are bound to the DNA, and LacI is bound to the operator site."
+            },
+            {
+              "key": "B",
+              "text": "The lac operon is not transcribed because lactose is present."
+            },
+            {
+              "key": "C",
+              "text": "CRP and cAMP together are bound to the DNA, and allolactose is bound to LacI."
+            },
+            {
+              "key": "D",
+              "text": "The lac operon is not transcribed due to catabolite repression because glucose is absent. Answer: DDBAB CCAAB BADAB BDBBC CBCCB CABBB DCADA DCDDA ADABB CBDBC"
+            }
+          ],
+          "answerKey": "C",
+          "aiExplanation": {
+            "model": "qwen3.5-122b-a10b",
+            "generatedAt": "2026-05-09T00:00:00",
+            "explanation": "葡萄糖缺失使cAMP水平升高，CRP-cAMP复合物结合DNA促进转录。乳糖存在产生别乳糖，结合LacI阻遏蛋白使其脱离操纵基因。此时操纵子处于高效转录状态。",
+            "optionExplanations": {
+              "A": "乳糖存在时LacI不应结合操纵基因。",
+              "B": "此时操纵子应被转录。",
+              "C": "正确，描述了高转录状态下的分子结合情况。",
+              "D": "葡萄糖缺失解除分解代谢物阻遏，而非引起阻遏。"
+            },
+            "confidence": "high"
+          },
+          "match": {
+            "type": "none",
+            "score": 0.4286,
+            "stemRatio": 0.4876,
+            "optionRatio": 0.1599,
+            "sourceQuestionId": "chapter-06-q-007",
+            "sourceChapterId": 6
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
-{
-  "description": "Critical course route cases used by harness and browser checks.",
+﻿{
+  "description": "Critical course route cases used by project and browser checks.",
   "cases": [
     {
       "courseCode": "BIO2110F",
@@ -7,3 +7,4 @@
     }
   ]
 }
+

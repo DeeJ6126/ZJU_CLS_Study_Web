@@ -1,4 +1,4 @@
-{
+﻿{
   "projectName": "life-science-study-platform",
   "brandName": "生科智学 / 生命科学学子学习平台",
   "devServer": {
@@ -13,7 +13,7 @@
   },
   "paths": {
     "agentsEntry": "AGENTS.md",
-    "harnessDocs": "docs/harness",
+    "projectGuides": "docs/project-guides",
     "source": "src",
     "publicContent": "public",
     "tests": "tests",
@@ -23,7 +23,8 @@
   "commands": {
     "test": "npm test",
     "build": "npm run build",
-    "harness": "npm run harness",
-    "browser": "npm run harness:browser"
+    "check": "npm run check",
+    "browser": "npm run check:browser"
   }
 }
+

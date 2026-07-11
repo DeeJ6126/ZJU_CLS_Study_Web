@@ -4,7 +4,7 @@ Visual evaluation is reserved for screenshot artifacts and later regression chec
 
 Initial policy:
 
-- Store screenshots under `harness/artifacts/`.
+- Store screenshots under the project check artifact directory.
 - Do not enforce pixel-perfect comparisons yet.
 - Use screenshots to catch layout collapse, unreadable text, theme drift, and major spacing errors.
 

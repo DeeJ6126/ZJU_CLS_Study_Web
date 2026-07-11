@@ -1,4 +1,4 @@
-# server
+﻿# server
 
 Lightweight Node backend for the current auth prototype.
 
@@ -8,6 +8,8 @@ Lightweight Node backend for the current auth prototype.
 - Password hashing.
 - Cookie session login/logout.
 - SQLite storage in `server/data/auth.sqlite`.
+- Quiz collection import, grading, and practice APIs.
+- Student practice without login; user-only saved progress and mistakes.
 
 ## Entry Point
 
@@ -43,3 +45,4 @@ The frontend should be built with `npm run build`, and Apache should serve `dist
 npm.cmd test
 npm.cmd run build
 ```
+

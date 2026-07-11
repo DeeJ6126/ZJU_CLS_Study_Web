@@ -11,7 +11,7 @@ Browser evaluators use Playwright to verify real UI flows:
 Run with:
 
 ```bash
-npm.cmd run harness:browser
+npm.cmd run check:browser
 ```
 
 If browsers are missing, run:

@@ -1,4 +1,4 @@
-# src/utils
+﻿# src/utils
 
 Small shared helpers with no Vue component dependency.
 
@@ -19,3 +19,4 @@ Small shared helpers with no Vue component dependency.
 npm.cmd test
 npm.cmd run build
 ```
+

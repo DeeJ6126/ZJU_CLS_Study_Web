@@ -1,4 +1,4 @@
-import path from 'node:path';
+﻿import path from 'node:path';
 import { createResult, isDirectRun, listFiles, printCliResult, readJson, readText } from './lib.mjs';
 
 const cjkPattern = /[\u3400-\u9fff]/g;
@@ -63,7 +63,7 @@ export async function checkContentLocation({ rootDir = process.cwd() } = {}) {
 
   return createResult({
     name: 'content-location',
-    command: 'npm run harness:content',
+    command: 'npm run check:content',
     ok: failures.length === 0,
     checked: {
       files: new Set(scanFiles).size,
@@ -78,10 +78,11 @@ if (isDirectRun(import.meta.url)) {
   checkContentLocation().then(printCliResult).catch((error) => {
     printCliResult(createResult({
       name: 'content-location',
-      command: 'npm run harness:content',
+      command: 'npm run check:content',
       ok: false,
       failures: [{ message: error.message }],
       suggestions: ['Check content-location policy and scanned paths.'],
     }));
   });
 }
+

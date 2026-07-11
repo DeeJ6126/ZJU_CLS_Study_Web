@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import CommentSection from './CommentSection.vue';
 import ContributionBox from './ContributionBox.vue';
 import FavoriteButton from './FavoriteButton.vue';
+import QuizPracticePanel from './QuizPracticePanel.vue';
 import { buildCourseRoute, courseDetailTabs } from '../data/courses/resourcePaths.js';
 import { createFavoriteKey } from '../services/favoriteService.js';
 import {
@@ -216,6 +217,11 @@ watch(
           </dl>
         </aside>
       </header>
+
+      <QuizPracticePanel
+        :course-code="course.code"
+        :can-use-quiz="canSubmit"
+      />
     </template>
 
     <section v-else-if="activeTab.id === 'experiences'" class="course-subpage" aria-labelledby="experience-title">

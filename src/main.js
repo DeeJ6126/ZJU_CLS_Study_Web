@@ -8,5 +8,6 @@ import './styles/resource.css';
 import './styles/course-detail.css';
 import './styles/settings.css';
 import './styles/home.css';
+import './styles/demo.css';
 
 createApp(App).mount('#app');

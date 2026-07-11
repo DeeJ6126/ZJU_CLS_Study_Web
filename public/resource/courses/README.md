@@ -1,4 +1,4 @@
-# public/resource/courses
+﻿# public/resource/courses
 
 Per-course static resource content.
 
@@ -34,7 +34,8 @@ That index maps course code and tab to markdown files.
 ## Checks
 
 ```bash
-npm.cmd run harness:content
-npm.cmd run harness:routes
+npm.cmd run check:content
+npm.cmd run check:routes
 npm.cmd test
 ```
+

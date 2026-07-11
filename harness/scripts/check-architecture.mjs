@@ -1,4 +1,4 @@
-import { createResult, isDirectRun, listFiles, printCliResult, readJson, readText } from './lib.mjs';
+﻿import { createResult, isDirectRun, listFiles, printCliResult, readJson, readText } from './lib.mjs';
 
 export async function checkArchitecture({ rootDir = process.cwd() } = {}) {
   const policy = await readJson(rootDir, 'harness/policies/file-boundaries.json');
@@ -47,7 +47,7 @@ export async function checkArchitecture({ rootDir = process.cwd() } = {}) {
 
   return createResult({
     name: 'architecture',
-    command: 'npm run harness:architecture',
+    command: 'npm run check:architecture',
     ok: failures.length === 0,
     checked: {
       rules: checkedRules + 1,
@@ -61,10 +61,11 @@ if (isDirectRun(import.meta.url)) {
   checkArchitecture().then(printCliResult).catch((error) => {
     printCliResult(createResult({
       name: 'architecture',
-      command: 'npm run harness:architecture',
+      command: 'npm run check:architecture',
       ok: false,
       failures: [{ message: error.message }],
       suggestions: ['Check file-boundary policy and source paths.'],
     }));
   });
 }
+

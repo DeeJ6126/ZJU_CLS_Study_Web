@@ -1,0 +1,1761 @@
+{
+  "generatedAt": "2026-06-18T03:05:31.527517+00:00",
+  "totalQuestions": 192,
+  "categories": [
+    {
+      "id": "叶",
+      "title": "叶 (Leaf)",
+      "imageCount": 46
+    },
+    {
+      "id": "根",
+      "title": "根 (Root)",
+      "imageCount": 43
+    },
+    {
+      "id": "植物组织",
+      "title": "植物组织 (Plant Tissue)",
+      "imageCount": 29
+    },
+    {
+      "id": "花",
+      "title": "花 (Flower)",
+      "imageCount": 37
+    },
+    {
+      "id": "茎",
+      "title": "茎 (Stem)",
+      "imageCount": 37
+    }
+  ],
+  "questions": [
+    {
+      "id": "叶_丁香叶柄10X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/丁香叶柄10X-1.jpg",
+      "answer": "双子叶——叶——丁香叶柄——10X",
+      "plantType": "双子叶",
+      "sourceName": "丁香叶柄10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "叶_丁香叶柄10X-2.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/丁香叶柄10X-2.jpg",
+      "answer": "双子叶——叶——丁香叶柄——10X",
+      "plantType": "双子叶",
+      "sourceName": "丁香叶柄10X-2.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "叶_丁香叶柄4X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/丁香叶柄4X-1.jpg",
+      "answer": "双子叶——叶——丁香叶柄——4X",
+      "plantType": "双子叶",
+      "sourceName": "丁香叶柄4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "叶_夹竹桃2-10X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/夹竹桃2-10X-1.jpg",
+      "answer": "双子叶——叶——夹竹桃——10X",
+      "plantType": "双子叶",
+      "sourceName": "夹竹桃2-10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "叶_夹竹桃2-10X-2.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/夹竹桃2-10X-2.jpg",
+      "answer": "双子叶——叶——夹竹桃——10X",
+      "plantType": "双子叶",
+      "sourceName": "夹竹桃2-10X-2.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "叶_夹竹桃2-40X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/夹竹桃2-40X-1.jpg",
+      "answer": "双子叶——叶——夹竹桃——40X",
+      "plantType": "双子叶",
+      "sourceName": "夹竹桃2-40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_夹竹桃2-40X-2.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/夹竹桃2-40X-2.jpg",
+      "answer": "双子叶——叶——夹竹桃——40X",
+      "plantType": "双子叶",
+      "sourceName": "夹竹桃2-40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_夹竹桃2-4X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/夹竹桃2-4X-1.jpg",
+      "answer": "双子叶——叶——夹竹桃——4X",
+      "plantType": "双子叶",
+      "sourceName": "夹竹桃2-4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "叶_夹竹桃叶10X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/夹竹桃叶10X-1.jpg",
+      "answer": "双子叶——叶——夹竹桃——10X",
+      "plantType": "双子叶",
+      "sourceName": "夹竹桃叶10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "叶_夹竹桃叶40X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/夹竹桃叶40X-1.jpg",
+      "answer": "双子叶——叶——夹竹桃——40X",
+      "plantType": "双子叶",
+      "sourceName": "夹竹桃叶40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_夹竹桃叶40X-2.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/夹竹桃叶40X-2.jpg",
+      "answer": "双子叶——叶——夹竹桃——40X",
+      "plantType": "双子叶",
+      "sourceName": "夹竹桃叶40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_夹竹桃叶40X-3.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/夹竹桃叶40X-3.jpg",
+      "answer": "双子叶——叶——夹竹桃——40X",
+      "plantType": "双子叶",
+      "sourceName": "夹竹桃叶40X-3.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_小麦叶10X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/小麦叶10X-1.jpg",
+      "answer": "单子叶——叶——小麦——10X",
+      "plantType": "单子叶",
+      "sourceName": "小麦叶10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "叶_小麦叶40X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/小麦叶40X-1.jpg",
+      "answer": "单子叶——叶——小麦——40X",
+      "plantType": "单子叶",
+      "sourceName": "小麦叶40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_小麦叶40X-2.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/小麦叶40X-2.jpg",
+      "answer": "单子叶——叶——小麦——40X",
+      "plantType": "单子叶",
+      "sourceName": "小麦叶40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_桑叶10X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/桑叶10X-1.jpg",
+      "answer": "双子叶——叶——桑——10X",
+      "plantType": "双子叶",
+      "sourceName": "桑叶10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "叶_桑叶2-10X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/桑叶2-10X-1.jpg",
+      "answer": "双子叶——叶——桑——10X",
+      "plantType": "双子叶",
+      "sourceName": "桑叶2-10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "叶_桑叶2-40X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/桑叶2-40X-1.jpg",
+      "answer": "双子叶——叶——桑——40X",
+      "plantType": "双子叶",
+      "sourceName": "桑叶2-40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_桑叶2-40X-2.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/桑叶2-40X-2.jpg",
+      "answer": "双子叶——叶——桑——40X",
+      "plantType": "双子叶",
+      "sourceName": "桑叶2-40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_桑叶40X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/桑叶40X-1.jpg",
+      "answer": "双子叶——叶——桑——40X",
+      "plantType": "双子叶",
+      "sourceName": "桑叶40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_梨叶片10X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/梨叶片10X-1.jpg",
+      "answer": "双子叶——叶——梨叶片——10X",
+      "plantType": "双子叶",
+      "sourceName": "梨叶片10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "叶_梨叶片40X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/梨叶片40X-1.jpg",
+      "answer": "双子叶——叶——梨叶片——40X",
+      "plantType": "双子叶",
+      "sourceName": "梨叶片40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_梨叶片40X-2.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/梨叶片40X-2.jpg",
+      "answer": "双子叶——叶——梨叶片——40X",
+      "plantType": "双子叶",
+      "sourceName": "梨叶片40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_梨叶片40X-3.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/梨叶片40X-3.jpg",
+      "answer": "双子叶——叶——梨叶片——40X",
+      "plantType": "双子叶",
+      "sourceName": "梨叶片40X-3.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_梨叶片40X-4.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/梨叶片40X-4.jpg",
+      "answer": "双子叶——叶——梨叶片——40X",
+      "plantType": "双子叶",
+      "sourceName": "梨叶片40X-4.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_棉叶10X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/棉叶10X-1.jpg",
+      "answer": "双子叶——叶——棉——10X",
+      "plantType": "双子叶",
+      "sourceName": "棉叶10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "叶_棉叶14X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/棉叶14X-1.jpg",
+      "answer": "双子叶——叶——棉——14X",
+      "plantType": "双子叶",
+      "sourceName": "棉叶14X-1.jpg",
+      "magnification": "14X"
+    },
+    {
+      "id": "叶_棉叶40X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/棉叶40X-1.jpg",
+      "answer": "双子叶——叶——棉——40X",
+      "plantType": "双子叶",
+      "sourceName": "棉叶40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_棉叶4X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/棉叶4X-1.jpg",
+      "answer": "双子叶——叶——棉——4X",
+      "plantType": "双子叶",
+      "sourceName": "棉叶4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "叶_水稻叶10X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/水稻叶10X-1.jpg",
+      "answer": "单子叶——叶——水稻——10X",
+      "plantType": "单子叶",
+      "sourceName": "水稻叶10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "叶_水稻叶40X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/水稻叶40X-1.jpg",
+      "answer": "单子叶——叶——水稻——40X",
+      "plantType": "单子叶",
+      "sourceName": "水稻叶40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_水稻叶40X-2.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/水稻叶40X-2.jpg",
+      "answer": "单子叶——叶——水稻——40X",
+      "plantType": "单子叶",
+      "sourceName": "水稻叶40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_水稻叶40X-3.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/水稻叶40X-3.jpg",
+      "answer": "单子叶——叶——水稻——40X",
+      "plantType": "单子叶",
+      "sourceName": "水稻叶40X-3.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_玉米叶10X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/玉米叶10X-1.jpg",
+      "answer": "单子叶——叶——玉米——10X",
+      "plantType": "单子叶",
+      "sourceName": "玉米叶10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "叶_玉米叶40X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/玉米叶40X-1.jpg",
+      "answer": "单子叶——叶——玉米——40X",
+      "plantType": "单子叶",
+      "sourceName": "玉米叶40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_玉米叶40X-2.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/玉米叶40X-2.jpg",
+      "answer": "单子叶——叶——玉米——40X",
+      "plantType": "单子叶",
+      "sourceName": "玉米叶40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_玉米叶40X-3.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/玉米叶40X-3.jpg",
+      "answer": "单子叶——叶——玉米——40X",
+      "plantType": "单子叶",
+      "sourceName": "玉米叶40X-3.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_玉米叶40X-4.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/玉米叶40X-4.jpg",
+      "answer": "单子叶——叶——玉米——40X",
+      "plantType": "单子叶",
+      "sourceName": "玉米叶40X-4.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_玉米叶40X-5.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/玉米叶40X-5.jpg",
+      "answer": "单子叶——叶——玉米——40X",
+      "plantType": "单子叶",
+      "sourceName": "玉米叶40X-5.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_眼子菜10X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/眼子菜10X-1.jpg",
+      "answer": "单子叶——叶——眼子菜——10X",
+      "plantType": "单子叶",
+      "sourceName": "眼子菜10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "叶_眼子菜40X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/眼子菜40X-1.jpg",
+      "answer": "单子叶——叶——眼子菜——40X",
+      "plantType": "单子叶",
+      "sourceName": "眼子菜40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_眼子菜40X-2.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/眼子菜40X-2.jpg",
+      "answer": "单子叶——叶——眼子菜——40X",
+      "plantType": "单子叶",
+      "sourceName": "眼子菜40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_眼子菜4X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/眼子菜4X-1.jpg",
+      "answer": "单子叶——叶——眼子菜——4X",
+      "plantType": "单子叶",
+      "sourceName": "眼子菜4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "叶_茶叶10X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/茶叶10X-1.jpg",
+      "answer": "双子叶——叶——茶——10X",
+      "plantType": "双子叶",
+      "sourceName": "茶叶10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "叶_茶叶40X-1.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/茶叶40X-1.jpg",
+      "answer": "双子叶——叶——茶——40X",
+      "plantType": "双子叶",
+      "sourceName": "茶叶40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "叶_茶叶40X-2.jpg",
+      "categoryId": "叶",
+      "imagePath": "data/叶/茶叶40X-2.jpg",
+      "answer": "双子叶——叶——茶——40X",
+      "plantType": "双子叶",
+      "sourceName": "茶叶40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "根_大豆根瘤10X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/大豆根瘤10X-1.jpg",
+      "answer": "双子叶——根——大豆根瘤——10X",
+      "plantType": "双子叶",
+      "sourceName": "大豆根瘤10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_大豆根瘤40X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/大豆根瘤40X-1.jpg",
+      "answer": "双子叶——根——大豆根瘤——40X",
+      "plantType": "双子叶",
+      "sourceName": "大豆根瘤40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "根_大豆根瘤40X-2.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/大豆根瘤40X-2.jpg",
+      "answer": "双子叶——根——大豆根瘤——40X",
+      "plantType": "双子叶",
+      "sourceName": "大豆根瘤40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "根_小麦根10X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/小麦根10X-1.jpg",
+      "answer": "单子叶——根——小麦——10X",
+      "plantType": "单子叶",
+      "sourceName": "小麦根10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_小麦根40X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/小麦根40X-1.jpg",
+      "answer": "单子叶——根——小麦——40X",
+      "plantType": "单子叶",
+      "sourceName": "小麦根40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "根_棉初生根10X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/棉初生根10X-1.jpg",
+      "answer": "双子叶——根——棉初生根——10X",
+      "plantType": "双子叶",
+      "sourceName": "棉初生根10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_棉初生根40X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/棉初生根40X-1.jpg",
+      "answer": "双子叶——根——棉初生根——40X",
+      "plantType": "双子叶",
+      "sourceName": "棉初生根40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "根_棉初生根40X-2.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/棉初生根40X-2.jpg",
+      "answer": "双子叶——根——棉初生根——40X",
+      "plantType": "双子叶",
+      "sourceName": "棉初生根40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "根_棉初生根4X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/棉初生根4X-1.jpg",
+      "answer": "双子叶——根——棉初生根——4X",
+      "plantType": "双子叶",
+      "sourceName": "棉初生根4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "根_棉老根10X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/棉老根10X-1.jpg",
+      "answer": "双子叶——根——棉老根——10X",
+      "plantType": "双子叶",
+      "sourceName": "棉老根10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_棉老根10X-2.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/棉老根10X-2.jpg",
+      "answer": "双子叶——根——棉老根——10X",
+      "plantType": "双子叶",
+      "sourceName": "棉老根10X-2.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_棉老根10X-3.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/棉老根10X-3.jpg",
+      "answer": "双子叶——根——棉老根——10X",
+      "plantType": "双子叶",
+      "sourceName": "棉老根10X-3.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_棉老根40X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/棉老根40X-1.jpg",
+      "answer": "双子叶——根——棉老根——40X",
+      "plantType": "双子叶",
+      "sourceName": "棉老根40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "根_棉老根4X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/棉老根4X-1.jpg",
+      "answer": "双子叶——根——棉老根——4X",
+      "plantType": "双子叶",
+      "sourceName": "棉老根4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "根_毛茛根10X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/毛茛根10X-1.jpg",
+      "answer": "双子叶——根——毛茛——10X",
+      "plantType": "双子叶",
+      "sourceName": "毛茛根10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_毛茛根40X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/毛茛根40X-1.jpg",
+      "answer": "双子叶——根——毛茛——40X",
+      "plantType": "双子叶",
+      "sourceName": "毛茛根40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "根_毛茛根4X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/毛茛根4X-1.jpg",
+      "answer": "双子叶——根——毛茛——4X",
+      "plantType": "双子叶",
+      "sourceName": "毛茛根4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "根_水稻嫩根10X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/水稻嫩根10X-1.jpg",
+      "answer": "单子叶——根——水稻嫩根——10X",
+      "plantType": "单子叶",
+      "sourceName": "水稻嫩根10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_水稻嫩根40X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/水稻嫩根40X-1.jpg",
+      "answer": "单子叶——根——水稻嫩根——40X",
+      "plantType": "单子叶",
+      "sourceName": "水稻嫩根40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "根_水稻嫩根40X-2 .jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/水稻嫩根40X-2 .jpg",
+      "answer": "单子叶——根——水稻嫩根X——40X",
+      "plantType": "单子叶",
+      "sourceName": "水稻嫩根40X-2 .jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "根_水稻老根10X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/水稻老根10X-1.jpg",
+      "answer": "单子叶——根——水稻老根——10X",
+      "plantType": "单子叶",
+      "sourceName": "水稻老根10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_水稻老根40X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/水稻老根40X-1.jpg",
+      "answer": "单子叶——根——水稻老根——40X",
+      "plantType": "单子叶",
+      "sourceName": "水稻老根40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "根_玉米根10X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/玉米根10X-1.jpg",
+      "answer": "单子叶——根——玉米——10X",
+      "plantType": "单子叶",
+      "sourceName": "玉米根10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_玉米根40X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/玉米根40X-1.jpg",
+      "answer": "单子叶——根——玉米——40X",
+      "plantType": "单子叶",
+      "sourceName": "玉米根40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "根_玉米根4X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/玉米根4X-1.jpg",
+      "answer": "单子叶——根——玉米——4X",
+      "plantType": "单子叶",
+      "sourceName": "玉米根4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "根_玉米根尖10X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/玉米根尖10X-1.jpg",
+      "answer": "单子叶——根——玉米根尖——10X",
+      "plantType": "单子叶",
+      "sourceName": "玉米根尖10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_玉米根尖10X-2.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/玉米根尖10X-2.jpg",
+      "answer": "单子叶——根——玉米根尖——10X",
+      "plantType": "单子叶",
+      "sourceName": "玉米根尖10X-2.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_玉米根尖10X-3.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/玉米根尖10X-3.jpg",
+      "answer": "单子叶——根——玉米根尖——10X",
+      "plantType": "单子叶",
+      "sourceName": "玉米根尖10X-3.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_玉米根尖10X-4.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/玉米根尖10X-4.jpg",
+      "answer": "单子叶——根——玉米根尖——10X",
+      "plantType": "单子叶",
+      "sourceName": "玉米根尖10X-4.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_玉米根尖4X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/玉米根尖4X-1.jpg",
+      "answer": "单子叶——根——玉米根尖——4X",
+      "plantType": "单子叶",
+      "sourceName": "玉米根尖4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "根_石斛根10X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/石斛根10X-1.jpg",
+      "answer": "单子叶——根——石斛——10X",
+      "plantType": "单子叶",
+      "sourceName": "石斛根10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_石斛根10X-2.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/石斛根10X-2.jpg",
+      "answer": "单子叶——根——石斛——10X",
+      "plantType": "单子叶",
+      "sourceName": "石斛根10X-2.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_石斛根10X-3.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/石斛根10X-3.jpg",
+      "answer": "单子叶——根——石斛——10X",
+      "plantType": "单子叶",
+      "sourceName": "石斛根10X-3.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_石斛根40X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/石斛根40X-1.jpg",
+      "answer": "单子叶——根——石斛——40X",
+      "plantType": "单子叶",
+      "sourceName": "石斛根40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "根_石斛根40X-2.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/石斛根40X-2.jpg",
+      "answer": "单子叶——根——石斛——40X",
+      "plantType": "单子叶",
+      "sourceName": "石斛根40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "根_石斛根4X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/石斛根4X-1.jpg",
+      "answer": "单子叶——根——石斛——4X",
+      "plantType": "单子叶",
+      "sourceName": "石斛根4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "根_蚕豆侧根发生10X-2.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/蚕豆侧根发生10X-2.jpg",
+      "answer": "双子叶——根——蚕豆侧根发生——10X",
+      "plantType": "双子叶",
+      "sourceName": "蚕豆侧根发生10X-2.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_蚕豆侧根发生4X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/蚕豆侧根发生4X-1.jpg",
+      "answer": "双子叶——根——蚕豆侧根发生——4X",
+      "plantType": "双子叶",
+      "sourceName": "蚕豆侧根发生4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "根_鸢尾根10X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/鸢尾根10X-1.jpg",
+      "answer": "单子叶——根——鸢尾——10X",
+      "plantType": "单子叶",
+      "sourceName": "鸢尾根10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_鸢尾根10X-2.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/鸢尾根10X-2.jpg",
+      "answer": "单子叶——根——鸢尾——10X",
+      "plantType": "单子叶",
+      "sourceName": "鸢尾根10X-2.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_鸢尾根10X-3.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/鸢尾根10X-3.jpg",
+      "answer": "单子叶——根——鸢尾——10X",
+      "plantType": "单子叶",
+      "sourceName": "鸢尾根10X-3.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "根_鸢尾根40X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/鸢尾根40X-1.jpg",
+      "answer": "单子叶——根——鸢尾——40X",
+      "plantType": "单子叶",
+      "sourceName": "鸢尾根40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "根_鸢尾根4X-1.jpg",
+      "categoryId": "根",
+      "imagePath": "data/根/鸢尾根4X-1.jpg",
+      "answer": "单子叶——根——鸢尾——4X",
+      "plantType": "单子叶",
+      "sourceName": "鸢尾根4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "植物组织_南瓜茎纵切10X-1.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/南瓜茎纵切10X-1.jpg",
+      "answer": "双子叶——茎——南瓜茎纵切——10X",
+      "plantType": "双子叶",
+      "sourceName": "南瓜茎纵切10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "植物组织_南瓜茎纵切10X-2.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/南瓜茎纵切10X-2.jpg",
+      "answer": "双子叶——茎——南瓜茎纵切——10X",
+      "plantType": "双子叶",
+      "sourceName": "南瓜茎纵切10X-2.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "植物组织_南瓜茎纵切40X-1.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/南瓜茎纵切40X-1.jpg",
+      "answer": "双子叶——茎——南瓜茎纵切——40X",
+      "plantType": "双子叶",
+      "sourceName": "南瓜茎纵切40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "植物组织_南瓜茎纵切40X-2.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/南瓜茎纵切40X-2.jpg",
+      "answer": "双子叶——茎——南瓜茎纵切——40X",
+      "plantType": "双子叶",
+      "sourceName": "南瓜茎纵切40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "植物组织_南瓜茎纵切4X.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/南瓜茎纵切4X.jpg",
+      "answer": "双子叶——茎——南瓜茎纵切——4X",
+      "plantType": "双子叶",
+      "sourceName": "南瓜茎纵切4X.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "植物组织_小麦节居间分生组织10X-1.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/小麦节居间分生组织10X-1.jpg",
+      "answer": "单子叶——组织——小麦节居间分生组织——10X",
+      "plantType": "单子叶",
+      "sourceName": "小麦节居间分生组织10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "植物组织_小麦节居间分生组织40X-1.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/小麦节居间分生组织40X-1.jpg",
+      "answer": "单子叶——组织——小麦节居间分生组织——40X",
+      "plantType": "单子叶",
+      "sourceName": "小麦节居间分生组织40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "植物组织_小麦节居间分生组织40X-2.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/小麦节居间分生组织40X-2.jpg",
+      "answer": "单子叶——组织——小麦节居间分生组织——40X",
+      "plantType": "单子叶",
+      "sourceName": "小麦节居间分生组织40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "植物组织_桔皮分泌腔.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/桔皮分泌腔.jpg",
+      "answer": "双子叶——组织——桔皮分泌腔",
+      "plantType": "双子叶",
+      "sourceName": "桔皮分泌腔.jpg",
+      "magnification": ""
+    },
+    {
+      "id": "植物组织_梨果肉石细胞10X.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/梨果肉石细胞10X.jpg",
+      "answer": "双子叶——组织——梨果肉石细胞——10X",
+      "plantType": "双子叶",
+      "sourceName": "梨果肉石细胞10X.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "植物组织_梨果肉石细胞40X.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/梨果肉石细胞40X.jpg",
+      "answer": "双子叶——组织——梨果肉石细胞——40X",
+      "plantType": "双子叶",
+      "sourceName": "梨果肉石细胞40X.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "植物组织_棉分泌腔40X.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/棉分泌腔40X.jpg",
+      "answer": "双子叶——组织——棉分泌腔——40X",
+      "plantType": "双子叶",
+      "sourceName": "棉分泌腔40X.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "植物组织_棉叶4X.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/棉叶4X.jpg",
+      "answer": "双子叶——叶——棉——4X",
+      "plantType": "双子叶",
+      "sourceName": "棉叶4X.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "植物组织_棉叶分泌腔40X.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/棉叶分泌腔40X.jpg",
+      "answer": "双子叶——叶——棉叶分泌腔——40X",
+      "plantType": "双子叶",
+      "sourceName": "棉叶分泌腔40X.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "植物组织_棉叶腺毛40X.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/棉叶腺毛40X.jpg",
+      "answer": "双子叶——叶——棉叶腺毛——40X",
+      "plantType": "双子叶",
+      "sourceName": "棉叶腺毛40X.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "植物组织_棉叶蜜腺40X.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/棉叶蜜腺40X.jpg",
+      "answer": "双子叶——叶——棉叶蜜腺——40X",
+      "plantType": "双子叶",
+      "sourceName": "棉叶蜜腺40X.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "植物组织_棉叶蜜腺和分泌腔10X.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/棉叶蜜腺和分泌腔10X.jpg",
+      "answer": "双子叶——叶——棉叶蜜腺和分泌腔——10X",
+      "plantType": "双子叶",
+      "sourceName": "棉叶蜜腺和分泌腔10X.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "植物组织_洋葱根尖10X.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/洋葱根尖10X.jpg",
+      "answer": "单子叶——根——洋葱根尖——10X",
+      "plantType": "单子叶",
+      "sourceName": "洋葱根尖10X.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "植物组织_洋葱根尖40X中末期.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/洋葱根尖40X中末期.jpg",
+      "answer": "单子叶——根——洋葱根尖中末期——40X",
+      "plantType": "单子叶",
+      "sourceName": "洋葱根尖40X中末期.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "植物组织_洋葱根尖40X中末期2.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/洋葱根尖40X中末期2.jpg",
+      "answer": "单子叶——根——洋葱根尖中末期——40X",
+      "plantType": "单子叶",
+      "sourceName": "洋葱根尖40X中末期2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "植物组织_洋葱根尖40X后期-2.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/洋葱根尖40X后期-2.jpg",
+      "answer": "单子叶——根——洋葱根尖后期——40X",
+      "plantType": "单子叶",
+      "sourceName": "洋葱根尖40X后期-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "植物组织_洋葱根尖40X根冠.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/洋葱根尖40X根冠.jpg",
+      "answer": "单子叶——根——洋葱根尖根冠——40X",
+      "plantType": "单子叶",
+      "sourceName": "洋葱根尖40X根冠.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "植物组织_蓖麻胚乳10X.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/蓖麻胚乳10X.jpg",
+      "answer": "双子叶——组织——蓖麻胚乳——10X",
+      "plantType": "双子叶",
+      "sourceName": "蓖麻胚乳10X.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "植物组织_蓖麻胚乳40X.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/蓖麻胚乳40X.jpg",
+      "answer": "双子叶——组织——蓖麻胚乳——40X",
+      "plantType": "双子叶",
+      "sourceName": "蓖麻胚乳40X.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "植物组织_蓖麻胚乳4X.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/蓖麻胚乳4X.jpg",
+      "answer": "双子叶——组织——蓖麻胚乳——4X",
+      "plantType": "双子叶",
+      "sourceName": "蓖麻胚乳4X.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "植物组织_蚕豆茎10X.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/蚕豆茎10X.jpg",
+      "answer": "双子叶——茎——蚕豆——10X",
+      "plantType": "双子叶",
+      "sourceName": "蚕豆茎10X.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "植物组织_蚕豆茎2.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/蚕豆茎2.jpg",
+      "answer": "双子叶——茎——蚕豆",
+      "plantType": "双子叶",
+      "sourceName": "蚕豆茎2.jpg",
+      "magnification": ""
+    },
+    {
+      "id": "植物组织_黄麻纤维10X.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/黄麻纤维10X.jpg",
+      "answer": "双子叶——组织——黄麻纤维——10X",
+      "plantType": "双子叶",
+      "sourceName": "黄麻纤维10X.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "植物组织_黄麻纤维40X.jpg",
+      "categoryId": "植物组织",
+      "imagePath": "data/植物组织/黄麻纤维40X.jpg",
+      "answer": "双子叶——组织——黄麻纤维——40X",
+      "plantType": "双子叶",
+      "sourceName": "黄麻纤维40X.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "花_桃花芽4X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/桃花芽4X-1.jpg",
+      "answer": "双子叶——花——桃花芽——4X",
+      "plantType": "双子叶",
+      "sourceName": "桃花芽4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "花_棉花柱10X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/棉花柱10X-1.jpg",
+      "answer": "双子叶——花——棉花柱——10X",
+      "plantType": "双子叶",
+      "sourceName": "棉花柱10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_棉花柱10X纵切-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/棉花柱10X纵切-1.jpg",
+      "answer": "双子叶——花——棉花柱纵切——10X",
+      "plantType": "双子叶",
+      "sourceName": "棉花柱10X纵切-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_棉花柱10X纵切-2.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/棉花柱10X纵切-2.jpg",
+      "answer": "双子叶——花——棉花柱纵切——10X",
+      "plantType": "双子叶",
+      "sourceName": "棉花柱10X纵切-2.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_棉花柱40X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/棉花柱40X-1.jpg",
+      "answer": "双子叶——花——棉花柱——40X",
+      "plantType": "双子叶",
+      "sourceName": "棉花柱40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "花_棉花柱40X-2.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/棉花柱40X-2.jpg",
+      "answer": "双子叶——花——棉花柱——40X",
+      "plantType": "双子叶",
+      "sourceName": "棉花柱40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "花_棉花柱4X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/棉花柱4X-1.jpg",
+      "answer": "双子叶——花——棉花柱——4X",
+      "plantType": "双子叶",
+      "sourceName": "棉花柱4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "花_棉花柱4X纵切-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/棉花柱4X纵切-1.jpg",
+      "answer": "双子叶——花——棉花柱纵切——4X",
+      "plantType": "双子叶",
+      "sourceName": "棉花柱4X纵切-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "花_百合子房10X-2.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合子房10X-2.jpg",
+      "answer": "单子叶——花——百合子房——10X",
+      "plantType": "单子叶",
+      "sourceName": "百合子房10X-2.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_百合子房10X-3.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合子房10X-3.jpg",
+      "answer": "单子叶——花——百合子房——10X",
+      "plantType": "单子叶",
+      "sourceName": "百合子房10X-3.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_百合子房10X-4.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合子房10X-4.jpg",
+      "answer": "单子叶——花——百合子房——10X",
+      "plantType": "单子叶",
+      "sourceName": "百合子房10X-4.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_百合子房10X-5.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合子房10X-5.jpg",
+      "answer": "单子叶——花——百合子房——10X",
+      "plantType": "单子叶",
+      "sourceName": "百合子房10X-5.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_百合子房2-10X-2.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合子房2-10X-2.jpg",
+      "answer": "单子叶——花——百合子房——10X",
+      "plantType": "单子叶",
+      "sourceName": "百合子房2-10X-2.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_百合子房2-10X-3.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合子房2-10X-3.jpg",
+      "answer": "单子叶——花——百合子房——10X",
+      "plantType": "单子叶",
+      "sourceName": "百合子房2-10X-3.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_百合子房2-4X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合子房2-4X-1.jpg",
+      "answer": "单子叶——花——百合子房——4X",
+      "plantType": "单子叶",
+      "sourceName": "百合子房2-4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "花_百合子房40X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合子房40X-1.jpg",
+      "answer": "单子叶——花——百合子房——40X",
+      "plantType": "单子叶",
+      "sourceName": "百合子房40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "花_百合子房4X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合子房4X-1.jpg",
+      "answer": "单子叶——花——百合子房——4X",
+      "plantType": "单子叶",
+      "sourceName": "百合子房4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "花_百合幼嫩花药10X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合幼嫩花药10X-1.jpg",
+      "answer": "单子叶——花——百合幼嫩花药——10X",
+      "plantType": "单子叶",
+      "sourceName": "百合幼嫩花药10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_百合幼嫩花药10X-2.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合幼嫩花药10X-2.jpg",
+      "answer": "单子叶——花——百合幼嫩花药——10X",
+      "plantType": "单子叶",
+      "sourceName": "百合幼嫩花药10X-2.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_百合幼嫩花药40X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合幼嫩花药40X-1.jpg",
+      "answer": "单子叶——花——百合幼嫩花药——40X",
+      "plantType": "单子叶",
+      "sourceName": "百合幼嫩花药40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "花_百合幼嫩花药40X-2.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合幼嫩花药40X-2.jpg",
+      "answer": "单子叶——花——百合幼嫩花药——40X",
+      "plantType": "单子叶",
+      "sourceName": "百合幼嫩花药40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "花_百合幼嫩花药40X-3.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合幼嫩花药40X-3.jpg",
+      "answer": "单子叶——花——百合幼嫩花药——40X",
+      "plantType": "单子叶",
+      "sourceName": "百合幼嫩花药40X-3.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "花_百合幼嫩花药4X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合幼嫩花药4X-1.jpg",
+      "answer": "单子叶——花——百合幼嫩花药——4X",
+      "plantType": "单子叶",
+      "sourceName": "百合幼嫩花药4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "花_百合成熟花药10X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合成熟花药10X-1.jpg",
+      "answer": "单子叶——花——百合成熟花药——10X",
+      "plantType": "单子叶",
+      "sourceName": "百合成熟花药10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_百合成熟花药10X-2.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合成熟花药10X-2.jpg",
+      "answer": "单子叶——花——百合成熟花药——10X",
+      "plantType": "单子叶",
+      "sourceName": "百合成熟花药10X-2.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_百合成熟花药10X-3.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合成熟花药10X-3.jpg",
+      "answer": "单子叶——花——百合成熟花药——10X",
+      "plantType": "单子叶",
+      "sourceName": "百合成熟花药10X-3.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_百合成熟花药10X-4.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合成熟花药10X-4.jpg",
+      "answer": "单子叶——花——百合成熟花药——10X",
+      "plantType": "单子叶",
+      "sourceName": "百合成熟花药10X-4.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_百合成熟花药40X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合成熟花药40X-1.jpg",
+      "answer": "单子叶——花——百合成熟花药——40X",
+      "plantType": "单子叶",
+      "sourceName": "百合成熟花药40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "花_百合成熟花药40X-2.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合成熟花药40X-2.jpg",
+      "answer": "单子叶——花——百合成熟花药——40X",
+      "plantType": "单子叶",
+      "sourceName": "百合成熟花药40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "花_百合成熟花药40X-3.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/百合成熟花药40X-3.jpg",
+      "answer": "单子叶——花——百合成熟花药——40X",
+      "plantType": "单子叶",
+      "sourceName": "百合成熟花药40X-3.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "花_荠菜心形胚10X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/荠菜心形胚10X-1.jpg",
+      "answer": "双子叶——花——荠菜心形胚——10X",
+      "plantType": "双子叶",
+      "sourceName": "荠菜心形胚10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_荠菜心形胚40X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/荠菜心形胚40X-1.jpg",
+      "answer": "双子叶——花——荠菜心形胚——40X",
+      "plantType": "双子叶",
+      "sourceName": "荠菜心形胚40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "花_荠菜球形胚10X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/荠菜球形胚10X-1.jpg",
+      "answer": "双子叶——花——荠菜球形胚——10X",
+      "plantType": "双子叶",
+      "sourceName": "荠菜球形胚10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_荠菜球形胚40X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/荠菜球形胚40X-1.jpg",
+      "answer": "双子叶——花——荠菜球形胚——40X",
+      "plantType": "双子叶",
+      "sourceName": "荠菜球形胚40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "花_荠菜马蹄形胚10X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/荠菜马蹄形胚10X-1.jpg",
+      "answer": "双子叶——花——荠菜马蹄形胚——10X",
+      "plantType": "双子叶",
+      "sourceName": "荠菜马蹄形胚10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_荠菜鱼雷形胚10X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/荠菜鱼雷形胚10X-1.jpg",
+      "answer": "双子叶——花——荠菜鱼雷形胚——10X",
+      "plantType": "双子叶",
+      "sourceName": "荠菜鱼雷形胚10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "花_荠菜鱼雷形胚40X-1.jpg",
+      "categoryId": "花",
+      "imagePath": "data/花/荠菜鱼雷形胚40X-1.jpg",
+      "answer": "双子叶——花——荠菜鱼雷形胚——40X",
+      "plantType": "双子叶",
+      "sourceName": "荠菜鱼雷形胚40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "茎_南瓜茎横切10X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/南瓜茎横切10X-1.jpg",
+      "answer": "双子叶——茎——南瓜茎横切——10X",
+      "plantType": "双子叶",
+      "sourceName": "南瓜茎横切10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "茎_南瓜茎横切10X-2.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/南瓜茎横切10X-2.jpg",
+      "answer": "双子叶——茎——南瓜茎横切——10X",
+      "plantType": "双子叶",
+      "sourceName": "南瓜茎横切10X-2.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "茎_南瓜茎横切4X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/南瓜茎横切4X-1.jpg",
+      "answer": "双子叶——茎——南瓜茎横切——4X",
+      "plantType": "双子叶",
+      "sourceName": "南瓜茎横切4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "茎_小麦茎10X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/小麦茎10X-1.jpg",
+      "answer": "单子叶——茎——小麦——10X",
+      "plantType": "单子叶",
+      "sourceName": "小麦茎10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "茎_小麦茎40X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/小麦茎40X-1.jpg",
+      "answer": "单子叶——茎——小麦——40X",
+      "plantType": "单子叶",
+      "sourceName": "小麦茎40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "茎_小麦茎40X-2.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/小麦茎40X-2.jpg",
+      "answer": "单子叶——茎——小麦——40X",
+      "plantType": "单子叶",
+      "sourceName": "小麦茎40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "茎_小麦茎4X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/小麦茎4X-1.jpg",
+      "answer": "单子叶——茎——小麦——4X",
+      "plantType": "单子叶",
+      "sourceName": "小麦茎4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "茎_棉初生茎10X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/棉初生茎10X-1.jpg",
+      "answer": "双子叶——茎——棉初生茎——10X",
+      "plantType": "双子叶",
+      "sourceName": "棉初生茎10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "茎_棉初生茎4X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/棉初生茎4X-1.jpg",
+      "answer": "双子叶——茎——棉初生茎——4X",
+      "plantType": "双子叶",
+      "sourceName": "棉初生茎4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "茎_棉次生茎10X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/棉次生茎10X-1.jpg",
+      "answer": "双子叶——茎——棉次生茎——10X",
+      "plantType": "双子叶",
+      "sourceName": "棉次生茎10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "茎_棉次生茎10X-2.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/棉次生茎10X-2.jpg",
+      "answer": "双子叶——茎——棉次生茎——10X",
+      "plantType": "双子叶",
+      "sourceName": "棉次生茎10X-2.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "茎_棉次生茎40X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/棉次生茎40X-1.jpg",
+      "answer": "双子叶——茎——棉次生茎——40X",
+      "plantType": "双子叶",
+      "sourceName": "棉次生茎40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "茎_棉次生茎4X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/棉次生茎4X-1.jpg",
+      "answer": "双子叶——茎——棉次生茎——4X",
+      "plantType": "双子叶",
+      "sourceName": "棉次生茎4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "茎_棉次生茎4X-2.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/棉次生茎4X-2.jpg",
+      "answer": "双子叶——茎——棉次生茎——4X",
+      "plantType": "双子叶",
+      "sourceName": "棉次生茎4X-2.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "茎_椴树茎10X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/椴树茎10X-1.jpg",
+      "answer": "双子叶——茎——椴树——10X",
+      "plantType": "双子叶",
+      "sourceName": "椴树茎10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "茎_椴树茎10X-2.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/椴树茎10X-2.jpg",
+      "answer": "双子叶——茎——椴树——10X",
+      "plantType": "双子叶",
+      "sourceName": "椴树茎10X-2.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "茎_椴树茎10X-3.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/椴树茎10X-3.jpg",
+      "answer": "双子叶——茎——椴树——10X",
+      "plantType": "双子叶",
+      "sourceName": "椴树茎10X-3.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "茎_椴树茎10X-4.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/椴树茎10X-4.jpg",
+      "answer": "双子叶——茎——椴树——10X",
+      "plantType": "双子叶",
+      "sourceName": "椴树茎10X-4.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "茎_椴树茎10X-5.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/椴树茎10X-5.jpg",
+      "answer": "双子叶——茎——椴树——10X",
+      "plantType": "双子叶",
+      "sourceName": "椴树茎10X-5.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "茎_椴树茎40X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/椴树茎40X-1.jpg",
+      "answer": "双子叶——茎——椴树——40X",
+      "plantType": "双子叶",
+      "sourceName": "椴树茎40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "茎_椴树茎40X-2.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/椴树茎40X-2.jpg",
+      "answer": "双子叶——茎——椴树——40X",
+      "plantType": "双子叶",
+      "sourceName": "椴树茎40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "茎_椴树茎4X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/椴树茎4X-1.jpg",
+      "answer": "双子叶——茎——椴树——4X",
+      "plantType": "双子叶",
+      "sourceName": "椴树茎4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "茎_毛竹茎10X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/毛竹茎10X-1.jpg",
+      "answer": "单子叶——茎——毛竹——10X",
+      "plantType": "单子叶",
+      "sourceName": "毛竹茎10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "茎_毛竹茎40X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/毛竹茎40X-1.jpg",
+      "answer": "单子叶——茎——毛竹——40X",
+      "plantType": "单子叶",
+      "sourceName": "毛竹茎40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "茎_毛竹茎40X-2.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/毛竹茎40X-2.jpg",
+      "answer": "单子叶——茎——毛竹——40X",
+      "plantType": "单子叶",
+      "sourceName": "毛竹茎40X-2.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "茎_毛竹茎4X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/毛竹茎4X-1.jpg",
+      "answer": "单子叶——茎——毛竹——4X",
+      "plantType": "单子叶",
+      "sourceName": "毛竹茎4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "茎_水稻茎10X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/水稻茎10X-1.jpg",
+      "answer": "单子叶——茎——水稻——10X",
+      "plantType": "单子叶",
+      "sourceName": "水稻茎10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "茎_水稻茎40X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/水稻茎40X-1.jpg",
+      "answer": "单子叶——茎——水稻——40X",
+      "plantType": "单子叶",
+      "sourceName": "水稻茎40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "茎_水稻茎4X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/水稻茎4X-1.jpg",
+      "answer": "单子叶——茎——水稻——4X",
+      "plantType": "单子叶",
+      "sourceName": "水稻茎4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "茎_玉米茎10X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/玉米茎10X-1.jpg",
+      "answer": "单子叶——茎——玉米——10X",
+      "plantType": "单子叶",
+      "sourceName": "玉米茎10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "茎_玉米茎40X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/玉米茎40X-1.jpg",
+      "answer": "单子叶——茎——玉米——40X",
+      "plantType": "单子叶",
+      "sourceName": "玉米茎40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "茎_玉米茎4X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/玉米茎4X-1.jpg",
+      "answer": "单子叶——茎——玉米——4X",
+      "plantType": "单子叶",
+      "sourceName": "玉米茎4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "茎_苜蓿茎10X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/苜蓿茎10X-1.jpg",
+      "answer": "双子叶——茎——苜蓿——10X",
+      "plantType": "双子叶",
+      "sourceName": "苜蓿茎10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "茎_苜蓿茎40X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/苜蓿茎40X-1.jpg",
+      "answer": "双子叶——茎——苜蓿——40X",
+      "plantType": "双子叶",
+      "sourceName": "苜蓿茎40X-1.jpg",
+      "magnification": "40X"
+    },
+    {
+      "id": "茎_苜蓿茎4X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/苜蓿茎4X-1.jpg",
+      "answer": "双子叶——茎——苜蓿——4X",
+      "plantType": "双子叶",
+      "sourceName": "苜蓿茎4X-1.jpg",
+      "magnification": "4X"
+    },
+    {
+      "id": "茎_黄杨茎尖10X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/黄杨茎尖10X-1.jpg",
+      "answer": "双子叶——茎——黄杨茎尖——10X",
+      "plantType": "双子叶",
+      "sourceName": "黄杨茎尖10X-1.jpg",
+      "magnification": "10X"
+    },
+    {
+      "id": "茎_黄杨茎尖4X-1.jpg",
+      "categoryId": "茎",
+      "imagePath": "data/茎/黄杨茎尖4X-1.jpg",
+      "answer": "双子叶——茎——黄杨茎尖——4X",
+      "plantType": "双子叶",
+      "sourceName": "黄杨茎尖4X-1.jpg",
+      "magnification": "4X"
+    }
+  ]
+}

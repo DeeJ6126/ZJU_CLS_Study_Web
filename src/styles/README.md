@@ -1,4 +1,4 @@
-# src/styles
+﻿# src/styles
 
 Plain CSS for layout, components, themes, and resource pages.
 
@@ -15,12 +15,13 @@ Plain CSS for layout, components, themes, and resource pages.
 Theme tokens are checked by:
 
 ```bash
-npm.cmd run harness:themes
+npm.cmd run check:themes
 ```
 
 ## Checks
 
 ```bash
 npm.cmd run build
-npm.cmd run harness:themes
+npm.cmd run check:themes
 ```
+

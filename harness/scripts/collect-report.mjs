@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+﻿import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createResult, isDirectRun, normalizeRoot, printCliResult } from './lib.mjs';
 
@@ -28,7 +28,7 @@ export function buildReport({
     results,
     artifacts,
     nextSteps: ok
-      ? ['Harness checks passed. Continue with implementation or CI handoff.']
+      ? ['Project checks passed. Continue with implementation or CI handoff.']
       : failed.map((result) => `Fix ${result.name}: ${result.failures[0]?.suggestion ?? 'inspect failures'}`),
   };
 }
@@ -42,7 +42,7 @@ export function formatMarkdownReport(report) {
     return `### ${icon} ${result.name}\n\nCommand: \`${result.command || 'n/a'}\`\n\n${failures}`;
   }).join('\n\n');
 
-  return `# Harness Report\n\n- Status: ${report.status}\n- Git commit: ${report.gitCommit || 'unknown'}\n- Started: ${report.startedAt}\n- Ended: ${report.endedAt}\n\n## Results\n\n${resultLines}\n\n## Next Steps\n\n${report.nextSteps.map((step) => `- ${step}`).join('\n')}\n`;
+  return `# Project Check Report\n\n- Status: ${report.status}\n- Git commit: ${report.gitCommit || 'unknown'}\n- Started: ${report.startedAt}\n- Ended: ${report.endedAt}\n\n## Results\n\n${resultLines}\n\n## Next Steps\n\n${report.nextSteps.map((step) => `- ${step}`).join('\n')}\n`;
 }
 
 export async function writeReport(report, { rootDir = process.cwd(), reportsDir = 'harness/reports' } = {}) {
@@ -64,9 +64,9 @@ if (isDirectRun(import.meta.url)) {
     results: [
       createResult({
         name: 'manual-report',
-        command: 'npm run harness:report',
+        command: 'npm run check:report',
         ok: true,
-        checked: { note: 'Use npm run harness to collect real checks.' },
+        checked: { note: 'Use npm run check to collect real checks.' },
       }),
     ],
   });
@@ -74,16 +74,17 @@ if (isDirectRun(import.meta.url)) {
   writeReport(report).then((paths) => {
     printCliResult(createResult({
       name: 'report',
-      command: 'npm run harness:report',
+      command: 'npm run check:report',
       ok: true,
       checked: paths,
     }));
   }).catch((error) => {
     printCliResult(createResult({
       name: 'report',
-      command: 'npm run harness:report',
+      command: 'npm run check:report',
       ok: false,
       failures: [{ message: error.message }],
     }));
   });
 }
+

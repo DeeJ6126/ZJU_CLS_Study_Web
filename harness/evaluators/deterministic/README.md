@@ -1,16 +1,16 @@
 # Deterministic Evaluators
 
-Deterministic checks are the first harness gate. They should be fast, local, and explain failures in a way that an agent can act on.
+Deterministic checks are the first project-check gate. They should be fast, local, and explain failures in a way that an agent can act on.
 
 Current checks:
 
-- `harness/scripts/check-architecture.mjs`
-- `harness/scripts/check-routes.mjs`
-- `harness/scripts/check-content-location.mjs`
-- `harness/scripts/check-themes.mjs`
+- architecture boundaries
+- route contracts
+- content location
+- theme coverage
 
 Run all deterministic checks with:
 
 ```bash
-npm.cmd run harness
+npm.cmd run check
 ```

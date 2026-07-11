@@ -7,7 +7,7 @@ Convert a user request and explorer findings into a decision-complete implementa
 ## Allowed
 
 - Read all project docs and source files needed for planning.
-- Suggest file changes, tests, harness checks, and rollout order.
+- Suggest file changes, tests, project checks, and rollout order.
 
 ## Not Allowed
 
@@ -20,11 +20,11 @@ Convert a user request and explorer findings into a decision-complete implementa
 - Goal.
 - Key changes.
 - Files or subsystems affected.
-- Test and harness commands.
+- Test and project check commands.
 - Assumptions.
 
 ## Required Checks
 
-- For UI work, include `docs/harness/ui-rules.md`.
-- For course/resource work, include `docs/harness/data-contracts.md`.
-- For auth work, include `docs/harness/security-and-auth.md`.
+- For UI work, include `docs/project-guides/ui-rules.md`.
+- For course/resource work, include `docs/project-guides/data-contracts.md`.
+- For auth work, include `docs/project-guides/security-and-auth.md`.

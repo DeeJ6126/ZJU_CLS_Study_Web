@@ -1,0 +1,1302 @@
+.demo-shell {
+  min-height: 100vh;
+  background: #f5f6f8;
+  color: #1f2933;
+  font-family: var(--font-body);
+}
+
+.demo-head {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 68px;
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  padding: 0 28px;
+  border-bottom: 1px solid #e3e7ed;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.demo-brand {
+  display: grid;
+  gap: 2px;
+  color: #1f4f91;
+  text-decoration: none;
+}
+
+.demo-brand span {
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.demo-brand strong {
+  color: #6b7280;
+  font-size: 11px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.demo-topnav {
+  display: flex;
+  gap: 8px;
+}
+
+.demo-topnav a,
+.demo-user-chip,
+.quiz-market-tabs button,
+.quiz-left-nav button,
+.quiz-course-card button,
+.range-options button,
+.range-panel__actions button,
+.practice-menu button,
+.question-jump-grid button,
+.practice-question__head button,
+.practice-options button,
+.practice-actions button,
+.botany-quiz-nav button,
+.botany-gallery-card button {
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.demo-topnav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  height: 38px;
+  background: transparent;
+  color: #5c6675;
+  cursor: pointer;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.demo-topnav a.is-active {
+  background: #eef4ff;
+  color: #2f6feb;
+}
+
+.demo-user-chip {
+  padding: 8px 14px;
+  background: #2f6feb;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.demo-main {
+  min-height: calc(100vh - 68px);
+}
+
+.demo-home {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: clamp(64px, 10vw, 120px) 24px;
+}
+
+.demo-home h1 {
+  margin: 0 0 28px;
+  color: #1f2933;
+  font-family: var(--font-heading);
+  font-size: clamp(42px, 7vw, 72px);
+  letter-spacing: 0;
+}
+
+.demo-search {
+  display: grid;
+  gap: 10px;
+}
+
+.demo-search span {
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.demo-search input {
+  width: 100%;
+  height: 56px;
+  padding: 0 18px;
+  border: 1px solid #d7dde7;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f2933;
+  font: inherit;
+  font-size: 17px;
+}
+
+.demo-placeholder {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+
+.demo-placeholder p {
+  margin: 0 0 10px;
+  color: #2f6feb;
+  font-weight: 900;
+}
+
+.demo-placeholder h1 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(30px, 5vw, 48px);
+}
+
+.quiz-demo {
+  min-height: calc(100vh - 68px);
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  background: #f6f7f9;
+}
+
+.quiz-left-nav {
+  padding: 20px 10px;
+  border-right: 1px solid #e3e7ed;
+  background: #ffffff;
+}
+
+.quiz-left-nav button {
+  width: 100%;
+  height: 48px;
+  background: #eef4ff;
+  color: #2f6feb;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.quiz-main {
+  min-width: 0;
+  padding: 24px;
+}
+
+.quiz-range-page,
+.practice-layout {
+  grid-column: 1 / -1;
+  margin: 24px;
+}
+
+.quiz-market-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.quiz-market-tabs button {
+  height: 40px;
+  padding: 0 18px;
+  background: #ffffff;
+  color: #5c6675;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.quiz-market-tabs button.is-active {
+  background: #2f6feb;
+  color: #ffffff;
+}
+
+.quiz-course-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.quiz-course-card {
+  min-height: 188px;
+  display: grid;
+  align-content: space-between;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid #dfe5ee;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.quiz-course-card span {
+  color: #2f6feb;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.quiz-course-card h2 {
+  margin: 0;
+  color: #1f2933;
+  font-size: 21px;
+}
+
+.quiz-course-card p {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.quiz-course-card button,
+.range-panel__actions button,
+.practice-actions button,
+.practice-question__head button {
+  min-height: 38px;
+  padding: 0 14px;
+  background: #2f6feb;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.quiz-course-card button:disabled,
+.practice-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.quiz-course-card.is-pending button {
+  background: #eef1f5;
+  color: #8b95a5;
+}
+
+.range-panel {
+  padding: 20px;
+  border: 1px solid #dfe5ee;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.range-panel__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.range-panel__head span {
+  color: #2f6feb;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.range-panel__head h2,
+.range-panel__head p {
+  margin: 0;
+}
+
+.range-panel__head p {
+  color: #6b7280;
+}
+
+.range-panel__hint {
+  max-width: 760px;
+  margin: 0 0 16px;
+  color: #6b7280;
+  line-height: 1.7;
+}
+
+.range-options {
+  max-height: 260px;
+  overflow: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 2px;
+}
+
+.range-options button {
+  min-height: 34px;
+  padding: 0 12px;
+  border-color: #d7dde7;
+  background: #f8fafc;
+  color: #4b5565;
+  cursor: pointer;
+}
+
+.range-options button.is-selected {
+  border-color: #2f6feb;
+  background: #eef4ff;
+  color: #2f6feb;
+  font-weight: 900;
+}
+
+.range-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.range-card {
+  min-height: 92px;
+  display: grid;
+  align-content: space-between;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #d7dde7;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f2933;
+  cursor: pointer;
+  text-align: left;
+}
+
+.range-card strong {
+  font-size: 16px;
+}
+
+.range-card em {
+  color: #4b5565;
+  font-size: 13px;
+  font-style: normal;
+  line-height: 1.45;
+}
+
+.range-card span {
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.range-card.is-selected {
+  border-color: #2f6feb;
+  background: #eef4ff;
+}
+
+.range-panel__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.range-panel__actions .secondary-button,
+.practice-question__head .danger-button {
+  background: #ffffff;
+  color: #4b5565;
+  border-color: #d7dde7;
+}
+
+.practice-question__head .danger-button {
+  color: #b42318;
+}
+
+.practice-layout {
+  min-height: calc(100vh - 116px);
+  display: grid;
+  grid-template-columns: 108px 312px minmax(0, 1fr);
+  border: 1px solid #e3e7ed;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.quiz-range-shell {
+  min-height: calc(100vh - 116px);
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  border: 1px solid #e3e7ed;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.practice-menu {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 18px 10px;
+  border-right: 1px solid #e3e7ed;
+}
+
+.practice-menu button {
+  min-height: 44px;
+  background: transparent;
+  color: #5c6675;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.practice-menu button.is-active {
+  background: #eef4ff;
+  color: #2f6feb;
+}
+
+.question-jump {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 20px 16px;
+  border-right: 1px solid #e3e7ed;
+  background: #fbfcfe;
+}
+
+.practice-overview-head,
+.practice-question-panel__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  color: #1f2933;
+}
+
+.practice-overview-head strong,
+.practice-question-panel__head strong {
+  font-size: 18px;
+}
+
+.practice-overview-head span,
+.practice-question-panel__head span {
+  color: #4b5565;
+  font-weight: 900;
+}
+
+.practice-overview-list {
+  display: grid;
+  gap: 8px;
+}
+
+.practice-overview-row {
+  min-height: 56px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f2933;
+  cursor: pointer;
+  font-weight: 900;
+  text-align: left;
+}
+
+.practice-overview-row span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.practice-overview-row strong {
+  color: #6b7280;
+  font-weight: 900;
+}
+
+.practice-overview-row.is-active {
+  border-color: #eef1f5;
+  background: #eef4ff;
+  color: #2f6feb;
+}
+
+.practice-question-panel {
+  display: grid;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #e3e7ed;
+}
+
+.question-jump-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 48px);
+  gap: 10px 12px;
+}
+
+.question-grid-cell {
+  inline-size: 48px;
+  block-size: 48px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-color: #d7dde7;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #4b5565;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.question-grid-cell.is-active {
+  border-color: #2f6feb;
+  background: #2f6feb;
+  color: #ffffff;
+}
+
+.question-grid-cell.is-correct {
+  border-color: #95d76f;
+  background: #f0ffe8;
+  color: #3a8a10;
+}
+
+.question-grid-cell.is-incorrect {
+  border-color: #ffb3b8;
+  background: #fff0f1;
+  color: #d11f2f;
+}
+
+.practice-question {
+  min-width: 0;
+  padding: 28px 34px;
+}
+
+.practice-question__head {
+  display: flex;
+  justify-content: flex-start;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.practice-question__head span {
+  margin-left: auto;
+}
+
+.practice-question__head button {
+  background: #eef4ff;
+  color: #2f6feb;
+}
+
+.practice-question__head span,
+.practice-question__meta {
+  color: #6b7280;
+  font-weight: 900;
+}
+
+.practice-question__meta {
+  margin: 0 0 10px;
+  font-size: 13px;
+}
+
+.practice-question h1 {
+  margin: 0 0 28px;
+  font-size: 24px;
+  line-height: 1.7;
+}
+
+.practice-question__image {
+  max-width: min(100%, 620px);
+  max-height: 420px;
+  object-fit: contain;
+  border: 1px solid #dfe5ee;
+  border-radius: 8px;
+}
+
+.practice-options,
+.option-list {
+  display: grid;
+  gap: 10px;
+}
+
+.practice-options--tf {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.practice-options button,
+.option-button {
+  display: flex;
+  gap: 12px;
+  align-items: start;
+  padding: 14px;
+  border-color: #d7dde7;
+  background: #ffffff;
+  color: #1f2933;
+  cursor: pointer;
+  text-align: left;
+}
+
+.practice-options button.is-selected,
+.option-button.is-selected {
+  border-color: #2f6feb;
+  background: #eef4ff;
+}
+
+.practice-options button.is-correct,
+.option-button.is-correct {
+  border-color: #2f8f55;
+  background: #edf9f0;
+  color: #1f6b3a;
+}
+
+.practice-options button.is-incorrect,
+.option-button.is-incorrect {
+  border-color: #d64b4b;
+  background: #fff0f1;
+  color: #a51f2f;
+}
+
+.option-button.is-muted {
+  opacity: 0.72;
+}
+
+.option-key {
+  flex: 0 0 auto;
+  min-width: 30px;
+  color: inherit;
+  font-weight: 900;
+}
+
+.practice-textarea {
+  width: 100%;
+  min-height: 130px;
+  padding: 14px;
+  border: 1px solid #d7dde7;
+  border-radius: 8px;
+  font: inherit;
+  resize: vertical;
+}
+
+.practice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.language-toggle {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid #d6dde8;
+  border-radius: 8px;
+  background: #f7f9fc;
+}
+
+.language-toggle button {
+  min-width: 42px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #526071;
+}
+
+.language-toggle button.is-active {
+  background: #2f68ff;
+  color: #fff;
+}
+
+.vocabulary-picker-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  color: #526071;
+}
+
+.vocabulary-pick-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.vocabulary-pick-line button {
+  border: 1px solid #d9e1ee;
+  border-radius: 6px;
+  background: #fff;
+  color: #1f2937;
+  font: inherit;
+}
+
+.vocabulary-feedback {
+  margin: 10px 0 0;
+  color: #2f6feb;
+  font-weight: 900;
+}
+
+.review-card {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.vocabulary-list {
+  display: grid;
+  gap: 10px;
+}
+
+.vocabulary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid #d9e1ee;
+  border-radius: 8px;
+  background: #fff;
+  color: #1f2937;
+}
+
+.result-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.result-stats strong {
+  padding: 12px;
+  border: 1px solid #d9e1ee;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.quiz-course-app {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 188px minmax(0, 1fr);
+  min-height: calc(100vh - 72px);
+  width: 100%;
+  background: #f7f9fc;
+}
+
+.quiz-course-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 22px 16px;
+  border-right: 1px solid #e3e7ed;
+  background: #ffffff;
+}
+
+.quiz-course-nav strong {
+  margin: 6px 4px 10px;
+  color: #1f2933;
+  font-size: 15px;
+}
+
+.quiz-course-nav button {
+  justify-content: flex-start;
+  border: 0;
+  background: transparent;
+  color: #526071;
+  text-align: left;
+}
+
+.quiz-course-nav button.is-active {
+  background: #eef4ff;
+  color: #2f68ff;
+}
+
+.quiz-course-back {
+  color: #6b7280 !important;
+}
+
+.quiz-course-content {
+  min-width: 0;
+  width: 100%;
+  padding: 28px;
+}
+
+.quiz-practice-layout {
+  display: grid;
+  grid-template-columns: minmax(288px, 320px) minmax(0, 1fr);
+  gap: 22px;
+}
+
+.molecular-quiz-app,
+.botany-quiz-app,
+.microbiology-quiz-app {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 188px minmax(0, 1fr);
+  min-height: calc(100vh - 72px);
+  width: 100%;
+  background: #f7f9fc;
+}
+
+.molecular-quiz-nav,
+.botany-quiz-nav,
+.microbiology-quiz-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 22px 16px;
+  border-right: 1px solid #e3e7ed;
+  background: #ffffff;
+}
+
+.molecular-quiz-nav strong,
+.botany-quiz-nav strong,
+.microbiology-quiz-nav strong {
+  margin: 6px 4px 10px;
+  color: #1f2933;
+  font-size: 15px;
+}
+
+.molecular-quiz-nav button,
+.botany-quiz-nav button,
+.microbiology-quiz-nav button {
+  justify-content: flex-start;
+  border: 0;
+  background: transparent;
+  color: #526071;
+  text-align: left;
+}
+
+.molecular-quiz-nav button.is-active,
+.botany-quiz-nav button.is-active,
+.microbiology-quiz-nav button.is-active {
+  background: #eef4ff;
+  color: #2f68ff;
+}
+
+.molecular-back,
+.botany-back,
+.microbiology-back {
+  color: #6b7280 !important;
+}
+
+.molecular-quiz-content,
+.botany-quiz-content,
+.microbiology-quiz-content {
+  min-width: 0;
+  width: 100%;
+  padding: 28px;
+}
+
+.molecular-page-stack {
+  display: grid;
+  gap: 20px;
+  width: 100%;
+}
+
+.molecular-hero,
+.molecular-category-group,
+.molecular-record-card {
+  padding: 22px;
+  border: 1px solid #dfe5ee;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.molecular-hero span,
+.molecular-record-card span {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.molecular-hero h2 {
+  margin: 8px 0;
+  color: #1f2933;
+  font-size: 30px;
+  letter-spacing: 0;
+}
+
+.molecular-hero p,
+.molecular-category-group p,
+.molecular-empty {
+  color: #526071;
+}
+
+.molecular-feature-grid,
+.molecular-record-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.molecular-category-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.molecular-category-group__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+
+.molecular-category-summary {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.molecular-category-summary .range-panel__actions {
+  margin-top: 0;
+}
+
+.molecular-category-group__head h3,
+.molecular-record-card h3 {
+  margin: 0 0 6px;
+  color: #1f2933;
+}
+
+.molecular-practice-layout {
+  display: grid;
+  grid-template-columns: minmax(288px, 320px) minmax(0, 1fr);
+  gap: 22px;
+}
+
+.botany-quiz-app {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 188px minmax(0, 1fr);
+  min-height: calc(100vh - 72px);
+  width: 100%;
+  background: #f7f9fc;
+}
+
+.botany-quiz-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 22px 16px;
+  border-right: 1px solid #e3e7ed;
+  background: #ffffff;
+}
+
+.botany-quiz-nav strong {
+  margin: 6px 4px 10px;
+  color: #1f2933;
+  font-size: 15px;
+}
+
+.botany-quiz-nav button {
+  justify-content: flex-start;
+  border: 0;
+  background: transparent;
+  color: #526071;
+  text-align: left;
+}
+
+.botany-quiz-nav button.is-active {
+  background: #eef4ff;
+  color: #2f68ff;
+}
+
+.botany-back {
+  color: #6b7280 !important;
+}
+
+.botany-quiz-content {
+  min-width: 0;
+  width: 100%;
+  padding: 28px;
+}
+
+.botany-page-stack {
+  display: grid;
+  gap: 20px;
+  width: 100%;
+}
+
+.botany-hero {
+  padding: 22px;
+  border: 1px solid #dfe5ee;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.botany-hero span,
+.botany-gallery-card span {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.botany-hero h2 {
+  margin: 8px 0;
+  color: #1f2933;
+  font-size: 30px;
+  letter-spacing: 0;
+}
+
+.botany-hero p,
+.botany-empty {
+  color: #526071;
+}
+
+.botany-feature-grid,
+.botany-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.botany-category-summary {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.botany-category-summary .range-panel__actions {
+  margin-top: 0;
+}
+
+.botany-toolbar {
+  justify-content: flex-start;
+  margin-top: 0;
+}
+
+.botany-practice-layout {
+  display: grid;
+  grid-template-columns: minmax(288px, 320px) minmax(0, 1fr);
+  gap: 22px;
+}
+
+.botany-question {
+  min-width: 0;
+}
+
+.botany-slice-image {
+  display: block;
+  width: 100%;
+  max-height: 58vh;
+  object-fit: contain;
+  border: 1px solid #dfe5ee;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.botany-gallery-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.botany-gallery-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #dfe5ee;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.botany-gallery-card img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #eef1f5;
+}
+
+.botany-gallery-card strong {
+  color: #1f2933;
+  line-height: 1.5;
+}
+
+.microbiology-quiz-app {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 188px minmax(0, 1fr);
+  min-height: calc(100vh - 72px);
+  width: 100%;
+  background: #f7f9fc;
+}
+
+.microbiology-quiz-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 22px 16px;
+  border-right: 1px solid #e3e7ed;
+  background: #ffffff;
+}
+
+.microbiology-quiz-nav strong {
+  margin: 6px 4px 10px;
+  color: #1f2933;
+  font-size: 15px;
+}
+
+.microbiology-quiz-nav button {
+  justify-content: flex-start;
+  border: 0;
+  background: transparent;
+  color: #526071;
+  text-align: left;
+}
+
+.microbiology-quiz-nav button.is-active {
+  background: #eef4ff;
+  color: #2f68ff;
+}
+
+.microbiology-back {
+  color: #6b7280 !important;
+}
+
+.microbiology-quiz-content {
+  min-width: 0;
+  width: 100%;
+  padding: 28px;
+}
+
+.microbiology-page-stack {
+  display: grid;
+  gap: 20px;
+  width: 100%;
+}
+
+.microbiology-hero,
+.microbiology-record-card {
+  padding: 22px;
+  border: 1px solid #dfe5ee;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.microbiology-hero span,
+.microbiology-record-card span {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.microbiology-hero h2 {
+  margin: 8px 0;
+  color: #1f2933;
+  font-size: 30px;
+  letter-spacing: 0;
+}
+
+.microbiology-hero p,
+.microbiology-empty {
+  color: #526071;
+}
+
+.microbiology-feature-grid,
+.microbiology-record-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.microbiology-category-summary {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.microbiology-category-summary .range-panel__actions {
+  margin-top: 0;
+}
+
+.microbiology-toolbar {
+  justify-content: flex-start;
+  margin-top: 0;
+}
+
+.microbiology-practice-layout {
+  display: grid;
+  grid-template-columns: minmax(288px, 320px) minmax(0, 1fr);
+  gap: 22px;
+}
+
+.vocabulary-token-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.practice-result {
+  margin-top: 18px;
+  padding: 16px;
+  border-left: 4px solid #2f6feb;
+  border-radius: 6px;
+  background: #f2f5f9;
+}
+
+.practice-result p,
+.markdown-answer p {
+  margin: 8px 0 0;
+  line-height: 1.7;
+}
+
+.markdown-answer {
+  margin-top: 8px;
+  color: #374151;
+}
+
+.markdown-answer h3,
+.markdown-answer h4 {
+  margin: 12px 0 6px;
+  color: #1f2933;
+  line-height: 1.35;
+}
+
+.markdown-answer h3 {
+  font-size: 1rem;
+}
+
+.markdown-answer h4 {
+  font-size: 0.95rem;
+}
+
+.markdown-answer ul,
+.markdown-answer ol {
+  margin: 8px 0 0;
+  padding-left: 22px;
+  line-height: 1.7;
+}
+
+.markdown-answer pre {
+  margin: 10px 0 0;
+  padding: 12px;
+  overflow: auto;
+  border-radius: 6px;
+  background: #eef1f5;
+  color: #1f2933;
+}
+
+.demo-message {
+  margin: 14px 0 0;
+  color: #d64b4b;
+  font-weight: 900;
+}
+
+@media (max-width: 1100px) {
+  .quiz-course-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .range-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .practice-layout {
+    grid-template-columns: 96px minmax(288px, 300px) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .demo-head {
+    height: auto;
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .quiz-demo,
+  .practice-layout,
+  .quiz-course-app,
+  .quiz-practice-layout,
+  .molecular-quiz-app,
+  .molecular-practice-layout,
+  .botany-quiz-app,
+  .botany-practice-layout,
+  .microbiology-quiz-app,
+  .microbiology-practice-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .quiz-course-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .range-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quiz-left-nav,
+  .practice-menu,
+  .question-jump,
+  .molecular-quiz-nav,
+  .botany-quiz-nav,
+  .microbiology-quiz-nav {
+    border-right: 0;
+    border-bottom: 1px solid #e3e7ed;
+  }
+}

@@ -1,4 +1,4 @@
-import { spawnSync } from 'node:child_process';
+﻿import { spawnSync } from 'node:child_process';
 import http from 'node:http';
 import { createResult, printCliResult } from './lib.mjs';
 
@@ -32,11 +32,11 @@ async function main() {
   if (!installed) {
     printCliResult(createResult({
       name: 'browser',
-      command: 'npm run harness:browser',
+      command: 'npm run check:browser',
       ok: false,
       failures: [{
         message: '@playwright/test is not installed in this workspace.',
-        suggestion: 'Run npm.cmd install -D @playwright/test, then npm.cmd run harness:browser.',
+        suggestion: 'Run npm.cmd install -D @playwright/test, then npm.cmd run check:browser.',
       }],
       suggestions: [
         'Run npm.cmd install -D @playwright/test.',
@@ -52,15 +52,15 @@ async function main() {
   if (!ready) {
     printCliResult(createResult({
       name: 'browser',
-      command: 'npm run harness:browser',
+      command: 'npm run check:browser',
       ok: false,
       failures: [{
         message: `No dev server is listening at ${url}.`,
-        suggestion: 'Start npm.cmd run dev in another terminal, then run npm.cmd run harness:browser.',
+        suggestion: 'Start npm.cmd run dev in another terminal, then run npm.cmd run check:browser.',
       }],
       suggestions: [
         'Terminal 1: npm.cmd run dev',
-        'Terminal 2: npm.cmd run harness:browser',
+        'Terminal 2: npm.cmd run check:browser',
       ],
     }));
     return;
@@ -83,9 +83,10 @@ async function main() {
 main().catch((error) => {
   printCliResult(createResult({
     name: 'browser',
-    command: 'npm run harness:browser',
+    command: 'npm run check:browser',
     ok: false,
     failures: [{ message: error.message }],
     suggestions: ['Check Playwright installation and browser artifacts.'],
   }));
 });
+

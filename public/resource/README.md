@@ -1,4 +1,4 @@
-# public/resource
+﻿# public/resource
 
 Static course and resource content served to users.
 
@@ -25,6 +25,7 @@ npm.cmd run build
 ## Checks
 
 ```bash
-npm.cmd run harness:content
-npm.cmd run harness:routes
+npm.cmd run check:content
+npm.cmd run check:routes
 ```
+

@@ -1,4 +1,4 @@
-# src/services
+﻿# src/services
 
 Shared business logic and API clients.
 
@@ -11,6 +11,17 @@ Shared business logic and API clients.
 - `courseOverviewService.js`: course overview field shaping.
 - `favoriteService.js`: favorite keys and toggling.
 - `avatarService.js`: avatar color helper.
+- `quizApiClient.js`: browser API calls for backend quiz endpoints.
+- `quizInteractionService.js`: keyboard and pending-answer rules for the lightweight quiz panel.
+- `quizRangeService.js`: course-specific quiz range and practice tile helpers.
+- `molecularQuizService.js`: local molecular-biology quiz helpers for language, vocabulary, mistakes, and results.
+- `botanyQuizService.js`: local botany slice helpers for category selection, mistakes, gallery grouping, and results.
+- `microbiologyQuizService.js`: local microbiology helpers for chapters, vocabulary, mistakes, and results.
+- `quizAnswerViewService.js`: shared option state, answer display, focus, and vocabulary feedback helpers.
+- `markdownAnswerService.js`: safe structured rendering helpers for markdown-like quiz answers.
+- `demoNavigationService.js`: hash route helpers for the lightweight demo shell top navigation.
+
+For the quiz handoff map, read `quiz-services.md`.
 
 ## Auth Boundary
 
@@ -34,5 +45,6 @@ The current auth backend is useful for development and staged deployment, but it
 
 ```bash
 npm.cmd test
-npm.cmd run harness:architecture
+npm.cmd run check:architecture
 ```
+

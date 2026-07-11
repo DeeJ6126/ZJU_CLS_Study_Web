@@ -1,4 +1,4 @@
-import { spawnSync } from 'node:child_process';
+﻿import { spawnSync } from 'node:child_process';
 import { checkArchitecture } from './check-architecture.mjs';
 import { checkContentLocation } from './check-content-location.mjs';
 import { checkRoutes } from './check-routes.mjs';
@@ -74,3 +74,4 @@ main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
+

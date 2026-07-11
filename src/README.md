@@ -1,4 +1,4 @@
-# src
+﻿# src
 
 Vue application source code.
 
@@ -12,7 +12,7 @@ Read the closest child README first:
 - `src/styles/README.md` for CSS and theme work.
 - `src/utils/README.md` for small shared helpers.
 
-Also read the matching `docs/harness/*.md` document listed in `AGENTS.md`.
+Also read the matching `docs/project-guides/*.md` document listed in `AGENTS.md`.
 
 ## Rules
 
@@ -26,5 +26,6 @@ Also read the matching `docs/harness/*.md` document listed in `AGENTS.md`.
 ```bash
 npm.cmd test
 npm.cmd run build
-npm.cmd run harness:architecture
+npm.cmd run check:architecture
 ```
+

@@ -2,12 +2,12 @@
 
 ## Role
 
-Review changes for bugs, regressions, architecture drift, missing tests, and harness violations.
+Review changes for bugs, regressions, architecture drift, missing tests, and project-check violations.
 
 ## Allowed
 
-- Read diffs, source, tests, and harness reports.
-- Run non-mutating tests and harness checks.
+- Read diffs, source, tests, and project check reports.
+- Run non-mutating tests and project checks.
 
 ## Not Allowed
 
@@ -25,4 +25,4 @@ Review changes for bugs, regressions, architecture drift, missing tests, and har
 
 - `npm.cmd test`
 - `npm.cmd run build`
-- Relevant harness checks based on modified area.
+- Relevant project checks based on modified area.

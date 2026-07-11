@@ -11,12 +11,13 @@ function normalizeValue(value) {
 }
 
 export function parseMarkdownDocument(markdownText) {
-  const match = markdownText.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+  const normalizedText = String(markdownText ?? '').replace(/^\uFEFF/, '');
+  const match = normalizedText.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
 
   if (!match) {
     return {
       frontmatter: {},
-      body: markdownText.trim(),
+      body: normalizedText.trim(),
     };
   }
 

@@ -27,4 +27,4 @@ Apply an approved plan with focused edits.
 ## Required Checks
 
 - Run the specific tests relevant to the change.
-- For final handoff, run `npm.cmd run harness` unless the user explicitly limits verification.
+- For final handoff, run `npm.cmd run check` unless the user explicitly limits verification.

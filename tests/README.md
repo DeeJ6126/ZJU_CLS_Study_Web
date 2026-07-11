@@ -1,6 +1,6 @@
-# tests
+﻿# tests
 
-Node.js built-in tests for data contracts, services, UI structure, auth, and harness scripts.
+Node.js built-in tests for data contracts, services, UI structure, auth, and project check scripts.
 
 ## Test Style
 
@@ -12,10 +12,10 @@ Node.js built-in tests for data contracts, services, UI structure, auth, and har
 
 ```bash
 npm.cmd test
-npm.cmd run harness:architecture
-npm.cmd run harness:routes
-npm.cmd run harness:content
-npm.cmd run harness:themes
+npm.cmd run check:architecture
+npm.cmd run check:routes
+npm.cmd run check:content
+npm.cmd run check:themes
 ```
 
 ## Common Coverage Areas
@@ -25,3 +25,6 @@ npm.cmd run harness:themes
 - Auth state and permission rules.
 - CC98 registration/login backend flow.
 - UI structure expectations that should not regress.
+
+For the quiz-specific test map, read `quiz-tests.md`.
+

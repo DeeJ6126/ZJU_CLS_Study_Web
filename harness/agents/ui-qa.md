@@ -6,7 +6,7 @@ Review interface quality, responsive behavior, theme consistency, and "AI-like" 
 
 ## Allowed
 
-- Inspect `docs/design-system.md`, `docs/harness/ui-rules.md`, Vue components, and CSS.
+- Inspect `docs/design-system.md`, `docs/project-guides/ui-rules.md`, Vue components, and CSS.
 - Use browser screenshots or Playwright artifacts when available.
 
 ## Not Allowed
@@ -23,5 +23,5 @@ Review interface quality, responsive behavior, theme consistency, and "AI-like" 
 
 ## Required Checks
 
-- `npm.cmd run harness:themes`
-- `npm.cmd run harness:browser` when browser dependencies are installed.
+- `npm.cmd run check:themes`
+- `npm.cmd run check:browser` when browser dependencies are installed.

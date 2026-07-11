@@ -1,4 +1,4 @@
-import { readdir, readFile, stat } from 'node:fs/promises';
+﻿import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -17,7 +17,7 @@ export async function readText(rootDir, relativePath) {
 }
 
 export async function readJson(rootDir, relativePath) {
-  return JSON.parse(await readText(rootDir, relativePath));
+  return JSON.parse((await readText(rootDir, relativePath)).replace(/^\uFEFF/, ''));
 }
 
 export async function listFiles(rootDir, relativePath, predicate = () => true) {
@@ -79,3 +79,4 @@ export function truncateText(value, maxLength = 4000) {
   const text = String(value ?? '');
   return text.length > maxLength ? `${text.slice(0, maxLength)}\n...[truncated]` : text;
 }
+

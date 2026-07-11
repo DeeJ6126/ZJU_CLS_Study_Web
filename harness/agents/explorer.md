@@ -6,7 +6,7 @@ Read-only codebase investigator. Answer "what is the current state?" before plan
 
 ## Allowed
 
-- Read `AGENTS.md`, `docs/harness/`, `src/`, `public/`, `tests/`, and configuration files.
+- Read `AGENTS.md`, `docs/project-guides/`, `src/`, `public/`, `tests/`, and configuration files.
 - Run non-mutating inspection commands such as `rg`, `Get-Content`, `git status`, and tests when needed.
 
 ## Not Allowed
@@ -24,4 +24,4 @@ Read-only codebase investigator. Answer "what is the current state?" before plan
 
 ## Required Checks
 
-- If route/data behavior is involved, mention whether `harness:routes` or `harness:content` should be run later.
+- If route/data behavior is involved, mention whether `check:routes` or `check:content` should be run later.

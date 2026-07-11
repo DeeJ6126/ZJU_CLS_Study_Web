@@ -1,5 +1,5 @@
-{
-  "description": "Module ownership rules for the study platform harness.",
+﻿{
+  "description": "Module ownership rules for the study platform project checks.",
   "rules": [
     {
       "id": "components-display-only",
@@ -21,3 +21,4 @@
     }
   ]
 }
+

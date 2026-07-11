@@ -1,0 +1,81 @@
+export const quizCourseConfigs = {
+  BIO2023M: {
+    courseCode: 'BIO2023M',
+    collectionSlug: 'molecular-biology-review',
+    ariaLabel: '分子生物学刷题导航',
+    selectionLabel: '题型选择',
+    practiceOverviewUnit: '题数',
+    supportsVocabulary: true,
+    supportsMistakes: true,
+    supportsReview: true,
+    supportsPastExams: false,
+    supportsGallery: false,
+    navigationItems: [
+      { id: 'home', label: '首页' },
+      { id: 'categories', label: '题型选择' },
+      { id: 'practice', label: '练习' },
+      { id: 'mistakes', label: '错题本' },
+      { id: 'review', label: '复习' },
+      { id: 'vocabulary', label: '生词本' },
+      { id: 'results', label: '结果' },
+    ],
+    questionTypeLabels: {
+      translation: '中英互译',
+      true_false: '判断题',
+      multiple_choice: '选择题',
+      short_answer: '简答题',
+      essay: '论述题',
+    },
+  },
+  BIO2019F: {
+    courseCode: 'BIO2019F',
+    collectionSlug: 'botany-slice',
+    ariaLabel: '植物学切片导航',
+    selectionLabel: '分类',
+    practiceOverviewUnit: '张',
+    supportsVocabulary: false,
+    supportsMistakes: true,
+    supportsReview: false,
+    supportsPastExams: false,
+    supportsGallery: true,
+    navigationItems: [
+      { id: 'home', label: '首页' },
+      { id: 'categories', label: '分类' },
+      { id: 'practice', label: '练习' },
+      { id: 'gallery', label: '图库' },
+      { id: 'mistakes', label: '错题本' },
+      { id: 'results', label: '结果' },
+    ],
+    questionTypeLabels: {
+      image_reveal: '切片识别',
+    },
+  },
+  BIO2110F: {
+    courseCode: 'BIO2110F',
+    collectionSlug: 'microbiology-final-review',
+    ariaLabel: '微生物学刷题导航',
+    selectionLabel: '章节',
+    practiceOverviewUnit: '题数',
+    supportsVocabulary: true,
+    supportsMistakes: true,
+    supportsReview: false,
+    supportsPastExams: true,
+    supportsGallery: false,
+    navigationItems: [
+      { id: 'home', label: '首页' },
+      { id: 'categories', label: '章节' },
+      { id: 'pastExams', label: '真题' },
+      { id: 'practice', label: '练习' },
+      { id: 'mistakes', label: '错题本' },
+      { id: 'vocabulary', label: '生词本' },
+      { id: 'results', label: '结果' },
+    ],
+    questionTypeLabels: {
+      single_choice: '选择题',
+    },
+  },
+};
+
+export function getQuizCourseConfig(courseCode) {
+  return quizCourseConfigs[courseCode] ?? null;
+}

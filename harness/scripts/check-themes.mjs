@@ -1,4 +1,4 @@
-import { defaultThemeId, themes } from '../../src/data/config/themes.js';
+﻿import { defaultThemeId, themes } from '../../src/data/config/themes.js';
 import { createResult, isDirectRun, printCliResult, readJson, readText } from './lib.mjs';
 
 function getCssBlock(cssText, selector) {
@@ -23,7 +23,7 @@ export async function checkThemes({ rootDir = process.cwd() } = {}) {
       failures.push({
         file: 'src/data/config/themes.js',
         message: `Missing configured theme: ${expectedThemeId}`,
-        suggestion: 'Keep theme data, CSS selectors, and harness theme dataset aligned.',
+        suggestion: 'Keep theme data, CSS selectors, and project-check theme dataset aligned.',
       });
     }
   }
@@ -56,14 +56,14 @@ export async function checkThemes({ rootDir = process.cwd() } = {}) {
 
   return createResult({
     name: 'themes',
-    command: 'npm run harness:themes',
+    command: 'npm run check:themes',
     ok: failures.length === 0,
     checked: {
       themeIds,
       requiredTokens: policy.requiredTokens.length,
     },
     failures,
-    suggestions: failures.length ? ['Keep src/data/config/themes.js, base.css, and harness/datasets/theme-cases.json synchronized.'] : [],
+    suggestions: failures.length ? ['Keep src/data/config/themes.js, base.css, and the theme-check dataset synchronized.'] : [],
   });
 }
 
@@ -71,10 +71,11 @@ if (isDirectRun(import.meta.url)) {
   checkThemes().then(printCliResult).catch((error) => {
     printCliResult(createResult({
       name: 'themes',
-      command: 'npm run harness:themes',
+      command: 'npm run check:themes',
       ok: false,
       failures: [{ message: error.message }],
       suggestions: ['Check theme coverage policy and base.css.'],
     }));
   });
 }
+

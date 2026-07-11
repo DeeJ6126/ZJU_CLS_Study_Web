@@ -2,13 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-test('guest auth entry exposes login and registration buttons without test account switcher', async () => {
+test('auth entry components keep login and registration options without test account switcher', async () => {
   const app = await readFile(new URL('../src/App.vue', import.meta.url), 'utf8');
   const accountPopover = await readFile(new URL('../src/components/account/AccountPopover.vue', import.meta.url), 'utf8');
   const settingsPanel = await readFile(new URL('../src/components/SettingsPanel.vue', import.meta.url), 'utf8');
 
   assert.equal(app.includes('<AccountAccessMenu'), false);
-  assert.match(app, /<AccountPopover/);
+  assert.match(app, /canSubmitResource/);
+  assert.match(app, /canComment/);
+  assert.match(app, /canFavorite/);
   assert.match(accountPopover, /CC98注册/);
   assert.match(accountPopover, /浙大邮箱注册/);
   assert.match(accountPopover, /登录/);

@@ -1,4 +1,4 @@
-import { parseCourseCsv } from '../../src/data/courses/resourceCatalog.js';
+﻿import { parseCourseCsv } from '../../src/data/courses/resourceCatalog.js';
 import { buildCourseRoute, parseResourceHash } from '../../src/data/courses/resourcePaths.js';
 import { createResult, isDirectRun, printCliResult, readJson, readText } from './lib.mjs';
 
@@ -43,7 +43,7 @@ export async function checkRoutes({ rootDir = process.cwd() } = {}) {
 
   return createResult({
     name: 'routes',
-    command: 'npm run harness:routes',
+    command: 'npm run check:routes',
     ok: failures.length === 0,
     checked: {
       courseCount: courses.length,
@@ -58,10 +58,11 @@ if (isDirectRun(import.meta.url)) {
   checkRoutes().then(printCliResult).catch((error) => {
     printCliResult(createResult({
       name: 'routes',
-      command: 'npm run harness:routes',
+      command: 'npm run check:routes',
       ok: false,
       failures: [{ message: error.message }],
       suggestions: ['Check route policy and course CSV availability.'],
     }));
   });
 }
+

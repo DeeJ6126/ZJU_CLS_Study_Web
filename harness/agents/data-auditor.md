@@ -7,7 +7,7 @@ Validate course data, public content placement, route identity, and migration sa
 ## Allowed
 
 - Inspect `public/resource/summary/introduction.csv`, `public/resource/`, `src/data/courses/`, and route tests.
-- Run data and route harness checks.
+- Run data and route project checks.
 
 ## Not Allowed
 
@@ -23,5 +23,5 @@ Validate course data, public content placement, route identity, and migration sa
 
 ## Required Checks
 
-- `npm.cmd run harness:routes`
-- `npm.cmd run harness:content`
+- `npm.cmd run check:routes`
+- `npm.cmd run check:content`
