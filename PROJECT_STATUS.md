@@ -6,6 +6,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 
 - The project is a Vue 3 + Vite + plain CSS learning-resource platform for ZJU life-science students.
 - The app currently has a lightweight demo shell with top-level pages including `首页`, `概览`, `刷题`, and `关于`.
+- The homepage now centers course search, supports `课程 / 资料 / 题库 / 活动` search modes, and gives student-union activities more space than the compact popular-resource list.
 - The quiz feature is now mostly complete for the current phase:
   - `BIO2023M` molecular biology review
   - `BIO2019F` botany slice identification
@@ -21,6 +22,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 - Migrated the three quiz experiences into the main site without iframe usage.
 - Unified the core quiz practice skeleton across the three courses.
 - Added quiz-specific handoff documentation and test maps.
+- Replaced the sparse homepage placeholder with a responsive search-and-activity homepage backed by the shared course catalog and focused homepage data.
 - Replaced visible project-management wording with neutral project-guide and project-check wording while preserving the underlying checks.
 - Added BOM-tolerant parsing for project JSON checks and Markdown frontmatter.
 

@@ -7,6 +7,7 @@ import QuizCourseShell from './components/quiz/QuizCourseShell.vue';
 import QuizPracticeLayout from './components/quiz/QuizPracticeLayout.vue';
 import TextAnswerQuestionView from './components/quiz/TextAnswerQuestionView.vue';
 import TrueFalseQuestionView from './components/quiz/TrueFalseQuestionView.vue';
+import HomePage from './components/HomePage.vue';
 import {
   createQuizSession,
   fetchQuizCategories,
@@ -1389,17 +1390,16 @@ onBeforeUnmount(() => {
     </header>
 
     <main class="demo-main">
-      <section v-if="activePage === 'home'" class="demo-home" aria-labelledby="home-title">
-        <h1 id="home-title">生科智学</h1>
-        <label class="demo-search">
-          <span>搜索</span>
-          <input type="search" placeholder="搜索课程、题库或关键词" />
-        </label>
-      </section>
+      <HomePage v-if="activePage === 'home'" />
 
       <section v-else-if="activePage === 'overview'" class="demo-placeholder" aria-labelledby="overview-title">
         <p>概览</p>
         <h1 id="overview-title">这一页先留白，后面再慢慢整理。</h1>
+      </section>
+
+      <section v-else-if="activePage === 'activities'" class="demo-placeholder" aria-labelledby="activities-title">
+        <p>活动</p>
+        <h1 id="activities-title">学院活动与学生会内容将在这里持续更新。</h1>
       </section>
 
       <section v-else-if="activePage === 'about'" class="demo-placeholder" aria-labelledby="about-title">

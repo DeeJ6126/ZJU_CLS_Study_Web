@@ -6,6 +6,10 @@ Vue display components.
 
 Components should render props, hold local UI state, and emit events upward. Keep business rules and durable data decisions outside this folder.
 
+## Main Pages
+
+- `HomePage.vue`: homepage search entry, student-union activity feed, and compact popular-resource list.
+
 ## Boundaries
 
 - Auth and permission rules: `src/services/authService.js`.

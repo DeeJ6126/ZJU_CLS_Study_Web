@@ -2,6 +2,7 @@ export const demoTopPages = [
   { id: 'home', label: '首页' },
   { id: 'overview', label: '概览' },
   { id: 'quiz', label: '刷题' },
+  { id: 'activities', label: '活动' },
   { id: 'about', label: '关于' },
 ];
 

@@ -20,6 +20,7 @@ Shared business logic and API clients.
 - `quizAnswerViewService.js`: shared option state, answer display, focus, and vocabulary feedback helpers.
 - `markdownAnswerService.js`: safe structured rendering helpers for markdown-like quiz answers.
 - `demoNavigationService.js`: hash route helpers for the lightweight demo shell top navigation.
+- `homeSearchService.js`: normalized homepage search indexing and per-content-type filtering.
 
 For the quiz handoff map, read `quiz-services.md`.
 

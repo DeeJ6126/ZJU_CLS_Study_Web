@@ -8,6 +8,7 @@ Structured data and data models used by the Vue app.
 - `courses/`: course catalog parsing, course routes, and resource metadata indexes.
 - `legacy/`: old or transitional data kept for migration context.
 - `quizCourseConfigs.js`: quiz course navigation and capability configuration. See `quiz-config.md`.
+- `homeContent.js`: homepage search modes, activity entries, and popular-resource links.
 
 ## Course Content Rule
 
