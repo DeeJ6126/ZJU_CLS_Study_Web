@@ -17,3 +17,8 @@ test('demo navigation falls back to home for empty or unknown hashes', () => {
   assert.equal(getDemoPageFromHash('', demoTopPages), 'home');
   assert.equal(getDemoPageFromHash('#unknown', demoTopPages), 'home');
 });
+
+test('course resource routes stay inside the overview top-level page', () => {
+  assert.equal(getDemoPageFromHash('#resources/#BIO2110F', demoTopPages), 'overview');
+  assert.equal(getDemoPageFromHash('#resources/#BIO2110F/#materials/#1', demoTopPages), 'overview');
+});

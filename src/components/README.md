@@ -9,6 +9,7 @@ Components should render props, hold local UI state, and emit events upward. Kee
 ## Main Pages
 
 - `HomePage.vue`: homepage search entry, student-union activity feed, and compact popular-resource list.
+- `OverviewPage.vue`: course catalog, curriculum selector, category grouping, and semester grouping.
 
 ## Boundaries
 

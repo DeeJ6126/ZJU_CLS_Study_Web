@@ -21,6 +21,7 @@ Shared business logic and API clients.
 - `markdownAnswerService.js`: safe structured rendering helpers for markdown-like quiz answers.
 - `demoNavigationService.js`: hash route helpers for the lightweight demo shell top navigation.
 - `homeSearchService.js`: normalized homepage search indexing and per-content-type filtering.
+- `overviewCatalogService.js`: overview filtering, category grouping, semester grouping, and unique course counts.
 
 For the quiz handoff map, read `quiz-services.md`.
 

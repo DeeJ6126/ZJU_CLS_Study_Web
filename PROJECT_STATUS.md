@@ -7,6 +7,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 - The project is a Vue 3 + Vite + plain CSS learning-resource platform for ZJU life-science students.
 - The app currently has a lightweight demo shell with top-level pages including `首页`, `概览`, `刷题`, and `关于`.
 - The homepage now centers course search, supports `课程 / 资料 / 题库 / 活动` search modes, and gives student-union activities more space than the compact popular-resource list.
+- The overview page now lists all catalog courses under `专业基础课程 / 专业课 / 通识课`, supports deeper professional-course groups, and can filter the normalized 2024 curriculum by category or eight semester periods.
 - The quiz feature is now mostly complete for the current phase:
   - `BIO2023M` molecular biology review
   - `BIO2019F` botany slice identification
@@ -25,6 +26,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 - Replaced the sparse homepage placeholder with a responsive search-and-activity homepage backed by the shared course catalog and focused homepage data.
 - Replaced visible project-management wording with neutral project-guide and project-check wording while preserving the underlying checks.
 - Added BOM-tolerant parsing for project JSON checks and Markdown frontmatter.
+- Added the first course-overview catalog and 2024 curriculum-program view while preserving course-code resource routes and existing detail pages.
 
 ## Known Good Verification
 
@@ -35,7 +37,7 @@ npm.cmd test
 npm.cmd run check
 ```
 
-`npm.cmd run check` includes the broad project checks and produced a passing report on 2026-07-11.
+`npm.cmd run check` includes the broad project checks and produced a passing report on 2026-07-12.
 
 ## Deferred Or Not Yet Production-Ready
 
@@ -43,7 +45,7 @@ npm.cmd run check
 - Server-side persistence/sync for quiz local mistake books and vocabulary books.
 - More course quiz migrations beyond the three current quiz courses.
 - Final deployment hardening under `/var/www/html/zjubio/`.
-- The next product direction is expected to involve `首页` and `概览`, but the exact scope should come from the user in the next task.
+- The overview UI is intentionally an initial layout; 2023 and 2025 curriculum mappings remain disabled until their legacy/new course codes are normalized. Course detail layout is deferred for a later redesign.
 
 ## Recovery Order For Future AI
 

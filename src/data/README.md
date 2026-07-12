@@ -5,7 +5,7 @@ Structured data and data models used by the Vue app.
 ## Main Areas
 
 - `config/`: navigation, themes, test users, mock messages, and temporary CC98 verification-code config.
-- `courses/`: course catalog parsing, course routes, and resource metadata indexes.
+- `courses/`: course catalog parsing, course routes, resource indexes, and normalized curriculum-program metadata.
 - `legacy/`: old or transitional data kept for migration context.
 - `quizCourseConfigs.js`: quiz course navigation and capability configuration. See `quiz-config.md`.
 - `homeContent.js`: homepage search modes, activity entries, and popular-resource links.

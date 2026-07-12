@@ -8,6 +8,8 @@ import QuizPracticeLayout from './components/quiz/QuizPracticeLayout.vue';
 import TextAnswerQuestionView from './components/quiz/TextAnswerQuestionView.vue';
 import TrueFalseQuestionView from './components/quiz/TrueFalseQuestionView.vue';
 import HomePage from './components/HomePage.vue';
+import OverviewPage from './components/OverviewPage.vue';
+import CourseDetailPage from './components/CourseDetailPage.vue';
 import {
   createQuizSession,
   fetchQuizCategories,
@@ -96,6 +98,9 @@ import {
 import { canComment, canFavorite, canSubmitResource } from './services/authService.js';
 import { quizCourseConfigs } from './data/quizCourseConfigs.js';
 import { demoPendingCourses, demoSupportedCourses, demoTopPages } from './data/quizDemo.js';
+import { getResourceCourseByCode } from './data/courses/resourceData.js';
+import { getCourseDetail } from './data/courses/courseDetails.js';
+import { parseResourceHash } from './data/courses/resourcePaths.js';
 import { publicAssetPath } from './utils/publicPath.js';
 
 const topPages = demoTopPages;
@@ -103,6 +108,8 @@ const supportedCourses = demoSupportedCourses;
 const pendingCourses = demoPendingCourses;
 const studentViewer = { id: 'student', role: 'guest', verifications: {} };
 const activePage = ref('home');
+const overviewRoute = ref(parseResourceHash(''));
+const activeOverviewCourse = ref(null);
 const activeCourseTab = ref('supported');
 const quizView = ref('catalog');
 const molecularPage = ref('home');
@@ -1348,10 +1355,32 @@ function imageUrl(path) {
   return publicAssetPath(`/resource/quiz/${activeCourseCode.value}/${activeCollectionSlug.value}/${path}`);
 }
 
-function syncPageFromHash() {
+async function syncPageFromHash() {
   const nextPage = routeFromHash();
   resetPageState(nextPage);
   activePage.value = nextPage;
+
+  if (nextPage !== 'overview') {
+    activeOverviewCourse.value = null;
+    return;
+  }
+
+  const nextRoute = parseResourceHash(window.location.hash);
+  overviewRoute.value = nextRoute;
+  if (!nextRoute.courseCode) {
+    activeOverviewCourse.value = null;
+    return;
+  }
+
+  const requestedCourseCode = nextRoute.courseCode;
+  const course = await getResourceCourseByCode(requestedCourseCode);
+  if (overviewRoute.value.courseCode === requestedCourseCode) {
+    activeOverviewCourse.value = getCourseDetail(course);
+  }
+}
+
+function backToOverview() {
+  setPage('overview');
 }
 
 watch(activeCollectionSlug, loadCategories);
@@ -1392,10 +1421,22 @@ onBeforeUnmount(() => {
     <main class="demo-main">
       <HomePage v-if="activePage === 'home'" />
 
-      <section v-else-if="activePage === 'overview'" class="demo-placeholder" aria-labelledby="overview-title">
-        <p>概览</p>
-        <h1 id="overview-title">这一页先留白，后面再慢慢整理。</h1>
-      </section>
+      <template v-else-if="activePage === 'overview'">
+        <CourseDetailPage
+          v-if="activeOverviewCourse"
+          :course="activeOverviewCourse"
+          :active-tab-id="overviewRoute.tabId"
+          :active-item-id="overviewRoute.itemId"
+          :user="studentViewer"
+          :can-submit="userCanSubmit"
+          :can-comment="userCanComment"
+          :can-favorite="userCanFavorite"
+          :favorite-keys="[]"
+          :comments-by-key="{}"
+          @back="backToOverview"
+        />
+        <OverviewPage v-else />
+      </template>
 
       <section v-else-if="activePage === 'activities'" class="demo-placeholder" aria-labelledby="activities-title">
         <p>活动</p>

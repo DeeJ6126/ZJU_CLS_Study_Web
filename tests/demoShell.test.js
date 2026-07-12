@@ -9,12 +9,16 @@ test('demo shell exposes the requested top-level pages and sparse home search', 
   const homeData = await readFile(new URL('../src/data/homeContent.js', import.meta.url), 'utf8');
   const demoCss = await readFile(new URL('../src/styles/demo.css', import.meta.url), 'utf8');
   const homeCss = await readFile(new URL('../src/styles/home.css', import.meta.url), 'utf8');
+  const overviewCss = await readFile(new URL('../src/styles/overview.css', import.meta.url), 'utf8');
 
   for (const label of ['首页', '概览', '刷题', '活动', '关于']) {
     assert.match(data, new RegExp(`label: '${label}'`));
   }
 
   assert.match(app, /HomePage/);
+  assert.match(app, /OverviewPage/);
+  assert.match(app, /CourseDetailPage/);
+  assert.doesNotMatch(app, /这一页先留白，后面再慢慢整理/);
   assert.match(home, /class="home-search"/);
   assert.match(homeData, /搜索课程名称或课程代码/);
   for (const label of ['课程', '资料', '题库', '活动']) {
@@ -25,6 +29,9 @@ test('demo shell exposes the requested top-level pages and sparse home search', 
   assert.match(app, /activePage === 'activities'/);
   assert.match(app, /id="activities-title"/);
   assert.match(homeCss, /\.home-search-stage__copy,[\s\S]*?margin-inline:\s*auto/);
+  assert.match(overviewCss, /\.overview-page\s*\{[\s\S]*?max-width:\s*1360px/);
+  assert.match(overviewCss, /\.overview-course-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(overviewCss, /\.overview-section__body\s*\{[\s\S]*?padding:\s*18px\s+24px\s+24px/);
   assert.match(demoCss, /@media \(max-width: 760px\)[\s\S]*?\.demo-topnav\s*\{[\s\S]*?grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(app, /getDemoPageHref/);
   assert.match(app, /getDemoPageFromHash/);
@@ -205,4 +212,12 @@ test('course subapps use the shared shell and practice layout instead of course-
   assert.doesNotMatch(app, /MolecularQuizApp/);
   assert.doesNotMatch(app, /BotanyQuizApp/);
   assert.doesNotMatch(app, /MicrobiologyQuizApp/);
+});
+
+test('quiz shell uses the same green primary palette as the homepage', async () => {
+  const css = await readFile(new URL('../src/styles/demo.css', import.meta.url), 'utf8');
+
+  assert.match(css, /--demo-primary:\s*#245e48/);
+  assert.match(css, /--demo-primary-soft:\s*#e7f0eb/);
+  assert.doesNotMatch(css, /#2f6feb|#eef4ff/i);
 });

@@ -1,4 +1,6 @@
 .demo-shell {
+  --demo-primary: #245e48;
+  --demo-primary-soft: #e7f0eb;
   min-height: 100vh;
   background: #f5f6f8;
   color: #1f2933;
@@ -136,7 +138,7 @@
 
 .demo-placeholder p {
   margin: 0 0 10px;
-  color: #2f6feb;
+  color: var(--demo-primary);
   font-weight: 900;
 }
 
@@ -162,8 +164,8 @@
 .quiz-left-nav button {
   width: 100%;
   height: 48px;
-  background: #eef4ff;
-  color: #2f6feb;
+  background: var(--demo-primary-soft);
+  color: var(--demo-primary);
   cursor: pointer;
   font-weight: 900;
 }
@@ -195,7 +197,7 @@
 }
 
 .quiz-market-tabs button.is-active {
-  background: #2f6feb;
+  background: var(--demo-primary);
   color: #ffffff;
 }
 
@@ -217,7 +219,7 @@
 }
 
 .quiz-course-card span {
-  color: #2f6feb;
+  color: var(--demo-primary);
   font-size: 13px;
   font-weight: 900;
 }
@@ -240,7 +242,7 @@
 .practice-question__head button {
   min-height: 38px;
   padding: 0 14px;
-  background: #2f6feb;
+  background: var(--demo-primary);
   color: #ffffff;
   cursor: pointer;
   font-weight: 900;
@@ -272,7 +274,7 @@
 }
 
 .range-panel__head span {
-  color: #2f6feb;
+  color: var(--demo-primary);
   font-size: 13px;
   font-weight: 900;
 }
@@ -312,9 +314,9 @@
 }
 
 .range-options button.is-selected {
-  border-color: #2f6feb;
-  background: #eef4ff;
-  color: #2f6feb;
+  border-color: var(--demo-primary);
+  background: var(--demo-primary-soft);
+  color: var(--demo-primary);
   font-weight: 900;
 }
 
@@ -356,8 +358,8 @@
 }
 
 .range-card.is-selected {
-  border-color: #2f6feb;
-  background: #eef4ff;
+  border-color: var(--demo-primary);
+  background: var(--demo-primary-soft);
 }
 
 .range-panel__actions {
@@ -415,8 +417,8 @@
 }
 
 .practice-menu button.is-active {
-  background: #eef4ff;
-  color: #2f6feb;
+  background: var(--demo-primary-soft);
+  color: var(--demo-primary);
 }
 
 .question-jump {
@@ -483,8 +485,8 @@
 
 .practice-overview-row.is-active {
   border-color: #eef1f5;
-  background: #eef4ff;
-  color: #2f6feb;
+  background: var(--demo-primary-soft);
+  color: var(--demo-primary);
 }
 
 .practice-question-panel {
@@ -517,8 +519,8 @@
 }
 
 .question-grid-cell.is-active {
-  border-color: #2f6feb;
-  background: #2f6feb;
+  border-color: var(--demo-primary);
+  background: var(--demo-primary);
   color: #ffffff;
 }
 
@@ -552,8 +554,8 @@
 }
 
 .practice-question__head button {
-  background: #eef4ff;
-  color: #2f6feb;
+  background: var(--demo-primary-soft);
+  color: var(--demo-primary);
 }
 
 .practice-question__head span,
@@ -606,8 +608,8 @@
 
 .practice-options button.is-selected,
 .option-button.is-selected {
-  border-color: #2f6feb;
-  background: #eef4ff;
+  border-color: var(--demo-primary);
+  background: var(--demo-primary-soft);
 }
 
 .practice-options button.is-correct,
@@ -699,7 +701,7 @@
 
 .vocabulary-feedback {
   margin: 10px 0 0;
-  color: #2f6feb;
+  color: var(--demo-primary);
   font-weight: 900;
 }
 
@@ -771,7 +773,7 @@
 }
 
 .quiz-course-nav button.is-active {
-  background: #eef4ff;
+  background: var(--demo-primary-soft);
   color: #2f68ff;
 }
 
@@ -834,7 +836,7 @@
 .molecular-quiz-nav button.is-active,
 .botany-quiz-nav button.is-active,
 .microbiology-quiz-nav button.is-active {
-  background: #eef4ff;
+  background: var(--demo-primary-soft);
   color: #2f68ff;
 }
 
@@ -962,7 +964,7 @@
 }
 
 .botany-quiz-nav button.is-active {
-  background: #eef4ff;
+  background: var(--demo-primary-soft);
   color: #2f68ff;
 }
 
@@ -1110,7 +1112,7 @@
 }
 
 .microbiology-quiz-nav button.is-active {
-  background: #eef4ff;
+  background: var(--demo-primary-soft);
   color: #2f68ff;
 }
 
@@ -1195,7 +1197,7 @@
 .practice-result {
   margin-top: 18px;
   padding: 16px;
-  border-left: 4px solid #2f6feb;
+  border-left: 4px solid var(--demo-primary);
   border-radius: 6px;
   background: #f2f5f9;
 }
