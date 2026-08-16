@@ -10,6 +10,12 @@ Components should render props, hold local UI state, and emit events upward. Kee
 
 - `HomePage.vue`: homepage search entry, student-union activity feed, and compact popular-resource list.
 - `OverviewPage.vue`: course catalog, curriculum selector, category grouping, and semester grouping.
+- `admin/AdminPage.vue`: hidden-route administrator login and course-content maintenance UI.
+- `ContributionBox.vue`: authenticated course submission form that sends review-ready fields upward.
+- `account/AccountPopover.vue` and `account/AuthDialog.vue`: account status and CC98/ZJU-email authentication forms; API work and permission decisions remain in the app/service layer.
+- `account/NotificationsPage.vue`: account-only message list and read actions.
+- `profile/ProfilePage.vue`: public post view and the owner's course, favorite, post, submission, comment, avatar, and identity controls.
+- `CommentSection.vue`: identified one-level discussion UI; durable operations are emitted to the service layer.
 
 ## Boundaries
 
@@ -33,3 +39,8 @@ npm.cmd run build
 npm.cmd run check:architecture
 ```
 
+## Profile
+
+`profile/ProfilePage.vue` renders both the public published-post view and the signed-in
+owner workspace. Authentication and ownership decisions are passed in as props; API
+calls remain in `App.vue` and shared services.

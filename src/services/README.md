@@ -5,7 +5,7 @@ Shared business logic and API clients.
 ## Main Files
 
 - `authService.js`: account state labels, verification badges, and submit/comment/favorite permission rules.
-- `authApiClient.js`: browser API calls for current backend auth endpoints.
+- `authApiClient.js`: browser API calls for CC98/email registration, password login, email binding, recovery, current-user lookup, and logout.
 - `cc98VerificationService.js`: legacy/front-end prototype CC98 code matching boundary.
 - `accountStateService.js`: local auth override helpers from the earlier prototype.
 - `courseOverviewService.js`: course overview field shaping.
@@ -22,6 +22,12 @@ Shared business logic and API clients.
 - `demoNavigationService.js`: hash route helpers for the lightweight demo shell top navigation.
 - `homeSearchService.js`: normalized homepage search indexing and per-content-type filtering.
 - `overviewCatalogService.js`: overview filtering, category grouping, semester grouping, and unique course counts.
+- `courseContentApiClient.js`: published course content with static Markdown fallback only when the API is unavailable.
+- `adminApiClient.js`: administrator content CRUD, status changes, and raw PDF upload requests.
+- `submissionApiClient.js`: authenticated submission creation, submission PDF upload, and anonymous like toggling.
+- `accountDataApiClient.js`: private course lists, XLSX import preview, favorites, and notification read state.
+- `commentApiClient.js`: identified comment/reply create, edit, delete, and public listing calls.
+- `profileApiClient.js`: public profiles plus owner post, submission, avatar, and identity management.
 
 For the quiz handoff map, read `quiz-services.md`.
 
@@ -31,7 +37,7 @@ Permission decisions stay in `authService.js`. Components should not reimplement
 
 ## API Path Note
 
-`authApiClient.js` currently uses relative paths such as:
+`authApiClient.js` uses relative paths such as:
 
 ```js
 api/auth/me
@@ -41,7 +47,7 @@ This is intentional for deployment under `/zjubio/`. Do not change back to `/api
 
 ## Security Note
 
-The current auth backend is useful for development and staged deployment, but it is not yet a full production security system. Do not describe frontend checks as real security boundaries.
+The Node backend is the authentication boundary. Components receive derived permission props and must not inspect verification fields to make security decisions. Deployment still requires HTTPS, secret management, backup, and monitoring hardening.
 
 ## Checks
 
@@ -50,3 +56,8 @@ npm.cmd test
 npm.cmd run check:architecture
 ```
 
+## Profiles
+
+`profileApiClient.js` owns public profile search/read calls and authenticated profile,
+avatar, CC98-binding, post-revision, submission edit/withdraw/resubmission/delete, and archive requests. Components
+must not reproduce these endpoint or permission rules.
