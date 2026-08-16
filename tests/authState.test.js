@@ -5,12 +5,14 @@ import { defaultUserId, getTestUserById, testUsers } from '../src/data/config/te
 import {
   canComment,
   canFavorite,
+  canBindEmailIdentity,
   canRequestCc98PrototypeVerification,
   canSubmitResource,
   createCommentMessage,
   createSubmissionMessage,
   getAccountState,
   getVerificationBadges,
+  isAdministrator,
 } from '../src/services/authService.js';
 import { mergeUserAuthOverride } from '../src/services/accountStateService.js';
 import { getNextAvatarColor } from '../src/services/avatarService.js';
@@ -30,6 +32,19 @@ test('test users cover guest, single verification, dual verification, and develo
   assert.equal(getAccountState(getTestUserById('developer')).label, '开发者');
 });
 
+test('backend administrator role has a dedicated account label and verified permissions', () => {
+  const admin = {
+    id: 'cc98-99', role: 'admin', nickname: '管理员',
+    verifications: { cc98: true, email: false },
+  };
+  assert.equal(getAccountState(admin).label, '管理员');
+  assert.deepEqual(getVerificationBadges(admin), ['管理员', 'CC98认证']);
+  assert.equal(canSubmitResource(admin), true);
+  assert.equal(canComment(admin), true);
+  assert.equal(isAdministrator(admin), true);
+  assert.equal(isAdministrator(getTestUserById('developer')), false);
+});
+
 test('resource permissions allow verified users to submit and comment while guests are blocked', () => {
   const guest = getTestUserById('guest');
   const cc98User = getTestUserById('cc98-user');
@@ -45,6 +60,13 @@ test('resource permissions allow verified users to submit and comment while gues
 
   assert.equal(canSubmitResource(developer), true);
   assert.equal(canComment(developer), true);
+});
+
+test('only signed-in CC98 users without an email can bind a ZJU email', () => {
+  assert.equal(canBindEmailIdentity(getTestUserById('guest')), false);
+  assert.equal(canBindEmailIdentity(getTestUserById('cc98-user')), true);
+  assert.equal(canBindEmailIdentity(getTestUserById('email-user')), false);
+  assert.equal(canBindEmailIdentity(getTestUserById('dual-user')), false);
 });
 
 test('verification badges stay compatible with future backend auth providers', () => {

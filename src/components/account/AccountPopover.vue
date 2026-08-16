@@ -18,9 +18,17 @@ defineProps({
     type: Boolean,
     required: true,
   },
+  canBindEmail: {
+    type: Boolean,
+    default: false,
+  },
+  unreadCount: { type: Number, default: 0 },
 });
 
-const emit = defineEmits(['change-avatar', 'logout', 'open-login', 'open-register-cc98', 'open-register-email']);
+const emit = defineEmits([
+  'logout', 'open-login', 'open-register-cc98',
+  'open-register-email', 'open-bind-email', 'open-profile', 'open-notifications',
+]);
 </script>
 
 <template>
@@ -48,16 +56,13 @@ const emit = defineEmits(['change-avatar', 'logout', 'open-login', 'open-registe
       </div>
 
       <div class="account-popover__avatar">
-        <button
+        <img v-if="user.avatarUrl" class="account-avatar account-avatar--large" :src="user.avatarUrl" alt="" />
+        <span
+          v-else
           class="account-avatar account-avatar--large"
-          type="button"
-          aria-label="更改头像颜色"
           :style="{ backgroundColor: user.avatarColor }"
-          @click="emit('change-avatar')"
-        >
-          {{ user.avatarInitials }}
-        </button>
-        <span>点击头像可切换前端测试颜色</span>
+          aria-hidden="true"
+        >{{ user.avatarInitials }}</span>
       </div>
     </div>
 
@@ -67,6 +72,19 @@ const emit = defineEmits(['change-avatar', 'logout', 'open-login', 'open-registe
       <button type="button" @click="emit('open-login')">登录</button>
     </div>
 
-    <button v-else class="account-popover__logout" type="button" @click="emit('logout')">退出登录</button>
+    <div v-else class="account-popover__signed-in-actions">
+      <button type="button" @click="emit('open-profile')">个人主页</button>
+      <button type="button" @click="emit('open-notifications')">
+        站内消息<span v-if="unreadCount"> {{ unreadCount }}</span>
+      </button>
+      <button
+        v-if="canBindEmail"
+        type="button"
+        @click="emit('open-bind-email')"
+      >
+        绑定浙大邮箱
+      </button>
+      <button class="account-popover__logout" type="button" @click="emit('logout')">退出登录</button>
+    </div>
   </aside>
 </template>

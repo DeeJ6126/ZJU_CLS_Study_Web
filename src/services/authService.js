@@ -2,8 +2,12 @@ export function isAuthenticated(user) {
   return Boolean(user && (user.role !== 'guest' || user.verifications?.cc98 || user.verifications?.email));
 }
 
+export function isAdministrator(user) {
+  return Boolean(user && user.role === 'admin');
+}
+
 export function isVerifiedUser(user) {
-  return Boolean(user?.verifications?.cc98 || user?.verifications?.email || user?.role === 'developer');
+  return Boolean(user?.verifications?.cc98 || user?.verifications?.email || ['developer', 'admin'].includes(user?.role));
 }
 
 export function getAccountState(user) {
@@ -20,6 +24,14 @@ export function getAccountState(user) {
       id: 'developer',
       label: '开发者',
       description: '可接收投稿申请，并用于测试平台管理状态。',
+    };
+  }
+
+  if (user.role === 'admin') {
+    return {
+      id: 'admin',
+      label: '管理员',
+      description: '可维护课程资源，并使用已认证账号功能。',
     };
   }
 
@@ -66,6 +78,10 @@ export function getVerificationBadges(user) {
     return ['开发者', 'CC98认证', '邮箱认证'];
   }
 
+  if (user.role === 'admin') {
+    return ['管理员', ...(user.verifications?.cc98 ? ['CC98认证'] : [])];
+  }
+
   const badges = [];
 
   if (user.verifications?.cc98) {
@@ -91,8 +107,12 @@ export function canFavorite(user) {
   return isAuthenticated(user);
 }
 
+export function canBindEmailIdentity(user) {
+  return Boolean(isAuthenticated(user) && user.verifications?.cc98 && !user.verifications?.email);
+}
+
 export function canRequestCc98PrototypeVerification(user) {
-  return Boolean(user && user.role !== 'developer' && !user.verifications?.cc98);
+  return Boolean(user && !['developer', 'admin'].includes(user.role) && !user.verifications?.cc98);
 }
 
 export function createSubmissionMessage({

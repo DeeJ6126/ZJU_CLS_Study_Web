@@ -36,7 +36,7 @@
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: var(--color-primary);
+  background: var(--demo-primary, var(--color-primary));
   color: var(--color-avatar-text);
   font-size: 12px;
 }
@@ -108,7 +108,7 @@
 
 .popover-kicker {
   margin: 0;
-  color: var(--color-primary-strong);
+  color: var(--demo-primary, var(--color-primary-strong));
   font-size: 12px;
   font-weight: 900;
 }
@@ -197,7 +197,7 @@
 
 .cc98-verification button {
   padding: 0 12px;
-  background: var(--color-primary);
+  background: var(--demo-primary, var(--color-primary));
   color: var(--color-avatar-text);
   cursor: pointer;
   font-weight: 900;
@@ -278,7 +278,8 @@
 .auth-dialog button,
 .auth-dialog input,
 .account-popover__logout,
-.account-popover__actions button {
+.account-popover__actions button,
+.account-popover__signed-in-actions button {
   min-height: 40px;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-sm);
@@ -332,8 +333,8 @@
 }
 
 .auth-dialog__tabs button.is-active {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
+  border-color: var(--demo-primary, var(--color-primary));
+  background: var(--demo-primary, var(--color-primary));
   color: var(--color-avatar-text);
 }
 
@@ -361,10 +362,34 @@
   color: var(--color-ink);
 }
 
+.auth-dialog__code-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.auth-dialog__code-row button,
+.auth-dialog__text-action {
+  padding: 0 12px;
+  background: var(--color-soft);
+  color: var(--demo-primary, var(--color-primary-strong));
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.auth-dialog__text-action {
+  justify-self: start;
+  min-height: auto;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+}
+
 .auth-dialog__body button[type="submit"],
 .account-popover__logout,
 .account-popover__actions button:first-child {
-  background: var(--color-primary);
+  background: var(--demo-primary, var(--color-primary));
   color: var(--color-avatar-text);
   cursor: pointer;
   font-weight: 900;
@@ -385,6 +410,26 @@
   font-weight: 900;
 }
 
+.account-popover__signed-in-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.account-popover__signed-in-actions button {
+  padding: 0 12px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.account-popover__signed-in-actions button:first-child:not(:last-child) {
+  background: var(--demo-primary, var(--color-primary));
+  color: var(--color-avatar-text);
+}
+
 .auth-dialog__message,
 .auth-dialog__disabled {
   margin: 0;
@@ -394,7 +439,7 @@
 
 .account-popover__logout {
   width: 100%;
-  margin-top: 16px;
+  margin: 0;
 }
 
 @media (max-width: 760px) {
@@ -420,4 +465,30 @@
   .account-popover__actions {
     grid-template-columns: 1fr;
   }
+
+  .auth-dialog__code-row,
+  .account-popover__signed-in-actions {
+    grid-template-columns: 1fr;
+  }
+}
+.auth-dialog__email-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #bcc8c1;
+  border-radius: 5px;
+}
+
+.auth-dialog__email-field input {
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+.auth-dialog__email-field strong {
+  padding: 0 12px;
+  color: #506158;
+  font-size: 14px;
+  white-space: nowrap;
 }

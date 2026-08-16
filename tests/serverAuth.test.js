@@ -1,5 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 
 import { createAuthStore } from '../server/authStore.js';
 import {
@@ -24,7 +28,7 @@ test('cc98 registration stores a hashed password and consumes a valid code', asy
   const store = createTestStore();
   const result = await registerCc98(store, {
     code: 'bio-cc98',
-    password: 'test',
+    password: 'test-pass',
   });
   const user = store.findUserByCc98Name('cc98_bio_visitor');
   const code = store.findVerificationCode('bio-cc98');
@@ -90,4 +94,63 @@ test('current user is guest without a valid session', () => {
   const store = createTestStore();
   assert.equal(getCurrentUser(store, '').role, 'guest');
   assert.equal(getCurrentUser(store, createSession(store, null)).role, 'guest');
+});
+
+test('expired sessions are rejected by the auth store', () => {
+  const store = createTestStore();
+  store.createSession({ id: 'expired', userId: 1, expiresAt: '2020-01-01T00:00:00.000Z' });
+  assert.equal(store.findSession('expired'), undefined);
+  store.close();
+});
+
+test('auth store migrates legacy users and preserves their student role', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'zjubio-auth-migration-'));
+  const filename = join(directory, 'auth.sqlite');
+  const legacyDb = new DatabaseSync(filename);
+  legacyDb.exec(`
+    create table users (
+      id integer primary key autoincrement,
+      cc98_name text unique not null,
+      password_hash text not null,
+      created_at text not null
+    );
+    insert into users (cc98_name, password_hash, created_at)
+    values ('legacy_student', 'legacy-hash', '2026-01-01T00:00:00.000Z');
+  `);
+  legacyDb.close();
+
+  const store = createAuthStore({ filename });
+  try {
+    store.initialize();
+    assert.equal(store.findUserByCc98Name('legacy_student').role, 'student');
+  } finally {
+    store.close();
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test('admin allowlist assigns the admin role and requires a stronger password', async () => {
+  const store = createTestStore();
+  const rejected = await registerCc98(store, {
+    code: 'bio-cc98',
+    password: 'short',
+  }, {
+    adminCc98Names: new Set(['cc98_bio_visitor']),
+  });
+  assert.equal(rejected.status, 400);
+  assert.match(rejected.message, /10/);
+
+  const registered = await registerCc98(store, {
+    code: 'bio-cc98',
+    password: 'admin-pass-123',
+  }, {
+    adminCc98Names: new Set(['cc98_bio_visitor']),
+  });
+  assert.equal(registered.user.role, 'admin');
+
+  const login = await loginCc98(store, {
+    cc98Name: 'cc98_bio_visitor',
+    password: 'admin-pass-123',
+  });
+  assert.equal(login.user.role, 'admin');
 });
