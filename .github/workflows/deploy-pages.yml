@@ -39,8 +39,8 @@ jobs:
         env:
           GITHUB_PAGES: true
 
-      - name: Harness
-        run: npm run harness
+      - name: Project checks
+        run: npm run check
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
