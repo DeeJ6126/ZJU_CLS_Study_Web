@@ -3,14 +3,8 @@ import { computed, ref, watch } from 'vue';
 import CommentSection from './CommentSection.vue';
 import ContributionBox from './ContributionBox.vue';
 import FavoriteButton from './FavoriteButton.vue';
-import QuizPracticePanel from './QuizPracticePanel.vue';
 import { buildCourseRoute, courseDetailTabs } from '../data/courses/resourcePaths.js';
-import { createFavoriteKey } from '../services/favoriteService.js';
-import {
-  bodyToParagraphs,
-  fetchMarkdownDocument,
-} from '../utils/markdownContent.js';
-import { publicAssetPath } from '../utils/publicPath.js';
+import { getProfileHref } from '../services/demoNavigationService.js';
 
 const props = defineProps({
   course: {
@@ -41,6 +35,10 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
+  hasQuiz: {
+    type: Boolean,
+    default: false,
+  },
   favoriteKeys: {
     type: Array,
     default: () => [],
@@ -49,58 +47,67 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
+  loadError: {
+    type: String,
+    default: '',
+  },
+  submissionNotice: {
+    type: String,
+    default: '',
+  },
+  likeNotice: {
+    type: String,
+    default: '',
+  },
+  commentNotice: { type: String, default: '' },
+  commentBusy: { type: Boolean, default: false },
+  cc98IconUrl: {
+    type: String,
+    required: true,
+  },
 });
 
-const emit = defineEmits(['back', 'toggle-favorite', 'add-comment', 'submit-contribution']);
-
-const tabItems = ref({
-  experiences: [],
-  materials: [],
-  papers: [],
-});
-const isLoading = ref(false);
-const loadError = ref('');
+const emit = defineEmits([
+  'back', 'open-quiz', 'toggle-favorite', 'add-comment', 'update-comment', 'delete-comment',
+  'submit-contribution', 'toggle-like',
+]);
+const gpaVisible = ref(false);
 
 const activeTab = computed(
   () => courseDetailTabs.find((tab) => tab.id === props.activeTabId) ?? courseDetailTabs[0],
 );
-const activeCollection = computed(() => tabItems.value[activeTab.value.id] ?? []);
+const activeCollection = computed(() => (
+  Array.isArray(props.course[activeTab.value.id]) ? props.course[activeTab.value.id] : []
+));
 const activeItem = computed(() => activeCollection.value.find((item) => item.id === props.activeItemId) ?? null);
 const activeItemFavoriteKey = computed(() => {
-  if (!activeItem.value || !['experiences', 'materials'].includes(activeTab.value.id)) {
-    return '';
-  }
-
-  return createFavoriteKey(props.course.code, activeTab.value.id, activeItem.value.id);
+  return activeItem.value?.contentId ?? '';
 });
 const activeItemComments = computed(() => props.commentsByKey[activeItemFavoriteKey.value] ?? []);
+
+watch(() => activeItem.value?.id, () => {
+  gpaVisible.value = false;
+});
 
 function tabHref(tabId) {
   return buildCourseRoute(props.course.code, tabId);
 }
 
-function itemFavoriteKey(tabId, itemId) {
-  return createFavoriteKey(props.course.code, tabId, itemId);
-}
-
-function isItemFavorited(tabId, itemId) {
-  return props.favoriteKeys.includes(itemFavoriteKey(tabId, itemId));
-}
-
-function emitFavorite(tabId, itemId) {
+function emitFavorite(contentId) {
   if (!props.canFavorite) {
     return;
   }
-
-  emit('toggle-favorite', itemFavoriteKey(tabId, itemId));
+  emit('toggle-favorite', contentId);
 }
 
-function emitComment(text) {
+function emitComment(payload) {
   emit('add-comment', {
-    key: activeItemFavoriteKey.value,
-    text,
-    tabId: activeTab.value.id,
-    itemTitle: activeItem.value?.title ?? '',
+    contentId: activeItemFavoriteKey.value,
+    ...payload,
   });
 }
 
@@ -111,92 +118,30 @@ function emitContribution(payload) {
   });
 }
 
-async function loadCollection(tabId) {
-  const sourceItems = props.course[tabId] ?? [];
-
-  if (!sourceItems.length) {
-    tabItems.value = {
-      ...tabItems.value,
-      [tabId]: [],
-    };
-    return;
-  }
-
-  const documents = await Promise.all(sourceItems.map(async (sourceItem) => {
-    const document = await fetchMarkdownDocument(sourceItem.url);
-    return {
-      ...sourceItem,
-      ...document.frontmatter,
-      id: String(document.frontmatter.id || sourceItem.id),
-      body: document.body,
-      paragraphs: bodyToParagraphs(document.body),
-      file: document.frontmatter.fileUrl ? {
-        url: publicAssetPath(document.frontmatter.fileUrl),
-        fileName: document.frontmatter.fileName,
-      } : null,
-    };
-  }));
-
-  tabItems.value = {
-    ...tabItems.value,
-    [tabId]: documents,
-  };
-}
-
-async function ensureActiveContent() {
-  isLoading.value = true;
-  loadError.value = '';
-
-  try {
-    if (activeTab.value.id !== 'overview' && !tabItems.value[activeTab.value.id]?.length) {
-      await loadCollection(activeTab.value.id);
-    }
-  } catch (error) {
-    loadError.value = '资料加载失败，请稍后重试。';
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-watch(
-  () => props.course.code,
-  () => {
-    tabItems.value = {
-      experiences: [],
-      materials: [],
-      papers: [],
-    };
-  },
-);
-
-watch(
-  () => [props.course.code, props.activeTabId],
-  () => {
-    ensureActiveContent();
-  },
-  { immediate: true },
-);
 </script>
 
 <template>
   <article class="course-detail" aria-labelledby="course-detail-title">
-    <button class="course-detail__back" type="button" @click="emit('back')">
-      返回资源中心
-    </button>
+    <aside class="course-detail__nav" aria-label="课程详情页导航">
+      <button class="course-detail__back" type="button" @click="emit('back')">
+        返回课程概览
+      </button>
+      <strong>{{ course.name }}</strong>
+      <nav class="course-tabs">
+        <a
+          v-for="tab in courseDetailTabs"
+          :key="tab.id"
+          :href="tabHref(tab.id)"
+          class="course-tabs__item"
+          :class="{ 'is-active': activeTab.id === tab.id }"
+          :aria-current="activeTab.id === tab.id ? 'page' : undefined"
+        >
+          {{ tab.label }}
+        </a>
+      </nav>
+    </aside>
 
-    <nav class="course-tabs" aria-label="课程详情页切换">
-      <a
-        v-for="tab in courseDetailTabs"
-        :key="tab.id"
-        :href="tabHref(tab.id)"
-        class="course-tabs__item"
-        :class="{ 'is-active': activeTab.id === tab.id }"
-        :aria-current="activeTab.id === tab.id ? 'page' : undefined"
-      >
-        {{ tab.label }}
-      </a>
-    </nav>
-
+    <main class="course-detail__content">
     <template v-if="activeTab.id === 'overview'">
       <header class="course-detail__hero">
         <div class="course-detail__hero-main">
@@ -215,13 +160,17 @@ watch(
               <dd>{{ field.value }}</dd>
             </div>
           </dl>
+          <button
+            v-if="hasQuiz"
+            class="course-detail__quiz-link"
+            type="button"
+            @click="emit('open-quiz', course.code)"
+          >
+            刷题网页
+          </button>
         </aside>
       </header>
 
-      <QuizPracticePanel
-        :course-code="course.code"
-        :can-use-quiz="canSubmit"
-      />
     </template>
 
     <section v-else-if="activeTab.id === 'experiences'" class="course-subpage" aria-labelledby="experience-title">
@@ -232,14 +181,27 @@ watch(
             <div>
               <p class="course-detail__kicker">学习心得</p>
               <h1 id="experience-title">{{ activeItem.title }}</h1>
-              <p class="article-detail-card__meta">{{ activeItem.author }}</p>
             </div>
-            <FavoriteButton
-              :active="favoriteKeys.includes(activeItemFavoriteKey)"
-              :disabled="!canFavorite"
-              @toggle="emitFavorite('experiences', activeItem.id)"
-            />
+            <aside class="article-detail-card__identity">
+              <a v-if="activeItem.owner" class="article-author-link" :href="getProfileHref(activeItem.owner.publicId)">{{ activeItem.owner.nickname }}</a>
+              <strong v-else>{{ activeItem.author }}</strong>
+              <a v-if="activeItem.cc98Url" :href="activeItem.cc98Url" target="_blank" rel="noopener noreferrer" title="查看作者的 CC98 帖子">
+                <img class="cc98-icon" :src="cc98IconUrl" alt="CC98" />
+              </a>
+              <button v-if="activeItem.gpa" class="article-gpa-toggle" type="button" @click="gpaVisible = !gpaVisible">
+                {{ gpaVisible ? `绩点 ${activeItem.gpa} · 隐藏绩点` : '查看绩点' }}
+              </button>
+              <button class="article-like-button" :class="{ 'is-active': activeItem.viewerLiked }" type="button" @click="emit('toggle-like', activeItem.contentId)">
+                {{ activeItem.viewerLiked ? '已赞' : '点赞' }} {{ activeItem.likeCount || 0 }}
+              </button>
+              <FavoriteButton
+                :active="favoriteKeys.includes(activeItemFavoriteKey)"
+                :disabled="!canFavorite"
+                @toggle="emitFavorite(activeItem.contentId)"
+              />
+            </aside>
           </div>
+          <p v-if="likeNotice" class="article-detail-card__notice">{{ likeNotice }}</p>
           <p v-for="paragraph in activeItem.paragraphs" :key="paragraph">{{ paragraph }}</p>
         </article>
 
@@ -247,7 +209,11 @@ watch(
           :comments="activeItemComments"
           :can-comment="canComment"
           :user="user"
+          :busy="commentBusy"
+          :notice="commentNotice"
           @add-comment="emitComment"
+          @update-comment="emit('update-comment', $event)"
+          @delete-comment="emit('delete-comment', $event)"
         />
       </template>
 
@@ -257,22 +223,19 @@ watch(
             <p class="course-detail__kicker">学习心得</p>
             <h1 id="experience-title">学习心得</h1>
           </div>
-          <ContributionBox tab-label="学习心得" :can-submit="canSubmit" @submit-contribution="emitContribution" />
+          <ContributionBox tab-label="学习心得" :can-submit="canSubmit" :submission-notice="submissionNotice" @submit-contribution="emitContribution" />
         </header>
         <p v-if="isLoading" class="resource-empty">正在加载学习心得...</p>
         <p v-else-if="loadError" class="resource-empty">{{ loadError }}</p>
         <p v-else-if="!activeCollection.length" class="resource-empty">暂无学习心得，欢迎认证用户投稿。</p>
         <div v-else class="three-column-cards">
           <article v-for="item in activeCollection" :key="item.id" class="learning-card">
-            <a :href="item.href">
-              <strong>{{ item.author }}</strong>
+            <a class="learning-card__main-link" :href="item.href">
+              <strong class="learning-card__title">{{ item.title }}</strong>
               <p>{{ item.summary }}</p>
             </a>
-            <FavoriteButton
-              :active="isItemFavorited('experiences', item.id)"
-              :disabled="!canFavorite"
-              @toggle="emitFavorite('experiences', item.id)"
-            />
+            <a v-if="item.owner" class="learning-card__author" :href="getProfileHref(item.owner.publicId)">{{ item.owner.nickname }}</a>
+            <span v-else class="learning-card__author">{{ item.author }}</span>
           </article>
         </div>
       </template>
@@ -286,14 +249,27 @@ watch(
             <div>
               <p class="course-detail__kicker">复习资料</p>
               <h1 id="material-title">{{ activeItem.title }}</h1>
-              <p class="article-detail-card__meta">{{ activeItem.author }}</p>
             </div>
-            <FavoriteButton
-              :active="favoriteKeys.includes(activeItemFavoriteKey)"
-              :disabled="!canFavorite"
-              @toggle="emitFavorite('materials', activeItem.id)"
-            />
+            <aside class="article-detail-card__identity">
+              <a v-if="activeItem.owner" class="article-author-link" :href="getProfileHref(activeItem.owner.publicId)">{{ activeItem.owner.nickname }}</a>
+              <strong v-else>{{ activeItem.author }}</strong>
+              <a v-if="activeItem.cc98Url" :href="activeItem.cc98Url" target="_blank" rel="noopener noreferrer" title="查看作者的 CC98 帖子">
+                <img class="cc98-icon" :src="cc98IconUrl" alt="CC98" />
+              </a>
+              <button v-if="activeItem.gpa" class="article-gpa-toggle" type="button" @click="gpaVisible = !gpaVisible">
+                {{ gpaVisible ? `绩点 ${activeItem.gpa} · 隐藏绩点` : '查看绩点' }}
+              </button>
+              <button class="article-like-button" :class="{ 'is-active': activeItem.viewerLiked }" type="button" @click="emit('toggle-like', activeItem.contentId)">
+                {{ activeItem.viewerLiked ? '已赞' : '点赞' }} {{ activeItem.likeCount || 0 }}
+              </button>
+              <FavoriteButton
+                :active="favoriteKeys.includes(activeItemFavoriteKey)"
+                :disabled="!canFavorite"
+                @toggle="emitFavorite(activeItem.contentId)"
+              />
+            </aside>
           </div>
+          <p v-if="likeNotice" class="article-detail-card__notice">{{ likeNotice }}</p>
           <p v-for="paragraph in activeItem.paragraphs" :key="paragraph">{{ paragraph }}</p>
           <a v-if="activeItem.externalUrl" class="course-action-link" :href="activeItem.externalUrl" target="_blank" rel="noreferrer">
             打开刷题网站
@@ -304,7 +280,11 @@ watch(
           :comments="activeItemComments"
           :can-comment="canComment"
           :user="user"
+          :busy="commentBusy"
+          :notice="commentNotice"
           @add-comment="emitComment"
+          @update-comment="emit('update-comment', $event)"
+          @delete-comment="emit('delete-comment', $event)"
         />
       </template>
 
@@ -314,22 +294,19 @@ watch(
             <p class="course-detail__kicker">复习资料</p>
             <h1 id="material-title">复习资料</h1>
           </div>
-          <ContributionBox tab-label="复习资料" :can-submit="canSubmit" @submit-contribution="emitContribution" />
+          <ContributionBox tab-label="复习资料" :can-submit="canSubmit" :submission-notice="submissionNotice" @submit-contribution="emitContribution" />
         </header>
         <p v-if="isLoading" class="resource-empty">正在加载复习资料...</p>
         <p v-else-if="loadError" class="resource-empty">{{ loadError }}</p>
         <p v-else-if="!activeCollection.length" class="resource-empty">暂无复习资料，欢迎认证用户投稿。</p>
         <div v-else class="three-column-cards">
           <article v-for="item in activeCollection" :key="item.id" class="learning-card">
-            <a :href="item.href">
-              <strong>{{ item.author }}</strong>
+            <a class="learning-card__main-link" :href="item.href">
+              <strong class="learning-card__title">{{ item.title }}</strong>
               <p>{{ item.summary }}</p>
             </a>
-            <FavoriteButton
-              :active="isItemFavorited('materials', item.id)"
-              :disabled="!canFavorite"
-              @toggle="emitFavorite('materials', item.id)"
-            />
+            <a v-if="item.owner" class="learning-card__author" :href="getProfileHref(item.owner.publicId)">{{ item.owner.nickname }}</a>
+            <span v-else class="learning-card__author">{{ item.author }}</span>
           </article>
         </div>
       </template>
@@ -345,9 +322,14 @@ watch(
               <h1 id="paper-title">{{ activeItem.title }}</h1>
               <p v-for="paragraph in activeItem.paragraphs" :key="paragraph">{{ paragraph }}</p>
             </div>
-            <div v-if="activeItem.file" class="paper-actions">
-              <a :href="activeItem.file.url" target="_blank" rel="noreferrer">打开 PDF</a>
-              <a :href="activeItem.file.url" :download="activeItem.file.fileName">下载 PDF</a>
+            <div class="paper-actions">
+              <a v-if="activeItem.file" :href="activeItem.file.url" target="_blank" rel="noreferrer">打开 PDF</a>
+              <a v-if="activeItem.file" :href="activeItem.file.url" :download="activeItem.file.fileName">下载 PDF</a>
+              <FavoriteButton
+                :active="favoriteKeys.includes(activeItemFavoriteKey)"
+                :disabled="!canFavorite"
+                @toggle="emitFavorite(activeItem.contentId)"
+              />
             </div>
           </div>
           <object v-if="activeItem.file" class="pdf-viewer" :data="activeItem.file.url" type="application/pdf">
@@ -357,6 +339,16 @@ watch(
             </p>
           </object>
         </article>
+        <CommentSection
+          :comments="activeItemComments"
+          :can-comment="canComment"
+          :user="user"
+          :busy="commentBusy"
+          :notice="commentNotice"
+          @add-comment="emitComment"
+          @update-comment="emit('update-comment', $event)"
+          @delete-comment="emit('delete-comment', $event)"
+        />
       </template>
 
       <template v-else>
@@ -365,7 +357,7 @@ watch(
             <p class="course-detail__kicker">历年试卷</p>
             <h1 id="paper-title">历年试卷</h1>
           </div>
-          <ContributionBox tab-label="历年试卷" :can-submit="canSubmit" @submit-contribution="emitContribution" />
+          <ContributionBox tab-label="历年试卷" :can-submit="canSubmit" :submission-notice="submissionNotice" @submit-contribution="emitContribution" />
         </header>
         <p v-if="isLoading" class="resource-empty">正在加载历年试卷...</p>
         <p v-else-if="loadError" class="resource-empty">{{ loadError }}</p>
@@ -382,5 +374,6 @@ watch(
         </div>
       </template>
     </section>
+    </main>
   </article>
 </template>
