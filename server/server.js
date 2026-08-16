@@ -60,6 +60,7 @@ import {
 import { handleProfileHttpRequest } from './profile/profileHttpService.js';
 import { handleAccountHttpRequest } from './account/accountHttpService.js';
 import { loadServerCourseCatalog } from './account/courseCatalogService.js';
+import { createLoginGuard, normalizeLoginKey } from './loginGuard.js';
 
 const sessionCookieName = 'study_session';
 
@@ -102,12 +103,35 @@ function sendJson(response, status, body, headers = {}) {
   response.end(JSON.stringify(body));
 }
 
-function setSessionCookie(sessionId) {
-  return `${sessionCookieName}=${encodeURIComponent(sessionId)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`;
+// Client address for rate limiting. The server listens on 127.0.0.1 behind a
+// reverse proxy, so the socket address is always local; read the first entry
+// of X-Forwarded-For, which the proxy (Apache) injects and overwrites.
+export function getClientIp(request) {
+  const forwarded = request.headers?.['x-forwarded-for'];
+  if (forwarded) {
+    const first = String(forwarded).split(',')[0].trim();
+    if (first) return first;
+  }
+  return request.socket?.remoteAddress ?? '';
 }
 
-function clearSessionCookie() {
-  return `${sessionCookieName}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`;
+// HTTPS detection behind the reverse proxy. The proxy terminates TLS and
+// forwards X-Forwarded-Proto; only trust it for cookie flag decisions.
+export function isHttpsRequest(request) {
+  return String(request.headers['x-forwarded-proto'] ?? '')
+    .split(',')[0]
+    .trim()
+    .toLowerCase() === 'https';
+}
+
+function setSessionCookie(sessionId, request) {
+  const secure = isHttpsRequest(request) ? '; Secure' : '';
+  return `${sessionCookieName}=${encodeURIComponent(sessionId)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800${secure}`;
+}
+
+function clearSessionCookie(request) {
+  const secure = isHttpsRequest(request) ? '; Secure' : '';
+  return `${sessionCookieName}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`;
 }
 
 function getAuthenticatedUserId(store, sessionId) {
@@ -152,6 +176,7 @@ export function createAuthServer({
   contentStore.initialize();
   importStaticCourseContent(contentStore, { rootDirectory: staticCourseRoot });
   const courseCatalog = loadServerCourseCatalog();
+  const loginGuard = createLoginGuard();
 
   const server = createServer(async (request, response) => {
     try {
@@ -160,6 +185,11 @@ export function createAuthServer({
       const sessionId = cookies[sessionCookieName] ?? '';
       const quizUserId = getAuthenticatedUserId(store, sessionId);
       const visitorId = cookies.study_visitor ?? '';
+
+      if (request.method === 'GET' && url.pathname === '/api/health') {
+        sendJson(response, 200, { ok: true });
+        return;
+      }
 
       if (request.method === 'GET' && url.pathname === '/api/auth/me') {
         sendJson(response, 200, { user: getCurrentUser(store, sessionId) });
@@ -191,13 +221,27 @@ export function createAuthServer({
       }
 
       if (request.method === 'POST' && url.pathname === '/api/auth/login/cc98') {
-        const result = await loginCc98(store, await readJsonBody(request));
-        sendJson(
-          response,
-          result.status,
-          result.ok ? { user: result.user } : { message: result.message },
-          result.ok ? { 'set-cookie': setSessionCookie(result.sessionId) } : {},
-        );
+        const body = await readJsonBody(request);
+        const clientIp = getClientIp(request);
+        const accountKey = normalizeLoginKey(body.cc98Name, 'cc98');
+        const gate = loginGuard.check(accountKey, clientIp);
+        if (!gate.ok) {
+          sendJson(response, gate.status, { message: gate.message });
+          return;
+        }
+        const result = await loginCc98(store, body);
+        if (result.ok) {
+          loginGuard.recordSuccess(accountKey);
+          sendJson(
+            response,
+            result.status,
+            { user: result.user },
+            { 'set-cookie': setSessionCookie(result.sessionId, request) },
+          );
+        } else {
+          loginGuard.recordFailure(accountKey, clientIp);
+          sendJson(response, result.status, { message: result.message });
+        }
         return;
       }
 
@@ -207,7 +251,7 @@ export function createAuthServer({
           sendJson(response, 401, { message: '请先登录后绑定邮箱。' });
           return;
         }
-        const remoteAddress = request.socket.remoteAddress ?? '';
+        const remoteAddress = getClientIp(request);
         const result = await requestEmailCode(store, {
           ...body,
           requestIpHash: createHash('sha256').update(remoteAddress).digest('hex'),
@@ -227,13 +271,27 @@ export function createAuthServer({
       }
 
       if (request.method === 'POST' && url.pathname === '/api/auth/login/email') {
-        const result = await loginEmail(store, await readJsonBody(request));
-        sendJson(
-          response,
-          result.status,
-          result.ok ? { user: result.user } : { message: result.message },
-          result.ok ? { 'set-cookie': setSessionCookie(result.sessionId) } : {},
-        );
+        const body = await readJsonBody(request);
+        const clientIp = getClientIp(request);
+        const accountKey = normalizeLoginKey(body.studentId || body.email, 'email');
+        const gate = loginGuard.check(accountKey, clientIp);
+        if (!gate.ok) {
+          sendJson(response, gate.status, { message: gate.message });
+          return;
+        }
+        const result = await loginEmail(store, body);
+        if (result.ok) {
+          loginGuard.recordSuccess(accountKey);
+          sendJson(
+            response,
+            result.status,
+            { user: result.user },
+            { 'set-cookie': setSessionCookie(result.sessionId, request) },
+          );
+        } else {
+          loginGuard.recordFailure(accountKey, clientIp);
+          sendJson(response, result.status, { message: result.message });
+        }
         return;
       }
 
@@ -255,7 +313,7 @@ export function createAuthServer({
 
       if (request.method === 'POST' && url.pathname === '/api/auth/logout') {
         logout(store, sessionId);
-        sendJson(response, 200, { user: getCurrentUser(store, '') }, { 'set-cookie': clearSessionCookie() });
+        sendJson(response, 200, { user: getCurrentUser(store, '') }, { 'set-cookie': clearSessionCookie(request) });
         return;
       }
 
