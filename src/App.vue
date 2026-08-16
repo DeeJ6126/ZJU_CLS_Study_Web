@@ -155,6 +155,12 @@ import { getResourceCourseByCode } from './data/courses/resourceData.js';
 import { getCourseDetail } from './data/courses/courseDetails.js';
 import { buildCourseRoute, parseResourceHash } from './data/courses/resourcePaths.js';
 import { publicAssetPath } from './utils/publicPath.js';
+import {
+  buildDemoUser,
+  getDemoIdentityOptions,
+  loadDemoIdentityId,
+  saveDemoIdentityId,
+} from './services/demoIdentityService.js';
 
 const topPages = demoTopPages;
 const supportedCourses = demoSupportedCourses;
@@ -170,6 +176,16 @@ const guestViewer = () => ({
   verifications: { cc98: false, email: false },
 });
 const studentViewer = ref(guestViewer());
+const demoIdentityId = ref(loadDemoIdentityId());
+const viewer = computed(() => (
+  demoIdentityId.value ? buildDemoUser(demoIdentityId.value) : studentViewer.value
+));
+const demoIdentityOptions = getDemoIdentityOptions();
+
+function selectDemoIdentity(identityId) {
+  demoIdentityId.value = identityId ?? '';
+  saveDemoIdentityId(demoIdentityId.value);
+}
 const activePage = ref('home');
 const overviewRoute = ref(parseResourceHash(''));
 const activeOverviewCourse = ref(null);
@@ -285,16 +301,16 @@ const result = computed(() => interaction.value.result);
 const pendingSelectedKey = computed(() => interaction.value.pendingAnswer?.selectedKey ?? '');
 const pendingTrueFalse = computed(() => interaction.value.pendingAnswer?.value);
 const canSubmitAnswer = computed(() => Boolean(buildSubmitAnswer(interaction.value)) && !result.value && !currentQuestionLocked.value);
-const userCanSubmit = computed(() => canSubmitResource(studentViewer.value));
-const userCanComment = computed(() => canComment(studentViewer.value));
-const userCanFavorite = computed(() => canFavorite(studentViewer.value));
-const accountState = computed(() => getAccountState(studentViewer.value));
-const verificationBadges = computed(() => getVerificationBadges(studentViewer.value));
-const viewerIsGuest = computed(() => !isAuthenticated(studentViewer.value));
-const viewerCanBindEmail = computed(() => canBindEmailIdentity(studentViewer.value));
+const userCanSubmit = computed(() => canSubmitResource(viewer.value));
+const userCanComment = computed(() => canComment(viewer.value));
+const userCanFavorite = computed(() => canFavorite(viewer.value));
+const accountState = computed(() => getAccountState(viewer.value));
+const verificationBadges = computed(() => getVerificationBadges(viewer.value));
+const viewerIsGuest = computed(() => !isAuthenticated(viewer.value));
+const viewerCanBindEmail = computed(() => canBindEmailIdentity(viewer.value));
 const activeProfileIsOwn = computed(() => (
   Boolean(activeProfilePublicId.value)
-  && activeProfilePublicId.value === studentViewer.value.publicId
+  && activeProfilePublicId.value === viewer.value.publicId
 ));
 const rangeOptions = computed(() => buildQuizRangeOptions(activeCourseCode.value, categories.value));
 const favoriteContentIds = computed(() => accountFavorites.value.map((item) => item.id));
@@ -2229,16 +2245,20 @@ onBeforeUnmount(() => {
           aria-label="打开账号面板"
           @click="accountOpen = !accountOpen"
         >
-          {{ viewerIsGuest ? '游客' : studentViewer.nickname }}
+          {{ viewerIsGuest ? '游客' : viewer.nickname }}
+          <span v-if="demoIdentityId" class="demo-user-chip__tag">演示</span>
         </button>
         <AccountPopover
           v-if="accountOpen"
-          :user="studentViewer"
+          :user="viewer"
           :account-state="accountState"
           :badges="verificationBadges"
           :is-guest="viewerIsGuest"
           :can-bind-email="viewerCanBindEmail"
           :unread-count="unreadNotificationCount"
+          :demo-options="demoIdentityOptions"
+          :demo-active-id="demoIdentityId"
+          @select-demo="selectDemoIdentity"
           @logout="handleLogout"
           @open-profile="openOwnProfile"
           @open-notifications="openNotifications"
@@ -2276,7 +2296,7 @@ onBeforeUnmount(() => {
           :course="activeOverviewCourse"
           :active-tab-id="overviewRoute.tabId"
           :active-item-id="overviewRoute.itemId"
-          :user="studentViewer"
+          :user="viewer"
           :can-submit="userCanSubmit"
           :can-comment="userCanComment"
           :can-favorite="userCanFavorite"
@@ -2323,8 +2343,8 @@ onBeforeUnmount(() => {
         :loading="profileLoading"
         :error="profileError"
         :notice="profileNotice"
-        :nickname-locked="Boolean(studentViewer.verifications?.cc98)"
-        :cc98-bound="Boolean(studentViewer.verifications?.cc98)"
+        :nickname-locked="Boolean(viewer.verifications?.cc98)"
+        :cc98-bound="Boolean(viewer.verifications?.cc98)"
         @save-nickname="saveProfileNickname"
         @upload-avatar="uploadProfileAvatar"
         @remove-avatar="removeProfileAvatar"

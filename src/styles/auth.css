@@ -492,3 +492,35 @@
   font-size: 14px;
   white-space: nowrap;
 }
+
+.account-popover__switcher {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #e3e9e5;
+}
+
+.account-switcher__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  color: #506158;
+}
+
+.account-switcher__label select {
+  max-width: 220px;
+  padding: 6px 8px;
+  border: 1px solid #bcc8c1;
+  border-radius: 5px;
+  background: #fff;
+  color: #1f2933;
+  font-size: 13px;
+}
+
+.account-switcher__hint {
+  margin: 8px 0 0;
+  color: #85948b;
+  font-size: 12px;
+  line-height: 1.5;
+}

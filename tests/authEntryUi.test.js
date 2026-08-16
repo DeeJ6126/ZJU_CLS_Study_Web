@@ -19,6 +19,10 @@ test('auth entry components expose the real account menu without a test account 
   assert.match(accountPopover, /unreadCount/);
   assert.equal(accountPopover.includes('UserSwitcher'), false);
   assert.equal(settingsPanel.includes('UserSwitcher'), false);
+  assert.match(accountPopover, /AccountSwitcher/);
+  assert.match(accountPopover, /select-demo/);
+  assert.match(app, /demoIdentityId/);
+  assert.match(app, /selectDemoIdentity/);
 });
 
 test('auth dialog supports CC98 and ZJU email registration and login flows', async () => {

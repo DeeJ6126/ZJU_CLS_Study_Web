@@ -1,5 +1,6 @@
 <script setup>
 import AuthStatusBadges from './AuthStatusBadges.vue';
+import AccountSwitcher from './AccountSwitcher.vue';
 
 defineProps({
   user: {
@@ -23,11 +24,20 @@ defineProps({
     default: false,
   },
   unreadCount: { type: Number, default: 0 },
+  demoOptions: {
+    type: Array,
+    default: () => [],
+  },
+  demoActiveId: {
+    type: String,
+    default: '',
+  },
 });
 
 const emit = defineEmits([
   'logout', 'open-login', 'open-register-cc98',
   'open-register-email', 'open-bind-email', 'open-profile', 'open-notifications',
+  'select-demo',
 ]);
 </script>
 
@@ -86,5 +96,13 @@ const emit = defineEmits([
       </button>
       <button class="account-popover__logout" type="button" @click="emit('logout')">退出登录</button>
     </div>
+
+    <AccountSwitcher
+      v-if="demoOptions.length"
+      class="account-popover__switcher"
+      :options="demoOptions"
+      :active-id="demoActiveId"
+      @select="emit('select-demo', $event)"
+    />
   </aside>
 </template>
