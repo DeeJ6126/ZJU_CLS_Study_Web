@@ -56,6 +56,10 @@ export function createQuizSession({ collectionSlug, categorySourceIds = [], sour
   });
 }
 
+export function fetchQuizSession(sessionId) {
+  return requestJson(`/api/quiz/sessions/${encodeURIComponent(sessionId)}`);
+}
+
 export function navigateQuizSession(sessionId, { direction, currentIndex } = {}) {
   return requestJson(`/api/quiz/sessions/${encodeURIComponent(sessionId)}/navigation`, {
     method: 'POST',
@@ -88,5 +92,45 @@ export function addQuizMistake({ collectionSlug, sourceQuestionId, answer }) {
   return requestJson('/api/quiz/mistakes', {
     method: 'POST',
     body: JSON.stringify({ collectionSlug, sourceQuestionId, answer }),
+  });
+}
+
+export function removeQuizMistake(collectionSlug, sourceQuestionId) {
+  return requestJson(`/api/quiz/mistakes/${encodeURIComponent(sourceQuestionId)}?collectionSlug=${encodeURIComponent(collectionSlug)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function resetQuizRecords(collectionSlug, scope) {
+  return requestJson('/api/quiz/progress/reset', {
+    method: 'POST', body: JSON.stringify({ collectionSlug, scope }),
+  });
+}
+
+export function claimQuizSession(sessionId) {
+  return requestJson(`/api/quiz/sessions/${encodeURIComponent(sessionId)}/claim`, {
+    method: 'POST', body: '{}',
+  });
+}
+
+export function fetchQuizAccountState(collectionSlug) {
+  return requestJson(`/api/quiz/account-state?collectionSlug=${encodeURIComponent(collectionSlug)}`);
+}
+
+export function mergeQuizAccountState(input) {
+  return requestJson('/api/quiz/account-state/merge', {
+    method: 'POST', body: JSON.stringify(input),
+  });
+}
+
+export function upsertQuizVocabulary(collectionSlug, record) {
+  return requestJson(`/api/quiz/vocabulary/${encodeURIComponent(collectionSlug)}/${encodeURIComponent(record.recordKey ?? record.id)}`, {
+    method: 'PUT', body: JSON.stringify(record),
+  });
+}
+
+export function removeQuizVocabulary(collectionSlug, recordKey) {
+  return requestJson(`/api/quiz/vocabulary/${encodeURIComponent(collectionSlug)}/${encodeURIComponent(recordKey)}`, {
+    method: 'DELETE',
   });
 }

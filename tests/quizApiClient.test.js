@@ -14,6 +14,12 @@ import {
   revealQuizAnswer,
   selfJudgeQuizAnswer,
   submitQuizAnswer,
+  claimQuizSession,
+  fetchQuizAccountState,
+  fetchQuizSession,
+  mergeQuizAccountState,
+  removeQuizVocabulary,
+  upsertQuizVocabulary,
 } from '../src/services/quizApiClient.js';
 
 async function captureRequest(call) {
@@ -55,6 +61,12 @@ test('quiz api client always uses absolute api paths', async () => {
     captureRequest(() => submitQuizAnswer('quiz_1', { sourceQuestionId: 'q1', answer: { selectedKey: 'A' } })),
     captureRequest(() => revealQuizAnswer('quiz_1', { sourceQuestionId: 'q1' })),
     captureRequest(() => selfJudgeQuizAnswer('quiz_1', { sourceQuestionId: 'q1', isCorrect: true })),
+    captureRequest(() => claimQuizSession('quiz_1')),
+    captureRequest(() => fetchQuizAccountState('molecular-biology-review')),
+    captureRequest(() => fetchQuizSession('quiz_1')),
+    captureRequest(() => mergeQuizAccountState({ collectionSlug: 'molecular-biology-review' })),
+    captureRequest(() => upsertQuizVocabulary('molecular-biology-review', { recordKey: 'dna', term: 'DNA' })),
+    captureRequest(() => removeQuizVocabulary('molecular-biology-review', 'dna')),
   ]);
 
   assert.ok(requests.every((request) => request.path.startsWith('/api/quiz/')));

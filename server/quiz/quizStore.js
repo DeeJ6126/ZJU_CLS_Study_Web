@@ -216,6 +216,19 @@ export function createQuizStore({ filename = 'server/data/auth.sqlite' } = {}) {
           revealed_at text not null,
           unique(session_id, question_id)
         );
+
+        create table if not exists quiz_vocabulary (
+          user_id integer not null,
+          collection_id integer not null,
+          record_key text not null,
+          term text not null,
+          normalized_term text not null,
+          status text not null check(status in ('new', 'learning', 'mastered')),
+          context_json text not null default '{}',
+          created_at text not null,
+          updated_at text not null,
+          primary key (user_id, collection_id, record_key)
+        );
       `);
     },
 
@@ -240,8 +253,8 @@ export function createQuizStore({ filename = 'server/data/auth.sqlite' } = {}) {
           now,
           collection.slug,
         );
-        db.prepare('delete from quiz_questions where collection_id = ?').run(existing.id);
-        db.prepare('delete from quiz_categories where collection_id = ?').run(existing.id);
+        db.prepare('update quiz_questions set is_active = 0 where collection_id = ?').run(existing.id);
+        db.prepare('update quiz_categories set question_count = 0 where collection_id = ?').run(existing.id);
       } else {
         db.prepare(`
           insert into quiz_collections (
@@ -269,6 +282,12 @@ export function createQuizStore({ filename = 'server/data/auth.sqlite' } = {}) {
           collection_id, source_id, title, parent_title, type, sort_order, question_count
         )
         values (?, ?, ?, ?, ?, ?, ?)
+        on conflict(collection_id, source_id) do update set
+          title = excluded.title,
+          parent_title = excluded.parent_title,
+          type = excluded.type,
+          sort_order = excluded.sort_order,
+          question_count = excluded.question_count
       `);
 
       for (const category of categories) {
@@ -292,6 +311,16 @@ export function createQuizStore({ filename = 'server/data/auth.sqlite' } = {}) {
           answer_json, explanation_json, source_json, sort_order, is_active
         )
         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        on conflict(collection_id, source_question_id) do update set
+          category_id = excluded.category_id,
+          type = excluded.type,
+          prompt = excluded.prompt,
+          body_json = excluded.body_json,
+          answer_json = excluded.answer_json,
+          explanation_json = excluded.explanation_json,
+          source_json = excluded.source_json,
+          sort_order = excluded.sort_order,
+          is_active = excluded.is_active
       `);
 
       for (const question of questions) {
@@ -384,7 +413,7 @@ export function createQuizStore({ filename = 'server/data/auth.sqlite' } = {}) {
           sort_order as sortOrder,
           question_count as questionCount
         from quiz_categories
-        where collection_id = ?
+        where collection_id = ? and question_count > 0
         order by sort_order, id
       `).all(collectionId).map(toCategory);
     },
@@ -547,6 +576,25 @@ export function createQuizStore({ filename = 'server/data/auth.sqlite' } = {}) {
       return this.findSessionById(sessionId);
     },
 
+    claimAnonymousSession(sessionId, userId) {
+      db.exec('begin immediate');
+      try {
+        const result = db.prepare('update quiz_sessions set user_id = ? where id = ? and user_id = 0')
+          .run(userId, sessionId);
+        if (Number(result.changes) !== 1) {
+          db.exec('rollback');
+          return false;
+        }
+        db.prepare('update quiz_answers set user_id = ? where session_id = ? and user_id = 0').run(userId, sessionId);
+        db.prepare('update quiz_reveals set user_id = ? where session_id = ? and user_id = 0').run(userId, sessionId);
+        db.exec('commit');
+        return true;
+      } catch (error) {
+        db.exec('rollback');
+        throw error;
+      }
+    },
+
     findSessionAnswer(sessionId, questionId) {
       return toSessionAnswer(db.prepare(`
         select
@@ -660,6 +708,74 @@ export function createQuizStore({ filename = 'server/data/auth.sqlite' } = {}) {
       `).run(userId, collectionId, questionId, jsonStringify(answer), correctDisplay, now);
 
       return this.findMistake(userId, collectionId, questionId);
+    },
+
+    mergeMistake({
+      userId, collectionId, questionId, answer, correctDisplay, wrongCount = 1, lastAnsweredAt,
+    }) {
+      const timestamp = lastAnsweredAt || new Date().toISOString();
+      db.prepare(`
+        insert into quiz_mistakes (
+          user_id, collection_id, question_id, wrong_count,
+          last_answer_json, correct_display, last_answered_at, resolved_at
+        ) values (?, ?, ?, ?, ?, ?, ?, null)
+        on conflict(user_id, collection_id, question_id) do update set
+          wrong_count = max(quiz_mistakes.wrong_count, excluded.wrong_count),
+          last_answer_json = case when excluded.last_answered_at >= quiz_mistakes.last_answered_at
+            then excluded.last_answer_json else quiz_mistakes.last_answer_json end,
+          correct_display = case when excluded.last_answered_at >= quiz_mistakes.last_answered_at
+            then excluded.correct_display else quiz_mistakes.correct_display end,
+          last_answered_at = max(quiz_mistakes.last_answered_at, excluded.last_answered_at),
+          resolved_at = null
+      `).run(
+        userId, collectionId, questionId, Math.max(1, Number(wrongCount) || 1),
+        jsonStringify(answer ?? {}), String(correctDisplay ?? ''), timestamp,
+      );
+      return this.findMistake(userId, collectionId, questionId);
+    },
+
+    upsertVocabulary(input) {
+      const now = new Date().toISOString();
+      const updatedAt = input.updatedAt || now;
+      db.prepare(`
+        insert into quiz_vocabulary (
+          user_id, collection_id, record_key, term, normalized_term, status,
+          context_json, created_at, updated_at
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        on conflict(user_id, collection_id, record_key) do update set
+          term = case when excluded.updated_at >= quiz_vocabulary.updated_at then excluded.term else quiz_vocabulary.term end,
+          normalized_term = case when excluded.updated_at >= quiz_vocabulary.updated_at then excluded.normalized_term else quiz_vocabulary.normalized_term end,
+          status = case when excluded.updated_at >= quiz_vocabulary.updated_at then excluded.status else quiz_vocabulary.status end,
+          context_json = case when excluded.updated_at >= quiz_vocabulary.updated_at then excluded.context_json else quiz_vocabulary.context_json end,
+          updated_at = max(quiz_vocabulary.updated_at, excluded.updated_at)
+      `).run(
+        input.userId, input.collectionId, input.recordKey, input.term, input.normalizedTerm,
+        input.status, jsonStringify(input.context ?? {}), input.createdAt || updatedAt, updatedAt,
+      );
+      return this.findVocabulary(input.userId, input.collectionId, input.recordKey);
+    },
+
+    findVocabulary(userId, collectionId, recordKey) {
+      const row = db.prepare(`
+        select record_key as recordKey, term, normalized_term as normalizedTerm, status,
+          context_json as contextJson, created_at as createdAt, updated_at as updatedAt
+        from quiz_vocabulary where user_id = ? and collection_id = ? and record_key = ?
+      `).get(userId, collectionId, recordKey);
+      return row ? { ...row, context: jsonParse(row.contextJson, {}) } : null;
+    },
+
+    listVocabulary(userId, collectionId) {
+      return db.prepare(`
+        select record_key as recordKey, term, normalized_term as normalizedTerm, status,
+          context_json as contextJson, created_at as createdAt, updated_at as updatedAt
+        from quiz_vocabulary where user_id = ? and collection_id = ? order by updated_at desc, record_key
+      `).all(userId, collectionId).map((row) => ({ ...row, context: jsonParse(row.contextJson, {}) }));
+    },
+
+    removeVocabulary(userId, collectionId, recordKey) {
+      return Number(db.prepare(`
+        delete from quiz_vocabulary where user_id = ? and collection_id = ? and record_key = ?
+      `).run(userId, collectionId, recordKey).changes) > 0;
     },
 
     findMistake(userId, collectionId, questionId) {
@@ -785,6 +901,10 @@ export function createQuizStore({ filename = 'server/data/auth.sqlite' } = {}) {
         ...row,
         importedCounts: jsonParse(row.importedCountsJson, {}),
       }));
+    },
+
+    close() {
+      db.close();
     },
   };
 }
