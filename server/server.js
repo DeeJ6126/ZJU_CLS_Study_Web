@@ -1,9 +1,24 @@
 import { createServer } from 'node:http';
-import { pathToFileURL } from 'node:url';
+import { createHash } from 'node:crypto';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { getSeedVerificationCodes } from './verificationSeed.js';
 import { createAuthStore } from './authStore.js';
-import { getCurrentUser, loginCc98, logout, registerCc98 } from './authService.js';
+import {
+  bindOrRebindCc98,
+  getCurrentUser,
+  loginCc98,
+  logout,
+  registerCc98,
+} from './authService.js';
+import {
+  bindEmailIdentity,
+  loginEmail,
+  registerEmail,
+  requestEmailCode,
+  resetPasswordByEmail,
+} from './emailAuthService.js';
+import { createSmtpEmailSender } from './smtpMailer.js';
 import { createQuizStore } from './quiz/quizStore.js';
 import { importConfiguredQuizCollections } from './quiz/quizImportService.js';
 import {
@@ -22,10 +37,29 @@ import {
   submitSessionAnswer,
 } from './quiz/quizSessionService.js';
 import {
+  claimPracticeSession,
+  getQuizAccountState,
+  mergeQuizAccountState,
+  removeVocabularyRecord,
+  upsertVocabularyRecord,
+} from './quiz/quizAccountService.js';
+import {
   getMicrobiologyPastExamFeedback,
   getMicrobiologyPastExamQuestions,
   listMicrobiologyPastExamSummaries,
 } from './quiz/microbiologyPastExamService.js';
+import { createContentStore } from './content/contentStore.js';
+import { importStaticCourseContent } from './content/contentImportService.js';
+import { handleContentHttpRequest } from './content/contentHttpService.js';
+import {
+  maxAvatarBytes,
+  readAvatarFile,
+  removeAvatarFile,
+  saveAvatarFile,
+} from './profile/avatarService.js';
+import { handleProfileHttpRequest } from './profile/profileHttpService.js';
+import { handleAccountHttpRequest } from './account/accountHttpService.js';
+import { loadServerCourseCatalog } from './account/courseCatalogService.js';
 
 const sessionCookieName = 'study_session';
 
@@ -47,6 +81,19 @@ async function readJsonBody(request) {
   return text ? JSON.parse(text) : {};
 }
 
+async function readBinaryBody(request, limit) {
+  const declaredLength = Number(request.headers['content-length'] ?? 0);
+  if (declaredLength > limit) return null;
+  const chunks = [];
+  let size = 0;
+  for await (const chunk of request) {
+    size += chunk.length;
+    if (size > limit) return null;
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
+}
+
 function sendJson(response, status, body, headers = {}) {
   response.writeHead(status, {
     'content-type': 'application/json; charset=utf-8',
@@ -56,7 +103,7 @@ function sendJson(response, status, body, headers = {}) {
 }
 
 function setSessionCookie(sessionId) {
-  return `${sessionCookieName}=${encodeURIComponent(sessionId)}; Path=/; HttpOnly; SameSite=Lax`;
+  return `${sessionCookieName}=${encodeURIComponent(sessionId)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`;
 }
 
 function clearSessionCookie() {
@@ -77,11 +124,34 @@ function sendServiceResult(response, result, successStatus = 200, bodyKey = 'res
   sendJson(response, successStatus, { [bodyKey]: result });
 }
 
-export function createAuthServer({ store = createAuthStore(), quizStore = createQuizStore(), port = 5175 } = {}) {
+function parseAdminCc98Names(value = '') {
+  return new Set(String(value).split(',').map((name) => name.trim()).filter(Boolean));
+}
+
+const staticCourseRoot = fileURLToPath(new URL('../public/resource/courses', import.meta.url));
+
+export function createAuthServer({
+  store = createAuthStore({ filename: process.env.AUTH_DB_FILE ?? 'server/data/auth.sqlite' }),
+  quizStore = createQuizStore({ filename: process.env.QUIZ_DB_FILE ?? process.env.AUTH_DB_FILE ?? 'server/data/auth.sqlite' }),
+  contentStore = createContentStore({ filename: process.env.CONTENT_DB_FILE ?? 'server/data/content.sqlite' }),
+  uploadDirectory = process.env.CONTENT_UPLOAD_DIR ?? 'server/data/content-uploads',
+  avatarDirectory = process.env.PROFILE_AVATAR_DIR ?? 'server/data/profile-avatars',
+  adminCc98Names = parseAdminCc98Names(process.env.ADMIN_CC98_NAMES),
+  emailSender = createSmtpEmailSender(),
+  emailCodeGenerator,
+  emailNow,
+  port = 5175,
+} = {}) {
   store.initialize();
   store.seedVerificationCodes(getSeedVerificationCodes());
+  for (const cc98Name of adminCc98Names) {
+    store.promoteAdminByCc98Name(cc98Name);
+  }
   quizStore.initialize();
   importConfiguredQuizCollections(quizStore);
+  contentStore.initialize();
+  importStaticCourseContent(contentStore, { rootDirectory: staticCourseRoot });
+  const courseCatalog = loadServerCourseCatalog();
 
   const server = createServer(async (request, response) => {
     try {
@@ -89,14 +159,33 @@ export function createAuthServer({ store = createAuthStore(), quizStore = create
       const cookies = parseCookies(request.headers.cookie);
       const sessionId = cookies[sessionCookieName] ?? '';
       const quizUserId = getAuthenticatedUserId(store, sessionId);
+      const visitorId = cookies.study_visitor ?? '';
 
       if (request.method === 'GET' && url.pathname === '/api/auth/me') {
         sendJson(response, 200, { user: getCurrentUser(store, sessionId) });
         return;
       }
 
+      const avatarMatch = url.pathname.match(/^\/api\/profile-avatars\/([^/]+)$/);
+      if (request.method === 'GET' && avatarMatch) {
+        const storedName = decodeURIComponent(avatarMatch[1]);
+        const avatar = readAvatarFile(avatarDirectory, storedName);
+        if (!avatar) {
+          sendJson(response, 404, { message: '头像不存在。' });
+          return;
+        }
+        response.writeHead(200, {
+          'content-type': 'image/webp',
+          'content-length': avatar.length,
+          'cache-control': 'public, max-age=86400',
+          'x-content-type-options': 'nosniff',
+        });
+        response.end(avatar);
+        return;
+      }
+
       if (request.method === 'POST' && url.pathname === '/api/auth/register/cc98') {
-        const result = await registerCc98(store, await readJsonBody(request));
+        const result = await registerCc98(store, await readJsonBody(request), { adminCc98Names });
         sendJson(response, result.status, result.ok ? { user: result.user } : { message: result.message });
         return;
       }
@@ -112,9 +201,172 @@ export function createAuthServer({ store = createAuthStore(), quizStore = create
         return;
       }
 
+      if (request.method === 'POST' && url.pathname === '/api/auth/email/code') {
+        const body = await readJsonBody(request);
+        if (body.purpose === 'bind' && !quizUserId) {
+          sendJson(response, 401, { message: '请先登录后绑定邮箱。' });
+          return;
+        }
+        const remoteAddress = request.socket.remoteAddress ?? '';
+        const result = await requestEmailCode(store, {
+          ...body,
+          requestIpHash: createHash('sha256').update(remoteAddress).digest('hex'),
+        }, {
+          sendEmail: emailSender,
+          codeGenerator: emailCodeGenerator,
+          now: emailNow,
+        });
+        sendJson(response, result.status, result.ok ? { message: result.message } : { message: result.message });
+        return;
+      }
+
+      if (request.method === 'POST' && url.pathname === '/api/auth/register/email') {
+        const result = await registerEmail(store, await readJsonBody(request), { now: emailNow });
+        sendJson(response, result.status, result.ok ? { user: result.user } : { message: result.message });
+        return;
+      }
+
+      if (request.method === 'POST' && url.pathname === '/api/auth/login/email') {
+        const result = await loginEmail(store, await readJsonBody(request));
+        sendJson(
+          response,
+          result.status,
+          result.ok ? { user: result.user } : { message: result.message },
+          result.ok ? { 'set-cookie': setSessionCookie(result.sessionId) } : {},
+        );
+        return;
+      }
+
+      if (request.method === 'POST' && url.pathname === '/api/auth/bind/email') {
+        if (!quizUserId) {
+          sendJson(response, 401, { message: '请先登录后绑定邮箱。' });
+          return;
+        }
+        const result = await bindEmailIdentity(store, quizUserId, await readJsonBody(request), { now: emailNow });
+        sendJson(response, result.status, result.ok ? { user: result.user } : { message: result.message });
+        return;
+      }
+
+      if (request.method === 'POST' && url.pathname === '/api/auth/password/reset/email') {
+        const result = await resetPasswordByEmail(store, await readJsonBody(request), { now: emailNow });
+        sendJson(response, result.status, result.ok ? { message: result.message } : { message: result.message });
+        return;
+      }
+
       if (request.method === 'POST' && url.pathname === '/api/auth/logout') {
         logout(store, sessionId);
         sendJson(response, 200, { user: getCurrentUser(store, '') }, { 'set-cookie': clearSessionCookie() });
+        return;
+      }
+
+      if (request.method === 'PUT' && url.pathname === '/api/account/cc98') {
+        if (!quizUserId) {
+          sendJson(response, 401, { message: '请先登录后绑定 CC98。' });
+          return;
+        }
+        if (!String(request.headers['content-type'] ?? '').toLowerCase().startsWith('application/json')) {
+          sendJson(response, 415, { message: '绑定请求格式无效。' });
+          return;
+        }
+        const result = await bindOrRebindCc98(
+          store,
+          quizUserId,
+          sessionId,
+          await readJsonBody(request),
+        );
+        sendJson(response, result.status, result.ok ? { user: result.user } : { message: result.message });
+        return;
+      }
+
+      if (request.method === 'PUT' && url.pathname === '/api/account/profile/avatar') {
+        if (!quizUserId) {
+          sendJson(response, 401, { message: '请先登录后上传头像。' });
+          return;
+        }
+        if (request.headers['x-profile-upload'] !== 'avatar') {
+          sendJson(response, 415, { message: '头像上传请求格式无效。' });
+          return;
+        }
+        const body = await readBinaryBody(request, maxAvatarBytes);
+        if (!body) {
+          sendJson(response, 413, { message: '头像不能超过 2 MB。' });
+          return;
+        }
+        const saved = await saveAvatarFile({
+          buffer: body,
+          mimeType: request.headers['content-type'],
+          uploadDirectory: avatarDirectory,
+        });
+        if (!saved.ok) {
+          sendJson(response, saved.status, { message: saved.message });
+          return;
+        }
+        const previous = store.findUserById(quizUserId);
+        const next = store.updateAvatar(quizUserId, saved.file);
+        if (previous?.avatarStoredName) removeAvatarFile(avatarDirectory, previous.avatarStoredName);
+        sendJson(response, 200, { user: getCurrentUser(store, sessionId) });
+        return;
+      }
+
+      if (request.method === 'DELETE' && url.pathname === '/api/account/profile/avatar') {
+        if (!quizUserId) {
+          sendJson(response, 401, { message: '请先登录后移除头像。' });
+          return;
+        }
+        const previous = store.findUserById(quizUserId);
+        store.updateAvatar(quizUserId, {});
+        if (previous?.avatarStoredName) removeAvatarFile(avatarDirectory, previous.avatarStoredName);
+        sendJson(response, 200, { user: getCurrentUser(store, sessionId) });
+        return;
+      }
+
+      const currentUser = getCurrentUser(store, sessionId);
+      const accountHandled = await handleAccountHttpRequest({
+        request,
+        response,
+        url,
+        userId: quizUserId,
+        authStore: store,
+        contentStore,
+        sendJson,
+        readJsonBody,
+        readBinaryBody,
+        catalogCodes: courseCatalog.codes,
+      });
+      if (accountHandled) {
+        return;
+      }
+      const profileHandled = await handleProfileHttpRequest({
+        request,
+        response,
+        url,
+        sessionId,
+        user: currentUser,
+        userId: quizUserId,
+        authStore: store,
+        contentStore,
+        sendJson,
+        readJsonBody,
+        visitorId,
+        uploadDirectory,
+      });
+      if (profileHandled) {
+        return;
+      }
+      const contentHandled = await handleContentHttpRequest({
+        request,
+        response,
+        url,
+        user: currentUser,
+        userId: quizUserId,
+        contentStore,
+        authStore: store,
+        uploadDirectory,
+        sendJson,
+        readJsonBody,
+        visitorId,
+      });
+      if (contentHandled) {
         return;
       }
 
@@ -215,6 +467,63 @@ export function createAuthServer({ store = createAuthStore(), quizStore = create
       }
 
       if (url.pathname.startsWith('/api/quiz/')) {
+        if (request.method === 'GET' && url.pathname === '/api/quiz/account-state') {
+          if (!quizUserId) {
+            sendJson(response, 401, { message: '请先登录后同步学习记录。' });
+            return;
+          }
+          sendJson(response, 200, {
+            state: getQuizAccountState(quizStore, {
+              userId: quizUserId,
+              collectionSlug: url.searchParams.get('collectionSlug') ?? '',
+            }),
+          });
+          return;
+        }
+
+        if (request.method === 'POST' && url.pathname === '/api/quiz/account-state/merge') {
+          if (!quizUserId) {
+            sendJson(response, 401, { message: '请先登录后同步学习记录。' });
+            return;
+          }
+          const body = await readJsonBody(request);
+          const result = mergeQuizAccountState(quizStore, { userId: quizUserId, ...body });
+          sendJson(response, result.status, result.ok ? { state: result.state } : { message: result.message });
+          return;
+        }
+
+        const claimSessionMatch = url.pathname.match(/^\/api\/quiz\/sessions\/([^/]+)\/claim$/);
+        if (request.method === 'POST' && claimSessionMatch) {
+          if (!quizUserId) {
+            sendJson(response, 401, { message: '请先登录后认领练习记录。' });
+            return;
+          }
+          const result = claimPracticeSession(quizStore, {
+            userId: quizUserId,
+            sessionId: decodeURIComponent(claimSessionMatch[1]),
+          });
+          sendJson(response, result.ok ? 200 : result.status, result.ok ? { session: result.session } : { message: result.message });
+          return;
+        }
+
+        const vocabularyMatch = url.pathname.match(/^\/api\/quiz\/vocabulary\/([^/]+)\/([^/]+)$/);
+        if ((request.method === 'PUT' || request.method === 'DELETE') && vocabularyMatch) {
+          if (!quizUserId) {
+            sendJson(response, 401, { message: '请先登录后管理生词本。' });
+            return;
+          }
+          const input = {
+            userId: quizUserId,
+            collectionSlug: decodeURIComponent(vocabularyMatch[1]),
+            recordKey: decodeURIComponent(vocabularyMatch[2]),
+          };
+          const result = request.method === 'PUT'
+            ? upsertVocabularyRecord(quizStore, { ...input, ...(await readJsonBody(request)) })
+            : removeVocabularyRecord(quizStore, input);
+          sendJson(response, result.status, result.ok ? (result.record ? { record: result.record } : { ok: true }) : { message: result.message });
+          return;
+        }
+
         if (request.method === 'POST' && url.pathname === '/api/quiz/sessions') {
           const body = await readJsonBody(request);
           const result = createPracticeSession(quizStore, {

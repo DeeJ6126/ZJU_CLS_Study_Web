@@ -55,6 +55,8 @@ test('quiz page is a course entry and molecular biology opens a seven-page subap
   assert.match(app, /class="quiz-course-grid"/);
   assert.match(css, /\.quiz-course-grid\s*\{[\s\S]*?repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
   assert.doesNotMatch(app, /class="quiz-right-rail"/);
+  assert.doesNotMatch(app, /class="quiz-left-nav"/);
+  assert.match(css, /\.quiz-demo\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 
   assert.match(app, /quizView === 'catalog'/);
   assert.match(app, /quizView === 'molecular'/);
@@ -174,6 +176,10 @@ test('microbiology course opens a full-width seven-page subapp without about pag
   assert.match(app, /返回首页[\s\S]*?开始练习/);
   assert.match(app, /microbiologyPage = 'categories'[\s\S]*?beginMicrobiologyPractice/);
   assert.doesNotMatch(app, /重新乱序开始/);
+  assert.doesNotMatch(microbiologyShell, /已有答案|已有解析|精确命中|高置信匹配|需复核/);
+  assert.match(microbiologyShell, /openMicrobiologyPastExam\(exam\.examId\)[\s\S]*?>开始练习<\/button>/);
+  assert.match(microbiologyShell, /class="microbiology-record-card"[\s\S]*?class="range-panel__actions"[\s\S]*?openMicrobiologyPastExam\(exam\.examId\)[\s\S]*?>开始练习<\/button>/);
+  assert.doesNotMatch(css, /#2f68ff/i);
 });
 
 test('quiz option and markdown rendering styles stay shared across course subapps', async () => {

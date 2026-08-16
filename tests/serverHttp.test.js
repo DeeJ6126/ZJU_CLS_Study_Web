@@ -1,9 +1,13 @@
 ﻿import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import { createAuthStore } from '../server/authStore.js';
 import { createAuthServer, isDirectRun } from '../server/server.js';
 import { createQuizStore } from '../server/quiz/quizStore.js';
+import { createContentStore } from '../server/content/contentStore.js';
 
 function listen(server) {
   return new Promise((resolve) => {
@@ -26,7 +30,7 @@ test('auth http server registers, logs in, returns current user, and logs out', 
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         code: 'bio-cc98',
-        password: 'test',
+        password: 'test-pass',
       }),
     });
     assert.equal(registration.status, 201);
@@ -36,7 +40,7 @@ test('auth http server registers, logs in, returns current user, and logs out', 
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         cc98Name: 'cc98_bio_visitor',
-        password: 'test',
+        password: 'test-pass',
       }),
     });
     const cookie = login.headers.get('set-cookie');
@@ -120,7 +124,7 @@ test('quiz http API lets students practice while users store session progress an
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         code: 'bio-cc98',
-        password: 'test',
+        password: 'test-pass',
       }),
     });
     const login = await fetch(`${baseUrl}/api/auth/login/cc98`, {
@@ -128,7 +132,7 @@ test('quiz http API lets students practice while users store session progress an
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         cc98Name: 'cc98_bio_visitor',
-        password: 'test',
+        password: 'test-pass',
       }),
     });
     const cookie = login.headers.get('set-cookie');
@@ -304,4 +308,310 @@ test('auth server direct-run detection handles windows script paths', () => {
     isDirectRun('file:///E:/Study_Web/server/server.js', 'E:\\Study_Web\\server\\server.js'),
     true,
   );
+});
+
+test('email auth HTTP API sends codes, registers, logs in, binds, and resets passwords', async () => {
+  const store = createAuthStore({ filename: ':memory:' });
+  const quizStore = createQuizStore({ filename: ':memory:' });
+  const sent = [];
+  let nextCode = '123456';
+  let now = new Date('2026-07-30T12:00:00.000Z');
+  const { server } = createAuthServer({
+    store,
+    quizStore,
+    emailSender: async (message) => sent.push(message),
+    emailCodeGenerator: () => nextCode,
+    emailNow: () => now,
+  });
+  const port = await listen(server);
+  const baseUrl = `http://127.0.0.1:${port}`;
+
+  try {
+    const invalid = await fetch(`${baseUrl}/api/auth/email/code`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ studentId: 'student', purpose: 'register' }),
+    });
+    assert.equal(invalid.status, 400);
+
+    const codeResponse = await fetch(`${baseUrl}/api/auth/email/code`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ studentId: '3220100000', purpose: 'register' }),
+    });
+    assert.equal(codeResponse.status, 202);
+    assert.equal(sent[0].to, '3220100000@zju.edu.cn');
+
+    const registration = await fetch(`${baseUrl}/api/auth/register/email`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        studentId: '3220100000', nickname: '生科同学', code: '123456', password: '12345678',
+      }),
+    });
+    const registrationBody = await registration.json();
+    assert.equal(registration.status, 201);
+    assert.equal(registrationBody.user.verifications.email, true);
+
+    const login = await fetch(`${baseUrl}/api/auth/login/email`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ studentId: '3220100000', password: '12345678' }),
+    });
+    assert.equal(login.status, 200);
+    assert.match(login.headers.get('set-cookie'), /study_session=/);
+
+    now = new Date('2026-07-30T13:00:00.000Z');
+    nextCode = '654321';
+    await fetch(`${baseUrl}/api/auth/email/code`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ studentId: '3220100000', purpose: 'password-reset' }),
+    });
+    const reset = await fetch(`${baseUrl}/api/auth/password/reset/email`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ studentId: '3220100000', code: '654321', password: 'new-pass' }),
+    });
+    assert.equal(reset.status, 200);
+
+    const oldLogin = await fetch(`${baseUrl}/api/auth/login/email`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ studentId: '3220100000', password: '12345678' }),
+    });
+    assert.equal(oldLogin.status, 401);
+  } finally {
+    server.close();
+  }
+});
+
+test('submission moderation, audit logs, and anonymous likes work through HTTP', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'study-submissions-'));
+  const store = createAuthStore({ filename: ':memory:' });
+  const quizStore = createQuizStore({ filename: ':memory:' });
+  const contentStore = createContentStore({ filename: ':memory:' });
+  const { server } = createAuthServer({
+    store,
+    quizStore,
+    contentStore,
+    uploadDirectory: directory,
+    adminCc98Names: new Set(['cc98_bio_visitor']),
+  });
+  const port = await listen(server);
+  const baseUrl = `http://127.0.0.1:${port}`;
+
+  async function registerAndLogin(code, cc98Name, password) {
+    await fetch(`${baseUrl}/api/auth/register/cc98`, {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code, password }),
+    });
+    const response = await fetch(`${baseUrl}/api/auth/login/cc98`, {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ cc98Name, password }),
+    });
+    return response.headers.get('set-cookie');
+  }
+
+  try {
+    const guestSubmission = await fetch(`${baseUrl}/api/submissions`, {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
+    });
+    assert.equal(guestSubmission.status, 401);
+
+    const studentCookie = await registerAndLogin('zjubio-test-001', 'zjubio_test_001', 'test-pass');
+    const submitted = await fetch(`${baseUrl}/api/submissions`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', cookie: studentCookie },
+      body: JSON.stringify({
+        courseCode: 'BIO2110F', type: 'experience', title: '学生心得', summary: '简短摘要',
+        author: '投稿同学', body: '投稿正文', cc98Url: 'https://www.cc98.org/topic/1', gpa: '4.20',
+      }),
+    });
+    const submittedBody = await submitted.json();
+    assert.equal(submitted.status, 201);
+    assert.equal(submittedBody.submission.status, 'pending');
+
+    const adminCookie = await registerAndLogin('bio-cc98', 'cc98_bio_visitor', 'administrator');
+    const pending = await fetch(`${baseUrl}/api/admin/submissions?status=pending`, { headers: { cookie: adminCookie } });
+    const pendingBody = await pending.json();
+    assert.equal(pending.status, 200);
+    assert.equal(pendingBody.submissions.length, 1);
+
+    const approved = await fetch(`${baseUrl}/api/admin/submissions/${submittedBody.submission.id}/approve`, {
+      method: 'POST', headers: { 'content-type': 'application/json', cookie: adminCookie }, body: '{}',
+    });
+    assert.equal(approved.status, 200);
+
+    const studentNotifications = await fetch(`${baseUrl}/api/account/notifications`, {
+      headers: { cookie: studentCookie },
+    });
+    const studentNotificationBody = await studentNotifications.json();
+    assert.equal(studentNotificationBody.notifications[0].type, 'submission.approved');
+    assert.equal(studentNotificationBody.notifications[0].submissionId, submittedBody.submission.id);
+
+    const publicContent = await fetch(`${baseUrl}/api/content/courses/BIO2110F`);
+    const publicBody = await publicContent.json();
+    const item = publicBody.items.find((entry) => entry.title === '学生心得');
+    assert.equal(item.gpa, '4.20');
+    assert.equal(item.likeCount, 0);
+
+    const liked = await fetch(`${baseUrl}/api/content/${item.id}/like`, {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
+    });
+    const likedBody = await liked.json();
+    assert.equal(likedBody.liked, true);
+    assert.equal(likedBody.likeCount, 1);
+    assert.match(liked.headers.get('set-cookie'), /study_visitor=/);
+
+    const logs = await fetch(`${baseUrl}/api/admin/audit-logs?action=submission.approve`, {
+      headers: { cookie: adminCookie },
+    });
+    const logsBody = await logs.json();
+    assert.equal(logs.status, 200);
+    assert.equal(logsBody.logs[0].targetTitle, '学生心得');
+  } finally {
+    server.close();
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test('content admin API protects writes and publishes content to the public course API', async () => {
+  const store = createAuthStore({ filename: ':memory:' });
+  const quizStore = createQuizStore({ filename: ':memory:' });
+  const contentStore = createContentStore({ filename: ':memory:' });
+  const uploadDirectory = mkdtempSync(join(tmpdir(), 'zjubio-http-content-'));
+  const { server } = createAuthServer({
+    store, quizStore, contentStore, uploadDirectory,
+    adminCc98Names: new Set(['cc98_bio_visitor']),
+  });
+  const port = await listen(server);
+  const baseUrl = `http://127.0.0.1:${port}`;
+
+  async function registerAndLogin(code, cc98Name, password) {
+    await fetch(`${baseUrl}/api/auth/register/cc98`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ code, password }),
+    });
+    const login = await fetch(`${baseUrl}/api/auth/login/cc98`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ cc98Name, password }),
+    });
+    return login.headers.get('set-cookie');
+  }
+
+  try {
+    assert.equal((await fetch(`${baseUrl}/api/admin/content`)).status, 401);
+    const studentCookie = await registerAndLogin('cls-open-day', 'cc98_open_day', 'student-pass');
+    assert.equal((await fetch(`${baseUrl}/api/admin/content`, { headers: { cookie: studentCookie } })).status, 403);
+
+    const adminCookie = await registerAndLogin('bio-cc98', 'cc98_bio_visitor', 'admin-pass-123');
+    const create = await fetch(`${baseUrl}/api/admin/content`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', cookie: adminCookie },
+      body: JSON.stringify({
+        courseCode: 'BIO2110F', type: 'experience', title: '管理员新增心得',
+        summary: '测试发布闭环。', author: '学术部', body: '这是一条由管理平台维护的内容。',
+      }),
+    });
+    const createdBody = await create.json();
+    assert.equal(create.status, 201);
+
+    const beforeItems = (await (await fetch(`${baseUrl}/api/content/courses/BIO2110F`)).json()).items;
+    assert.equal(beforeItems.some((item) => item.id === createdBody.item.id), false);
+
+    const publish = await fetch(`${baseUrl}/api/admin/content/${createdBody.item.id}/publish`, {
+      method: 'POST', headers: { 'content-type': 'application/json', cookie: adminCookie }, body: '{}',
+    });
+    assert.equal(publish.status, 200);
+    const afterItems = (await (await fetch(`${baseUrl}/api/content/courses/BIO2110F`)).json()).items;
+    assert.equal(afterItems.some((item) => item.id === createdBody.item.id), true);
+
+    const archive = await fetch(`${baseUrl}/api/admin/content/${createdBody.item.id}/archive`, {
+      method: 'POST', headers: { 'content-type': 'application/json', cookie: adminCookie }, body: '{}',
+    });
+    assert.equal(archive.status, 200);
+  } finally {
+    server.close();
+    rmSync(uploadDirectory, { recursive: true, force: true });
+  }
+});
+
+test('content admin API validates and serves uploaded PDF files', async () => {
+  const store = createAuthStore({ filename: ':memory:' });
+  const quizStore = createQuizStore({ filename: ':memory:' });
+  const contentStore = createContentStore({ filename: ':memory:' });
+  const uploadDirectory = mkdtempSync(join(tmpdir(), 'zjubio-http-files-'));
+  const { server } = createAuthServer({
+    store, quizStore, contentStore, uploadDirectory,
+    adminCc98Names: new Set(['cc98_bio_visitor']),
+  });
+  const port = await listen(server);
+  const baseUrl = `http://127.0.0.1:${port}`;
+
+  try {
+    await fetch(`${baseUrl}/api/auth/register/cc98`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ code: 'bio-cc98', password: 'admin-pass-123' }),
+    });
+    const login = await fetch(`${baseUrl}/api/auth/login/cc98`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ cc98Name: 'cc98_bio_visitor', password: 'admin-pass-123' }),
+    });
+    const cookie = login.headers.get('set-cookie');
+    const created = await fetch(`${baseUrl}/api/admin/content`, {
+      method: 'POST', headers: { 'content-type': 'application/json', cookie },
+      body: JSON.stringify({
+        courseCode: 'BIO2110F', type: 'paper', title: '测试试卷', summary: 'API 测试',
+        year: '2025-2026', teacher: '测试教师',
+      }),
+    });
+    const item = (await created.json()).item;
+
+    const fakePdf = await fetch(`${baseUrl}/api/admin/content/${item.id}/file`, {
+      method: 'PUT',
+      headers: {
+        'content-type': 'application/pdf', 'x-file-name': 'fake.pdf',
+        'x-admin-upload': 'course-content', cookie,
+      },
+      body: 'not pdf',
+    });
+    assert.equal(fakePdf.status, 400);
+
+    const upload = await fetch(`${baseUrl}/api/admin/content/${item.id}/file`, {
+      method: 'PUT',
+      headers: {
+        'content-type': 'application/pdf', 'x-file-name': '../midterm.pdf',
+        'x-admin-upload': 'course-content', cookie,
+      },
+      body: '%PDF-1.7\ntest',
+    });
+    const uploadedItem = (await upload.json()).item;
+    assert.equal(upload.status, 201);
+    assert.equal(uploadedItem.file.fileName, 'midterm.pdf');
+
+    assert.equal((await fetch(`${baseUrl}${uploadedItem.file.url}`)).status, 404);
+    const publish = await fetch(`${baseUrl}/api/admin/content/${item.id}/publish`, {
+      method: 'POST', headers: { 'content-type': 'application/json', cookie }, body: '{}',
+    });
+    assert.equal(publish.status, 200);
+
+    const publicItems = (await (await fetch(`${baseUrl}/api/content/courses/BIO2110F`)).json()).items;
+    const publicPaper = publicItems.find((entry) => entry.id === item.id);
+    assert.equal(Object.hasOwn(publicPaper, 'sourcePath'), false);
+    assert.equal(Object.hasOwn(publicPaper.file, 'storedName'), false);
+
+    const fileResponse = await fetch(`${baseUrl}${uploadedItem.file.url}`);
+    assert.equal(fileResponse.status, 200);
+    assert.equal(fileResponse.headers.get('content-type'), 'application/pdf');
+    assert.equal(fileResponse.headers.get('x-content-type-options'), 'nosniff');
+    assert.match(await fileResponse.text(), /^%PDF-/);
+
+    const remove = await fetch(`${baseUrl}/api/admin/content/${item.id}/file`, {
+      method: 'DELETE', headers: { 'content-type': 'application/json', cookie },
+    });
+    assert.equal(remove.status, 400);
+
+    await fetch(`${baseUrl}/api/admin/content/${item.id}/archive`, {
+      method: 'POST', headers: { 'content-type': 'application/json', cookie }, body: '{}',
+    });
+    const removeArchived = await fetch(`${baseUrl}/api/admin/content/${item.id}/file`, {
+      method: 'DELETE', headers: { 'content-type': 'application/json', cookie },
+    });
+    assert.equal(removeArchived.status, 200);
+  } finally {
+    server.close();
+    rmSync(uploadDirectory, { recursive: true, force: true });
+  }
 });

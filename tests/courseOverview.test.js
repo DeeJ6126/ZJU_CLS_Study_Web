@@ -52,3 +52,40 @@ test('course overview uses only the first-row summary surface', () => {
     ['学分', '总学时', '课程类型', '建议修读年级'],
   );
 });
+
+test('course detail uses a left navigation and a dedicated quiz entry', () => {
+  const component = readFileSync('src/components/CourseDetailPage.vue', 'utf8');
+  const css = readFileSync('src/styles/course-detail.css', 'utf8');
+  const app = readFileSync('src/App.vue', 'utf8');
+
+  assert.match(component, /class="course-detail__nav"/);
+  assert.match(component, /class="course-detail__content"/);
+  assert.match(css, /\.course-detail\s*\{[\s\S]*?grid-template-columns:\s*188px\s+minmax\(0,\s*1fr\)/);
+  assert.doesNotMatch(css, /\.course-tabs\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4/);
+  assert.doesNotMatch(component, /QuizPracticePanel/);
+  assert.match(component, /hasQuiz[\s\S]*?course-detail__quiz-link[\s\S]*?刷题网页/);
+  assert.match(component, /emit\('open-quiz',\s*course\.code\)/);
+  assert.match(app, /:has-quiz="[\s\S]*?@open-quiz="openCourseQuiz"/);
+});
+
+test('course detail content is loaded through the shared API client instead of inside the component', () => {
+  const component = readFileSync('src/components/CourseDetailPage.vue', 'utf8');
+  const app = readFileSync('src/App.vue', 'utf8');
+
+  assert.match(app, /loadCourseContent/);
+  assert.doesNotMatch(component, /fetchMarkdownDocument|publicAssetPath|loadCollection/);
+  assert.match(component, /:class="\{ 'is-active': activeTab\.id === tab\.id \}"/);
+});
+
+test('learning cards keep compact metadata while article details expose CC98, hidden GPA, and anonymous likes', () => {
+  const component = readFileSync('src/components/CourseDetailPage.vue', 'utf8');
+  const css = readFileSync('src/styles/course-detail.css', 'utf8');
+
+  assert.match(component, /learning-card__title/);
+  assert.match(component, /learning-card__author/);
+  assert.match(component, /cc98-icon/);
+  assert.match(component, /查看绩点/);
+  assert.match(component, /隐藏绩点/);
+  assert.match(component, /toggle-like/);
+  assert.match(css, /\.article-detail-card__identity/);
+});

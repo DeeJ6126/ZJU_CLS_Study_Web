@@ -18,6 +18,11 @@ const isLoading = ref(true);
 const loadError = ref('');
 const collapsedSections = reactive({});
 const collapsedGroups = reactive({});
+const props = defineProps({
+  canManageCourses: { type: Boolean, default: false },
+  savedCourseCodes: { type: Array, default: () => [] },
+});
+const emit = defineEmits(['add-course', 'remove-course']);
 
 const selectedProgram = computed(() => curriculumPrograms[selectedProgramId.value] ?? null);
 const isProgramSelected = computed(() => Boolean(selectedProgram.value));
@@ -45,6 +50,17 @@ function toggleSection(sectionId) {
 
 function toggleGroup(groupId) {
   collapsedGroups[groupId] = !collapsedGroups[groupId];
+}
+
+function isSaved(courseCode) {
+  return props.savedCourseCodes.includes(courseCode);
+}
+
+function toggleSavedCourse(course) {
+  emit(isSaved(course.code) ? 'remove-course' : 'add-course', {
+    courseCode: course.code,
+    courseName: course.name,
+  });
 }
 
 onMounted(async () => {
@@ -131,11 +147,16 @@ onMounted(async () => {
         <div v-if="!collapsedSections[section.id]" class="overview-section__body">
           <template v-if="section.courses">
             <div class="overview-course-grid">
-              <a v-for="course in section.courses" :key="course.code" :href="course.href">
-                <strong>{{ course.name }}</strong>
-                <span>{{ course.code }}</span>
-                <small>{{ course.credits }} 学分 · {{ course.totalHours }} 学时</small>
-              </a>
+              <article v-for="course in section.courses" :key="course.code">
+                <a :href="course.href">
+                  <strong>{{ course.name }}</strong>
+                  <span>{{ course.code }}</span>
+                  <small>{{ course.credits }} 学分 · {{ course.totalHours }} 学时</small>
+                </a>
+                <button v-if="canManageCourses" type="button" @click="toggleSavedCourse(course)">
+                  {{ isSaved(course.code) ? '移出我的课程' : '加入我的课程' }}
+                </button>
+              </article>
             </div>
             <p v-if="!section.courses.length" class="overview-empty">该学期暂无已整理课程。</p>
           </template>
@@ -153,11 +174,16 @@ onMounted(async () => {
             </button>
 
             <div v-if="!collapsedGroups[group.id]" class="overview-course-grid">
-              <a v-for="course in group.courses" :key="course.code" :href="course.href">
-                <strong>{{ course.name }}</strong>
-                <span>{{ course.code }}</span>
-                <small>{{ course.credits }} 学分 · {{ course.totalHours }} 学时</small>
-              </a>
+              <article v-for="course in group.courses" :key="course.code">
+                <a :href="course.href">
+                  <strong>{{ course.name }}</strong>
+                  <span>{{ course.code }}</span>
+                  <small>{{ course.credits }} 学分 · {{ course.totalHours }} 学时</small>
+                </a>
+                <button v-if="canManageCourses" type="button" @click="toggleSavedCourse(course)">
+                  {{ isSaved(course.code) ? '移出我的课程' : '加入我的课程' }}
+                </button>
+              </article>
             </div>
           </section>
         </div>

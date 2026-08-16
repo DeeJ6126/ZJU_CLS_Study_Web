@@ -10,8 +10,17 @@ import TrueFalseQuestionView from './components/quiz/TrueFalseQuestionView.vue';
 import HomePage from './components/HomePage.vue';
 import OverviewPage from './components/OverviewPage.vue';
 import CourseDetailPage from './components/CourseDetailPage.vue';
+import AdminPage from './components/admin/AdminPage.vue';
+import AccountPopover from './components/account/AccountPopover.vue';
+import AuthDialog from './components/account/AuthDialog.vue';
+import NotificationsPage from './components/account/NotificationsPage.vue';
+import ProfilePage from './components/profile/ProfilePage.vue';
 import {
+  addQuizMistake,
   createQuizSession,
+  claimQuizSession,
+  fetchQuizAccountState,
+  fetchQuizSession,
   fetchQuizCategories,
   fetchQuizCollections,
   fetchQuizImageGallery,
@@ -19,10 +28,15 @@ import {
   fetchQuizPastExamQuestions,
   fetchQuizPastExams,
   fetchQuizReviewTerms,
+  mergeQuizAccountState,
   navigateQuizSession,
   revealQuizAnswer,
   selfJudgeQuizAnswer,
   submitQuizAnswer,
+  upsertQuizVocabulary,
+  removeQuizVocabulary,
+  removeQuizMistake,
+  resetQuizRecords,
 } from './services/quizApiClient.js';
 import {
   buildNextQuestionTarget,
@@ -41,6 +55,8 @@ import {
 import {
   getDemoPageFromHash,
   getDemoPageHref,
+  getProfileHref,
+  getProfileIdFromHash,
 } from './services/demoNavigationService.js';
 import {
   buildVocabularyFeedback,
@@ -95,21 +111,70 @@ import {
   writeMicrobiologySelection,
   writeMicrobiologyVocabularyRecords,
 } from './services/microbiologyQuizService.js';
-import { canComment, canFavorite, canSubmitResource } from './services/authService.js';
+import {
+  canComment,
+  canBindEmailIdentity,
+  canFavorite,
+  canSubmitResource,
+  getAccountState,
+  getVerificationBadges,
+  isAuthenticated,
+} from './services/authService.js';
+import { loadCourseContent } from './services/courseContentApiClient.js';
+import { accountDataApiClient } from './services/accountDataApiClient.js';
+import { commentApiClient } from './services/commentApiClient.js';
+import {
+  bindEmailAccount,
+  fetchCurrentUser,
+  loginCc98Account,
+  loginEmailAccount,
+  logoutAccount,
+  registerCc98Account,
+  registerEmailAccount,
+  requestEmailVerificationCode,
+  resetEmailAccountPassword,
+} from './services/authApiClient.js';
+import {
+  archiveMyPost,
+  bindMyCc98,
+  fetchMyProfile,
+  fetchPublicProfile,
+  removeMyAvatar,
+  deleteMySubmission,
+  resubmitMySubmission,
+  submitPostRevision,
+  updateMyNickname,
+  updateMySubmission,
+  uploadMyAvatar,
+  withdrawMySubmission,
+} from './services/profileApiClient.js';
+import { submissionApiClient } from './services/submissionApiClient.js';
 import { quizCourseConfigs } from './data/quizCourseConfigs.js';
 import { demoPendingCourses, demoSupportedCourses, demoTopPages } from './data/quizDemo.js';
 import { getResourceCourseByCode } from './data/courses/resourceData.js';
 import { getCourseDetail } from './data/courses/courseDetails.js';
-import { parseResourceHash } from './data/courses/resourcePaths.js';
+import { buildCourseRoute, parseResourceHash } from './data/courses/resourcePaths.js';
 import { publicAssetPath } from './utils/publicPath.js';
 
 const topPages = demoTopPages;
 const supportedCourses = demoSupportedCourses;
 const pendingCourses = demoPendingCourses;
-const studentViewer = { id: 'student', role: 'guest', verifications: {} };
+const guestViewer = () => ({
+  id: 'guest',
+  role: 'guest',
+  nickname: '访客',
+  cc98Nickname: '未绑定',
+  email: '',
+  avatarInitials: 'G',
+  avatarColor: '#708090',
+  verifications: { cc98: false, email: false },
+});
+const studentViewer = ref(guestViewer());
 const activePage = ref('home');
 const overviewRoute = ref(parseResourceHash(''));
 const activeOverviewCourse = ref(null);
+const overviewContentLoading = ref(false);
+const overviewContentError = ref('');
 const activeCourseTab = ref('supported');
 const quizView = ref('catalog');
 const molecularPage = ref('home');
@@ -145,8 +210,35 @@ const vocabularyPickEnabled = ref(false);
 const vocabularyFeedback = ref('');
 const translationInput = ref(null);
 const message = ref('');
+const contributionNotice = ref('');
+const likeNotice = ref('');
 const isLoading = ref(false);
+const accountOpen = ref(false);
+const authDialogOpen = ref(false);
+const authDialogMode = ref('login');
+const authInitialTab = ref('cc98');
+const authNotice = ref('');
+const authBusy = ref(false);
+const profileView = ref({ profile: null, posts: [], submissions: [], comments: [] });
+const profileLoading = ref(false);
+const profileError = ref('');
+const profileNotice = ref('');
+const activeProfilePublicId = ref('');
+const accountCourses = ref([]);
+const accountFavorites = ref([]);
+const courseImportPreview = ref(null);
+const notifications = ref([]);
+const unreadNotificationCount = ref(0);
+const notificationsLoading = ref(false);
+const notificationNotice = ref('');
+const commentsByContentId = ref({});
+const commentBusy = ref(false);
+const commentNotice = ref('');
+const quizProgressByCollection = ref({});
 
+const activeOverviewHasQuiz = computed(() => supportedCourses.some((course) => (
+  course.code === activeOverviewCourse.value?.code
+)));
 const activeCourse = computed(
   () => supportedCourses.find((course) => course.code === activeCourseCode.value) ?? null,
 );
@@ -156,6 +248,9 @@ const activeCollection = computed(
 );
 const activeCourseConfig = computed(() => quizCourseConfigs[activeCourseCode.value] ?? null);
 const activeQuestion = computed(() => session.value?.currentQuestion ?? null);
+const activeSyncedProgress = computed(() => (
+  quizProgressByCollection.value[activeCollectionSlug.value] ?? null
+));
 const isMolecularCollection = computed(() => activeCollectionSlug.value === 'molecular-biology-review');
 const isBotanyCollection = computed(() => activeCollectionSlug.value === 'botany-slice');
 const isMicrobiologyCollection = computed(() => activeCollectionSlug.value === 'microbiology-final-review');
@@ -190,10 +285,25 @@ const result = computed(() => interaction.value.result);
 const pendingSelectedKey = computed(() => interaction.value.pendingAnswer?.selectedKey ?? '');
 const pendingTrueFalse = computed(() => interaction.value.pendingAnswer?.value);
 const canSubmitAnswer = computed(() => Boolean(buildSubmitAnswer(interaction.value)) && !result.value && !currentQuestionLocked.value);
-const userCanSubmit = computed(() => canSubmitResource(studentViewer));
-const userCanComment = computed(() => canComment(studentViewer));
-const userCanFavorite = computed(() => canFavorite(studentViewer));
+const userCanSubmit = computed(() => canSubmitResource(studentViewer.value));
+const userCanComment = computed(() => canComment(studentViewer.value));
+const userCanFavorite = computed(() => canFavorite(studentViewer.value));
+const accountState = computed(() => getAccountState(studentViewer.value));
+const verificationBadges = computed(() => getVerificationBadges(studentViewer.value));
+const viewerIsGuest = computed(() => !isAuthenticated(studentViewer.value));
+const viewerCanBindEmail = computed(() => canBindEmailIdentity(studentViewer.value));
+const activeProfileIsOwn = computed(() => (
+  Boolean(activeProfilePublicId.value)
+  && activeProfilePublicId.value === studentViewer.value.publicId
+));
 const rangeOptions = computed(() => buildQuizRangeOptions(activeCourseCode.value, categories.value));
+const favoriteContentIds = computed(() => accountFavorites.value.map((item) => item.id));
+const savedCourseCodes = computed(() => accountCourses.value.map((course) => course.courseCode));
+const activeOverviewItem = computed(() => {
+  if (!activeOverviewCourse.value || !overviewRoute.value.itemId) return null;
+  return (activeOverviewCourse.value[overviewRoute.value.tabId] ?? [])
+    .find((item) => item.id === overviewRoute.value.itemId) ?? null;
+});
 
 const activePracticeRange = computed(
   () => rangeOptions.value.find((option) => option.id === activePracticeRangeId.value) ?? rangeOptions.value[0] ?? null,
@@ -410,6 +520,7 @@ async function selectCourse(courseCode) {
 
   const collections = await loadCollectionsForCourse(courseCode);
   activeCollectionSlug.value = collections[0]?.slug ?? '';
+  await refreshQuizAccountState(activeCollectionSlug.value);
   if (courseCode === 'BIO2023M') {
     quizView.value = 'molecular';
   } else if (courseCode === 'BIO2019F') {
@@ -423,6 +534,27 @@ async function selectCourse(courseCode) {
   botanyPage.value = 'home';
   microbiologyPage.value = 'home';
   isLoading.value = false;
+}
+
+async function resumeSyncedPractice() {
+  const sessionId = activeSyncedProgress.value?.activeSessionId;
+  if (!sessionId) return;
+  isLoading.value = true;
+  const resultData = await fetchQuizSession(sessionId);
+  isLoading.value = false;
+  if (!resultData.ok) {
+    message.value = resultData.message;
+    await refreshQuizAccountState(activeCollectionSlug.value);
+    return;
+  }
+  session.value = resultData.session;
+  selectedCategorySourceIds.value = resultData.session.selectedCategorySourceIds ?? [];
+  answeredQuestionStatus.value = {};
+  resetForQuestion(activeQuestion.value);
+  if (isMolecularCollection.value) molecularPage.value = 'practice';
+  else if (isBotanyCollection.value) botanyPage.value = 'practice';
+  else if (isMicrobiologyCollection.value) microbiologyPage.value = 'practice';
+  else quizView.value = 'practice';
 }
 
 async function loadCategories() {
@@ -847,18 +979,18 @@ async function submitAnswer() {
   });
   setAnsweredStatus(activeQuestion.value.sourceQuestionId, resultData.result.isCorrect ? 'correct' : 'incorrect');
   if (isMolecularCollection.value && resultData.result.isCorrect === false) {
-    molecularMistakeRecords.value = writeMolecularMistakes(upsertMolecularMistake(molecularMistakeRecords.value, {
+    molecularMistakeRecords.value = persistGuestRecords(upsertMolecularMistake(molecularMistakeRecords.value, {
       question: activeQuestion.value,
       answer,
       correctDisplay: resultData.result.correctDisplay,
-    }));
+    }), writeMolecularMistakes);
   }
   if (isMicrobiologyCollection.value && resultData.result.isCorrect === false) {
-    microbiologyMistakeRecords.value = writeMicrobiologyMistakes(upsertMicrobiologyMistake(microbiologyMistakeRecords.value, {
+    microbiologyMistakeRecords.value = persistGuestRecords(upsertMicrobiologyMistake(microbiologyMistakeRecords.value, {
       question: activeQuestion.value,
       answer,
       correctDisplay: resultData.result.correctDisplay,
-    }));
+    }), writeMicrobiologyMistakes);
   }
 }
 
@@ -919,11 +1051,11 @@ async function selfJudgeAnswer(isCorrect) {
   });
   setAnsweredStatus(activeQuestion.value.sourceQuestionId, isCorrect ? 'correct' : 'incorrect');
   if (isMolecularCollection.value && !isCorrect) {
-    molecularMistakeRecords.value = writeMolecularMistakes(upsertMolecularMistake(molecularMistakeRecords.value, {
+    molecularMistakeRecords.value = persistGuestRecords(upsertMolecularMistake(molecularMistakeRecords.value, {
       question: activeQuestion.value,
       answer: { selfJudgedCorrect: false },
       correctDisplay: resultData.result.correctDisplay,
-    }));
+    }), writeMolecularMistakes);
   }
 }
 
@@ -1109,33 +1241,45 @@ function isBotanyMistake(sourceQuestionId) {
   return botanyMistakeRecords.value.some((record) => record.sourceQuestionId === sourceQuestionId);
 }
 
-function addActiveBotanyMistake() {
+async function addActiveBotanyMistake() {
   if (!activeQuestion.value || !result.value?.revealedAnswer) {
     return;
   }
-  botanyMistakeRecords.value = writeBotanyMistakes(upsertBotanyMistake(botanyMistakeRecords.value, {
+  botanyMistakeRecords.value = persistGuestRecords(upsertBotanyMistake(botanyMistakeRecords.value, {
     question: activeQuestion.value,
     revealedAnswer: result.value.revealedAnswer,
-  }));
+  }), writeBotanyMistakes);
+  if (!viewerIsGuest.value) {
+    await addQuizMistake({
+      collectionSlug: activeCollectionSlug.value,
+      sourceQuestionId: activeQuestion.value.sourceQuestionId,
+      answer: { selfJudgedCorrect: false },
+    });
+    await refreshQuizAccountState(activeCollectionSlug.value);
+  }
 }
 
-function removeBotanyMistakeRecord(sourceQuestionId) {
-  botanyMistakeRecords.value = writeBotanyMistakes(removeBotanyMistake(botanyMistakeRecords.value, sourceQuestionId));
+async function removeBotanyMistakeRecord(sourceQuestionId) {
+  botanyMistakeRecords.value = persistGuestRecords(removeBotanyMistake(botanyMistakeRecords.value, sourceQuestionId), writeBotanyMistakes);
+  if (!viewerIsGuest.value) await removeQuizMistake(activeCollectionSlug.value, sourceQuestionId);
 }
 
-function clearBotanyMistakeRecords() {
-  botanyMistakeRecords.value = writeBotanyMistakes(clearBotanyMistakes());
+async function clearBotanyMistakeRecords() {
+  botanyMistakeRecords.value = persistGuestRecords(clearBotanyMistakes(), writeBotanyMistakes);
+  if (!viewerIsGuest.value) await resetQuizRecords(activeCollectionSlug.value, 'mistakes');
 }
 
-function removeMicrobiologyMistakeRecord(sourceQuestionId) {
-  microbiologyMistakeRecords.value = writeMicrobiologyMistakes(removeMicrobiologyMistake(
+async function removeMicrobiologyMistakeRecord(sourceQuestionId) {
+  microbiologyMistakeRecords.value = persistGuestRecords(removeMicrobiologyMistake(
     microbiologyMistakeRecords.value,
     sourceQuestionId,
-  ));
+  ), writeMicrobiologyMistakes);
+  if (!viewerIsGuest.value) await removeQuizMistake(activeCollectionSlug.value, sourceQuestionId);
 }
 
-function clearMicrobiologyMistakeRecords() {
-  microbiologyMistakeRecords.value = writeMicrobiologyMistakes(clearMicrobiologyMistakes());
+async function clearMicrobiologyMistakeRecords() {
+  microbiologyMistakeRecords.value = persistGuestRecords(clearMicrobiologyMistakes(), writeMicrobiologyMistakes);
+  if (!viewerIsGuest.value) await resetQuizRecords(activeCollectionSlug.value, 'mistakes');
 }
 
 function selectAllInMolecularGroup(group) {
@@ -1172,21 +1316,23 @@ function speakActiveReviewTerm() {
   }
 }
 
-function addVocabularyTerm(term) {
+async function addVocabularyTerm(term) {
   if (!activeQuestion.value) {
     return;
   }
   vocabularyFeedback.value = buildVocabularyFeedback(term, vocabularyRecords.value);
-  vocabularyRecords.value = writeVocabularyRecords([
-    createVocabularyRecord(term, {
+  const record = createVocabularyRecord(term, {
       questionId: activeQuestion.value.sourceQuestionId,
       contextText: displayedPrompt.value,
       sourceType: activeQuestion.value.type,
       questionNumber: session.value?.currentIndex + 1,
       chapterTitle: activePracticeRange.value?.title ?? '',
-    }),
+    });
+  vocabularyRecords.value = persistGuestRecords([
+    record,
     ...vocabularyRecords.value,
-  ]);
+  ], writeVocabularyRecords);
+  await storeVocabularyRecord('molecular-biology-review', record);
 
   window.setTimeout(() => {
     if (vocabularyFeedback.value.includes(String(term).trim())) {
@@ -1195,7 +1341,7 @@ function addVocabularyTerm(term) {
   }, 1400);
 }
 
-function addMicrobiologyVocabularyTerm(term, contextText = displayedPrompt.value) {
+async function addMicrobiologyVocabularyTerm(term, contextText = displayedPrompt.value) {
   const cleanTerm = String(term ?? '').trim();
   if (!cleanTerm) {
     return;
@@ -1206,8 +1352,7 @@ function addMicrobiologyVocabularyTerm(term, contextText = displayedPrompt.value
     && record.contextText.trim().toLowerCase() === String(contextText ?? '').trim().toLowerCase()
   ));
   vocabularyFeedback.value = exists ? `已在生词本：${cleanTerm}` : `已加入：${cleanTerm}`;
-  microbiologyVocabularyRecords.value = writeMicrobiologyVocabularyRecords([
-    createMicrobiologyVocabularyRecord(cleanTerm, {
+  const record = createMicrobiologyVocabularyRecord(cleanTerm, {
       questionId: activeQuestion.value?.sourceQuestionId ?? '',
       examId: activePastExam.value?.examId ?? '',
       contextText,
@@ -1215,9 +1360,12 @@ function addMicrobiologyVocabularyTerm(term, contextText = displayedPrompt.value
       questionNumber: activePastExamQuestion.value?.number ?? session.value?.currentIndex + 1,
       chapterId: activeQuestion.value?.body?.chapterId ?? activePastExamQuestion.value?.match?.sourceChapterId ?? 0,
       chapterTitle: activePracticeRange.value?.title ?? activePastExam.value?.title ?? '',
-    }),
+    });
+  microbiologyVocabularyRecords.value = persistGuestRecords([
+    record,
     ...microbiologyVocabularyRecords.value,
-  ]);
+  ], writeMicrobiologyVocabularyRecords);
+  await storeVocabularyRecord('microbiology-final-review', record);
 
   window.setTimeout(() => {
     if (vocabularyFeedback.value.includes(cleanTerm)) {
@@ -1226,39 +1374,49 @@ function addMicrobiologyVocabularyTerm(term, contextText = displayedPrompt.value
   }, 1400);
 }
 
-function cycleVocabulary(record) {
-  vocabularyRecords.value = writeVocabularyRecords(vocabularyRecords.value.map((item) => (
+async function cycleVocabulary(record) {
+  const records = vocabularyRecords.value.map((item) => (
     item.normalizedTerm === record.normalizedTerm
       ? { ...item, status: cycleVocabularyStatus(item.status), updatedAt: new Date().toISOString() }
       : item
-  )));
+  ));
+  vocabularyRecords.value = persistGuestRecords(records, writeVocabularyRecords);
+  await storeVocabularyRecord('molecular-biology-review', records.find((item) => item.normalizedTerm === record.normalizedTerm));
 }
 
-function cycleMicrobiologyVocabulary(record) {
-  microbiologyVocabularyRecords.value = writeMicrobiologyVocabularyRecords(microbiologyVocabularyRecords.value.map((item) => (
+async function cycleMicrobiologyVocabulary(record) {
+  const records = microbiologyVocabularyRecords.value.map((item) => (
     item.id === record.id
       ? { ...item, status: cycleMicrobiologyVocabularyStatus(item.status), updatedAt: new Date().toISOString() }
       : item
-  )));
+  ));
+  microbiologyVocabularyRecords.value = persistGuestRecords(records, writeMicrobiologyVocabularyRecords);
+  await storeVocabularyRecord('microbiology-final-review', records.find((item) => item.id === record.id));
 }
 
-function clearVocabulary() {
-  vocabularyRecords.value = writeVocabularyRecords([]);
+async function clearVocabulary() {
+  const previous = vocabularyRecords.value;
+  vocabularyRecords.value = persistGuestRecords([], writeVocabularyRecords);
+  if (!viewerIsGuest.value) await Promise.all(previous.map((record) => removeQuizVocabulary('molecular-biology-review', record.recordKey ?? record.id)));
 }
 
-function clearMicrobiologyVocabulary() {
-  microbiologyVocabularyRecords.value = writeMicrobiologyVocabularyRecords([]);
+async function clearMicrobiologyVocabulary() {
+  const previous = microbiologyVocabularyRecords.value;
+  microbiologyVocabularyRecords.value = persistGuestRecords([], writeMicrobiologyVocabularyRecords);
+  if (!viewerIsGuest.value) await Promise.all(previous.map((record) => removeQuizVocabulary('microbiology-final-review', record.recordKey ?? record.id)));
 }
 
-function removeMolecularMistakeRecord(sourceQuestionId) {
-  molecularMistakeRecords.value = writeMolecularMistakes(removeMolecularMistake(
+async function removeMolecularMistakeRecord(sourceQuestionId) {
+  molecularMistakeRecords.value = persistGuestRecords(removeMolecularMistake(
     molecularMistakeRecords.value,
     sourceQuestionId,
-  ));
+  ), writeMolecularMistakes);
+  if (!viewerIsGuest.value) await removeQuizMistake(activeCollectionSlug.value, sourceQuestionId);
 }
 
-function clearMolecularMistakeRecords() {
-  molecularMistakeRecords.value = writeMolecularMistakes(clearMolecularMistakes());
+async function clearMolecularMistakeRecords() {
+  molecularMistakeRecords.value = persistGuestRecords(clearMolecularMistakes(), writeMolecularMistakes);
+  if (!viewerIsGuest.value) await resetQuizRecords(activeCollectionSlug.value, 'mistakes');
 }
 
 function exportVocabulary() {
@@ -1279,10 +1437,10 @@ function importVocabulary(event) {
   const reader = new FileReader();
   reader.addEventListener('load', () => {
     try {
-      vocabularyRecords.value = writeVocabularyRecords([
+      vocabularyRecords.value = persistGuestRecords([
         ...JSON.parse(String(reader.result ?? '[]')),
         ...vocabularyRecords.value,
-      ]);
+      ], writeVocabularyRecords);
     } catch {
       message.value = '生词本导入失败，请检查 JSON 文件。';
     }
@@ -1355,13 +1513,225 @@ function imageUrl(path) {
   return publicAssetPath(`/resource/quiz/${activeCourseCode.value}/${activeCollectionSlug.value}/${path}`);
 }
 
+async function loadAccountData() {
+  if (viewerIsGuest.value) {
+    accountCourses.value = [];
+    accountFavorites.value = [];
+    notifications.value = [];
+    unreadNotificationCount.value = 0;
+    return;
+  }
+  const [coursesResult, favoritesResult, notificationsResult] = await Promise.all([
+    accountDataApiClient.fetchCourses(),
+    accountDataApiClient.fetchFavorites(),
+    accountDataApiClient.fetchNotifications(),
+  ]);
+  if (coursesResult.ok) accountCourses.value = coursesResult.courses ?? [];
+  if (favoritesResult.ok) accountFavorites.value = favoritesResult.favorites ?? [];
+  if (notificationsResult.ok) {
+    notifications.value = notificationsResult.notifications ?? [];
+    unreadNotificationCount.value = notificationsResult.unreadCount ?? 0;
+  }
+}
+
+function syncedMistakes(state, kind) {
+  return (state?.mistakes ?? []).map((record) => {
+    const question = record.question ?? {};
+    if (kind === 'botany') {
+      return {
+        sourceQuestionId: record.sourceQuestionId,
+        categorySourceId: question.body?.categoryId ?? '',
+        imagePath: question.body?.imagePath ?? '',
+        answer: record.correctDisplay,
+        sourceName: '', plantType: '', magnification: '',
+        addedCount: record.wrongCount,
+        lastAddedAt: record.lastAnsweredAt,
+      };
+    }
+    return {
+      sourceQuestionId: record.sourceQuestionId,
+      questionType: question.type ?? '',
+      categorySourceId: question.body?.categoryId ?? question.body?.chapterId ?? '',
+      categoryTitle: question.body?.categoryTitle ?? question.body?.parentTitle ?? '',
+      prompt: question.prompt ?? '',
+      questionNumber: question.body?.number ?? 0,
+      lastAnswer: record.lastAnswer ?? {},
+      correctDisplay: record.correctDisplay ?? '',
+      wrongCount: record.wrongCount ?? 1,
+      lastAnsweredAt: record.lastAnsweredAt,
+    };
+  });
+}
+
+function syncedVocabulary(state, kind) {
+  return (state?.vocabulary ?? []).map((record) => ({
+    ...(record.context ?? {}),
+    id: record.recordKey,
+    recordKey: record.recordKey,
+    term: record.term,
+    normalizedTerm: record.normalizedTerm,
+    status: record.status,
+    createdAt: record.createdAt,
+    addedAt: record.createdAt,
+    updatedAt: record.updatedAt,
+    ...(kind === 'microbiology' && !record.context?.contextText ? { contextText: record.term } : {}),
+  }));
+}
+
+function applyQuizAccountState(collectionSlug, state) {
+  quizProgressByCollection.value = {
+    ...quizProgressByCollection.value,
+    [collectionSlug]: state?.progress ?? null,
+  };
+  if (collectionSlug === 'molecular-biology-review') {
+    molecularMistakeRecords.value = syncedMistakes(state, 'molecular');
+    vocabularyRecords.value = syncedVocabulary(state, 'molecular');
+  } else if (collectionSlug === 'botany-slice') {
+    botanyMistakeRecords.value = syncedMistakes(state, 'botany');
+  } else if (collectionSlug === 'microbiology-final-review') {
+    microbiologyMistakeRecords.value = syncedMistakes(state, 'microbiology');
+    microbiologyVocabularyRecords.value = syncedVocabulary(state, 'microbiology');
+  }
+}
+
+async function refreshQuizAccountState(collectionSlug) {
+  if (viewerIsGuest.value || !collectionSlug) return;
+  const resultData = await fetchQuizAccountState(collectionSlug);
+  if (resultData.ok) applyQuizAccountState(collectionSlug, resultData.state);
+}
+
+async function migrateLocalQuizData() {
+  if (viewerIsGuest.value) return;
+  if (session.value?.id) await claimQuizSession(session.value.id);
+  const entries = [
+    ['molecular-biology-review', readMolecularMistakes(), readVocabularyRecords()],
+    ['botany-slice', readBotanyMistakes(), []],
+    ['microbiology-final-review', readMicrobiologyMistakes(), readMicrobiologyVocabularyRecords()],
+  ];
+  for (const [collectionSlug, mistakes, vocabulary] of entries) {
+    const resultData = mistakes.length || vocabulary.length
+      ? await mergeQuizAccountState({
+        collectionSlug,
+        mistakes,
+        vocabulary: vocabulary.map((record) => ({
+          ...record,
+          recordKey: record.recordKey ?? record.id,
+          context: { ...record },
+        })),
+      })
+      : await fetchQuizAccountState(collectionSlug);
+    if (resultData.ok) applyQuizAccountState(collectionSlug, resultData.state);
+  }
+  writeMolecularMistakes([]);
+  writeBotanyMistakes([]);
+  writeMicrobiologyMistakes([]);
+  writeVocabularyRecords([]);
+  writeMicrobiologyVocabularyRecords([]);
+}
+
+function persistGuestRecords(records, writer) {
+  return viewerIsGuest.value ? writer(records) : records;
+}
+
+async function storeVocabularyRecord(collectionSlug, record) {
+  if (viewerIsGuest.value) return;
+  await upsertQuizVocabulary(collectionSlug, {
+    ...record,
+    recordKey: record.recordKey ?? record.id,
+    context: { ...record },
+  });
+}
+
+async function loadActiveItemComments() {
+  const item = activeOverviewItem.value;
+  if (!item?.contentId || activeOverviewCourse.value?.source !== 'api') return;
+  const resultData = await commentApiClient.list(item.contentId);
+  if (resultData.ok) {
+    commentsByContentId.value = {
+      ...commentsByContentId.value,
+      [item.contentId]: resultData.comments ?? [],
+    };
+    commentNotice.value = '';
+  } else {
+    commentNotice.value = resultData.message;
+  }
+}
+
+function notificationTargetHref(notification) {
+  const target = notification.target;
+  if (!target?.courseCode) return '';
+  const tab = { experience: 'experiences', material: 'materials', paper: 'papers' }[target.type] ?? 'overview';
+  return buildCourseRoute(target.courseCode, tab, target.routeId);
+}
+
+async function openNotification(notification) {
+  if (!notification.readAt) await markNotificationRead(notification);
+  const href = notificationTargetHref(notification);
+  if (href) window.location.hash = href;
+}
+
+async function markNotificationRead(notification) {
+  const resultData = await accountDataApiClient.markNotificationRead(notification.id);
+  if (!resultData.ok) {
+    notificationNotice.value = resultData.message;
+    return;
+  }
+  notifications.value = notifications.value.map((item) => (
+    item.id === notification.id ? { ...item, readAt: new Date().toISOString() } : item
+  ));
+  unreadNotificationCount.value = resultData.unreadCount ?? 0;
+}
+
+async function markAllNotificationsRead() {
+  const resultData = await accountDataApiClient.markAllNotificationsRead();
+  if (!resultData.ok) {
+    notificationNotice.value = resultData.message;
+    return;
+  }
+  const now = new Date().toISOString();
+  notifications.value = notifications.value.map((item) => ({ ...item, readAt: item.readAt || now }));
+  unreadNotificationCount.value = 0;
+}
+
+function openNotifications() {
+  accountOpen.value = false;
+  window.location.hash = '#notifications';
+}
+
 async function syncPageFromHash() {
   const nextPage = routeFromHash();
   resetPageState(nextPage);
   activePage.value = nextPage;
 
+  if (nextPage === 'notifications') {
+    activeOverviewCourse.value = null;
+    if (viewerIsGuest.value) {
+      openAuthDialog('login');
+      return;
+    }
+    notificationsLoading.value = true;
+    const resultData = await accountDataApiClient.fetchNotifications();
+    notificationsLoading.value = false;
+    if (resultData.ok) {
+      notifications.value = resultData.notifications ?? [];
+      unreadNotificationCount.value = resultData.unreadCount ?? 0;
+    } else {
+      notificationNotice.value = resultData.message;
+    }
+    return;
+  }
+
+  if (nextPage === 'profile') {
+    activeOverviewCourse.value = null;
+    activeProfilePublicId.value = getProfileIdFromHash(window.location.hash);
+    await loadActiveProfile();
+    return;
+  }
+
   if (nextPage !== 'overview') {
     activeOverviewCourse.value = null;
+    overviewContentLoading.value = false;
+    overviewContentError.value = '';
     return;
   }
 
@@ -1369,23 +1739,458 @@ async function syncPageFromHash() {
   overviewRoute.value = nextRoute;
   if (!nextRoute.courseCode) {
     activeOverviewCourse.value = null;
+    overviewContentLoading.value = false;
+    overviewContentError.value = '';
     return;
   }
 
   const requestedCourseCode = nextRoute.courseCode;
   const course = await getResourceCourseByCode(requestedCourseCode);
   if (overviewRoute.value.courseCode === requestedCourseCode) {
-    activeOverviewCourse.value = getCourseDetail(course);
+    const detail = getCourseDetail(course);
+    activeOverviewCourse.value = {
+      ...detail,
+      experiences: [],
+      materials: [],
+      papers: [],
+    };
+    overviewContentLoading.value = true;
+    overviewContentError.value = '';
+    try {
+      const content = await loadCourseContent(detail);
+      if (overviewRoute.value.courseCode === requestedCourseCode) {
+        activeOverviewCourse.value = { ...detail, ...content };
+        await nextTick();
+        await loadActiveItemComments();
+      }
+    } catch {
+      if (overviewRoute.value.courseCode === requestedCourseCode) {
+        overviewContentError.value = '资料加载失败，请稍后重试。';
+      }
+    } finally {
+      if (overviewRoute.value.courseCode === requestedCourseCode) {
+        overviewContentLoading.value = false;
+      }
+    }
   }
+}
+
+async function loadActiveProfile() {
+  if (!activeProfilePublicId.value) {
+    profileView.value = { profile: null, posts: [], submissions: [], comments: [] };
+    profileError.value = '用户主页地址无效。';
+    return;
+  }
+  profileLoading.value = true;
+  profileError.value = '';
+  const result = activeProfileIsOwn.value
+    ? await fetchMyProfile()
+    : await fetchPublicProfile(activeProfilePublicId.value);
+  profileLoading.value = false;
+  if (!result.ok) {
+    profileError.value = result.message;
+    return;
+  }
+  profileView.value = activeProfileIsOwn.value
+    ? {
+      profile: result.user,
+      posts: result.posts ?? [],
+      submissions: result.submissions ?? [],
+      comments: (result.comments ?? []).map((comment) => ({
+        ...comment,
+        href: buildCourseRoute(
+          comment.courseCode,
+          { experience: 'experiences', material: 'materials', paper: 'papers' }[comment.type],
+          comment.routeId,
+        ),
+      })),
+    }
+    : { profile: result.profile, posts: result.posts ?? [], submissions: [], comments: [] };
+}
+
+async function openCourseQuiz(courseCode) {
+  setPage('quiz');
+  await selectCourse(courseCode);
 }
 
 function backToOverview() {
   setPage('overview');
 }
 
+async function submitCourseContribution(payload) {
+  contributionNotice.value = '正在提交审核...';
+  const typeByTab = { experiences: 'experience', materials: 'material', papers: 'paper' };
+  let result = await submissionApiClient.create({
+    courseCode: activeOverviewCourse.value.code,
+    type: typeByTab[payload.tabId],
+    title: payload.title,
+    summary: payload.subtitle,
+    author: payload.cc98Name || studentViewer.value.nickname || '',
+    body: payload.body,
+    cc98Url: payload.cc98Link,
+    gpa: payload.gpa,
+    externalUrl: payload.materialLink,
+    imageName: payload.imageName,
+  });
+  if (result.ok && payload.pdfFile) {
+    result = await submissionApiClient.uploadPdf(result.submission.id, payload.pdfFile);
+  }
+  contributionNotice.value = result.ok ? '投稿已进入审核队列。' : result.message;
+}
+
+async function toggleContentLike(contentId) {
+  likeNotice.value = '';
+  const result = await submissionApiClient.toggleLike(contentId);
+  if (!result.ok) {
+    likeNotice.value = result.message;
+    return;
+  }
+  const nextCourse = { ...activeOverviewCourse.value };
+  for (const collection of ['experiences', 'materials']) {
+    nextCourse[collection] = activeOverviewCourse.value[collection].map((item) => (
+      item.contentId === contentId
+        ? { ...item, viewerLiked: result.liked, likeCount: result.likeCount }
+        : item
+    ));
+  }
+  activeOverviewCourse.value = nextCourse;
+}
+
+async function toggleContentFavorite(contentId) {
+  if (!contentId || viewerIsGuest.value) return;
+  const exists = favoriteContentIds.value.includes(contentId);
+  const resultData = exists
+    ? await accountDataApiClient.removeFavorite(contentId)
+    : await accountDataApiClient.addFavorite(contentId);
+  if (!resultData.ok) {
+    commentNotice.value = resultData.message;
+    return;
+  }
+  accountFavorites.value = resultData.favorites ?? [];
+  commentNotice.value = exists ? '已取消收藏。' : '已加入收藏。';
+}
+
+async function addContentComment({ contentId, body, parentCommentId }) {
+  if (!contentId) return;
+  commentBusy.value = true;
+  const resultData = await commentApiClient.create(contentId, { body, parentCommentId });
+  commentBusy.value = false;
+  commentNotice.value = resultData.ok ? '评论已发布。' : resultData.message;
+  if (resultData.ok) await loadActiveItemComments();
+}
+
+async function updateContentComment({ comment, body }) {
+  commentBusy.value = true;
+  const resultData = await commentApiClient.update(comment.id, body);
+  commentBusy.value = false;
+  commentNotice.value = resultData.ok ? '评论已更新。' : resultData.message;
+  if (resultData.ok) await loadActiveItemComments();
+}
+
+async function deleteContentComment(comment) {
+  if (!window.confirm('确定删除这条评论吗？回复上下文仍会保留。')) return;
+  commentBusy.value = true;
+  const resultData = await commentApiClient.remove(comment.id);
+  commentBusy.value = false;
+  commentNotice.value = resultData.ok ? '评论已删除。' : resultData.message;
+  if (resultData.ok) await loadActiveItemComments();
+}
+
+async function previewCourseSchedule(file) {
+  profileNotice.value = '正在读取课表...';
+  const resultData = await accountDataApiClient.previewCourseSchedule(file);
+  courseImportPreview.value = resultData.ok ? resultData : null;
+  profileNotice.value = resultData.ok ? '课表解析完成，请确认预览后替换。' : resultData.message;
+}
+
+async function replaceAccountCourses(courses) {
+  const resultData = await accountDataApiClient.replaceCourses(courses);
+  if (!resultData.ok) {
+    profileNotice.value = resultData.message;
+    return;
+  }
+  accountCourses.value = resultData.courses ?? [];
+  courseImportPreview.value = null;
+  profileNotice.value = '课程清单已替换。';
+}
+
+async function addAccountCourse(course) {
+  const resultData = await accountDataApiClient.addCourse(course);
+  if (resultData.ok) accountCourses.value = resultData.courses ?? [];
+}
+
+async function removeAccountCourse(course) {
+  const courseCode = typeof course === 'string' ? course : course.courseCode;
+  const resultData = await accountDataApiClient.removeCourse(courseCode);
+  if (resultData.ok) accountCourses.value = resultData.courses ?? [];
+  else profileNotice.value = resultData.message;
+}
+
+async function removeProfileFavorite(favorite) {
+  const resultData = await accountDataApiClient.removeFavorite(favorite.id);
+  if (resultData.ok) accountFavorites.value = resultData.favorites ?? [];
+  profileNotice.value = resultData.ok ? '已取消收藏。' : resultData.message;
+}
+
+async function editProfileComment(comment) {
+  const body = window.prompt('修改评论', comment.body);
+  if (body === null || !body.trim()) return;
+  const resultData = await commentApiClient.update(comment.id, body.trim());
+  profileNotice.value = resultData.ok ? '评论已更新。' : resultData.message;
+  if (resultData.ok) await loadActiveProfile();
+}
+
+async function deleteProfileComment(comment) {
+  if (!window.confirm('确定删除这条评论吗？')) return;
+  const resultData = await commentApiClient.remove(comment.id);
+  profileNotice.value = resultData.ok ? '评论已删除。' : resultData.message;
+  if (resultData.ok) await loadActiveProfile();
+}
+
+function openAuthDialog(mode, initialTab = 'cc98') {
+  authDialogMode.value = mode;
+  authInitialTab.value = initialTab;
+  authNotice.value = '';
+  authDialogOpen.value = true;
+  accountOpen.value = false;
+}
+
+async function finishAuthentication(user) {
+  studentViewer.value = user;
+  authDialogOpen.value = false;
+  authNotice.value = '';
+  accountOpen.value = true;
+  await loadAccountData();
+  await migrateLocalQuizData();
+  if (activePage.value === 'profile' && activeProfilePublicId.value === user.publicId) {
+    loadActiveProfile();
+  }
+}
+
+async function handleRegisterCc98(payload) {
+  authBusy.value = true;
+  authNotice.value = '';
+  const registered = await registerCc98Account(payload);
+  if (!registered.ok) {
+    authNotice.value = registered.message;
+    authBusy.value = false;
+    return;
+  }
+  const loggedIn = await loginCc98Account({
+    cc98Name: registered.user.cc98Nickname,
+    password: payload.password,
+  });
+  authBusy.value = false;
+  if (!loggedIn.ok) {
+    authDialogMode.value = 'login';
+    authNotice.value = '注册成功，请使用刚才设置的密码登录。';
+    return;
+  }
+  finishAuthentication(loggedIn.user);
+}
+
+async function handleLoginCc98(payload) {
+  authBusy.value = true;
+  authNotice.value = '';
+  const result = await loginCc98Account(payload);
+  authBusy.value = false;
+  if (result.ok) {
+    finishAuthentication(result.user);
+  } else {
+    authNotice.value = result.message;
+  }
+}
+
+async function handleRequestEmailCode(payload) {
+  authBusy.value = true;
+  authNotice.value = '正在发送验证码...';
+  const result = await requestEmailVerificationCode(payload);
+  authBusy.value = false;
+  authNotice.value = result.ok ? result.message : result.message;
+}
+
+async function handleRegisterEmail(payload) {
+  authBusy.value = true;
+  authNotice.value = '';
+  const registered = await registerEmailAccount(payload);
+  if (!registered.ok) {
+    authNotice.value = registered.message;
+    authBusy.value = false;
+    return;
+  }
+  const loggedIn = await loginEmailAccount({ studentId: payload.studentId, password: payload.password });
+  authBusy.value = false;
+  if (!loggedIn.ok) {
+    authDialogMode.value = 'login';
+    authInitialTab.value = 'email';
+    authNotice.value = '注册成功，请使用刚才设置的密码登录。';
+    return;
+  }
+  finishAuthentication(loggedIn.user);
+}
+
+async function handleLoginEmail(payload) {
+  authBusy.value = true;
+  authNotice.value = '';
+  const result = await loginEmailAccount(payload);
+  authBusy.value = false;
+  if (result.ok) {
+    finishAuthentication(result.user);
+  } else {
+    authNotice.value = result.message;
+  }
+}
+
+async function handleBindEmail(payload) {
+  authBusy.value = true;
+  authNotice.value = '';
+  const result = await bindEmailAccount(payload);
+  authBusy.value = false;
+  if (result.ok) {
+    finishAuthentication(result.user);
+  } else {
+    authNotice.value = result.message;
+  }
+}
+
+async function handleResetEmailPassword(payload) {
+  authBusy.value = true;
+  authNotice.value = '';
+  const result = await resetEmailAccountPassword(payload);
+  authBusy.value = false;
+  if (!result.ok) {
+    authNotice.value = result.message;
+    return;
+  }
+  studentViewer.value = guestViewer();
+  authDialogMode.value = 'login';
+  authInitialTab.value = 'email';
+  authNotice.value = '密码已重置，请使用新密码登录。';
+}
+
+async function handleLogout() {
+  authBusy.value = true;
+  await logoutAccount();
+  authBusy.value = false;
+  studentViewer.value = guestViewer();
+  accountCourses.value = [];
+  accountFavorites.value = [];
+  notifications.value = [];
+  unreadNotificationCount.value = 0;
+  commentsByContentId.value = {};
+  quizProgressByCollection.value = {};
+  session.value = null;
+  vocabularyRecords.value = readVocabularyRecords();
+  molecularMistakeRecords.value = readMolecularMistakes();
+  botanyMistakeRecords.value = readBotanyMistakes();
+  microbiologyMistakeRecords.value = readMicrobiologyMistakes();
+  microbiologyVocabularyRecords.value = readMicrobiologyVocabularyRecords();
+  accountOpen.value = false;
+}
+
+function openOwnProfile() {
+  if (!studentViewer.value.publicId) return;
+  accountOpen.value = false;
+  window.location.hash = getProfileHref(studentViewer.value.publicId);
+}
+
+async function saveProfileNickname(nickname) {
+  profileNotice.value = '正在保存昵称...';
+  const result = await updateMyNickname(nickname);
+  if (!result.ok) {
+    profileNotice.value = result.message;
+    return;
+  }
+  studentViewer.value = result.user;
+  profileNotice.value = '昵称已保存。';
+  await loadActiveProfile();
+}
+
+async function uploadProfileAvatar(file) {
+  profileNotice.value = '正在处理头像...';
+  const result = await uploadMyAvatar(file);
+  if (!result.ok) {
+    profileNotice.value = result.message;
+    return;
+  }
+  studentViewer.value = result.user;
+  profileNotice.value = '头像已更新。';
+  await loadActiveProfile();
+}
+
+async function removeProfileAvatar() {
+  const result = await removeMyAvatar();
+  profileNotice.value = result.ok ? '头像已移除。' : result.message;
+  if (result.ok) {
+    studentViewer.value = result.user;
+    await loadActiveProfile();
+  }
+}
+
+async function bindProfileCc98(payload) {
+  profileNotice.value = '正在验证 CC98...';
+  const result = await bindMyCc98(payload);
+  if (!result.ok) {
+    profileNotice.value = result.message;
+    return;
+  }
+  studentViewer.value = result.user;
+  profileNotice.value = 'CC98 绑定已更新。';
+  await loadActiveProfile();
+}
+
+async function archiveProfilePost(post) {
+  const result = await archiveMyPost(post.id);
+  profileNotice.value = result.ok ? '帖子已下架。' : result.message;
+  if (result.ok) await loadActiveProfile();
+}
+
+async function reviseProfilePost({ post, changes }) {
+  const result = await submitPostRevision(post.id, changes);
+  profileNotice.value = result.ok ? '修改已提交审核，原帖子会继续展示。' : result.message;
+  if (result.ok) await loadActiveProfile();
+}
+
+async function resubmitProfileSubmission(payload) {
+  const submission = payload.submission ?? payload;
+  const result = await resubmitMySubmission(submission.id, payload.changes ?? {});
+  profileNotice.value = result.ok ? '已重新提交审核。' : result.message;
+  if (result.ok) await loadActiveProfile();
+}
+
+async function editProfileSubmission({ submission, changes }) {
+  const result = await updateMySubmission(submission.id, changes);
+  profileNotice.value = result.ok ? '投稿修改已保存。' : result.message;
+  if (result.ok) await loadActiveProfile();
+}
+
+async function withdrawProfileSubmission(submission) {
+  if (!window.confirm('确定撤回这条投稿吗？')) return;
+  const result = await withdrawMySubmission(submission.id);
+  profileNotice.value = result.ok ? '投稿已撤回。' : result.message;
+  if (result.ok) await loadActiveProfile();
+}
+
+async function deleteProfileSubmission(submission) {
+  if (!window.confirm('确定删除这条投稿记录吗？')) return;
+  const result = await deleteMySubmission(submission.id);
+  profileNotice.value = result.ok ? '投稿记录已删除。' : result.message;
+  if (result.ok) await loadActiveProfile();
+}
+
 watch(activeCollectionSlug, loadCategories);
 
-onMounted(() => {
+onMounted(async () => {
+  try {
+    const auth = await fetchCurrentUser();
+    if (auth.ok) {
+      studentViewer.value = auth.user;
+      await loadAccountData();
+      await migrateLocalQuizData();
+    }
+  } catch {
+    // Public browsing remains available when the account service is offline.
+  }
   syncPageFromHash();
   window.addEventListener('hashchange', syncPageFromHash);
   window.addEventListener('keydown', handleGlobalKeydown);
@@ -1415,8 +2220,52 @@ onBeforeUnmount(() => {
           {{ page.label }}
         </a>
       </nav>
-      <span class="demo-user-chip">学生</span>
+      <span v-if="activePage === 'admin'" class="demo-user-chip">管理员</span>
+      <div v-else class="demo-account">
+        <button
+          class="demo-user-chip"
+          type="button"
+          :aria-expanded="accountOpen"
+          aria-label="打开账号面板"
+          @click="accountOpen = !accountOpen"
+        >
+          {{ viewerIsGuest ? '游客' : studentViewer.nickname }}
+        </button>
+        <AccountPopover
+          v-if="accountOpen"
+          :user="studentViewer"
+          :account-state="accountState"
+          :badges="verificationBadges"
+          :is-guest="viewerIsGuest"
+          :can-bind-email="viewerCanBindEmail"
+          :unread-count="unreadNotificationCount"
+          @logout="handleLogout"
+          @open-profile="openOwnProfile"
+          @open-notifications="openNotifications"
+          @open-login="openAuthDialog('login')"
+          @open-register-cc98="openAuthDialog('register', 'cc98')"
+          @open-register-email="openAuthDialog('register', 'email')"
+          @open-bind-email="openAuthDialog('bind', 'email')"
+        />
+      </div>
     </header>
+
+    <AuthDialog
+      v-if="authDialogOpen"
+      :mode="authDialogMode"
+      :initial-tab="authInitialTab"
+      :message="authNotice"
+      :busy="authBusy"
+      @close="authDialogOpen = false"
+      @switch-mode="(mode) => openAuthDialog(mode, 'email')"
+      @submit-register-cc98="handleRegisterCc98"
+      @submit-login-cc98="handleLoginCc98"
+      @request-email-code="handleRequestEmailCode"
+      @submit-register-email="handleRegisterEmail"
+      @submit-login-email="handleLoginEmail"
+      @submit-reset-email="handleResetEmailPassword"
+      @submit-bind-email="handleBindEmail"
+    />
 
     <main class="demo-main">
       <HomePage v-if="activePage === 'home'" />
@@ -1431,12 +2280,79 @@ onBeforeUnmount(() => {
           :can-submit="userCanSubmit"
           :can-comment="userCanComment"
           :can-favorite="userCanFavorite"
-          :favorite-keys="[]"
-          :comments-by-key="{}"
+          :has-quiz="activeOverviewHasQuiz"
+          :favorite-keys="favoriteContentIds"
+          :comments-by-key="commentsByContentId"
+          :is-loading="overviewContentLoading"
+          :load-error="overviewContentError"
+          :submission-notice="contributionNotice"
+          :like-notice="likeNotice"
+          :comment-notice="commentNotice"
+          :comment-busy="commentBusy"
+          :cc98-icon-url="publicAssetPath('/assets/cc98-icon.jpg')"
           @back="backToOverview"
+          @open-quiz="openCourseQuiz"
+          @submit-contribution="submitCourseContribution"
+          @toggle-like="toggleContentLike"
+          @toggle-favorite="toggleContentFavorite"
+          @add-comment="addContentComment"
+          @update-comment="updateContentComment"
+          @delete-comment="deleteContentComment"
         />
-        <OverviewPage v-else />
+        <OverviewPage
+          v-else
+          :can-manage-courses="!viewerIsGuest"
+          :saved-course-codes="savedCourseCodes"
+          @add-course="addAccountCourse"
+          @remove-course="removeAccountCourse"
+        />
       </template>
+
+      <AdminPage v-else-if="activePage === 'admin'" />
+
+      <ProfilePage
+        v-else-if="activePage === 'profile'"
+        :profile="profileView.profile"
+        :posts="profileView.posts"
+        :submissions="profileView.submissions"
+        :courses="accountCourses"
+        :favorites="accountFavorites"
+        :comments="profileView.comments"
+        :course-import-preview="courseImportPreview"
+        :is-own="activeProfileIsOwn"
+        :loading="profileLoading"
+        :error="profileError"
+        :notice="profileNotice"
+        :nickname-locked="Boolean(studentViewer.verifications?.cc98)"
+        :cc98-bound="Boolean(studentViewer.verifications?.cc98)"
+        @save-nickname="saveProfileNickname"
+        @upload-avatar="uploadProfileAvatar"
+        @remove-avatar="removeProfileAvatar"
+        @bind-cc98="bindProfileCc98"
+        @archive-post="archiveProfilePost"
+        @submit-revision="reviseProfilePost"
+        @resubmit="resubmitProfileSubmission"
+        @edit-submission="editProfileSubmission"
+        @withdraw-submission="withdrawProfileSubmission"
+        @delete-submission="deleteProfileSubmission"
+        @preview-course-schedule="previewCourseSchedule"
+        @replace-courses="replaceAccountCourses"
+        @remove-course="removeAccountCourse"
+        @remove-favorite="removeProfileFavorite"
+        @edit-comment="editProfileComment"
+        @delete-comment="deleteProfileComment"
+      />
+
+      <NotificationsPage
+        v-else-if="activePage === 'notifications'"
+        :notifications="notifications"
+        :unread-count="unreadNotificationCount"
+        :loading="notificationsLoading"
+        :notice="notificationNotice"
+        @read="markNotificationRead"
+        @read-all="markAllNotificationsRead"
+        @open-target="openNotification"
+      />
 
       <section v-else-if="activePage === 'activities'" class="demo-placeholder" aria-labelledby="activities-title">
         <p>活动</p>
@@ -1450,9 +2366,6 @@ onBeforeUnmount(() => {
 
       <section v-else class="quiz-demo" aria-label="刷题">
         <template v-if="quizView === 'catalog'">
-          <aside class="quiz-left-nav" aria-label="刷题侧栏">
-            <button class="is-active" type="button">首页</button>
-          </aside>
 
           <div class="quiz-main">
             <div class="quiz-market">
@@ -1788,7 +2701,7 @@ onBeforeUnmount(() => {
               <p>按期末复习范围做章节选择题，也可以进入旧项目整理出的期中真题卷。</p>
               <div class="practice-actions">
                 <button type="button" @click="microbiologyPage = 'categories'">开始选章</button>
-                <button v-if="session" type="button" class="secondary-button" @click="microbiologyPage = 'practice'">继续练习</button>
+                <button v-if="session || activeSyncedProgress?.activeSessionId" type="button" class="secondary-button" @click="session ? microbiologyPage = 'practice' : resumeSyncedPractice()">继续练习</button>
                 <button type="button" class="secondary-button" @click="navigateMicrobiologyPage('pastExams')">进入真题</button>
                 <button type="button" class="secondary-button" @click="microbiologyPage = 'mistakes'">查看错题本</button>
               </div>
@@ -1864,9 +2777,9 @@ onBeforeUnmount(() => {
               <article v-for="exam in microbiologyPastExams" :key="exam.examId" class="microbiology-record-card">
                 <span>{{ exam.title }}</span>
                 <h3>{{ exam.sourcePdf }}</h3>
-                <p>{{ exam.questionCount }} 题，已有答案 {{ exam.answeredCount }} 题，已有解析 {{ exam.explanationCount }} 题。</p>
-                <p>精确命中 {{ exam.exactMatches }}，高置信匹配 {{ exam.highMatches }}，需复核 {{ exam.reviewMatches }}。</p>
-                <button type="button" @click="openMicrobiologyPastExam(exam.examId)">进入试卷</button>
+                <div class="range-panel__actions">
+                  <button type="button" @click="openMicrobiologyPastExam(exam.examId)">开始练习</button>
+                </div>
               </article>
             </div>
             <article v-else class="practice-question">
@@ -2070,7 +2983,7 @@ onBeforeUnmount(() => {
               <p>{{ activeCollection?.title || '题库正在读取' }}</p>
               <div class="practice-actions">
                 <button type="button" @click="molecularPage = 'categories'">开始练习</button>
-                <button v-if="session" type="button" class="secondary-button" @click="molecularPage = 'practice'">继续练习</button>
+                <button v-if="session || activeSyncedProgress?.activeSessionId" type="button" class="secondary-button" @click="session ? molecularPage = 'practice' : resumeSyncedPractice()">继续练习</button>
                 <button type="button" class="secondary-button" @click="molecularPage = 'mistakes'">进入错题本</button>
               </div>
             </div>
@@ -2395,7 +3308,7 @@ onBeforeUnmount(() => {
               <p>通过观察植物器官显微镜切片图训练识别能力。</p>
               <div class="practice-actions">
                 <button type="button" @click="botanyPage = 'categories'">开始选类</button>
-                <button v-if="session" type="button" class="secondary-button" @click="botanyPage = 'practice'">继续练习</button>
+                <button v-if="session || activeSyncedProgress?.activeSessionId" type="button" class="secondary-button" @click="session ? botanyPage = 'practice' : resumeSyncedPractice()">继续练习</button>
                 <button type="button" class="secondary-button" @click="botanyPage = 'mistakes'">查看错题本</button>
               </div>
             </div>

@@ -48,7 +48,6 @@
 .demo-topnav a,
 .demo-user-chip,
 .quiz-market-tabs button,
-.quiz-left-nav button,
 .quiz-course-card button,
 .range-options button,
 .range-panel__actions button,
@@ -86,7 +85,13 @@
   padding: 8px 14px;
   background: #245e48;
   color: #ffffff;
+  cursor: pointer;
   font-weight: 900;
+}
+
+.demo-account {
+  position: relative;
+  justify-self: end;
 }
 
 .demo-main {
@@ -151,24 +156,10 @@
 .quiz-demo {
   min-height: calc(100vh - 68px);
   display: grid;
-  grid-template-columns: 84px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   background: #f6f7f9;
 }
 
-.quiz-left-nav {
-  padding: 20px 10px;
-  border-right: 1px solid #e3e7ed;
-  background: #ffffff;
-}
-
-.quiz-left-nav button {
-  width: 100%;
-  height: 48px;
-  background: var(--demo-primary-soft);
-  color: var(--demo-primary);
-  cursor: pointer;
-  font-weight: 900;
-}
 
 .quiz-main {
   min-width: 0;
@@ -673,7 +664,7 @@
 }
 
 .language-toggle button.is-active {
-  background: #2f68ff;
+  background: var(--demo-primary);
   color: #fff;
 }
 
@@ -774,7 +765,7 @@
 
 .quiz-course-nav button.is-active {
   background: var(--demo-primary-soft);
-  color: #2f68ff;
+  color: var(--demo-primary);
 }
 
 .quiz-course-back {
@@ -837,7 +828,7 @@
 .botany-quiz-nav button.is-active,
 .microbiology-quiz-nav button.is-active {
   background: var(--demo-primary-soft);
-  color: #2f68ff;
+  color: var(--demo-primary);
 }
 
 .molecular-back,
@@ -965,7 +956,7 @@
 
 .botany-quiz-nav button.is-active {
   background: var(--demo-primary-soft);
-  color: #2f68ff;
+  color: var(--demo-primary);
 }
 
 .botany-back {
@@ -1113,7 +1104,7 @@
 
 .microbiology-quiz-nav button.is-active {
   background: var(--demo-primary-soft);
-  color: #2f68ff;
+  color: var(--demo-primary);
 }
 
 .microbiology-back {
@@ -1316,7 +1307,6 @@
     grid-template-columns: 1fr;
   }
 
-  .quiz-left-nav,
   .practice-menu,
   .question-jump,
   .molecular-quiz-nav,

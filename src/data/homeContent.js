@@ -3,6 +3,7 @@ export const homeSearchKinds = [
   { id: 'resource', label: '资料', placeholder: '搜索复习资料、学习笔记或试卷' },
   { id: 'quiz', label: '题库', placeholder: '搜索课程题库' },
   { id: 'activity', label: '活动', placeholder: '搜索学生会活动' },
+  { id: 'user', label: '用户', placeholder: '搜索用户昵称' },
 ];
 
 export const homeActivities = [

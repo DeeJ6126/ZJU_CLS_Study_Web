@@ -5,6 +5,7 @@ const SEARCH_KIND_LABELS = {
   resource: '资料',
   quiz: '题库',
   activity: '活动',
+  user: '用户',
 };
 
 function normalize(value) {
@@ -24,7 +25,9 @@ function searchableItem(item) {
   };
 }
 
-export function buildHomeSearchIndex({ courses = [], resources = [], quizzes = [], activities = [] }) {
+export function buildHomeSearchIndex({
+  courses = [], resources = [], quizzes = [], activities = [], users = [],
+}) {
   const courseItems = courses.map((course) => searchableItem({
     id: course.code,
     kind: 'course',
@@ -39,6 +42,13 @@ export function buildHomeSearchIndex({ courses = [], resources = [], quizzes = [
     ...resources.map((item) => ({ ...item, kind: 'resource' })),
     ...quizzes.map((item) => ({ ...item, kind: 'quiz' })),
     ...activities.map((item) => ({ ...item, kind: 'activity' })),
+    ...users.map((item) => ({
+      id: item.publicId,
+      title: item.nickname,
+      subtitle: '个人主页',
+      href: `#profile/${encodeURIComponent(item.publicId)}`,
+      kind: 'user',
+    })),
   ].map((item) => searchableItem({
     ...item,
     kindLabel: SEARCH_KIND_LABELS[item.kind],

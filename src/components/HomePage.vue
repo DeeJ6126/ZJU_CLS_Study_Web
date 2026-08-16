@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import {
   homeActivities,
   homePopularResources,
@@ -9,12 +9,15 @@ import {
 } from '../data/homeContent.js';
 import { loadResourceCatalog } from '../data/courses/resourceData.js';
 import { buildHomeSearchIndex, searchHomeIndex } from '../services/homeSearchService.js';
+import { searchProfiles } from '../services/profileApiClient.js';
 import { publicAssetPath } from '../utils/publicPath.js';
 
 const activeKind = ref('course');
 const query = ref('');
 const courses = ref([]);
 const catalogMessage = ref('');
+const users = ref([]);
+let userSearchSequence = 0;
 
 const activeSearchKind = computed(
   () => homeSearchKinds.find((kind) => kind.id === activeKind.value) ?? homeSearchKinds[0],
@@ -25,6 +28,7 @@ const searchIndex = computed(() => buildHomeSearchIndex({
   resources: homeResourceSearchItems,
   quizzes: homeQuizSearchItems,
   activities: homeActivities,
+  users: users.value,
 }));
 
 const searchResults = computed(() => searchHomeIndex(searchIndex.value, query.value, activeKind.value));
@@ -37,6 +41,18 @@ function selectSearchKind(kindId) {
 function resourceImage(path) {
   return path ? publicAssetPath(path) : '';
 }
+
+watch([query, activeKind], async ([nextQuery, nextKind]) => {
+  if (nextKind !== 'user' || nextQuery.trim().length < 1) {
+    users.value = [];
+    return;
+  }
+  const sequence = ++userSearchSequence;
+  const result = await searchProfiles(nextQuery.trim());
+  if (sequence === userSearchSequence) {
+    users.value = result.ok ? result.profiles : [];
+  }
+});
 
 onMounted(async () => {
   try {
