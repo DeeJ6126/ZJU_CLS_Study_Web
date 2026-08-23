@@ -16,6 +16,7 @@ const props = defineProps({
   notice: { type: String, default: '' },
   nicknameLocked: { type: Boolean, default: false },
   cc98Bound: { type: Boolean, default: false },
+  isDemo: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
@@ -74,7 +75,7 @@ function contentHref(item) {
   return buildCourseRoute(item.courseCode, tab, item.routeId || item.id);
 }
 function statusLabel(status) {
-  return { draft: '草稿', published: '已发布', archived: '已下架', pending: '审核中', approved: '已通过', rejected: '未通过' }[status] ?? status;
+  return { draft: '草稿', published: '已发布', archived: '已下架', pending: '审核中', approved: '已通过', rejected: '未通过', withdrawn: '已撤回' }[status] ?? status;
 }
 </script>
 
@@ -95,6 +96,7 @@ function statusLabel(status) {
       <p v-if="loading" class="profile-state">正在加载个人主页...</p>
       <p v-else-if="error" class="profile-state is-error">{{ error }}</p>
       <template v-else-if="profile">
+        <p v-if="isDemo" class="profile-demo-notice">演示数据仅保存在当前浏览器，不会提交到服务器。</p>
         <p v-if="notice" class="profile-notice">{{ notice }}</p>
         <section v-if="!isOwn || activeSection === 'profile'" class="profile-identity">
           <div class="profile-avatar-block">

@@ -5,6 +5,7 @@ import {
   normalizeCourseScheduleRows,
   validateCourseScheduleUpload,
 } from '../server/account/courseScheduleService.js';
+import { normalizeCourseScheduleRows as normalizeBrowserCourseRows } from '../src/services/courseScheduleService.js';
 import { loadServerCourseCatalog } from '../server/account/courseCatalogService.js';
 
 function createUser(store, nickname = '课程同学') {
@@ -25,9 +26,8 @@ test('course schedule rows find a later header, merge duplicate meetings, and re
     ['BIO4083M', '生物信息学产业实践', '丁', '冬', '', '', '1'],
   ];
 
-  const result = normalizeCourseScheduleRows(rows, {
-    catalogCodes: new Set(['BIO3026M', 'BIO4083M']),
-  });
+  const catalogCodes = new Set(['BIO3026M', 'BIO4083M']);
+  const result = normalizeCourseScheduleRows(rows, { catalogCodes });
 
   assert.equal(result.courses.length, 3);
   assert.equal(result.duplicateGroupCount, 1);
@@ -42,6 +42,7 @@ test('course schedule rows find a later header, merge duplicate meetings, and re
   });
   assert.equal(result.courses.find((course) => course.courseCode === 'SIS0506G').catalogMatched, false);
   assert.equal(result.courses.find((course) => course.courseCode === 'BIO4083M').classTime, '');
+  assert.deepEqual(normalizeBrowserCourseRows(rows, { catalogCodes }), result);
 });
 
 test('course schedule validation rejects oversized and forged uploads', () => {

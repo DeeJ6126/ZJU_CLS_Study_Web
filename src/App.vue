@@ -37,6 +37,7 @@ import {
   removeQuizVocabulary,
   removeQuizMistake,
   resetQuizRecords,
+  setQuizAnonymousMode,
 } from './services/quizApiClient.js';
 import {
   buildNextQuestionTarget,
@@ -119,6 +120,7 @@ import {
   getAccountState,
   getVerificationBadges,
   isAuthenticated,
+  isAdministrator,
 } from './services/authService.js';
 import { loadCourseContent } from './services/courseContentApiClient.js';
 import { accountDataApiClient } from './services/accountDataApiClient.js';
@@ -161,6 +163,7 @@ import {
   loadDemoIdentityId,
   saveDemoIdentityId,
 } from './services/demoIdentityService.js';
+import { demoAccountService } from './services/demoAccountService.js';
 
 const topPages = demoTopPages;
 const supportedCourses = demoSupportedCourses;
@@ -177,14 +180,37 @@ const guestViewer = () => ({
 });
 const studentViewer = ref(guestViewer());
 const demoIdentityId = ref(loadDemoIdentityId());
-const viewer = computed(() => (
-  demoIdentityId.value ? buildDemoUser(demoIdentityId.value) : studentViewer.value
-));
+setQuizAnonymousMode(Boolean(demoIdentityId.value));
+const demoDataVersion = ref(0);
+const viewer = computed(() => {
+  demoDataVersion.value;
+  return demoIdentityId.value
+    ? (demoAccountService.getUser(demoIdentityId.value) ?? buildDemoUser(demoIdentityId.value))
+    : studentViewer.value;
+});
 const demoIdentityOptions = getDemoIdentityOptions();
+const activeDemoAccountId = computed(() => (
+  demoIdentityId.value && demoIdentityId.value !== 'guest' ? demoIdentityId.value : ''
+));
+const isDemoAccount = computed(() => Boolean(activeDemoAccountId.value));
+const demoAdminApiClient = demoAccountService.createAdminClient();
 
-function selectDemoIdentity(identityId) {
+async function selectDemoIdentity(identityId) {
   demoIdentityId.value = identityId ?? '';
+  setQuizAnonymousMode(Boolean(demoIdentityId.value));
   saveDemoIdentityId(demoIdentityId.value);
+  demoDataVersion.value += 1;
+  await loadAccountData();
+  if (activePage.value === 'admin' && identityId !== 'admin') {
+    window.location.hash = '#home';
+    return;
+  }
+  if (activePage.value === 'profile' && viewer.value.publicId) {
+    window.location.hash = getProfileHref(viewer.value.publicId);
+    await loadActiveProfile();
+  } else if (activePage.value === 'profile') {
+    window.location.hash = '#home';
+  }
 }
 const activePage = ref('home');
 const overviewRoute = ref(parseResourceHash(''));
@@ -308,6 +334,7 @@ const accountState = computed(() => getAccountState(viewer.value));
 const verificationBadges = computed(() => getVerificationBadges(viewer.value));
 const viewerIsGuest = computed(() => !isAuthenticated(viewer.value));
 const viewerCanBindEmail = computed(() => canBindEmailIdentity(viewer.value));
+const viewerIsAdministrator = computed(() => isAdministrator(viewer.value));
 const activeProfileIsOwn = computed(() => (
   Boolean(activeProfilePublicId.value)
   && activeProfilePublicId.value === viewer.value.publicId
@@ -1265,7 +1292,7 @@ async function addActiveBotanyMistake() {
     question: activeQuestion.value,
     revealedAnswer: result.value.revealedAnswer,
   }), writeBotanyMistakes);
-  if (!viewerIsGuest.value) {
+  if (!viewerIsGuest.value && !isDemoAccount.value) {
     await addQuizMistake({
       collectionSlug: activeCollectionSlug.value,
       sourceQuestionId: activeQuestion.value.sourceQuestionId,
@@ -1277,12 +1304,12 @@ async function addActiveBotanyMistake() {
 
 async function removeBotanyMistakeRecord(sourceQuestionId) {
   botanyMistakeRecords.value = persistGuestRecords(removeBotanyMistake(botanyMistakeRecords.value, sourceQuestionId), writeBotanyMistakes);
-  if (!viewerIsGuest.value) await removeQuizMistake(activeCollectionSlug.value, sourceQuestionId);
+  if (!viewerIsGuest.value && !isDemoAccount.value) await removeQuizMistake(activeCollectionSlug.value, sourceQuestionId);
 }
 
 async function clearBotanyMistakeRecords() {
   botanyMistakeRecords.value = persistGuestRecords(clearBotanyMistakes(), writeBotanyMistakes);
-  if (!viewerIsGuest.value) await resetQuizRecords(activeCollectionSlug.value, 'mistakes');
+  if (!viewerIsGuest.value && !isDemoAccount.value) await resetQuizRecords(activeCollectionSlug.value, 'mistakes');
 }
 
 async function removeMicrobiologyMistakeRecord(sourceQuestionId) {
@@ -1290,12 +1317,12 @@ async function removeMicrobiologyMistakeRecord(sourceQuestionId) {
     microbiologyMistakeRecords.value,
     sourceQuestionId,
   ), writeMicrobiologyMistakes);
-  if (!viewerIsGuest.value) await removeQuizMistake(activeCollectionSlug.value, sourceQuestionId);
+  if (!viewerIsGuest.value && !isDemoAccount.value) await removeQuizMistake(activeCollectionSlug.value, sourceQuestionId);
 }
 
 async function clearMicrobiologyMistakeRecords() {
   microbiologyMistakeRecords.value = persistGuestRecords(clearMicrobiologyMistakes(), writeMicrobiologyMistakes);
-  if (!viewerIsGuest.value) await resetQuizRecords(activeCollectionSlug.value, 'mistakes');
+  if (!viewerIsGuest.value && !isDemoAccount.value) await resetQuizRecords(activeCollectionSlug.value, 'mistakes');
 }
 
 function selectAllInMolecularGroup(group) {
@@ -1413,13 +1440,13 @@ async function cycleMicrobiologyVocabulary(record) {
 async function clearVocabulary() {
   const previous = vocabularyRecords.value;
   vocabularyRecords.value = persistGuestRecords([], writeVocabularyRecords);
-  if (!viewerIsGuest.value) await Promise.all(previous.map((record) => removeQuizVocabulary('molecular-biology-review', record.recordKey ?? record.id)));
+  if (!viewerIsGuest.value && !isDemoAccount.value) await Promise.all(previous.map((record) => removeQuizVocabulary('molecular-biology-review', record.recordKey ?? record.id)));
 }
 
 async function clearMicrobiologyVocabulary() {
   const previous = microbiologyVocabularyRecords.value;
   microbiologyVocabularyRecords.value = persistGuestRecords([], writeMicrobiologyVocabularyRecords);
-  if (!viewerIsGuest.value) await Promise.all(previous.map((record) => removeQuizVocabulary('microbiology-final-review', record.recordKey ?? record.id)));
+  if (!viewerIsGuest.value && !isDemoAccount.value) await Promise.all(previous.map((record) => removeQuizVocabulary('microbiology-final-review', record.recordKey ?? record.id)));
 }
 
 async function removeMolecularMistakeRecord(sourceQuestionId) {
@@ -1427,12 +1454,12 @@ async function removeMolecularMistakeRecord(sourceQuestionId) {
     molecularMistakeRecords.value,
     sourceQuestionId,
   ), writeMolecularMistakes);
-  if (!viewerIsGuest.value) await removeQuizMistake(activeCollectionSlug.value, sourceQuestionId);
+  if (!viewerIsGuest.value && !isDemoAccount.value) await removeQuizMistake(activeCollectionSlug.value, sourceQuestionId);
 }
 
 async function clearMolecularMistakeRecords() {
   molecularMistakeRecords.value = persistGuestRecords(clearMolecularMistakes(), writeMolecularMistakes);
-  if (!viewerIsGuest.value) await resetQuizRecords(activeCollectionSlug.value, 'mistakes');
+  if (!viewerIsGuest.value && !isDemoAccount.value) await resetQuizRecords(activeCollectionSlug.value, 'mistakes');
 }
 
 function exportVocabulary() {
@@ -1529,12 +1556,27 @@ function imageUrl(path) {
   return publicAssetPath(`/resource/quiz/${activeCourseCode.value}/${activeCollectionSlug.value}/${path}`);
 }
 
+function mutationNotice(result, successMessage) {
+  return result.ok ? (result.persistenceWarning || successMessage) : result.message;
+}
+
 async function loadAccountData() {
   if (viewerIsGuest.value) {
     accountCourses.value = [];
     accountFavorites.value = [];
     notifications.value = [];
     unreadNotificationCount.value = 0;
+    return;
+  }
+  if (isDemoAccount.value) {
+    const result = demoAccountService.getPrivateProfile(activeDemoAccountId.value);
+    if (result.ok) {
+      accountCourses.value = result.courses ?? [];
+      accountFavorites.value = result.favorites ?? [];
+      notifications.value = result.notifications ?? [];
+      unreadNotificationCount.value = result.unreadCount ?? 0;
+      notificationNotice.value = result.persistenceWarning ?? '';
+    }
     return;
   }
   const [coursesResult, favoritesResult, notificationsResult] = await Promise.all([
@@ -1611,13 +1653,13 @@ function applyQuizAccountState(collectionSlug, state) {
 }
 
 async function refreshQuizAccountState(collectionSlug) {
-  if (viewerIsGuest.value || !collectionSlug) return;
+  if (viewerIsGuest.value || isDemoAccount.value || !collectionSlug) return;
   const resultData = await fetchQuizAccountState(collectionSlug);
   if (resultData.ok) applyQuizAccountState(collectionSlug, resultData.state);
 }
 
 async function migrateLocalQuizData() {
-  if (viewerIsGuest.value) return;
+  if (viewerIsGuest.value || isDemoAccount.value) return;
   if (session.value?.id) await claimQuizSession(session.value.id);
   const entries = [
     ['molecular-biology-review', readMolecularMistakes(), readVocabularyRecords()],
@@ -1646,11 +1688,11 @@ async function migrateLocalQuizData() {
 }
 
 function persistGuestRecords(records, writer) {
-  return viewerIsGuest.value ? writer(records) : records;
+  return viewerIsGuest.value || isDemoAccount.value ? writer(records) : records;
 }
 
 async function storeVocabularyRecord(collectionSlug, record) {
-  if (viewerIsGuest.value) return;
+  if (viewerIsGuest.value || isDemoAccount.value) return;
   await upsertQuizVocabulary(collectionSlug, {
     ...record,
     recordKey: record.recordKey ?? record.id,
@@ -1660,8 +1702,10 @@ async function storeVocabularyRecord(collectionSlug, record) {
 
 async function loadActiveItemComments() {
   const item = activeOverviewItem.value;
-  if (!item?.contentId || activeOverviewCourse.value?.source !== 'api') return;
-  const resultData = await commentApiClient.list(item.contentId);
+  if (!item?.contentId || (!isDemoAccount.value && activeOverviewCourse.value?.source !== 'api')) return;
+  const resultData = isDemoAccount.value
+    ? demoAccountService.listComments(item.contentId, activeDemoAccountId.value)
+    : await commentApiClient.list(item.contentId);
   if (resultData.ok) {
     commentsByContentId.value = {
       ...commentsByContentId.value,
@@ -1687,7 +1731,9 @@ async function openNotification(notification) {
 }
 
 async function markNotificationRead(notification) {
-  const resultData = await accountDataApiClient.markNotificationRead(notification.id);
+  const resultData = isDemoAccount.value
+    ? demoAccountService.markNotificationRead(activeDemoAccountId.value, notification.id)
+    : await accountDataApiClient.markNotificationRead(notification.id);
   if (!resultData.ok) {
     notificationNotice.value = resultData.message;
     return;
@@ -1696,10 +1742,13 @@ async function markNotificationRead(notification) {
     item.id === notification.id ? { ...item, readAt: new Date().toISOString() } : item
   ));
   unreadNotificationCount.value = resultData.unreadCount ?? 0;
+  if (resultData.persistenceWarning) notificationNotice.value = resultData.persistenceWarning;
 }
 
 async function markAllNotificationsRead() {
-  const resultData = await accountDataApiClient.markAllNotificationsRead();
+  const resultData = isDemoAccount.value
+    ? demoAccountService.markAllNotificationsRead(activeDemoAccountId.value)
+    : await accountDataApiClient.markAllNotificationsRead();
   if (!resultData.ok) {
     notificationNotice.value = resultData.message;
     return;
@@ -1707,11 +1756,17 @@ async function markAllNotificationsRead() {
   const now = new Date().toISOString();
   notifications.value = notifications.value.map((item) => ({ ...item, readAt: item.readAt || now }));
   unreadNotificationCount.value = 0;
+  if (resultData.persistenceWarning) notificationNotice.value = resultData.persistenceWarning;
 }
 
 function openNotifications() {
   accountOpen.value = false;
   window.location.hash = '#notifications';
+}
+
+function openAdminPage() {
+  accountOpen.value = false;
+  window.location.hash = '#admin';
 }
 
 async function syncPageFromHash() {
@@ -1726,7 +1781,9 @@ async function syncPageFromHash() {
       return;
     }
     notificationsLoading.value = true;
-    const resultData = await accountDataApiClient.fetchNotifications();
+    const resultData = isDemoAccount.value
+      ? demoAccountService.getPrivateProfile(activeDemoAccountId.value)
+      : await accountDataApiClient.fetchNotifications();
     notificationsLoading.value = false;
     if (resultData.ok) {
       notifications.value = resultData.notifications ?? [];
@@ -1773,7 +1830,22 @@ async function syncPageFromHash() {
     overviewContentLoading.value = true;
     overviewContentError.value = '';
     try {
-      const content = await loadCourseContent(detail);
+      let content = await loadCourseContent(detail);
+      if (isDemoAccount.value) {
+        const demoContent = demoAccountService.getPublishedCourseContent(detail.code);
+        const likedIds = demoAccountService.getLikedContentIds(activeDemoAccountId.value);
+        const withDemoLikes = (items) => items.map((item) => (
+          likedIds.includes(item.contentId)
+            ? { ...item, viewerLiked: true, likeCount: (item.likeCount ?? 0) + 1 }
+            : { ...item, viewerLiked: false }
+        ));
+        content = {
+          ...content,
+          experiences: withDemoLikes([...demoContent.experiences, ...(content.experiences ?? [])]),
+          materials: withDemoLikes([...demoContent.materials, ...(content.materials ?? [])]),
+          papers: withDemoLikes([...demoContent.papers, ...(content.papers ?? [])]),
+        };
+      }
       if (overviewRoute.value.courseCode === requestedCourseCode) {
         activeOverviewCourse.value = { ...detail, ...content };
         await nextTick();
@@ -1799,9 +1871,12 @@ async function loadActiveProfile() {
   }
   profileLoading.value = true;
   profileError.value = '';
-  const result = activeProfileIsOwn.value
-    ? await fetchMyProfile()
-    : await fetchPublicProfile(activeProfilePublicId.value);
+  const demoProfileIdentity = demoAccountService.getIdentityByPublicId(activeProfilePublicId.value);
+  const result = demoProfileIdentity
+    ? (activeProfileIsOwn.value
+      ? demoAccountService.getPrivateProfile(demoProfileIdentity)
+      : demoAccountService.getPublicProfile(activeProfilePublicId.value))
+    : (activeProfileIsOwn.value ? await fetchMyProfile() : await fetchPublicProfile(activeProfilePublicId.value));
   profileLoading.value = false;
   if (!result.ok) {
     profileError.value = result.message;
@@ -1836,26 +1911,46 @@ function backToOverview() {
 async function submitCourseContribution(payload) {
   contributionNotice.value = '正在提交审核...';
   const typeByTab = { experiences: 'experience', materials: 'material', papers: 'paper' };
-  let result = await submissionApiClient.create({
+  const input = {
     courseCode: activeOverviewCourse.value.code,
     type: typeByTab[payload.tabId],
     title: payload.title,
     summary: payload.subtitle,
-    author: payload.cc98Name || studentViewer.value.nickname || '',
+    author: payload.cc98Name || viewer.value.nickname || '',
     body: payload.body,
     cc98Url: payload.cc98Link,
     gpa: payload.gpa,
     externalUrl: payload.materialLink,
     imageName: payload.imageName,
-  });
-  if (result.ok && payload.pdfFile) {
+  };
+  let result = isDemoAccount.value
+    ? demoAccountService.createSubmission(activeDemoAccountId.value, input)
+    : await submissionApiClient.create(input);
+  if (!isDemoAccount.value && result.ok && payload.pdfFile) {
     result = await submissionApiClient.uploadPdf(result.submission.id, payload.pdfFile);
   }
-  contributionNotice.value = result.ok ? '投稿已进入审核队列。' : result.message;
+  contributionNotice.value = mutationNotice(result, '投稿已进入审核队列。');
 }
 
 async function toggleContentLike(contentId) {
   likeNotice.value = '';
+  if (isDemoAccount.value) {
+    const currentItem = ['experiences', 'materials']
+      .flatMap((key) => activeOverviewCourse.value[key] ?? [])
+      .find((item) => item.contentId === contentId);
+    const resultData = demoAccountService.toggleLike(activeDemoAccountId.value, contentId, currentItem?.likeCount ?? 0);
+    const nextCourse = { ...activeOverviewCourse.value };
+    for (const collection of ['experiences', 'materials']) {
+      nextCourse[collection] = activeOverviewCourse.value[collection].map((item) => (
+        item.contentId === contentId
+          ? { ...item, viewerLiked: resultData.liked, likeCount: resultData.likeCount }
+          : item
+      ));
+    }
+    activeOverviewCourse.value = nextCourse;
+    likeNotice.value = resultData.persistenceWarning || (resultData.liked ? '演示点赞已保存。' : '已取消演示点赞。');
+    return;
+  }
   const result = await submissionApiClient.toggleLike(contentId);
   if (!result.ok) {
     likeNotice.value = result.message;
@@ -1875,91 +1970,124 @@ async function toggleContentLike(contentId) {
 async function toggleContentFavorite(contentId) {
   if (!contentId || viewerIsGuest.value) return;
   const exists = favoriteContentIds.value.includes(contentId);
-  const resultData = exists
-    ? await accountDataApiClient.removeFavorite(contentId)
-    : await accountDataApiClient.addFavorite(contentId);
+  const item = ['experiences', 'materials', 'papers']
+    .flatMap((key) => activeOverviewCourse.value?.[key] ?? [])
+    .find((entry) => entry.contentId === contentId);
+  const resultData = isDemoAccount.value
+    ? (exists
+      ? demoAccountService.removeFavorite(activeDemoAccountId.value, contentId)
+      : demoAccountService.addFavorite(activeDemoAccountId.value, item))
+    : (exists
+      ? await accountDataApiClient.removeFavorite(contentId)
+      : await accountDataApiClient.addFavorite(contentId));
   if (!resultData.ok) {
     commentNotice.value = resultData.message;
     return;
   }
   accountFavorites.value = resultData.favorites ?? [];
-  commentNotice.value = exists ? '已取消收藏。' : '已加入收藏。';
+  commentNotice.value = resultData.persistenceWarning || (exists ? '已取消收藏。' : '已加入收藏。');
 }
 
 async function addContentComment({ contentId, body, parentCommentId }) {
   if (!contentId) return;
   commentBusy.value = true;
-  const resultData = await commentApiClient.create(contentId, { body, parentCommentId });
+  const resultData = isDemoAccount.value
+    ? demoAccountService.createComment(activeDemoAccountId.value, activeOverviewItem.value, { body, parentCommentId })
+    : await commentApiClient.create(contentId, { body, parentCommentId });
   commentBusy.value = false;
-  commentNotice.value = resultData.ok ? '评论已发布。' : resultData.message;
+  commentNotice.value = mutationNotice(resultData, '评论已发布。');
   if (resultData.ok) await loadActiveItemComments();
 }
 
 async function updateContentComment({ comment, body }) {
   commentBusy.value = true;
-  const resultData = await commentApiClient.update(comment.id, body);
+  const resultData = isDemoAccount.value
+    ? demoAccountService.updateComment(activeDemoAccountId.value, comment.id, body)
+    : await commentApiClient.update(comment.id, body);
   commentBusy.value = false;
-  commentNotice.value = resultData.ok ? '评论已更新。' : resultData.message;
+  commentNotice.value = mutationNotice(resultData, '评论已更新。');
   if (resultData.ok) await loadActiveItemComments();
 }
 
 async function deleteContentComment(comment) {
   if (!window.confirm('确定删除这条评论吗？回复上下文仍会保留。')) return;
   commentBusy.value = true;
-  const resultData = await commentApiClient.remove(comment.id);
+  const resultData = isDemoAccount.value
+    ? demoAccountService.deleteComment(activeDemoAccountId.value, comment.id)
+    : await commentApiClient.remove(comment.id);
   commentBusy.value = false;
-  commentNotice.value = resultData.ok ? '评论已删除。' : resultData.message;
+  commentNotice.value = mutationNotice(resultData, '评论已删除。');
   if (resultData.ok) await loadActiveItemComments();
 }
 
 async function previewCourseSchedule(file) {
   profileNotice.value = '正在读取课表...';
-  const resultData = await accountDataApiClient.previewCourseSchedule(file);
+  const resultData = isDemoAccount.value
+    ? await demoAccountService.previewCourseSchedule(activeDemoAccountId.value, file)
+    : await accountDataApiClient.previewCourseSchedule(file);
   courseImportPreview.value = resultData.ok ? resultData : null;
   profileNotice.value = resultData.ok ? '课表解析完成，请确认预览后替换。' : resultData.message;
 }
 
 async function replaceAccountCourses(courses) {
-  const resultData = await accountDataApiClient.replaceCourses(courses);
+  const resultData = isDemoAccount.value
+    ? demoAccountService.replaceCourses(activeDemoAccountId.value, courses)
+    : await accountDataApiClient.replaceCourses(courses);
   if (!resultData.ok) {
     profileNotice.value = resultData.message;
     return;
   }
   accountCourses.value = resultData.courses ?? [];
   courseImportPreview.value = null;
-  profileNotice.value = '课程清单已替换。';
+  profileNotice.value = mutationNotice(resultData, '课程清单已替换。');
 }
 
 async function addAccountCourse(course) {
-  const resultData = await accountDataApiClient.addCourse(course);
-  if (resultData.ok) accountCourses.value = resultData.courses ?? [];
+  const resultData = isDemoAccount.value
+    ? demoAccountService.addCourse(activeDemoAccountId.value, course)
+    : await accountDataApiClient.addCourse(course);
+  if (resultData.ok) {
+    accountCourses.value = resultData.courses ?? [];
+    if (resultData.persistenceWarning) profileNotice.value = resultData.persistenceWarning;
+  }
 }
 
 async function removeAccountCourse(course) {
   const courseCode = typeof course === 'string' ? course : course.courseCode;
-  const resultData = await accountDataApiClient.removeCourse(courseCode);
-  if (resultData.ok) accountCourses.value = resultData.courses ?? [];
+  const resultData = isDemoAccount.value
+    ? demoAccountService.removeCourse(activeDemoAccountId.value, courseCode)
+    : await accountDataApiClient.removeCourse(courseCode);
+  if (resultData.ok) {
+    accountCourses.value = resultData.courses ?? [];
+    if (resultData.persistenceWarning) profileNotice.value = resultData.persistenceWarning;
+  }
   else profileNotice.value = resultData.message;
 }
 
 async function removeProfileFavorite(favorite) {
-  const resultData = await accountDataApiClient.removeFavorite(favorite.id);
+  const resultData = isDemoAccount.value
+    ? demoAccountService.removeFavorite(activeDemoAccountId.value, favorite.id)
+    : await accountDataApiClient.removeFavorite(favorite.id);
   if (resultData.ok) accountFavorites.value = resultData.favorites ?? [];
-  profileNotice.value = resultData.ok ? '已取消收藏。' : resultData.message;
+  profileNotice.value = mutationNotice(resultData, '已取消收藏。');
 }
 
 async function editProfileComment(comment) {
   const body = window.prompt('修改评论', comment.body);
   if (body === null || !body.trim()) return;
-  const resultData = await commentApiClient.update(comment.id, body.trim());
-  profileNotice.value = resultData.ok ? '评论已更新。' : resultData.message;
+  const resultData = isDemoAccount.value
+    ? demoAccountService.updateComment(activeDemoAccountId.value, comment.id, body.trim())
+    : await commentApiClient.update(comment.id, body.trim());
+  profileNotice.value = mutationNotice(resultData, '评论已更新。');
   if (resultData.ok) await loadActiveProfile();
 }
 
 async function deleteProfileComment(comment) {
   if (!window.confirm('确定删除这条评论吗？')) return;
-  const resultData = await commentApiClient.remove(comment.id);
-  profileNotice.value = resultData.ok ? '评论已删除。' : resultData.message;
+  const resultData = isDemoAccount.value
+    ? demoAccountService.deleteComment(activeDemoAccountId.value, comment.id)
+    : await commentApiClient.remove(comment.id);
+  profileNotice.value = mutationNotice(resultData, '评论已删除。');
   if (resultData.ok) await loadActiveProfile();
 }
 
@@ -1973,6 +2101,9 @@ function openAuthDialog(mode, initialTab = 'cc98') {
 
 async function finishAuthentication(user) {
   studentViewer.value = user;
+  demoIdentityId.value = '';
+  setQuizAnonymousMode(false);
+  saveDemoIdentityId('');
   authDialogOpen.value = false;
   authNotice.value = '';
   accountOpen.value = true;
@@ -2018,6 +2149,12 @@ async function handleLoginCc98(payload) {
 }
 
 async function handleRequestEmailCode(payload) {
+  if (isDemoAccount.value) {
+    authNotice.value = /^\d+$/.test(String(payload.studentId ?? ''))
+      ? '演示验证码已生成，输入任意 6 位数字即可继续。'
+      : '请输入纯数字学号。';
+    return;
+  }
   authBusy.value = true;
   authNotice.value = '正在发送验证码...';
   const result = await requestEmailVerificationCode(payload);
@@ -2058,6 +2195,18 @@ async function handleLoginEmail(payload) {
 }
 
 async function handleBindEmail(payload) {
+  if (isDemoAccount.value) {
+    const result = /^\d{6}$/.test(String(payload.code ?? ''))
+      ? demoAccountService.bindEmail(activeDemoAccountId.value, payload.studentId)
+      : { ok: false, message: '演示模式请输入任意 6 位数字验证码。' };
+    authNotice.value = mutationNotice(result, '演示邮箱已绑定。');
+    if (result.ok) {
+      authDialogOpen.value = false;
+      demoDataVersion.value += 1;
+      await loadAccountData();
+    }
+    return;
+  }
   authBusy.value = true;
   authNotice.value = '';
   const result = await bindEmailAccount(payload);
@@ -2085,6 +2234,11 @@ async function handleResetEmailPassword(payload) {
 }
 
 async function handleLogout() {
+  if (demoIdentityId.value) {
+    await selectDemoIdentity('guest');
+    accountOpen.value = false;
+    return;
+  }
   authBusy.value = true;
   await logoutAccount();
   authBusy.value = false;
@@ -2105,93 +2259,128 @@ async function handleLogout() {
 }
 
 function openOwnProfile() {
-  if (!studentViewer.value.publicId) return;
+  if (!viewer.value.publicId) return;
   accountOpen.value = false;
-  window.location.hash = getProfileHref(studentViewer.value.publicId);
+  window.location.hash = getProfileHref(viewer.value.publicId);
 }
 
 async function saveProfileNickname(nickname) {
   profileNotice.value = '正在保存昵称...';
-  const result = await updateMyNickname(nickname);
+  const result = isDemoAccount.value
+    ? demoAccountService.updateNickname(activeDemoAccountId.value, nickname)
+    : await updateMyNickname(nickname);
   if (!result.ok) {
     profileNotice.value = result.message;
     return;
   }
-  studentViewer.value = result.user;
-  profileNotice.value = '昵称已保存。';
+  if (isDemoAccount.value) demoDataVersion.value += 1;
+  else studentViewer.value = result.user;
+  profileNotice.value = mutationNotice(result, '昵称已保存。');
   await loadActiveProfile();
 }
 
 async function uploadProfileAvatar(file) {
   profileNotice.value = '正在处理头像...';
-  const result = await uploadMyAvatar(file);
+  const result = isDemoAccount.value
+    ? await demoAccountService.uploadAvatar(activeDemoAccountId.value, file)
+    : await uploadMyAvatar(file);
   if (!result.ok) {
     profileNotice.value = result.message;
     return;
   }
-  studentViewer.value = result.user;
-  profileNotice.value = '头像已更新。';
+  if (isDemoAccount.value) demoDataVersion.value += 1;
+  else studentViewer.value = result.user;
+  profileNotice.value = mutationNotice(result, '头像已更新。');
   await loadActiveProfile();
 }
 
 async function removeProfileAvatar() {
-  const result = await removeMyAvatar();
-  profileNotice.value = result.ok ? '头像已移除。' : result.message;
+  const result = isDemoAccount.value
+    ? demoAccountService.removeAvatar(activeDemoAccountId.value)
+    : await removeMyAvatar();
+  profileNotice.value = mutationNotice(result, '头像已移除。');
   if (result.ok) {
-    studentViewer.value = result.user;
+    if (isDemoAccount.value) demoDataVersion.value += 1;
+    else studentViewer.value = result.user;
     await loadActiveProfile();
   }
 }
 
 async function bindProfileCc98(payload) {
   profileNotice.value = '正在验证 CC98...';
-  const result = await bindMyCc98(payload);
+  const result = isDemoAccount.value
+    ? demoAccountService.bindCc98(activeDemoAccountId.value, payload)
+    : await bindMyCc98(payload);
   if (!result.ok) {
     profileNotice.value = result.message;
     return;
   }
-  studentViewer.value = result.user;
-  profileNotice.value = 'CC98 绑定已更新。';
+  if (isDemoAccount.value) demoDataVersion.value += 1;
+  else studentViewer.value = result.user;
+  profileNotice.value = mutationNotice(result, 'CC98 绑定已更新。');
   await loadActiveProfile();
 }
 
 async function archiveProfilePost(post) {
-  const result = await archiveMyPost(post.id);
-  profileNotice.value = result.ok ? '帖子已下架。' : result.message;
+  const result = isDemoAccount.value
+    ? demoAccountService.archivePost(activeDemoAccountId.value, post.id)
+    : await archiveMyPost(post.id);
+  profileNotice.value = mutationNotice(result, '帖子已下架。');
   if (result.ok) await loadActiveProfile();
 }
 
 async function reviseProfilePost({ post, changes }) {
-  const result = await submitPostRevision(post.id, changes);
-  profileNotice.value = result.ok ? '修改已提交审核，原帖子会继续展示。' : result.message;
+  const result = isDemoAccount.value
+    ? demoAccountService.revisePost(activeDemoAccountId.value, post.id, changes)
+    : await submitPostRevision(post.id, changes);
+  profileNotice.value = mutationNotice(result, '修改已提交审核，原帖子会继续展示。');
   if (result.ok) await loadActiveProfile();
 }
 
 async function resubmitProfileSubmission(payload) {
   const submission = payload.submission ?? payload;
-  const result = await resubmitMySubmission(submission.id, payload.changes ?? {});
-  profileNotice.value = result.ok ? '已重新提交审核。' : result.message;
+  const result = isDemoAccount.value
+    ? demoAccountService.resubmitSubmission(activeDemoAccountId.value, submission.id, payload.changes ?? {})
+    : await resubmitMySubmission(submission.id, payload.changes ?? {});
+  profileNotice.value = mutationNotice(result, '已重新提交审核。');
   if (result.ok) await loadActiveProfile();
 }
 
 async function editProfileSubmission({ submission, changes }) {
-  const result = await updateMySubmission(submission.id, changes);
-  profileNotice.value = result.ok ? '投稿修改已保存。' : result.message;
+  const result = isDemoAccount.value
+    ? demoAccountService.updateSubmission(activeDemoAccountId.value, submission.id, changes)
+    : await updateMySubmission(submission.id, changes);
+  profileNotice.value = mutationNotice(result, '投稿修改已保存。');
   if (result.ok) await loadActiveProfile();
 }
 
 async function withdrawProfileSubmission(submission) {
   if (!window.confirm('确定撤回这条投稿吗？')) return;
-  const result = await withdrawMySubmission(submission.id);
-  profileNotice.value = result.ok ? '投稿已撤回。' : result.message;
+  const result = isDemoAccount.value
+    ? demoAccountService.withdrawSubmission(activeDemoAccountId.value, submission.id)
+    : await withdrawMySubmission(submission.id);
+  profileNotice.value = mutationNotice(result, '投稿已撤回。');
   if (result.ok) await loadActiveProfile();
 }
 
 async function deleteProfileSubmission(submission) {
   if (!window.confirm('确定删除这条投稿记录吗？')) return;
-  const result = await deleteMySubmission(submission.id);
-  profileNotice.value = result.ok ? '投稿记录已删除。' : result.message;
+  const result = isDemoAccount.value
+    ? demoAccountService.deleteSubmission(activeDemoAccountId.value, submission.id)
+    : await deleteMySubmission(submission.id);
+  profileNotice.value = mutationNotice(result, '投稿记录已删除。');
   if (result.ok) await loadActiveProfile();
+}
+
+async function resetActiveDemoAccount() {
+  if (!isDemoAccount.value || !window.confirm('恢复当前演示账号的初始数据吗？')) return;
+  const result = demoAccountService.resetAccount(activeDemoAccountId.value);
+  if (!result.ok) return;
+  demoDataVersion.value += 1;
+  courseImportPreview.value = null;
+  profileNotice.value = result.persistenceWarning || '当前演示账号已恢复初始数据。';
+  await loadAccountData();
+  if (activePage.value === 'profile') await loadActiveProfile();
 }
 
 watch(activeCollectionSlug, loadCategories);
@@ -2207,6 +2396,7 @@ onMounted(async () => {
   } catch {
     // Public browsing remains available when the account service is offline.
   }
+  if (isDemoAccount.value) await loadAccountData();
   syncPageFromHash();
   window.addEventListener('hashchange', syncPageFromHash);
   window.addEventListener('keydown', handleGlobalKeydown);
@@ -2236,8 +2426,7 @@ onBeforeUnmount(() => {
           {{ page.label }}
         </a>
       </nav>
-      <span v-if="activePage === 'admin'" class="demo-user-chip">管理员</span>
-      <div v-else class="demo-account">
+      <div class="demo-account">
         <button
           class="demo-user-chip"
           type="button"
@@ -2255,13 +2444,17 @@ onBeforeUnmount(() => {
           :badges="verificationBadges"
           :is-guest="viewerIsGuest"
           :can-bind-email="viewerCanBindEmail"
+          :can-open-admin="viewerIsAdministrator"
           :unread-count="unreadNotificationCount"
           :demo-options="demoIdentityOptions"
           :demo-active-id="demoIdentityId"
+          :demo-account-active="isDemoAccount"
           @select-demo="selectDemoIdentity"
+          @reset-demo="resetActiveDemoAccount"
           @logout="handleLogout"
           @open-profile="openOwnProfile"
           @open-notifications="openNotifications"
+          @open-admin="openAdminPage"
           @open-login="openAuthDialog('login')"
           @open-register-cc98="openAuthDialog('register', 'cc98')"
           @open-register-email="openAuthDialog('register', 'email')"
@@ -2328,7 +2521,13 @@ onBeforeUnmount(() => {
         />
       </template>
 
-      <AdminPage v-else-if="activePage === 'admin'" />
+      <AdminPage
+        v-else-if="activePage === 'admin'"
+        :key="`${demoIdentityId || 'real-admin'}-${demoDataVersion}`"
+        :initial-user="demoIdentityId === 'admin' ? viewer : null"
+        :api-client="demoIdentityId === 'admin' ? demoAdminApiClient : null"
+        :is-demo="demoIdentityId === 'admin'"
+      />
 
       <ProfilePage
         v-else-if="activePage === 'profile'"
@@ -2345,6 +2544,7 @@ onBeforeUnmount(() => {
         :notice="profileNotice"
         :nickname-locked="Boolean(viewer.verifications?.cc98)"
         :cc98-bound="Boolean(viewer.verifications?.cc98)"
+        :is-demo="isDemoAccount"
         @save-nickname="saveProfileNickname"
         @upload-avatar="uploadProfileAvatar"
         @remove-avatar="removeProfileAvatar"

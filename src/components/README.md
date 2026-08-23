@@ -13,6 +13,7 @@ Components should render props, hold local UI state, and emit events upward. Kee
 - `admin/AdminPage.vue`: hidden-route administrator login and course-content maintenance UI.
 - `ContributionBox.vue`: authenticated course submission form that sends review-ready fields upward.
 - `account/AccountPopover.vue` and `account/AuthDialog.vue`: account status and CC98/ZJU-email authentication forms; API work and permission decisions remain in the app/service layer.
+- `account/AccountSwitcher.vue`: switches between the real session and isolated browser-local demo accounts, and can reset the active demo account.
 - `account/NotificationsPage.vue`: account-only message list and read actions.
 - `profile/ProfilePage.vue`: public post view and the owner's course, favorite, post, submission, comment, avatar, and identity controls.
 - `CommentSection.vue`: identified one-level discussion UI; durable operations are emitted to the service layer.
@@ -44,3 +45,6 @@ npm.cmd run check:architecture
 `profile/ProfilePage.vue` renders both the public published-post view and the signed-in
 owner workspace. Authentication and ownership decisions are passed in as props; API
 calls remain in `App.vue` and shared services.
+
+When `isDemo` is true, the profile page only adds a local-data notice. Demo
+persistence and mutations remain outside the component.

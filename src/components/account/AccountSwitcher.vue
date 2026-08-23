@@ -8,9 +8,13 @@ defineProps({
     type: String,
     required: true,
   },
+  accountActive: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const emit = defineEmits(['select']);
+const emit = defineEmits(['select', 'reset']);
 </script>
 
 <template>
@@ -25,8 +29,10 @@ const emit = defineEmits(['select']);
       </select>
     </label>
     <p class="account-switcher__hint">
-      演示身份仅改变界面展示，不改变真实登录状态；真实写操作仍按后端会话执行。
-      如需登录真实账号，请先切回「真实账号」。
+      演示数据仅保存在当前浏览器，不会提交到服务器。切换身份可测试独立的课程、收藏、投稿和消息。
     </p>
+    <button v-if="accountActive" class="account-switcher__reset" type="button" @click="emit('reset')">
+      重置当前演示账号
+    </button>
   </div>
 </template>

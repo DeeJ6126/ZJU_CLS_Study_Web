@@ -20,6 +20,7 @@ import {
   mergeQuizAccountState,
   removeQuizVocabulary,
   upsertQuizVocabulary,
+  setQuizAnonymousMode,
 } from '../src/services/quizApiClient.js';
 
 async function captureRequest(call) {
@@ -70,4 +71,13 @@ test('quiz api client always uses absolute api paths', async () => {
   ]);
 
   assert.ok(requests.every((request) => request.path.startsWith('/api/quiz/')));
+});
+
+test('quiz api client omits real session cookies while demo mode is active', async () => {
+  setQuizAnonymousMode(true);
+  const anonymous = await captureRequest(() => createQuizSession({ collectionSlug: 'molecular-biology-review' }));
+  setQuizAnonymousMode(false);
+  const authenticated = await captureRequest(() => fetchQuizAccountState('molecular-biology-review'));
+  assert.equal(anonymous.options.credentials, 'omit');
+  assert.equal(authenticated.options.credentials, 'include');
 });

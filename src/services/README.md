@@ -20,6 +20,8 @@ Shared business logic and API clients.
 - `quizAnswerViewService.js`: shared option state, answer display, focus, and vocabulary feedback helpers.
 - `markdownAnswerService.js`: safe structured rendering helpers for markdown-like quiz answers.
 - `demoNavigationService.js`: hash route helpers for the lightweight demo shell top navigation.
+- `demoAccountService.js`: versioned browser-local demo profiles, account data, mutations, uploads, and moderation.
+- `courseScheduleService.js`: browser-neutral timetable row normalization shared by demo XLSX import and the backend parser.
 - `homeSearchService.js`: normalized homepage search indexing and per-content-type filtering.
 - `overviewCatalogService.js`: overview filtering, category grouping, semester grouping, and unique course counts.
 - `courseContentApiClient.js`: published course content with static Markdown fallback only when the API is unavailable.
@@ -61,3 +63,12 @@ npm.cmd run check:architecture
 `profileApiClient.js` owns public profile search/read calls and authenticated profile,
 avatar, CC98-binding, post-revision, submission edit/withdraw/resubmission/delete, and archive requests. Components
 must not reproduce these endpoint or permission rules.
+
+## Demo Accounts
+
+The non-guest identities in `src/data/config/demoUsers.js` are complete local
+sandboxes, not backend users. `demoAccountService.js` stores each identity's
+courses, favorites, posts, submissions, comments, notifications, and uploaded
+avatar independently under one versioned localStorage key. It also exposes an
+administrator adapter for reviewing demo submissions. Real-account operations
+continue through the existing API clients.

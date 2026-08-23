@@ -39,3 +39,10 @@ npm.cmd run check:content
 npm.cmd test
 ```
 
+## Demo Seeds
+
+`config/demoAccountSeeds.js` contains short, structured seed records for the
+four non-guest demo identities. Mutable state and workflow rules stay in
+`src/services/demoAccountService.js`; the seed file must not grow into a source
+for real course notes or question-bank content.
+

@@ -7,9 +7,16 @@ import {
   logoutAccount,
   registerCc98Account,
 } from '../../services/authApiClient.js';
-import { adminApiClient } from '../../services/adminApiClient.js';
+import { adminApiClient as defaultAdminApiClient } from '../../services/adminApiClient.js';
 import { isAdministrator } from '../../services/authService.js';
 import { loadResourceCatalog } from '../../data/courses/resourceData.js';
+
+const props = defineProps({
+  initialUser: { type: Object, default: null },
+  apiClient: { type: Object, default: null },
+  isDemo: { type: Boolean, default: false },
+});
+const activeApiClient = computed(() => props.apiClient ?? defaultAdminApiClient);
 
 const contentTypes = [
   { id: 'experience', label: '学习心得' },
@@ -78,6 +85,10 @@ const pageTitle = computed(() => {
   return selectedTypeLabel.value;
 });
 
+function mutationNotice(result, successMessage) {
+  return result.ok ? (result.persistenceWarning || successMessage) : result.message;
+}
+
 function emptyForm() {
   return {
     courseCode: 'BIO2110F',
@@ -123,7 +134,7 @@ async function refreshItems() {
     return;
   }
   listBusy.value = true;
-  const result = await adminApiClient.fetchContent({
+  const result = await activeApiClient.value.fetchContent({
     courseCode: selectedCourseCode.value,
     type: selectedType.value,
     status: selectedStatus.value,
@@ -139,7 +150,7 @@ async function refreshItems() {
 async function refreshSubmissions() {
   if (!isAdmin.value) return;
   listBusy.value = true;
-  const result = await adminApiClient.fetchSubmissions({
+  const result = await activeApiClient.value.fetchSubmissions({
     courseCode: selectedCourseCode.value,
     status: submissionStatus.value,
     query: submissionQuery.value,
@@ -155,7 +166,7 @@ async function refreshSubmissions() {
 async function refreshAuditLogs() {
   if (!isAdmin.value) return;
   listBusy.value = true;
-  const result = await adminApiClient.fetchAuditLogs({
+  const result = await activeApiClient.value.fetchAuditLogs({
     courseCode: selectedCourseCode.value,
     action: auditAction.value,
     query: auditQuery.value,
@@ -167,6 +178,11 @@ async function refreshAuditLogs() {
 
 async function initialize() {
   await loadCourses();
+  if (props.initialUser) {
+    currentUser.value = props.initialUser;
+    await Promise.all([refreshItems(), refreshSubmissions()]);
+    return;
+  }
   try {
     const result = await fetchCurrentUser();
     currentUser.value = result.ok ? result.user : null;
@@ -234,6 +250,10 @@ function changeView(view, type = '') {
 }
 
 async function logout() {
+  if (props.initialUser) {
+    authNotice.value = '请从右上角身份菜单切换演示身份。';
+    return;
+  }
   await logoutAccount();
   currentUser.value = null;
   items.value = [];
@@ -290,12 +310,12 @@ async function saveDraft() {
   actionBusy.value = true;
   notice.value = editingId.value ? '正在保存修改...' : '正在保存草稿...';
   let result = editingId.value
-    ? await adminApiClient.updateContent(editingId.value, { ...form })
-    : await adminApiClient.createContent({ ...form });
+    ? await activeApiClient.value.updateContent(editingId.value, { ...form })
+    : await activeApiClient.value.createContent({ ...form });
 
   if (result.ok && pendingFile.value) {
     notice.value = '正在上传 PDF...';
-    result = await adminApiClient.uploadPdf(result.item.id, pendingFile.value);
+    result = await activeApiClient.value.uploadPdf(result.item.id, pendingFile.value);
   }
 
   if (!result.ok) {
@@ -307,7 +327,7 @@ async function saveDraft() {
   editingId.value = result.item.id;
   pendingFile.value = null;
   dirty.value = false;
-  notice.value = result.item.status === 'draft' ? '草稿已保存。' : '修改已保存。';
+  notice.value = result.persistenceWarning || (result.item.status === 'draft' ? '草稿已保存。' : '修改已保存。');
   await refreshItems();
   editorOpen.value = false;
   editingId.value = '';
@@ -324,8 +344,8 @@ function editSubmission(item) {
 
 async function saveSubmission() {
   actionBusy.value = true;
-  const result = await adminApiClient.updateSubmission(editingSubmissionId.value, { ...submissionForm });
-  notice.value = result.ok ? '投稿修改已保存。' : result.message;
+  const result = await activeApiClient.value.updateSubmission(editingSubmissionId.value, { ...submissionForm });
+  notice.value = mutationNotice(result, '投稿修改已保存。');
   if (result.ok) {
     submissionEditorOpen.value = false;
     await refreshSubmissions();
@@ -337,8 +357,8 @@ async function approveCurrentSubmission(item = null) {
   const target = item ?? submissions.value.find((entry) => entry.id === editingSubmissionId.value);
   if (!target || !window.confirm(`通过“${target.title}”并立即发布吗？`)) return;
   actionBusy.value = true;
-  const result = await adminApiClient.approveSubmission(target.id);
-  notice.value = result.ok ? '投稿已通过并发布。' : result.message;
+  const result = await activeApiClient.value.approveSubmission(target.id);
+  notice.value = mutationNotice(result, '投稿已通过并发布。');
   if (result.ok) submissionEditorOpen.value = false;
   await refreshSubmissions();
   actionBusy.value = false;
@@ -348,8 +368,8 @@ async function rejectCurrentSubmission(item = null) {
   const target = item ?? submissions.value.find((entry) => entry.id === editingSubmissionId.value);
   if (!target || !window.confirm(`拒绝“${target.title}”吗？`)) return;
   actionBusy.value = true;
-  const result = await adminApiClient.rejectSubmission(target.id, rejectionNote.value);
-  notice.value = result.ok ? '投稿已拒绝。' : result.message;
+  const result = await activeApiClient.value.rejectSubmission(target.id, rejectionNote.value);
+  notice.value = mutationNotice(result, '投稿已拒绝。');
   if (result.ok) submissionEditorOpen.value = false;
   await refreshSubmissions();
   actionBusy.value = false;
@@ -361,8 +381,8 @@ async function publishItem() {
     return;
   }
   actionBusy.value = true;
-  const result = await adminApiClient.publishContent(editingId.value);
-  notice.value = result.ok ? '内容已发布，课程详情页会立即显示。' : result.message;
+  const result = await activeApiClient.value.publishContent(editingId.value);
+  notice.value = mutationNotice(result, '内容已发布，课程详情页会立即显示。');
   await refreshItems();
   actionBusy.value = false;
 }
@@ -372,8 +392,8 @@ async function archiveItem(item = editingItem.value) {
     return;
   }
   actionBusy.value = true;
-  const result = await adminApiClient.archiveContent(item.id);
-  notice.value = result.ok ? '内容已下架。' : result.message;
+  const result = await activeApiClient.value.archiveContent(item.id);
+  notice.value = mutationNotice(result, '内容已下架。');
   await refreshItems();
   if (editorOpen.value && editingId.value === item.id) {
     const refreshed = items.value.find((entry) => entry.id === item.id);
@@ -390,8 +410,8 @@ async function removePdf() {
     return;
   }
   actionBusy.value = true;
-  const result = await adminApiClient.removePdf(editingId.value);
-  notice.value = result.ok ? 'PDF 已移除。' : result.message;
+  const result = await activeApiClient.value.removePdf(editingId.value);
+  notice.value = mutationNotice(result, 'PDF 已移除。');
   await refreshItems();
   const refreshed = items.value.find((item) => item.id === editingId.value);
   if (refreshed) {
@@ -468,6 +488,7 @@ onMounted(initialize);
       </section>
 
       <template v-else>
+        <p v-if="isDemo" class="admin-notice" role="status">演示数据仅保存在当前浏览器，不会提交到服务器。</p>
         <header class="admin-page__head">
           <div>
             <p class="admin-page__eyebrow">课程内容运营</p>

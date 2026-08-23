@@ -25,6 +25,7 @@ test('profile page separates public posts from owner management controls', () =>
   assert.match(profileSource, /确认替换课程清单/);
   assert.match(profileSource, /我的收藏/);
   assert.match(profileSource, /我的评论/);
+  assert.match(profileSource, /演示数据仅保存在当前浏览器/);
 });
 
 test('identified comments and notifications expose profile links and owner actions', () => {
@@ -42,6 +43,10 @@ test('the app wires account datasets, course import, comments, favorites, and no
   const app = readFileSync('src/App.vue', 'utf8');
   const overview = readFileSync('src/components/OverviewPage.vue', 'utf8');
   assert.match(app, /accountDataApiClient/);
+  assert.match(app, /demoAccountService/);
+  assert.match(app, /demoAccountService\.getPrivateProfile/);
+  assert.match(app, /getProfileHref\(viewer\.value\.publicId\)/);
+  assert.match(app, /resetActiveDemoAccount/);
   assert.match(app, /commentApiClient/);
   assert.match(app, /NotificationsPage/);
   assert.match(app, /preview-course-schedule/);

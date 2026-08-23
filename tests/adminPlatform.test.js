@@ -56,6 +56,9 @@ test('admin page uses the shared header, green sidebar, dense table, and explici
   assert.match(component, /发布|下架/);
   assert.match(component, /管理服务暂时无法连接/);
   assert.match(component, /投稿审核/);
+  assert.match(component, /initialUser/);
+  assert.match(component, /activeApiClient/);
+  assert.match(component, /演示数据仅保存在当前浏览器/);
   assert.match(component, /操作日志/);
   assert.match(component, /内容搜索/);
   assert.match(css, /grid-template-columns:\s*188px\s+minmax\(0,\s*1fr\)/);

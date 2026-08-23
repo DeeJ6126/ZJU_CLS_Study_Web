@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import {
   buildDemoUser,
@@ -62,6 +63,14 @@ test('demo users cover guest, single auth, dual auth, and admin states', () => {
 
   const admin = buildDemoUser('admin');
   assert.equal(admin.role, 'admin');
+});
+
+test('demo account switcher exposes local persistence and reset controls', () => {
+  const popover = readFileSync('src/components/account/AccountPopover.vue', 'utf8');
+  const switcher = readFileSync('src/components/account/AccountSwitcher.vue', 'utf8');
+  assert.match(popover, /reset-demo/);
+  assert.match(switcher, /重置当前演示账号/);
+  assert.match(switcher, /不会提交到服务器/);
 });
 
 test('unknown demo identity builds no user', () => {

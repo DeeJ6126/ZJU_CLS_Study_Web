@@ -1,9 +1,8 @@
 // Demo identities for the account switcher (development/demo use only).
 //
-// These are front-end display identities: they preview how each role sees
-// the UI without a real backend session. Frontend permission checks are not
-// a real security boundary (see docs/project-guides/decisions.md), and real
-// write operations still run against the real signed-in session.
+// These records define the stable identity metadata for the browser-local
+// demo sandboxes. Their mutable profile and learning data is owned by
+// demoAccountService; no demo operation grants backend authority.
 
 export const demoIdentities = [
   {

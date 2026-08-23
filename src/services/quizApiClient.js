@@ -1,6 +1,12 @@
+let anonymousMode = false;
+
+export function setQuizAnonymousMode(enabled) {
+  anonymousMode = Boolean(enabled);
+}
+
 async function requestJson(path, options = {}) {
   const response = await fetch(path, {
-    credentials: 'include',
+    credentials: anonymousMode ? 'omit' : 'include',
     headers: {
       'content-type': 'application/json',
       ...(options.headers ?? {}),

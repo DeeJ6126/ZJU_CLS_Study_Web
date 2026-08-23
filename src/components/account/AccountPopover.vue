@@ -32,12 +32,16 @@ defineProps({
     type: String,
     default: '',
   },
+  canOpenAdmin: { type: Boolean, default: false },
+  demoAccountActive: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
   'logout', 'open-login', 'open-register-cc98',
   'open-register-email', 'open-bind-email', 'open-profile', 'open-notifications',
+  'open-admin',
   'select-demo',
+  'reset-demo',
 ]);
 </script>
 
@@ -87,6 +91,7 @@ const emit = defineEmits([
       <button type="button" @click="emit('open-notifications')">
         站内消息<span v-if="unreadCount"> {{ unreadCount }}</span>
       </button>
+      <button v-if="canOpenAdmin" type="button" @click="emit('open-admin')">管理后台</button>
       <button
         v-if="canBindEmail"
         type="button"
@@ -102,7 +107,9 @@ const emit = defineEmits([
       class="account-popover__switcher"
       :options="demoOptions"
       :active-id="demoActiveId"
+      :account-active="demoAccountActive"
       @select="emit('select-demo', $event)"
+      @reset="emit('reset-demo')"
     />
   </aside>
 </template>
