@@ -10,6 +10,7 @@ import {
 import { adminApiClient as defaultAdminApiClient } from '../../services/adminApiClient.js';
 import { isAdministrator } from '../../services/authService.js';
 import { loadResourceCatalog } from '../../data/courses/resourceData.js';
+import { activityCategories, activityImageOptions } from '../../data/activityConfig.js';
 
 const props = defineProps({
   initialUser: { type: Object, default: null },
@@ -35,6 +36,8 @@ const auditActionLabels = {
   'content.create': '新建内容', 'content.update': '编辑内容', 'content.publish': '发布内容',
   'content.archive': '下架内容', 'content.file.upload': '上传文件', 'content.file.remove': '移除文件',
   'submission.update': '编辑投稿', 'submission.approve': '通过投稿', 'submission.reject': '拒绝投稿',
+  'activity.create': '新建活动', 'activity.update': '编辑活动',
+  'activity.publish': '发布活动', 'activity.archive': '下架活动',
 };
 
 const currentUser = ref(null);
@@ -69,6 +72,13 @@ const dirty = ref(false);
 const pendingFile = ref(null);
 const fileInput = ref(null);
 const form = reactive(emptyForm());
+const activities = ref([]);
+const activityStatus = ref('');
+const activityCategory = ref('');
+const activityQuery = ref('');
+const activityEditorOpen = ref(false);
+const editingActivityId = ref('');
+const activityForm = reactive(emptyActivityForm());
 
 const isAdmin = computed(() => isAdministrator(currentUser.value));
 const editingItem = computed(() => items.value.find((item) => item.id === editingId.value) ?? null);
@@ -80,10 +90,23 @@ const filteredItems = computed(() => {
     .some((value) => String(value ?? '').toLowerCase().includes(query)));
 });
 const pageTitle = computed(() => {
+  if (selectedView.value === 'activities') return '活动管理';
   if (selectedView.value === 'submissions') return '投稿审核';
   if (selectedView.value === 'logs') return '操作日志';
   return selectedTypeLabel.value;
 });
+
+function emptyActivityForm() {
+  return {
+    slug: '', title: '', category: 'frontier', summary: '', body: '',
+    imageUrl: '', imageAlt: '', featured: false, displayOrder: 100,
+  };
+}
+
+function setActivityForm(input = {}) {
+  Object.assign(activityForm, emptyActivityForm(), input);
+  dirty.value = false;
+}
 
 function mutationNotice(result, successMessage) {
   return result.ok ? (result.persistenceWarning || successMessage) : result.message;
@@ -176,18 +199,31 @@ async function refreshAuditLogs() {
   listBusy.value = false;
 }
 
+async function refreshActivities() {
+  if (!isAdmin.value) return;
+  listBusy.value = true;
+  const result = await activeApiClient.value.fetchActivities({
+    status: activityStatus.value,
+    category: activityCategory.value,
+    query: activityQuery.value,
+  });
+  if (result.ok) activities.value = result.activities ?? [];
+  else notice.value = result.message;
+  listBusy.value = false;
+}
+
 async function initialize() {
   await loadCourses();
   if (props.initialUser) {
     currentUser.value = props.initialUser;
-    await Promise.all([refreshItems(), refreshSubmissions()]);
+    await Promise.all([refreshItems(), refreshSubmissions(), refreshActivities()]);
     return;
   }
   try {
     const result = await fetchCurrentUser();
     currentUser.value = result.ok ? result.user : null;
     if (isAdmin.value) {
-      await Promise.all([refreshItems(), refreshSubmissions()]);
+      await Promise.all([refreshItems(), refreshSubmissions(), refreshActivities()]);
     }
   } catch {
     currentUser.value = null;
@@ -224,7 +260,7 @@ async function submitAuth() {
       } else {
         credentials.password = '';
         await refreshItems();
-        await refreshSubmissions();
+        await Promise.all([refreshSubmissions(), refreshActivities()]);
       }
     }
   } catch {
@@ -239,6 +275,7 @@ function changeView(view, type = '') {
   selectedView.value = view;
   editorOpen.value = false;
   submissionEditorOpen.value = false;
+  activityEditorOpen.value = false;
   if (type) selectedType.value = type;
   if (view === 'content' && !selectedCourseCode.value) {
     selectedCourseCode.value = courses.value[0]?.code ?? 'BIO2110F';
@@ -246,7 +283,66 @@ function changeView(view, type = '') {
   notice.value = '';
   if (view === 'content') refreshItems();
   if (view === 'submissions') refreshSubmissions();
+  if (view === 'activities') refreshActivities();
   if (view === 'logs') refreshAuditLogs();
+}
+
+function startActivity() {
+  editingActivityId.value = '';
+  setActivityForm();
+  activityEditorOpen.value = true;
+  notice.value = '';
+}
+
+function editActivity(activity) {
+  editingActivityId.value = activity.id;
+  setActivityForm(activity);
+  activityEditorOpen.value = true;
+  notice.value = '';
+}
+
+function closeActivityEditor() {
+  if (dirty.value && !window.confirm('当前修改尚未保存，确定放弃吗？')) return;
+  activityEditorOpen.value = false;
+  editingActivityId.value = '';
+  dirty.value = false;
+}
+
+async function saveActivity() {
+  actionBusy.value = true;
+  const result = editingActivityId.value
+    ? await activeApiClient.value.updateActivity(editingActivityId.value, { ...activityForm })
+    : await activeApiClient.value.createActivity({ ...activityForm });
+  notice.value = mutationNotice(result, editingActivityId.value ? '活动修改已保存。' : '活动草稿已创建。');
+  if (result.ok) {
+    editingActivityId.value = result.activity.id;
+    dirty.value = false;
+    await refreshActivities();
+    activityEditorOpen.value = false;
+    editingActivityId.value = '';
+  }
+  actionBusy.value = false;
+}
+
+async function publishManagedActivity(activity) {
+  if (!activity || (activityEditorOpen.value && dirty.value)) {
+    notice.value = '请先保存当前修改，再发布活动。';
+    return;
+  }
+  actionBusy.value = true;
+  const result = await activeApiClient.value.publishActivity(activity.id);
+  notice.value = mutationNotice(result, '活动已发布，活动页和首页推荐会同步更新。');
+  await refreshActivities();
+  actionBusy.value = false;
+}
+
+async function archiveManagedActivity(activity) {
+  if (!activity || !window.confirm(`确定下架“${activity.title}”吗？`)) return;
+  actionBusy.value = true;
+  const result = await activeApiClient.value.archiveActivity(activity.id);
+  notice.value = mutationNotice(result, '活动已下架。');
+  await refreshActivities();
+  actionBusy.value = false;
 }
 
 async function logout() {
@@ -448,6 +544,9 @@ onMounted(initialize);
         >
           {{ type.label }}
         </button>
+        <button type="button" :class="{ 'is-active': selectedView === 'activities' }" @click="changeView('activities')">
+          活动管理
+        </button>
         <button type="button" :class="{ 'is-active': selectedView === 'submissions' }" @click="changeView('submissions')">
           投稿审核 <span v-if="pendingCount" class="admin-nav-count">{{ pendingCount }}</span>
         </button>
@@ -495,6 +594,7 @@ onMounted(initialize);
             <h1 id="admin-title">{{ pageTitle }}</h1>
           </div>
           <button v-if="selectedView === 'content' && !editorOpen" class="admin-primary-action" type="button" @click="startNew">新增内容</button>
+          <button v-if="selectedView === 'activities' && !activityEditorOpen" class="admin-primary-action" type="button" @click="startActivity">新增活动</button>
         </header>
 
         <p v-if="notice" class="admin-notice" role="status">{{ notice }}</p>
@@ -631,6 +731,109 @@ onMounted(initialize);
               <div class="admin-content-table__actions">
                 <button type="button" @click="editItem(item)">编辑</button>
                 <button v-if="item.status === 'published'" type="button" @click="archiveItem(item)">下架</button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section v-else-if="selectedView === 'activities' && activityEditorOpen" class="admin-editor" aria-label="活动编辑器">
+          <header class="admin-editor__head">
+            <div>
+              <span>{{ editingActivityId ? '编辑活动' : '新建活动草稿' }}</span>
+              <strong>{{ activityForm.title || '未命名活动' }}</strong>
+            </div>
+            <button type="button" @click="closeActivityEditor">关闭</button>
+          </header>
+          <form class="admin-editor__form" @input="dirty = true" @submit.prevent="saveActivity">
+            <label class="admin-editor__wide">
+              <span>标题</span>
+              <input v-model.trim="activityForm.title" required maxlength="80">
+            </label>
+            <label>
+              <span>活动分类</span>
+              <select v-model="activityForm.category" required>
+                <option v-for="category in activityCategories.filter((item) => item.id !== 'all')" :key="category.id" :value="category.id">
+                  {{ category.label }}
+                </option>
+              </select>
+            </label>
+            <label>
+              <span>链接标识</span>
+              <input v-model.trim="activityForm.slug" required maxlength="80" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="lab-open-day">
+            </label>
+            <label class="admin-editor__wide">
+              <span>摘要</span>
+              <textarea v-model.trim="activityForm.summary" required rows="3" maxlength="240"></textarea>
+            </label>
+            <label class="admin-editor__wide">
+              <span>正文</span>
+              <textarea v-model="activityForm.body" required rows="12" maxlength="20000"></textarea>
+            </label>
+            <label class="admin-editor__wide">
+              <span>图片地址</span>
+              <input v-model.trim="activityForm.imageUrl" type="text" list="activity-image-options" placeholder="选择已有图片或填写 https:// 地址">
+              <datalist id="activity-image-options">
+                <option v-for="image in activityImageOptions" :key="image.value" :value="image.value">{{ image.label }}</option>
+              </datalist>
+            </label>
+            <label class="admin-editor__wide">
+              <span>图片说明</span>
+              <input v-model.trim="activityForm.imageAlt" :required="Boolean(activityForm.imageUrl)" maxlength="160">
+            </label>
+            <label>
+              <span>展示顺序</span>
+              <input v-model.number="activityForm.displayOrder" type="number" min="0" max="9999" step="1" required>
+            </label>
+            <label class="admin-check-field">
+              <input v-model="activityForm.featured" type="checkbox">
+              <span>推荐到首页“近期活动”</span>
+            </label>
+            <footer class="admin-editor__actions">
+              <button type="button" @click="closeActivityEditor">放弃修改</button>
+              <button class="admin-primary-action" type="submit" :disabled="actionBusy">
+                {{ editingActivityId ? '保存修改' : '保存草稿' }}
+              </button>
+            </footer>
+          </form>
+        </section>
+
+        <section v-else-if="selectedView === 'activities'" class="admin-list" aria-label="活动管理列表">
+          <div class="admin-list__filters admin-list__filters--wide">
+            <label>
+              <span>活动分类</span>
+              <select v-model="activityCategory" @change="refreshActivities">
+                <option value="">全部分类</option>
+                <option v-for="category in activityCategories.filter((item) => item.id !== 'all')" :key="category.id" :value="category.id">{{ category.label }}</option>
+              </select>
+            </label>
+            <label>
+              <span>状态</span>
+              <select v-model="activityStatus" @change="refreshActivities">
+                <option v-for="status in statusOptions" :key="status.id" :value="status.id">{{ status.label }}</option>
+              </select>
+            </label>
+            <label>
+              <span>活动搜索</span>
+              <input v-model.trim="activityQuery" type="search" placeholder="标题或摘要" @change="refreshActivities">
+            </label>
+          </div>
+          <p v-if="listBusy" class="admin-list__empty">正在读取活动...</p>
+          <p v-else-if="!activities.length" class="admin-list__empty">当前筛选条件下暂无活动。</p>
+          <div v-else class="admin-content-table" role="table" aria-label="活动内容">
+            <div class="admin-content-table__head" role="row">
+              <span>活动</span><span>状态</span><span>首页 / 顺序</span><span>操作</span>
+            </div>
+            <article v-for="activity in activities" :key="activity.id" class="admin-content-table__row" role="row">
+              <div>
+                <strong>{{ activity.title }}</strong>
+                <small>{{ activity.summary }}</small>
+              </div>
+              <span class="admin-status" :data-status="activity.status">{{ statusLabels[activity.status] }}</span>
+              <span class="admin-activity-placement">{{ activity.featured ? '已推荐' : '未推荐' }} · {{ activity.displayOrder }}</span>
+              <div class="admin-content-table__actions">
+                <button type="button" @click="editActivity(activity)">编辑</button>
+                <button v-if="activity.status !== 'published'" type="button" @click="publishManagedActivity(activity)">发布</button>
+                <button v-else type="button" @click="archiveManagedActivity(activity)">下架</button>
               </div>
             </article>
           </div>

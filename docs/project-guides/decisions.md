@@ -131,3 +131,14 @@ numeric course codes without BIO-encoded courses.
 
 Impact: new curriculum work must fill `semesterByCourse` per year and keep the
 `*-short` periods; courses identify by BIO code only.
+
+### 18. Activities use a dedicated content domain
+
+Activity records do not use course codes and therefore stay outside
+`content_items`. The `activity_items` table owns publication state, homepage
+recommendation, category, display order, and image metadata. The activity page
+and homepage recent feed must read the same published records.
+
+Impact: do not hardcode homepage activities or model them as course resources.
+The static catalog is only the source-backed initial seed and offline fallback;
+administrator edits are durable backend data.

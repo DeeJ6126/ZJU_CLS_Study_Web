@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "source": "生命科学学院学生会学术部纳新推文",
+  "activities": [
+    {
+      "id": "activity-academic-voyage",
+      "slug": "academic-voyage-lectures",
+      "title": "“学业领航”系列讲座",
+      "category": "frontier",
+      "summary": "从诺奖成果到虚拟细胞、珊瑚共生与生物育种，与院内教师和青年研究者面对面讨论学术前沿。",
+      "body": "学术部通过“学业领航”系列讲座，把第一手学术资讯带到本科生身边。活动关注最新诺贝尔生理学或医学奖成果，也邀请院内杰出教授与百人计划研究员，围绕生物信息学与虚拟细胞建模、珊瑚共生与白化机制、植物环境适应性及生物育种等课题展开分享。\n\n系列活动还会分享国际组织实习与科研保研的一手经验，帮助同学在交流中拓宽学术视野，进一步辨认适合自己的学习与科研方向。",
+      "imageUrl": "/assets/activities/academic-voyage-lectures.webp",
+      "imageAlt": "学业领航系列讲座往期海报合集",
+      "status": "published",
+      "featured": true,
+      "displayOrder": 10
+    },
+    {
+      "id": "activity-lab-open-day",
+      "slug": "lab-open-day",
+      "title": "实验室开放日",
+      "category": "frontier",
+      "summary": "走进科研一线，近距离了解实验室的研究方向、工作氛围与真实日常。",
+      "body": "实验室开放日把“听见科研”变成“走进科研”。活动带领生科学子进入实验室一线，在现场了解团队的研究方向、实验环境与日常工作方式。\n\n通过直接观察和交流，同学可以更具体地认识不同研究方向，也能让未来的科研选择从抽象想象变成可感知的路径。",
+      "imageUrl": "/assets/activities/laboratory-open-day.webp",
+      "imageAlt": "2025年生命科学学院实验室开放日师生合影",
+      "status": "published",
+      "featured": true,
+      "displayOrder": 20
+    },
+    {
+      "id": "activity-major-festival",
+      "slug": "major-festival",
+      "title": "专业节宣讲",
+      "category": "learning",
+      "summary": "在专业节现场讲述生科故事，为正在认识和选择专业的同学呈现生命科学的学习图景。",
+      "body": "在专业节的现场，学术部面向前来咨询的同学介绍生命科学。宣讲以清晰的逻辑梳理专业特点、学习内容与发展图景，帮助有志于生命科学的同学建立更具体的认识。\n\n这项活动承担着连接学院与未来生科学子的任务，让专业选择不只依赖名称和想象，而能建立在充分了解之上。",
+      "imageUrl": "/assets/activities/major-festival.webp",
+      "imageAlt": "专业节现场的生命科学学院展位与咨询交流",
+      "status": "published",
+      "featured": false,
+      "displayOrder": 30
+    },
+    {
+      "id": "activity-peer-learning",
+      "slug": "peer-learning",
+      "title": "朋辈辅学计划",
+      "category": "learning",
+      "summary": "邀请优秀学长学姐分享课程经验、梳理难点，为学习中遇到困难的同学提供面对面支持。",
+      "body": "朋辈辅学计划相信，学习经验会在思维碰撞与同伴传递中变得更有价值。活动邀请优秀的学长学姐，为在课程学习中感到迷茫的同学梳理难点、分享方法。\n\n辅学不是单向讲授，而是让问题被看见、让经验可以继续流动，帮助同学更有把握地度过课程学习中的困难阶段。",
+      "imageUrl": "/assets/activities/peer-learning.webp",
+      "imageAlt": "朋辈辅学活动现场的答疑区",
+      "status": "published",
+      "featured": true,
+      "displayOrder": 40
+    },
+    {
+      "id": "activity-beautiful-trio",
+      "slug": "beautiful-study-trio",
+      "title": "“最美三件套”系列活动",
+      "category": "community",
+      "summary": "以最美笔记、最美作息表和最美书桌三项评选，让严谨学风进入可分享的日常。",
+      "body": "“最美三件套”由“最美笔记”“最美作息表”“最美书桌”三项评选组成。活动关注认真记录的课程笔记、劳逸结合的作息规划和整洁有序的学习空间，让严谨的学风落在每天都能实践的小事上。\n\n获奖同学可以获得奖品与二课分，优秀作品还会登上学院公众号，成为可被更多同学看到和借鉴的学习样本。",
+      "imageUrl": "/assets/activities/beautiful-trio.webp",
+      "imageAlt": "最美笔记、最美作息表和最美书桌优秀作品拼图",
+      "status": "published",
+      "featured": false,
+      "displayOrder": 50
+    },
+    {
+      "id": "activity-botanical-keepsake",
+      "slug": "botanical-keepsake",
+      "title": "“寻芳拾翠，封存心语”两校联合主题活动",
+      "category": "exchange",
+      "summary": "浙江大学与兰州大学学子隔空组队，从校园植物观察走向滴胶标本与明信片交流。",
+      "body": "活动联合兰州大学学生组织，让两地学子围绕校园草木展开跨越千里的合作。线上“寻花问叶”环节中，参与者根据植物清单在各自校园寻找并记录植物，以比赞手势和水印留下探索足迹。\n\n线下“凝香滴翠”环节把花瓣与叶片封存在滴胶中，制成独特的艺术标本，再通过明信片寄出心语。一枚叶脉和一笺信纸由此承载起跨校友谊与彼此的观察视野。",
+      "imageUrl": "/assets/activities/botanical-keepsake.webp",
+      "imageAlt": "封存花瓣的星形滴胶植物标本",
+      "status": "published",
+      "featured": false,
+      "displayOrder": 60
+    }
+  ]
+}

@@ -53,6 +53,27 @@ function mapComment(row) {
   };
 }
 
+function mapActivity(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    category: row.category,
+    summary: row.summary,
+    body: row.body,
+    imageUrl: row.imageUrl,
+    imageAlt: row.imageAlt,
+    status: row.status,
+    featured: Boolean(row.featured),
+    displayOrder: row.displayOrder,
+    createdBy: row.createdBy,
+    updatedBy: row.updatedBy,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
 const selectColumns = `
   id,
   route_id as routeId,
@@ -79,6 +100,24 @@ const selectColumns = `
   mime_type as mimeType,
   file_size as fileSize,
   file_url as fileUrl
+`;
+
+const activitySelectColumns = `
+  id,
+  slug,
+  title,
+  category,
+  summary,
+  body,
+  image_url as imageUrl,
+  image_alt as imageAlt,
+  status,
+  featured,
+  display_order as displayOrder,
+  created_by as createdBy,
+  updated_by as updatedBy,
+  created_at as createdAt,
+  updated_at as updatedAt
 `;
 
 export function createContentStore({ filename = 'server/data/content.sqlite' } = {}) {
@@ -186,6 +225,25 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
         );
         create index if not exists comment_content_idx on content_comments(content_id, created_at);
         create index if not exists comment_author_idx on content_comments(author_id, updated_at desc);
+        create table if not exists activity_items (
+          id text primary key,
+          slug text not null unique,
+          title text not null,
+          category text not null check(category in ('frontier', 'learning', 'community', 'exchange')),
+          summary text not null default '',
+          body text not null default '',
+          image_url text not null default '',
+          image_alt text not null default '',
+          status text not null default 'draft' check(status in ('draft', 'published', 'archived')),
+          featured integer not null default 0,
+          display_order integer not null default 100,
+          created_by integer,
+          updated_by integer,
+          created_at text not null,
+          updated_at text not null
+        );
+        create index if not exists activity_public_idx
+          on activity_items(status, featured, display_order, updated_at desc);
       `);
       const columns = db.prepare('pragma table_info(content_items)').all();
       if (!columns.some((column) => column.name === 'route_id')) {
@@ -341,6 +399,78 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
         select ${selectColumns} from content_items ${where}
         order by updated_at desc, id
       `).all(...values).map(mapItem);
+    },
+
+    createActivity(input) {
+      const id = input.id ?? randomUUID();
+      const now = input.createdAt ?? new Date().toISOString();
+      db.prepare(`
+        insert into activity_items (
+          id, slug, title, category, summary, body, image_url, image_alt, status,
+          featured, display_order, created_by, updated_by, created_at, updated_at
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        id, input.slug, input.title, input.category, input.summary ?? '', input.body ?? '',
+        input.imageUrl ?? '', input.imageAlt ?? '', input.status ?? 'draft', input.featured ? 1 : 0,
+        input.displayOrder ?? 100, input.createdBy ?? null, input.updatedBy ?? input.createdBy ?? null,
+        now, input.updatedAt ?? now,
+      );
+      return this.findActivityById(id);
+    },
+
+    findActivityById(id) {
+      return mapActivity(db.prepare(`select ${activitySelectColumns} from activity_items where id = ?`).get(id));
+    },
+
+    findActivityBySlug(slug) {
+      return mapActivity(db.prepare(`select ${activitySelectColumns} from activity_items where slug = ?`).get(slug));
+    },
+
+    updateActivity(id, changes) {
+      const current = this.findActivityById(id);
+      if (!current) return null;
+      const next = { ...current, ...changes, updatedAt: new Date().toISOString() };
+      db.prepare(`
+        update activity_items set slug = ?, title = ?, category = ?, summary = ?, body = ?,
+          image_url = ?, image_alt = ?, featured = ?, display_order = ?, updated_by = ?, updated_at = ?
+        where id = ?
+      `).run(
+        next.slug, next.title, next.category, next.summary, next.body, next.imageUrl, next.imageAlt,
+        next.featured ? 1 : 0, next.displayOrder, next.updatedBy ?? null, next.updatedAt, id,
+      );
+      return this.findActivityById(id);
+    },
+
+    setActivityStatus(id, status, updatedBy) {
+      db.prepare('update activity_items set status = ?, updated_by = ?, updated_at = ? where id = ?')
+        .run(status, updatedBy ?? null, new Date().toISOString(), id);
+      return this.findActivityById(id);
+    },
+
+    listPublishedActivities({ featuredOnly = false } = {}) {
+      const featuredClause = featuredOnly ? 'and featured = 1' : '';
+      return db.prepare(`
+        select ${activitySelectColumns} from activity_items
+        where status = 'published' ${featuredClause}
+        order by display_order, updated_at desc, id
+      `).all().map(mapActivity);
+    },
+
+    listAdminActivities({ status = '', category = '', query = '' } = {}) {
+      const clauses = [];
+      const values = [];
+      if (status) { clauses.push('status = ?'); values.push(status); }
+      if (category) { clauses.push('category = ?'); values.push(category); }
+      if (query) {
+        clauses.push('(lower(title) like ? or lower(summary) like ?)');
+        const pattern = `%${query.toLowerCase()}%`;
+        values.push(pattern, pattern);
+      }
+      const where = clauses.length ? `where ${clauses.join(' and ')}` : '';
+      return db.prepare(`
+        select ${activitySelectColumns} from activity_items ${where}
+        order by display_order, updated_at desc, id
+      `).all(...values).map(mapActivity);
     },
 
     createSubmission(input) {

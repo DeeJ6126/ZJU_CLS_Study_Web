@@ -8,6 +8,7 @@ import QuizPracticeLayout from './components/quiz/QuizPracticeLayout.vue';
 import TextAnswerQuestionView from './components/quiz/TextAnswerQuestionView.vue';
 import TrueFalseQuestionView from './components/quiz/TrueFalseQuestionView.vue';
 import HomePage from './components/HomePage.vue';
+import ActivityPage from './components/ActivityPage.vue';
 import OverviewPage from './components/OverviewPage.vue';
 import CourseDetailPage from './components/CourseDetailPage.vue';
 import AdminPage from './components/admin/AdminPage.vue';
@@ -55,6 +56,7 @@ import {
 } from './services/quizRangeService.js';
 import {
   getDemoPageFromHash,
+  getActivitySlugFromHash,
   getDemoPageHref,
   getProfileHref,
   getProfileIdFromHash,
@@ -194,6 +196,7 @@ const activeDemoAccountId = computed(() => (
 ));
 const isDemoAccount = computed(() => Boolean(activeDemoAccountId.value));
 const demoAdminApiClient = demoAccountService.createAdminClient();
+const demoActivityPublicClient = demoAccountService.createPublicActivityClient();
 
 async function selectDemoIdentity(identityId) {
   demoIdentityId.value = identityId ?? '';
@@ -213,6 +216,7 @@ async function selectDemoIdentity(identityId) {
   }
 }
 const activePage = ref('home');
+const activeActivitySlug = ref('');
 const overviewRoute = ref(parseResourceHash(''));
 const activeOverviewCourse = ref(null);
 const overviewContentLoading = ref(false);
@@ -1774,6 +1778,12 @@ async function syncPageFromHash() {
   resetPageState(nextPage);
   activePage.value = nextPage;
 
+  if (nextPage === 'activities') {
+    activeActivitySlug.value = getActivitySlugFromHash(window.location.hash);
+    activeOverviewCourse.value = null;
+    return;
+  }
+
   if (nextPage === 'notifications') {
     activeOverviewCourse.value = null;
     if (viewerIsGuest.value) {
@@ -2481,7 +2491,10 @@ onBeforeUnmount(() => {
     />
 
     <main class="demo-main">
-      <HomePage v-if="activePage === 'home'" />
+      <HomePage
+        v-if="activePage === 'home'"
+        :activity-client="demoIdentityId ? demoActivityPublicClient : null"
+      />
 
       <template v-else-if="activePage === 'overview'">
         <CourseDetailPage
@@ -2574,10 +2587,11 @@ onBeforeUnmount(() => {
         @open-target="openNotification"
       />
 
-      <section v-else-if="activePage === 'activities'" class="demo-placeholder" aria-labelledby="activities-title">
-        <p>活动</p>
-        <h1 id="activities-title">学院活动与学生会内容将在这里持续更新。</h1>
-      </section>
+      <ActivityPage
+        v-else-if="activePage === 'activities'"
+        :active-slug="activeActivitySlug"
+        :activity-client="demoIdentityId ? demoActivityPublicClient : null"
+      />
 
       <section v-else-if="activePage === 'about'" class="demo-placeholder" aria-labelledby="about-title">
         <p>关于</p>

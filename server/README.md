@@ -14,6 +14,7 @@ Lightweight Node backend for the current auth prototype.
 - Administrator-only course-content maintenance.
 - Published course-content API and controlled PDF delivery.
 - Student submission intake and administrator moderation.
+- Published activity catalog plus administrator activity drafting, homepage recommendation, ordering, publishing, and archiving.
 - Anonymous post likes and administrator operation logs.
 - Public profiles, nickname search, avatar uploads, and owner post management.
 - Private course lists with XLSX timetable preview/import.
@@ -89,6 +90,10 @@ Approved submissions are converted into published `content_items` records. Likes
 use a year-long anonymous `study_visitor` cookie so login is not required and one
 browser can hold at most one active like per content item. Administrator content
 and moderation mutations are recorded in the operation log.
+
+Activity records use a separate `activity_items` table in the content database.
+`public/content/activities/catalog.json` is imported idempotently on startup;
+later administrator edits are not overwritten by normal startup seeding.
 
 ## Verification Codes
 

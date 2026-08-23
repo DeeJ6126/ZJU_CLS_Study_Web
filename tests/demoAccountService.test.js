@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import { demoAccountStorageKey } from '../src/data/config/demoAccountSeeds.js';
 import { createDemoAccountService } from '../src/services/demoAccountService.js';
@@ -119,4 +120,25 @@ test('storage failures keep demo mode usable for the current session', () => {
   const mutation = quotaService.removeCourse('email', 'BIO2019F');
   assert.equal(mutation.ok, true);
   assert.match(mutation.persistenceWarning, /存储空间不足/);
+});
+
+test('demo administrator manages the same browser-local activities shown on public pages', async () => {
+  const catalog = JSON.parse(readFileSync('public/content/activities/catalog.json', 'utf8'));
+  const service = createDemoAccountService({
+    storage: createMemoryStorage(),
+    now: () => '2026-08-23T12:00:00.000Z',
+    activityLoader: async () => catalog.activities,
+  });
+  const admin = service.createAdminClient();
+  const publicClient = service.createPublicActivityClient();
+  const initial = await admin.fetchActivities({ status: 'published' });
+  assert.equal(initial.activities.length, 6);
+
+  const lab = initial.activities.find((item) => item.slug === 'lab-open-day');
+  assert.equal((await admin.updateActivity(lab.id, { ...lab, featured: false, displayOrder: 3 })).ok, true);
+  assert.equal((await publicClient.fetchActivities({ featured: true })).activities.some((item) => item.id === lab.id), false);
+  assert.equal((await admin.archiveActivity(lab.id)).ok, true);
+  assert.equal((await publicClient.fetchActivities()).activities.some((item) => item.id === lab.id), false);
+  assert.equal((await admin.publishActivity(lab.id)).ok, true);
+  assert.equal((await publicClient.fetchActivities()).activities.some((item) => item.id === lab.id), true);
 });

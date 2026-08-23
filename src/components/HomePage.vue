@@ -1,22 +1,29 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
 import {
-  homeActivities,
   homePopularResources,
   homeQuizSearchItems,
   homeResourceSearchItems,
   homeSearchKinds,
 } from '../data/homeContent.js';
+import { activityCategoryLabel } from '../data/activityConfig.js';
 import { loadResourceCatalog } from '../data/courses/resourceData.js';
+import { activityApiClient } from '../services/activityApiClient.js';
 import { buildHomeSearchIndex, searchHomeIndex } from '../services/homeSearchService.js';
 import { searchProfiles } from '../services/profileApiClient.js';
 import { publicAssetPath } from '../utils/publicPath.js';
+
+const props = defineProps({
+  activityClient: { type: Object, default: null },
+});
+const activeActivityClient = computed(() => props.activityClient ?? activityApiClient);
 
 const activeKind = ref('course');
 const query = ref('');
 const courses = ref([]);
 const catalogMessage = ref('');
 const users = ref([]);
+const activities = ref([]);
 let userSearchSequence = 0;
 
 const activeSearchKind = computed(
@@ -27,12 +34,16 @@ const searchIndex = computed(() => buildHomeSearchIndex({
   courses: courses.value,
   resources: homeResourceSearchItems,
   quizzes: homeQuizSearchItems,
-  activities: homeActivities,
+  activities: activities.value.map((item) => ({
+    ...item,
+    href: `#activities/${encodeURIComponent(item.slug)}`,
+  })),
   users: users.value,
 }));
 
 const searchResults = computed(() => searchHomeIndex(searchIndex.value, query.value, activeKind.value));
 const hasQuery = computed(() => Boolean(query.value.trim()));
+const recentActivities = computed(() => activities.value.filter((item) => item.featured).slice(0, 3));
 
 function selectSearchKind(kindId) {
   activeKind.value = kindId;
@@ -55,12 +66,13 @@ watch([query, activeKind], async ([nextQuery, nextKind]) => {
 });
 
 onMounted(async () => {
-  try {
-    const catalog = await loadResourceCatalog();
-    courses.value = catalog.courses;
-  } catch {
-    catalogMessage.value = '课程目录暂时无法读取，请稍后再试。';
-  }
+  const [activityResult, catalogResult] = await Promise.all([
+    activeActivityClient.value.fetchActivities(),
+    loadResourceCatalog().then((catalog) => ({ ok: true, catalog })).catch(() => ({ ok: false })),
+  ]);
+  if (activityResult.ok) activities.value = activityResult.activities;
+  if (catalogResult.ok) courses.value = catalogResult.catalog.courses;
+  else catalogMessage.value = '课程目录暂时无法读取，请稍后再试。';
 });
 </script>
 
@@ -118,19 +130,20 @@ onMounted(async () => {
             <p>Student Union</p>
             <h2>近期活动</h2>
           </div>
-          <a href="#about">全部活动</a>
+          <a href="#activities">全部活动</a>
         </header>
 
         <div class="home-activity-grid">
-          <article v-for="(activity, index) in homeActivities" :key="activity.id" :class="`is-${activity.tone}`">
+          <article v-for="(activity, index) in recentActivities" :key="activity.id" :class="`is-${['green', 'amber', 'blue'][index % 3]}`">
             <span class="home-activity-card__number">0{{ index + 1 }}</span>
             <div>
-              <p>{{ activity.eyebrow }}</p>
+              <p>{{ activityCategoryLabel(activity.category) }}</p>
               <h3>{{ activity.title }}</h3>
               <span>{{ activity.summary }}</span>
             </div>
-            <a :href="activity.href">{{ activity.actionLabel }} <b aria-hidden="true">→</b></a>
+            <a :href="`#activities/${encodeURIComponent(activity.slug)}`">了解活动 <b aria-hidden="true">→</b></a>
           </article>
+          <p v-if="!recentActivities.length" class="home-activity-grid__empty">暂无近期活动。</p>
         </div>
       </div>
 

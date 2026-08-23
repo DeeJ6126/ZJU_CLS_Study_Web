@@ -27,7 +27,7 @@ test('demo shell exposes the requested top-level pages and sparse home search', 
   assert.match(home, /近期活动/);
   assert.match(home, /热门资料/);
   assert.match(app, /activePage === 'activities'/);
-  assert.match(app, /id="activities-title"/);
+  assert.match(app, /<ActivityPage[\s\S]*v-else-if="activePage === 'activities'"/);
   assert.match(homeCss, /\.home-search-stage__copy,[\s\S]*?margin-inline:\s*auto/);
   assert.match(overviewCss, /\.overview-page\s*\{[\s\S]*?max-width:\s*1360px/);
   assert.match(overviewCss, /\.overview-course-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);

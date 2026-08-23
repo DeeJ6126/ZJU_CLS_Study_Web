@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { getSeedVerificationCodes } from './verificationSeed.js';
@@ -51,6 +52,8 @@ import {
 import { createContentStore } from './content/contentStore.js';
 import { importStaticCourseContent } from './content/contentImportService.js';
 import { handleContentHttpRequest } from './content/contentHttpService.js';
+import { handleActivityHttpRequest } from './activity/activityHttpService.js';
+import { seedActivityCatalog } from './activity/activityService.js';
 import {
   maxAvatarBytes,
   readAvatarFile,
@@ -153,6 +156,9 @@ function parseAdminCc98Names(value = '') {
 }
 
 const staticCourseRoot = fileURLToPath(new URL('../public/resource/courses', import.meta.url));
+const activityCatalog = JSON.parse(
+  readFileSync(fileURLToPath(new URL('../public/content/activities/catalog.json', import.meta.url)), 'utf8'),
+);
 
 export function createAuthServer({
   store = createAuthStore({ filename: process.env.AUTH_DB_FILE ?? 'server/data/auth.sqlite' }),
@@ -175,6 +181,7 @@ export function createAuthServer({
   importConfiguredQuizCollections(quizStore);
   contentStore.initialize();
   importStaticCourseContent(contentStore, { rootDirectory: staticCourseRoot });
+  seedActivityCatalog(contentStore, activityCatalog.activities);
   const courseCatalog = loadServerCourseCatalog();
   const loginGuard = createLoginGuard();
 
@@ -409,6 +416,19 @@ export function createAuthServer({
         uploadDirectory,
       });
       if (profileHandled) {
+        return;
+      }
+      const activityHandled = await handleActivityHttpRequest({
+        request,
+        response,
+        url,
+        user: currentUser,
+        userId: quizUserId,
+        contentStore,
+        sendJson,
+        readJsonBody,
+      });
+      if (activityHandled) {
         return;
       }
       const contentHandled = await handleContentHttpRequest({

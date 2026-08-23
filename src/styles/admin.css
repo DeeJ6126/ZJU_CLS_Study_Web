@@ -353,6 +353,27 @@
   grid-column: 1 / -1;
 }
 
+.admin-check-field {
+  align-self: end;
+  display: flex !important;
+  min-height: 42px;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 10px !important;
+}
+
+.admin-check-field input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--admin-primary);
+}
+
+.admin-activity-placement {
+  color: var(--demo-muted);
+  font-size: 0.82rem;
+}
+
 .admin-file-field {
   padding: 14px;
   border: 1px dashed var(--color-input-border);

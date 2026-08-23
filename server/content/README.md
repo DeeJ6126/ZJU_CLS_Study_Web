@@ -11,6 +11,14 @@ This directory owns the first-phase course-content administration backend.
 - Public read models that omit internal storage metadata.
 - Pending student submissions and administrator review decisions.
 - Anonymous like state and administrator operation logs.
+- A separate activity table used by the public activity page and homepage featured feed.
+
+## Activity management
+
+Activities are intentionally separate from course content because they do not
+have a course-code identity. Public endpoints expose only published records.
+Administrators can edit factual copy, image metadata, category, homepage
+recommendation, and display order before publishing or archiving a record.
 
 ## Moderation flow
 

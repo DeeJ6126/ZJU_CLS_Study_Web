@@ -90,6 +90,27 @@ export function createAdminApiClient(fetchImpl = fetch) {
     fetchAuditLogs(filters = {}) {
       return requestJson(`api/admin/audit-logs${queryString(filters)}`);
     },
+    fetchActivities(filters = {}) {
+      return requestJson(`api/admin/activities${queryString(filters)}`);
+    },
+    createActivity(input) {
+      return requestJson('api/admin/activities', { method: 'POST', body: JSON.stringify(input) });
+    },
+    updateActivity(id, input) {
+      return requestJson(`api/admin/activities/${encodeURIComponent(id)}`, {
+        method: 'PATCH', body: JSON.stringify(input),
+      });
+    },
+    publishActivity(id) {
+      return requestJson(`api/admin/activities/${encodeURIComponent(id)}/publish`, {
+        method: 'POST', body: '{}',
+      });
+    },
+    archiveActivity(id) {
+      return requestJson(`api/admin/activities/${encodeURIComponent(id)}/archive`, {
+        method: 'POST', body: '{}',
+      });
+    },
   };
 }
 

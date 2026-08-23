@@ -23,6 +23,7 @@ Shared business logic and API clients.
 - `demoAccountService.js`: versioned browser-local demo profiles, account data, mutations, uploads, and moderation.
 - `courseScheduleService.js`: browser-neutral timetable row normalization shared by demo XLSX import and the backend parser.
 - `homeSearchService.js`: normalized homepage search indexing and per-content-type filtering.
+- `activityApiClient.js`: published activity reads with static-catalog fallback only when the API is unavailable.
 - `overviewCatalogService.js`: overview filtering, category grouping, semester grouping, and unique course counts.
 - `courseContentApiClient.js`: published course content with static Markdown fallback only when the API is unavailable.
 - `adminApiClient.js`: administrator content CRUD, status changes, and raw PDF upload requests.
@@ -72,3 +73,8 @@ courses, favorites, posts, submissions, comments, notifications, and uploaded
 avatar independently under one versioned localStorage key. It also exposes an
 administrator adapter for reviewing demo submissions. Real-account operations
 continue through the existing API clients.
+
+Demo activity management is shared across all demo identities through the same
+browser-local sandbox. The demo administrator adapter and public activity client
+read the same records, so homepage recommendations, publishing, and archiving can
+be tested without backend writes.

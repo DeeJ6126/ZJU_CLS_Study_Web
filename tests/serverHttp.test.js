@@ -615,3 +615,62 @@ test('content admin API validates and serves uploaded PDF files', async () => {
     rmSync(uploadDirectory, { recursive: true, force: true });
   }
 });
+
+test('activity HTTP API seeds public stories and protects administrator management', async () => {
+  const store = createAuthStore({ filename: ':memory:' });
+  const quizStore = createQuizStore({ filename: ':memory:' });
+  const contentStore = createContentStore({ filename: ':memory:' });
+  const { server } = createAuthServer({
+    store, quizStore, contentStore,
+    adminCc98Names: new Set(['cc98_bio_visitor']),
+  });
+  const port = await listen(server);
+  const baseUrl = `http://127.0.0.1:${port}`;
+
+  try {
+    const publicResponse = await fetch(`${baseUrl}/api/activities`);
+    const publicBody = await publicResponse.json();
+    assert.equal(publicResponse.status, 200);
+    assert.equal(publicBody.activities.length, 6);
+    assert.equal(publicBody.activities.every((item) => item.status === undefined), true);
+    assert.equal((await fetch(`${baseUrl}/api/admin/activities`)).status, 401);
+
+    await fetch(`${baseUrl}/api/auth/register/cc98`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ code: 'bio-cc98', password: 'admin-pass-123' }),
+    });
+    const login = await fetch(`${baseUrl}/api/auth/login/cc98`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ cc98Name: 'cc98_bio_visitor', password: 'admin-pass-123' }),
+    });
+    const cookie = login.headers.get('set-cookie');
+
+    const create = await fetch(`${baseUrl}/api/admin/activities`, {
+      method: 'POST', headers: { 'content-type': 'application/json', cookie },
+      body: JSON.stringify({
+        slug: 'new-academic-program', title: '新学术活动', category: 'frontier',
+        summary: '这是一项用于验证管理闭环的活动摘要。', body: '这是完整活动正文。',
+        imageUrl: '/assets/activities/laboratory-open-day.webp', imageAlt: '实验室活动照片',
+        featured: true, displayOrder: 1,
+      }),
+    });
+    const created = await create.json();
+    assert.equal(create.status, 201);
+    assert.equal(publicBody.activities.some((item) => item.slug === 'new-academic-program'), false);
+
+    const publish = await fetch(`${baseUrl}/api/admin/activities/${created.activity.id}/publish`, {
+      method: 'POST', headers: { 'content-type': 'application/json', cookie }, body: '{}',
+    });
+    assert.equal(publish.status, 200);
+    const featured = await (await fetch(`${baseUrl}/api/activities?featured=1`)).json();
+    assert.equal(featured.activities[0].slug, 'new-academic-program');
+
+    const archive = await fetch(`${baseUrl}/api/admin/activities/${created.activity.id}/archive`, {
+      method: 'POST', headers: { 'content-type': 'application/json', cookie }, body: '{}',
+    });
+    assert.equal(archive.status, 200);
+    assert.equal((await fetch(`${baseUrl}/api/activities/new-academic-program`)).status, 404);
+  } finally {
+    server.close();
+  }
+});

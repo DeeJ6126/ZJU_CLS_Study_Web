@@ -23,7 +23,15 @@ function normalizeRowsFromWorkbook(workbook) {
   return workbook.map((sheet) => sheet?.data ?? sheet).filter(Array.isArray);
 }
 
-export function createDemoAccountService({ storage = defaultStorage(), now = () => new Date().toISOString() } = {}) {
+async function defaultActivityLoader() {
+  const response = await fetch('content/activities/catalog.json');
+  if (!response.ok) return [];
+  return (await response.json()).activities ?? [];
+}
+
+export function createDemoAccountService({
+  storage = defaultStorage(), now = () => new Date().toISOString(), activityLoader = defaultActivityLoader,
+} = {}) {
   let state;
   let persistenceWarning = '';
 
@@ -69,6 +77,24 @@ export function createDemoAccountService({ storage = defaultStorage(), now = () 
   function nextId(prefix) {
     read().sequence += 1;
     return `demo-${prefix}-${read().sequence}`;
+  }
+
+  async function ensureActivities() {
+    if (Array.isArray(read().activities)) return read().activities;
+    try {
+      read().activities = clone(await activityLoader()).map((item) => ({
+        ...item,
+        status: item.status ?? 'published',
+        featured: Boolean(item.featured),
+        displayOrder: Number(item.displayOrder ?? 100),
+        createdAt: item.createdAt ?? now(),
+        updatedAt: item.updatedAt ?? now(),
+      }));
+      save();
+    } catch {
+      read().activities = [];
+    }
+    return read().activities;
   }
 
   function privatePayload(value) {
@@ -380,6 +406,56 @@ export function createDemoAccountService({ storage = defaultStorage(), now = () 
       approveSubmission: async (id) => reviewSubmission(id, 'approved'),
       rejectSubmission: async (id, note) => reviewSubmission(id, 'rejected', note),
       fetchAuditLogs: async (filters = {}) => ({ ok: true, logs: clone(read().auditLogs.filter((item) => (!filters.courseCode || item.courseCode === filters.courseCode) && (!filters.action || item.action === filters.action) && (!filters.query || JSON.stringify(item).toLowerCase().includes(String(filters.query).toLowerCase())))) }),
+      fetchActivities: async (filters = {}) => {
+        const all = await ensureActivities();
+        return { ok: true, activities: clone(all.filter((item) => (
+          (!filters.status || item.status === filters.status)
+          && (!filters.category || item.category === filters.category)
+          && (!filters.query || JSON.stringify(item).toLowerCase().includes(String(filters.query).toLowerCase()))
+        )).sort((a, b) => a.displayOrder - b.displayOrder)) };
+      },
+      createActivity: async (input) => {
+        const all = await ensureActivities();
+        if (all.some((item) => item.slug === input.slug)) return { ok: false, message: '活动链接标识已存在。' };
+        const activity = { id: nextId('activity'), status: 'draft', createdAt: now(), updatedAt: now(), ...clone(input) };
+        all.push(activity);
+        read().auditLogs.unshift({ id: nextId('audit'), action: 'activity.create', targetTitle: activity.title, actorName: account('admin').user.nickname, courseCode: '', createdAt: now() });
+        return persist({ ok: true, activity: clone(activity) });
+      },
+      updateActivity: async (id, input) => {
+        const all = await ensureActivities();
+        const activity = all.find((item) => item.id === id);
+        if (!activity) return { ok: false, message: '活动不存在。' };
+        if (all.some((item) => item.id !== id && item.slug === input.slug)) return { ok: false, message: '活动链接标识已存在。' };
+        Object.assign(activity, clone(input), { updatedAt: now() });
+        read().auditLogs.unshift({ id: nextId('audit'), action: 'activity.update', targetTitle: activity.title, actorName: account('admin').user.nickname, courseCode: '', createdAt: now() });
+        return persist({ ok: true, activity: clone(activity) });
+      },
+      publishActivity: async (id) => {
+        const activity = (await ensureActivities()).find((item) => item.id === id);
+        if (!activity) return { ok: false, message: '活动不存在。' };
+        activity.status = 'published'; activity.updatedAt = now();
+        read().auditLogs.unshift({ id: nextId('audit'), action: 'activity.publish', targetTitle: activity.title, actorName: account('admin').user.nickname, courseCode: '', createdAt: now() });
+        return persist({ ok: true, activity: clone(activity) });
+      },
+      archiveActivity: async (id) => {
+        const activity = (await ensureActivities()).find((item) => item.id === id);
+        if (!activity) return { ok: false, message: '活动不存在。' };
+        activity.status = 'archived'; activity.updatedAt = now();
+        read().auditLogs.unshift({ id: nextId('audit'), action: 'activity.archive', targetTitle: activity.title, actorName: account('admin').user.nickname, courseCode: '', createdAt: now() });
+        return persist({ ok: true, activity: clone(activity) });
+      },
+    };
+  }
+
+  function createPublicActivityClient() {
+    return {
+      async fetchActivities({ featured = false } = {}) {
+        const activities = (await ensureActivities())
+          .filter((item) => item.status === 'published' && (!featured || item.featured))
+          .sort((a, b) => a.displayOrder - b.displayOrder);
+        return { ok: true, activities: clone(activities) };
+      },
     };
   }
 
@@ -431,6 +507,8 @@ export function createDemoAccountService({ storage = defaultStorage(), now = () 
       const admin = read().accounts.admin;
       admin.notifications = admin.notifications.filter((item) => item.actor?.publicId !== publicId);
       admin.notifications.push(...seeds.accounts.admin.notifications.filter((item) => item.actor?.publicId === publicId));
+    } else {
+      delete read().activities;
     }
     return persist({ ok: true, ...privatePayload(read().accounts[identityId]) });
   }
@@ -467,6 +545,7 @@ export function createDemoAccountService({ storage = defaultStorage(), now = () 
     markNotificationRead,
     markAllNotificationsRead,
     createAdminClient,
+    createPublicActivityClient,
     getPublishedCourseContent,
     resetAccount,
   };

@@ -45,6 +45,8 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 - Renamed the project check system folder to `project-checks/` and purged the former folder name from folder names, file names, and file contents.
 - Added a demo identity switcher in the account popover so developers can preview guest, cc98-only, email-only, dual-auth, and admin views without registering real accounts.
 - Expanded the four non-guest demo identities into isolated browser-local sandboxes with realistic profiles, courses, favorites, posts, submissions, comments, notifications, avatar uploads, XLSX timetable import, reset controls, and cross-identity administrator review. Demo writes never reach the backend.
+- Replaced the activity placeholder with a source-backed activity directory using six academic-department programs and original images from the supplied recruitment article. Homepage recent activities now read the same published, administrator-ordered records, while popular resources remain unchanged.
+- Added a dedicated activity content table and administrator workspace for drafting, editing, categorizing, homepage recommendation, ordering, publishing, and archiving. The demo administrator exercises the same workflow entirely in browser-local state.
 - Hardened login with an in-memory brute-force guard (per-account lock and per-ip throttle), Secure session cookies behind HTTPS, forwarded-ip trust for rate limits, and a `/api/health` liveness endpoint.
 - Added a public deployment checklist at `docs/deployment-checklist.md` covering code hardening, server setup, security, data, launch verification, and weekly ops.
 - Fixed the GitHub Actions workflow to run `npm run check` (the old script name did not exist) and applied `npm audit` fixes (zero vulnerabilities).
@@ -60,13 +62,14 @@ npm.cmd run build
 npm.cmd run check
 ```
 
-On 2026-08-23, all 239 tests passed and the project checks pipeline
+On 2026-08-23, all 251 tests passed and the project checks pipeline
 (`npm.cmd run check`) produced a passing report. The dependency audit
 reported zero vulnerabilities after `npm audit fix`.
 
-The browser check also passed four Chromium flows, including persistent demo
-account course changes/reset and administrator approval publishing into the
-student demo profile.
+The browser check also passed six Chromium flows, including persistent demo
+account course changes/reset, administrator approval publishing into the
+student demo profile, source-backed activity rendering, and demo activity
+homepage recommendation management.
 
 ## Deferred Or Not Yet Production-Ready
 
