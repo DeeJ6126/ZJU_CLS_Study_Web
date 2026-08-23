@@ -6,7 +6,7 @@ import {
   buildProgramSemesterSections,
   filterCoursesByProgram,
 } from '../src/services/overviewCatalogService.js';
-import { curriculumPrograms, semesterOrder } from '../src/data/courses/programCatalog.js';
+import { curriculumPrograms } from '../src/data/courses/programCatalog.js';
 
 const courses = [
   { code: 'BIO2110F', name: '微生物学（甲）', category: '专业基础课程' },
@@ -49,10 +49,14 @@ test('program courses can still be grouped by course category', () => {
   assert.ok(sections.every((section) => section.courseCount > 0));
 });
 
-test('program semester view follows the eight autumn-winter and spring-summer periods', () => {
+test('program semester view shows only periods that contain courses', () => {
   const sections = buildProgramSemesterSections(courses, curriculumPrograms['2024']);
 
-  assert.deepEqual(sections.map((section) => section.id), semesterOrder);
+  assert.deepEqual(sections.map((section) => section.id), [
+    '2-autumn-winter',
+    '2-spring-summer',
+    '4-spring-summer',
+  ]);
   assert.deepEqual(
     sections.flatMap((section) => section.courses.map((course) => [course.code, section.id])),
     [

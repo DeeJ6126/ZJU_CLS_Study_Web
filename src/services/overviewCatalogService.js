@@ -55,5 +55,5 @@ export function buildProgramSemesterSections(courses, program) {
       .filter((courseCode) => program.semesterByCourse[courseCode] === semesterId)
       .map((courseCode) => byCode.get(courseCode))
       .filter(Boolean),
-  }));
+  })).filter((section) => section.courses.length > 0);
 }
