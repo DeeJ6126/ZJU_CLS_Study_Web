@@ -259,7 +259,7 @@ export const resourceProgramMeta = {
 };
 
 export const programOptions = [
-  { year: '2023', label: '2023级培养方案', available: false },
   { year: '2024', label: '2024级培养方案', available: true },
-  { year: '2025', label: '2025级培养方案', available: false },
+  { year: '2025', label: '2025级培养方案', available: true },
+  { year: '2026', label: '2026级培养方案', available: true },
 ];
