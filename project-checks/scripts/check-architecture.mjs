@@ -1,7 +1,7 @@
-﻿import { createResult, isDirectRun, listFiles, printCliResult, readJson, readText } from './lib.mjs';
+import { createResult, isDirectRun, listFiles, printCliResult, readJson, readText } from './lib.mjs';
 
 export async function checkArchitecture({ rootDir = process.cwd() } = {}) {
-  const policy = await readJson(rootDir, 'harness/policies/file-boundaries.json');
+  const policy = await readJson(rootDir, 'project-checks/policies/file-boundaries.json');
   const failures = [];
   let checkedRules = 0;
 

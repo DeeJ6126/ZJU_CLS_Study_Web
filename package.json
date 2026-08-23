@@ -9,13 +9,13 @@
     "test": "node --test",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1 --port 4174 --strictPort",
-    "check": "node harness/scripts/run-harness.mjs",
-    "check:architecture": "node harness/scripts/check-architecture.mjs",
-    "check:routes": "node harness/scripts/check-routes.mjs",
-    "check:content": "node harness/scripts/check-content-location.mjs",
-    "check:themes": "node harness/scripts/check-themes.mjs",
-    "check:report": "node harness/scripts/collect-report.mjs",
-    "check:browser": "node harness/scripts/run-browser-harness.mjs"
+    "check": "node project-checks/scripts/run-harness.mjs",
+    "check:architecture": "node project-checks/scripts/check-architecture.mjs",
+    "check:routes": "node project-checks/scripts/check-routes.mjs",
+    "check:content": "node project-checks/scripts/check-content-location.mjs",
+    "check:themes": "node project-checks/scripts/check-themes.mjs",
+    "check:report": "node project-checks/scripts/collect-report.mjs",
+    "check:browser": "node project-checks/scripts/run-browser-harness.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",

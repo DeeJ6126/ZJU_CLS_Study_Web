@@ -1,4 +1,4 @@
-﻿import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createResult, isDirectRun, normalizeRoot, printCliResult } from './lib.mjs';
 
@@ -45,7 +45,7 @@ export function formatMarkdownReport(report) {
   return `# Project Check Report\n\n- Status: ${report.status}\n- Git commit: ${report.gitCommit || 'unknown'}\n- Started: ${report.startedAt}\n- Ended: ${report.endedAt}\n\n## Results\n\n${resultLines}\n\n## Next Steps\n\n${report.nextSteps.map((step) => `- ${step}`).join('\n')}\n`;
 }
 
-export async function writeReport(report, { rootDir = process.cwd(), reportsDir = 'harness/reports' } = {}) {
+export async function writeReport(report, { rootDir = process.cwd(), reportsDir = 'project-checks/reports' } = {}) {
   const timestamp = timestampForFile(new Date(report.endedAt));
   const dir = path.resolve(normalizeRoot(rootDir), reportsDir);
   await mkdir(dir, { recursive: true });

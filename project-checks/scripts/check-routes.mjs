@@ -1,9 +1,9 @@
-﻿import { parseCourseCsv } from '../../src/data/courses/resourceCatalog.js';
+import { parseCourseCsv } from '../../src/data/courses/resourceCatalog.js';
 import { buildCourseRoute, parseResourceHash } from '../../src/data/courses/resourcePaths.js';
 import { createResult, isDirectRun, printCliResult, readJson, readText } from './lib.mjs';
 
 export async function checkRoutes({ rootDir = process.cwd() } = {}) {
-  const policy = await readJson(rootDir, 'harness/policies/route-contracts.json');
+  const policy = await readJson(rootDir, 'project-checks/policies/route-contracts.json');
   const csvText = await readText(rootDir, policy.courseCodeSource);
   const courses = parseCourseCsv(csvText).filter((course) => course.code);
   const failures = [];

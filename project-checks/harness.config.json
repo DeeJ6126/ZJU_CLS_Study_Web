@@ -1,4 +1,4 @@
-﻿{
+{
   "projectName": "life-science-study-platform",
   "brandName": "生科智学 / 生命科学学子学习平台",
   "devServer": {
@@ -17,8 +17,8 @@
     "source": "src",
     "publicContent": "public",
     "tests": "tests",
-    "reports": "harness/reports",
-    "artifacts": "harness/artifacts"
+    "reports": "project-checks/reports",
+    "artifacts": "project-checks/artifacts"
   },
   "commands": {
     "test": "npm test",

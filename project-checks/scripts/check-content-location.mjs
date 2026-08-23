@@ -1,4 +1,4 @@
-﻿import path from 'node:path';
+import path from 'node:path';
 import { createResult, isDirectRun, listFiles, printCliResult, readJson, readText } from './lib.mjs';
 
 const cjkPattern = /[\u3400-\u9fff]/g;
@@ -9,7 +9,7 @@ function countCjk(text) {
 }
 
 export async function checkContentLocation({ rootDir = process.cwd() } = {}) {
-  const policy = await readJson(rootDir, 'harness/policies/content-location.json');
+  const policy = await readJson(rootDir, 'project-checks/policies/content-location.json');
   const scanFiles = [];
 
   for (const scanRoot of policy.scanRoots) {

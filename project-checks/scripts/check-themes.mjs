@@ -1,4 +1,4 @@
-﻿import { defaultThemeId, themes } from '../../src/data/config/themes.js';
+import { defaultThemeId, themes } from '../../src/data/config/themes.js';
 import { createResult, isDirectRun, printCliResult, readJson, readText } from './lib.mjs';
 
 function getCssBlock(cssText, selector) {
@@ -12,8 +12,8 @@ function hasToken(block, token) {
 }
 
 export async function checkThemes({ rootDir = process.cwd() } = {}) {
-  const policy = await readJson(rootDir, 'harness/policies/theme-coverage.json');
-  const expected = await readJson(rootDir, 'harness/datasets/theme-cases.json');
+  const policy = await readJson(rootDir, 'project-checks/policies/theme-coverage.json');
+  const expected = await readJson(rootDir, 'project-checks/datasets/theme-cases.json');
   const cssText = await readText(rootDir, 'src/styles/base.css');
   const themeIds = themes.map((theme) => theme.id);
   const failures = [];

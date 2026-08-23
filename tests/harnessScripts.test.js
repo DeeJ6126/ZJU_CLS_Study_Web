@@ -1,11 +1,11 @@
-﻿import test from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { checkArchitecture } from '../harness/scripts/check-architecture.mjs';
-import { checkContentLocation } from '../harness/scripts/check-content-location.mjs';
-import { checkRoutes } from '../harness/scripts/check-routes.mjs';
-import { checkThemes } from '../harness/scripts/check-themes.mjs';
-import { buildReport } from '../harness/scripts/collect-report.mjs';
+import { checkArchitecture } from '../project-checks/scripts/check-architecture.mjs';
+import { checkContentLocation } from '../project-checks/scripts/check-content-location.mjs';
+import { checkRoutes } from '../project-checks/scripts/check-routes.mjs';
+import { checkThemes } from '../project-checks/scripts/check-themes.mjs';
+import { buildReport } from '../project-checks/scripts/collect-report.mjs';
 
 const rootDir = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
 

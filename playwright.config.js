@@ -4,7 +4,7 @@ const devCommand = process.platform === 'win32' ? 'npm.cmd run dev' : 'npm run d
 const useExternalServer = process.env.HARNESS_EXTERNAL_SERVER === 'true';
 
 export default defineConfig({
-  testDir: './harness/evaluators/browser',
+  testDir: './project-checks/evaluators/browser',
   timeout: 30_000,
   expect: {
     timeout: 5_000,
@@ -14,7 +14,7 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
-  outputDir: 'harness/artifacts/playwright',
+  outputDir: 'project-checks/artifacts/playwright',
   webServer: useExternalServer ? undefined : {
     command: devCommand,
     url: 'http://127.0.0.1:5174/',

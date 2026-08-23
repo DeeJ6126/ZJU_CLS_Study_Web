@@ -1,4 +1,4 @@
-﻿import { spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import http from 'node:http';
 import { createResult, printCliResult } from './lib.mjs';
 
@@ -66,7 +66,7 @@ async function main() {
     return;
   }
 
-  const completed = spawnSync('npx playwright test harness/evaluators/browser', {
+  const completed = spawnSync('npx playwright test project-checks/evaluators/browser', {
     cwd: process.cwd(),
     encoding: 'utf8',
     shell: true,
