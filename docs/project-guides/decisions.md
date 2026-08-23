@@ -111,3 +111,23 @@ Impact: new docs should not introduce old command names.
 The expected server deployment path is `/var/www/html/zjubio/`.
 
 Impact: older `/app/zjubio` references should be treated as historical unless the user says otherwise.
+
+### 16. The check system folder is `project-checks/`
+
+The project check system folder is now `project-checks/` (renamed from the
+former folder name). The former folder name must not appear in folder names,
+file names, or file contents anywhere in the repository.
+
+Impact: reference the scripts as `project-checks/scripts/*`; the workflow
+runner is `run-checks.mjs` and the config is `checks.config.json`. Do not
+reintroduce the former folder name in new paths or docs.
+
+### 17. Curriculum programs include short terms and 2025/2026
+
+`programCatalog.js` models each curriculum with a `semesterByCourse` map over
+twelve periods (each year's autumn-winter, spring-summer, and short term).
+2024, 2025, and 2026 are enabled; 2023 is omitted because it used legacy
+numeric course codes without BIO-encoded courses.
+
+Impact: new curriculum work must fill `semesterByCourse` per year and keep the
+`*-short` periods; courses identify by BIO code only.

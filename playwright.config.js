@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const devCommand = process.platform === 'win32' ? 'npm.cmd run dev' : 'npm run dev';
-const useExternalServer = process.env.HARNESS_EXTERNAL_SERVER === 'true';
+const useExternalServer = process.env.PROJECT_CHECKS_EXTERNAL_SERVER === 'true';
 
 export default defineConfig({
   testDir: './project-checks/evaluators/browser',

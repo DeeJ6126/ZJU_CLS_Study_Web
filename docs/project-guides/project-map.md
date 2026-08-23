@@ -17,7 +17,7 @@
 ## `src/data/`
 
 - `config/`：导航、主题、测试用户、信箱模拟消息。
-- `courses/`：课程 CSV 解析、资源分组、课程详情模型、hash 路由与资源路径。
+- `courses/`：课程 CSV 解析、资源分组、课程详情模型、hash 路由、资源路径与培养方案（`programCatalog.js`）。
 - `legacy/`：早期账号展示数据，保留兼容测试。
 
 ## `src/components/`
@@ -29,8 +29,9 @@
 - `ResourcePage.vue`：资源中心课程分组和卡片。
 - `CourseDetailPage.vue`：通用课程详情框架。
 - `ContributionBox.vue`：投稿按钮和居中弹窗。
-- `SettingsPanel.vue`：主题和测试用户切换。
-- `components/account/`：账号面板、信箱和认证状态。
+- `components/account/`：账号面板、认证状态、信箱与通知。
+- `components/admin/`：`#admin` 管理员平台。
+- `components/profile/`：个人主页与内容管理。
 
 ## `src/services/`
 
@@ -59,3 +60,9 @@
 ## 项目检查体系
 
 项目级标准检查体系不替代业务测试，而是把 AI 协作、架构规则、自动检查和报告组织起来。
+
+- `project-checks/scripts/`：`run-checks.mjs`（总入口）、`check-architecture.mjs`、`check-routes.mjs`、`check-content-location.mjs`、`check-themes.mjs`、`collect-report.mjs`、`run-browser-checks.mjs`。
+- `project-checks/policies/`：架构、路由、内容位置、主题、权限规则。
+- `project-checks/evaluators/`：deterministic / browser / visual / llm 评测。
+- `project-checks/agents/`：explorer、planner、implementer、reviewer、ui-qa、data-auditor 角色协议。
+- `project-checks/reports/`：项目检查报告（被忽略，不提交）。

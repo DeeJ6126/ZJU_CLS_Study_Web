@@ -7,7 +7,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 - The project is a Vue 3 + Vite + plain CSS learning-resource platform for ZJU life-science students.
 - The app currently has a lightweight demo shell with top-level pages including `首页`, `概览`, `刷题`, and `关于`.
 - The homepage now centers course search, supports `课程 / 资料 / 题库 / 活动 / 用户` search modes, and gives student-union activities more space than the compact popular-resource list.
-- The overview page now lists all catalog courses under `专业基础课程 / 专业课 / 通识课`, supports deeper professional-course groups, and can filter the normalized 2024 curriculum by category or eight semester periods.
+- The overview page now lists all catalog courses under `专业基础课程 / 专业课 / 通识课`, supports deeper professional-course groups, and can filter the normalized 2024, 2025, and 2026 curricula by category or twelve semester periods (each year's autumn-winter, spring-summer, and short term).
 - The quiz feature is now mostly complete for the current phase:
   - `BIO2023M` molecular biology review
   - `BIO2019F` botany slice identification
@@ -41,6 +41,13 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 - Personal pages now include course-list XLSX import, favorites, owned posts/submissions, and authored-comment management; the sample timetable is verified as 15 unique courses with 3 duplicate groups merged and 6 catalog matches retained alongside 9 unmatched courses.
 - Published experiences, materials, and papers now share identified one-level comments, owner edit/delete actions, author profile links, and comment/reply notifications.
 - The hidden `#notifications` route provides recent messages and read state; submission decisions, new content comments, and replies create notifications without email delivery.
+- Added 2025 and 2026 BIO course programs (parsed from the program PDFs via MinerU), extended the semester vocabulary to twelve periods with per-year short terms, and enabled both in the overview selector.
+- Renamed the project check system folder to `project-checks/` and purged the former folder name from folder names, file names, and file contents.
+- Added a demo identity switcher in the account popover so developers can preview guest, cc98-only, email-only, dual-auth, and admin views without registering real accounts.
+- Hardened login with an in-memory brute-force guard (per-account lock and per-ip throttle), Secure session cookies behind HTTPS, forwarded-ip trust for rate limits, and a `/api/health` liveness endpoint.
+- Added a public deployment checklist at `docs/deployment-checklist.md` covering code hardening, server setup, security, data, launch verification, and weekly ops.
+- Fixed the GitHub Actions workflow to run `npm run check` (the old script name did not exist) and applied `npm audit` fixes (zero vulnerabilities).
+- Required `npm.cmd run check:architecture` / `run check:routes` / `run check:content` / `run check:themes` as the local architecture and content-location gates.
 
 ## Known Good Verification
 
@@ -52,9 +59,9 @@ npm.cmd run build
 npm.cmd run check
 ```
 
-On 2026-08-02, all 212 tests passed, the Vite production build passed, and
-`npm.cmd run check` produced a passing project report. The production dependency
-audit completed from the local advisory cache with zero reported vulnerabilities.
+On 2026-08-23, all 231 tests passed and the project checks pipeline
+(`npm.cmd run check`) produced a passing report. The dependency audit
+reported zero vulnerabilities after `npm audit fix`.
 
 ## Deferred Or Not Yet Production-Ready
 
@@ -62,7 +69,7 @@ audit completed from the local advisory cache with zero reported vulnerabilities
 - More course quiz migrations beyond the three current quiz courses.
 - Final deployment hardening under `/var/www/html/zjubio/`.
 - Content version history, automated backups, and multi-level administrator permissions.
-- The overview UI is intentionally an initial layout; 2023 and 2025 curriculum mappings remain disabled until their legacy/new course codes are normalized. Course detail layout is deferred for a later redesign.
+- The overview UI is intentionally an initial layout; the 2023 curriculum is omitted because it used legacy numeric course codes with no BIO-encoded courses. Course detail layout is deferred for a later redesign.
 
 ## Recovery Order For Future AI
 

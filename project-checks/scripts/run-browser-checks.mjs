@@ -73,7 +73,7 @@ async function main() {
     stdio: 'inherit',
     env: {
       ...process.env,
-      HARNESS_EXTERNAL_SERVER: 'true',
+      PROJECT_CHECKS_EXTERNAL_SERVER: 'true',
     },
   });
 
