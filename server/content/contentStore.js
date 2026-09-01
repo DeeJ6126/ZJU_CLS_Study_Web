@@ -64,6 +64,8 @@ function mapActivity(row) {
     body: row.body,
     imageUrl: row.imageUrl,
     imageAlt: row.imageAlt,
+    programId: row.programId,
+    externalUrl: row.externalUrl,
     status: row.status,
     featured: Boolean(row.featured),
     displayOrder: row.displayOrder,
@@ -111,6 +113,8 @@ const activitySelectColumns = `
   body,
   image_url as imageUrl,
   image_alt as imageAlt,
+  program_id as programId,
+  external_url as externalUrl,
   status,
   featured,
   display_order as displayOrder,
@@ -232,9 +236,11 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
           category text not null check(category in ('frontier', 'learning', 'community', 'exchange')),
           summary text not null default '',
           body text not null default '',
-          image_url text not null default '',
-          image_alt text not null default '',
-          status text not null default 'draft' check(status in ('draft', 'published', 'archived')),
+            image_url text not null default '',
+            image_alt text not null default '',
+            program_id text not null default '',
+            external_url text not null default '',
+            status text not null default 'draft' check(status in ('draft', 'published', 'archived')),
           featured integer not null default 0,
           display_order integer not null default 100,
           created_by integer,
@@ -255,9 +261,16 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
       if (!columns.some((column) => column.name === 'gpa')) {
         db.exec("alter table content_items add column gpa text not null default ''");
       }
-      if (!columns.some((column) => column.name === 'owner_id')) {
-        db.exec('alter table content_items add column owner_id integer');
-      }
+        if (!columns.some((column) => column.name === 'owner_id')) {
+          db.exec('alter table content_items add column owner_id integer');
+        }
+        const activityColumns = db.prepare('pragma table_info(activity_items)').all();
+        if (!activityColumns.some((column) => column.name === 'program_id')) {
+          db.exec("alter table activity_items add column program_id text not null default ''");
+        }
+        if (!activityColumns.some((column) => column.name === 'external_url')) {
+          db.exec("alter table activity_items add column external_url text not null default ''");
+        }
       const submissionColumns = db.prepare('pragma table_info(content_submissions)').all();
       if (!submissionColumns.some((column) => column.name === 'submission_kind')) {
         db.exec("alter table content_submissions add column submission_kind text not null default 'create'");
@@ -406,12 +419,13 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
       const now = input.createdAt ?? new Date().toISOString();
       db.prepare(`
         insert into activity_items (
-          id, slug, title, category, summary, body, image_url, image_alt, status,
-          featured, display_order, created_by, updated_by, created_at, updated_at
-        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          id, slug, title, category, summary, body, image_url, image_alt, program_id,
+          external_url, status, featured, display_order, created_by, updated_by, created_at, updated_at
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         id, input.slug, input.title, input.category, input.summary ?? '', input.body ?? '',
-        input.imageUrl ?? '', input.imageAlt ?? '', input.status ?? 'draft', input.featured ? 1 : 0,
+        input.imageUrl ?? '', input.imageAlt ?? '', input.programId ?? '', input.externalUrl ?? '',
+        input.status ?? 'draft', input.featured ? 1 : 0,
         input.displayOrder ?? 100, input.createdBy ?? null, input.updatedBy ?? input.createdBy ?? null,
         now, input.updatedAt ?? now,
       );
@@ -432,11 +446,13 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
       const next = { ...current, ...changes, updatedAt: new Date().toISOString() };
       db.prepare(`
         update activity_items set slug = ?, title = ?, category = ?, summary = ?, body = ?,
-          image_url = ?, image_alt = ?, featured = ?, display_order = ?, updated_by = ?, updated_at = ?
+          image_url = ?, image_alt = ?, program_id = ?, external_url = ?, featured = ?,
+          display_order = ?, updated_by = ?, updated_at = ?
         where id = ?
       `).run(
         next.slug, next.title, next.category, next.summary, next.body, next.imageUrl, next.imageAlt,
-        next.featured ? 1 : 0, next.displayOrder, next.updatedBy ?? null, next.updatedAt, id,
+        next.programId, next.externalUrl, next.featured ? 1 : 0, next.displayOrder,
+        next.updatedBy ?? null, next.updatedAt, id,
       );
       return this.findActivityById(id);
     },
@@ -447,29 +463,28 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
       return this.findActivityById(id);
     },
 
-    listPublishedActivities({ featuredOnly = false } = {}) {
-      const featuredClause = featuredOnly ? 'and featured = 1' : '';
+    listPublishedActivities() {
       return db.prepare(`
         select ${activitySelectColumns} from activity_items
-        where status = 'published' ${featuredClause}
-        order by display_order, updated_at desc, id
+        where status = 'published' and external_url <> ''
+        order by created_at desc, id
       `).all().map(mapActivity);
     },
 
-    listAdminActivities({ status = '', category = '', query = '' } = {}) {
-      const clauses = [];
+    listAdminActivities({ status = '', programId = '', query = '' } = {}) {
+      const clauses = ["external_url <> ''"];
       const values = [];
       if (status) { clauses.push('status = ?'); values.push(status); }
-      if (category) { clauses.push('category = ?'); values.push(category); }
+      if (programId) { clauses.push('program_id = ?'); values.push(programId); }
       if (query) {
-        clauses.push('(lower(title) like ? or lower(summary) like ?)');
+        clauses.push('lower(title) like ?');
         const pattern = `%${query.toLowerCase()}%`;
-        values.push(pattern, pattern);
+        values.push(pattern);
       }
       const where = clauses.length ? `where ${clauses.join(' and ')}` : '';
       return db.prepare(`
         select ${activitySelectColumns} from activity_items ${where}
-        order by display_order, updated_at desc, id
+        order by created_at desc, id
       `).all(...values).map(mapActivity);
     },
 

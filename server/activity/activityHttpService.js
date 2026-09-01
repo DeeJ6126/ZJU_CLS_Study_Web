@@ -22,7 +22,7 @@ function logActivityAction(store, action, activity, user, userId) {
     targetTitle: activity.title,
     actorId: userId,
     actorName: user?.cc98Nickname ?? user?.nickname ?? '',
-    detail: activity.featured ? '首页推荐' : '',
+    detail: activity.programId,
   });
 }
 
@@ -31,7 +31,7 @@ export async function handleActivityHttpRequest({
 }) {
   if (request.method === 'GET' && url.pathname === '/api/activities') {
     const activities = contentStore
-      .listPublishedActivities({ featuredOnly: url.searchParams.get('featured') === '1' })
+      .listPublishedActivities()
       .map(toPublicActivity);
     sendJson(response, 200, { activities });
     return true;
@@ -40,7 +40,7 @@ export async function handleActivityHttpRequest({
   const publicMatch = url.pathname.match(/^\/api\/activities\/([^/]+)$/);
   if (request.method === 'GET' && publicMatch) {
     const activity = contentStore.findActivityBySlug(decodeURIComponent(publicMatch[1]));
-    if (!activity || activity.status !== 'published') {
+    if (!activity || activity.status !== 'published' || !activity.externalUrl) {
       sendJson(response, 404, { message: '活动不存在。' });
       return true;
     }
@@ -62,7 +62,7 @@ export async function handleActivityHttpRequest({
     sendJson(response, 200, {
       activities: contentStore.listAdminActivities({
         status: url.searchParams.get('status') ?? '',
-        category: url.searchParams.get('category') ?? '',
+        programId: url.searchParams.get('programId') ?? '',
         query: url.searchParams.get('query') ?? '',
       }),
     });

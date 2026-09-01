@@ -1,6 +1,7 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
-import { activityCategories, activityCategoryLabel } from '../data/activityConfig.js';
+import { computed, onMounted, ref } from 'vue';
+
+import { activityPrograms } from '../data/activityConfig.js';
 import { activityApiClient } from '../services/activityApiClient.js';
 import { publicAssetPath } from '../utils/publicPath.js';
 
@@ -8,48 +9,23 @@ const props = defineProps({
   activeSlug: { type: String, default: '' },
   activityClient: { type: Object, default: null },
 });
-const activeActivityClient = computed(() => props.activityClient ?? activityApiClient);
 
+const activeActivityClient = computed(() => props.activityClient ?? activityApiClient);
 const activities = ref([]);
-const activeCategory = ref('all');
 const loading = ref(true);
 const message = ref('');
 
-const filteredActivities = computed(() => (
-  activeCategory.value === 'all'
-    ? activities.value
-    : activities.value.filter((item) => item.category === activeCategory.value)
-));
-const selectedActivity = computed(() => (
-  activities.value.find((item) => item.slug === props.activeSlug)
-  ?? filteredActivities.value[0]
-  ?? activities.value[0]
-  ?? null
-));
-const selectedParagraphs = computed(() => String(selectedActivity.value?.body ?? '')
-  .split(/\n\s*\n/)
-  .map((paragraph) => paragraph.trim())
-  .filter(Boolean));
-
-function activityHref(slug) {
-  return `#activities/${encodeURIComponent(slug)}`;
-}
+const activitiesByProgram = computed(() => {
+  const grouped = new Map(activityPrograms.map((program) => [program.id, []]));
+  for (const activity of activities.value) {
+    grouped.get(activity.programId)?.push(activity);
+  }
+  return grouped;
+});
 
 function activityImage(path) {
   return path ? publicAssetPath(path) : '';
 }
-
-function selectCategory(categoryId) {
-  activeCategory.value = categoryId;
-  if (categoryId === 'all') return;
-  const first = filteredActivities.value[0];
-  if (first) window.location.hash = activityHref(first.slug);
-}
-
-watch(() => props.activeSlug, (slug) => {
-  const active = activities.value.find((item) => item.slug === slug);
-  if (active) activeCategory.value = active.category;
-});
 
 onMounted(async () => {
   const result = await activeActivityClient.value.fetchActivities();
@@ -59,8 +35,6 @@ onMounted(async () => {
     return;
   }
   activities.value = result.activities;
-  const active = activities.value.find((item) => item.slug === props.activeSlug);
-  if (active) activeCategory.value = active.category;
 });
 </script>
 
@@ -71,67 +45,62 @@ onMounted(async () => {
         <p>Academic Department</p>
         <h1>活动</h1>
       </div>
-      <p>从课堂、实验室到校园生活，记录生科学子共同参与的学术与学习实践。</p>
+      <p>按六个长期板块整理学院活动。目录收录对应公众号推文，点击标题即可阅读原文。</p>
     </header>
 
-    <nav class="activities-filter" aria-label="活动分类">
-      <button
-        v-for="category in activityCategories"
-        :key="category.id"
-        type="button"
-        :class="{ 'is-active': activeCategory === category.id }"
-        @click="selectCategory(category.id)"
-      >
-        {{ category.label }}
-      </button>
+    <nav class="activities-jump" aria-label="活动板块">
+      <a v-for="program in activityPrograms" :key="program.id" :href="`#activity-program-${program.id}`">
+        {{ program.label }}
+      </a>
     </nav>
 
-    <p v-if="loading" class="activities-state">正在读取活动内容…</p>
+    <p v-if="loading" class="activities-state">正在读取活动目录...</p>
     <p v-else-if="message" class="activities-state">{{ message }}</p>
-    <p v-else-if="!activities.length" class="activities-state">暂无已发布活动。</p>
 
-    <template v-else>
-      <section v-if="selectedActivity" class="activity-feature" :aria-labelledby="`activity-${selectedActivity.slug}`">
-        <figure>
-          <img
-            :src="activityImage(selectedActivity.imageUrl)"
-            :alt="selectedActivity.imageAlt"
-          />
-          <figcaption>{{ activityCategoryLabel(selectedActivity.category) }}</figcaption>
-        </figure>
-        <article>
-          <p class="activity-feature__index">
-            {{ String(activities.findIndex((item) => item.id === selectedActivity.id) + 1).padStart(2, '0') }}
-          </p>
-          <h2 :id="`activity-${selectedActivity.slug}`">{{ selectedActivity.title }}</h2>
-          <strong>{{ selectedActivity.summary }}</strong>
-          <p v-for="paragraph in selectedParagraphs" :key="paragraph">{{ paragraph }}</p>
-        </article>
-      </section>
+    <div v-else class="activity-programs">
+      <section
+        v-for="(program, programIndex) in activityPrograms"
+        :id="`activity-program-${program.id}`"
+        :key="program.id"
+        class="activity-program"
+        :aria-labelledby="`activity-program-title-${program.id}`"
+      >
+        <div class="activity-program__intro">
+          <figure>
+            <img :src="activityImage(program.imageUrl)" :alt="program.imageAlt">
+          </figure>
+          <div>
+            <span>{{ String(programIndex + 1).padStart(2, '0') }}</span>
+            <h2 :id="`activity-program-title-${program.id}`">{{ program.label }}</h2>
+            <p>{{ program.summary }}</p>
+          </div>
+        </div>
 
-      <section class="activity-directory" aria-labelledby="activity-directory-title">
-        <header>
-          <p>Activity Index</p>
-          <h2 id="activity-directory-title">活动目录</h2>
-          <span>{{ filteredActivities.length }} 项</span>
-        </header>
-        <div class="activity-directory__list">
-          <a
-            v-for="(activity, index) in filteredActivities"
-            :key="activity.id"
-            :href="activityHref(activity.slug)"
-            :class="{ 'is-active': selectedActivity?.id === activity.id }"
-          >
-            <span>{{ String(index + 1).padStart(2, '0') }}</span>
+        <div class="activity-directory">
+          <header>
             <div>
-              <small>{{ activityCategoryLabel(activity.category) }}</small>
-              <strong>{{ activity.title }}</strong>
-              <p>{{ activity.summary }}</p>
+              <p>Articles</p>
+              <h3>活动目录</h3>
             </div>
-            <b aria-hidden="true">↗</b>
-          </a>
+            <span>{{ activitiesByProgram.get(program.id)?.length ?? 0 }} 篇</span>
+          </header>
+
+          <div v-if="activitiesByProgram.get(program.id)?.length" class="activity-directory__list">
+            <a
+              v-for="activity in activitiesByProgram.get(program.id)"
+              :key="activity.id"
+              :href="activity.externalUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img :src="activityImage(activity.imageUrl)" :alt="activity.imageAlt">
+              <strong>{{ activity.title }}</strong>
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+          <p v-else class="activity-directory__empty">暂无收录推文</p>
         </div>
       </section>
-    </template>
+    </div>
   </div>
 </template>

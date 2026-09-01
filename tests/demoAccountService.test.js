@@ -132,13 +132,23 @@ test('demo administrator manages the same browser-local activities shown on publ
   const admin = service.createAdminClient();
   const publicClient = service.createPublicActivityClient();
   const initial = await admin.fetchActivities({ status: 'published' });
-  assert.equal(initial.activities.length, 6);
+  assert.equal(initial.activities.length, 0);
 
-  const lab = initial.activities.find((item) => item.slug === 'lab-open-day');
-  assert.equal((await admin.updateActivity(lab.id, { ...lab, featured: false, displayOrder: 3 })).ok, true);
-  assert.equal((await publicClient.fetchActivities({ featured: true })).activities.some((item) => item.id === lab.id), false);
-  assert.equal((await admin.archiveActivity(lab.id)).ok, true);
-  assert.equal((await publicClient.fetchActivities()).activities.some((item) => item.id === lab.id), false);
-  assert.equal((await admin.publishActivity(lab.id)).ok, true);
-  assert.equal((await publicClient.fetchActivities()).activities.some((item) => item.id === lab.id), true);
+  const created = await admin.createActivity({
+    title: '实验室开放日回顾',
+    programId: 'laboratory-open-day',
+    imageUrl: '/assets/activities/laboratory-open-day.webp',
+    externalUrl: 'https://mp.weixin.qq.com/s/demo-lab',
+  });
+  assert.equal(created.ok, true);
+  assert.equal(created.activity.status, 'published');
+  assert.equal((await publicClient.fetchActivities()).activities[0].externalUrl, created.activity.externalUrl);
+  assert.equal((await admin.updateActivity(created.activity.id, {
+    title: '实验室开放日纪实',
+    programId: 'laboratory-open-day',
+    imageUrl: '/assets/activities/laboratory-open-day.webp',
+    externalUrl: 'https://mp.weixin.qq.com/s/demo-lab',
+  })).activity.title, '实验室开放日纪实');
+  assert.equal((await admin.archiveActivity(created.activity.id)).ok, true);
+  assert.equal((await publicClient.fetchActivities()).activities.length, 0);
 });

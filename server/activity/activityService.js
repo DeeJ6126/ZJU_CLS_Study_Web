@@ -1,12 +1,19 @@
-const activityCategories = new Set(['frontier', 'learning', 'community', 'exchange']);
+import { randomUUID } from 'node:crypto';
+
+const programs = new Map([
+  ['academic-voyage', 'frontier'],
+  ['laboratory-open-day', 'frontier'],
+  ['major-festival', 'learning'],
+  ['peer-learning', 'learning'],
+  ['beautiful-trio', 'community'],
+  ['joint-activities', 'exchange'],
+]);
 
 function clean(value) {
   return String(value ?? '').trim();
 }
 
-function isSafeImageUrl(value) {
-  if (!value) return true;
-  if (value.startsWith('/assets/activities/')) return true;
+function isHttpUrl(value) {
   try {
     return ['http:', 'https:'].includes(new URL(value).protocol);
   } catch {
@@ -14,36 +21,45 @@ function isSafeImageUrl(value) {
   }
 }
 
+function isSafeImageUrl(value) {
+  return value.startsWith('/assets/activities/') || isHttpUrl(value);
+}
+
 export function validateActivityInput(input, { partial = false, current = null } = {}) {
   const data = partial ? { ...current, ...input } : input;
-  const slug = clean(data.slug);
   const title = clean(data.title);
-  const category = clean(data.category);
-  const summary = clean(data.summary);
-  const body = clean(data.body);
+  const programId = clean(data.programId);
   const imageUrl = clean(data.imageUrl);
-  const imageAlt = clean(data.imageAlt);
-  const displayOrder = Number(data.displayOrder ?? 100);
-  const featured = data.featured === true || data.featured === 1;
+  const externalUrl = clean(data.externalUrl);
 
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 80) {
-    return { ok: false, status: 400, message: '活动链接标识只能使用小写字母、数字和连字符。' };
+  if (!title || title.length > 120) {
+    return { ok: false, status: 400, message: '请填写不超过 120 个字的推文标题。' };
   }
-  if (!title || title.length > 80 || !activityCategories.has(category)) {
-    return { ok: false, status: 400, message: '活动标题或分类无效。' };
+  if (!programs.has(programId)) {
+    return { ok: false, status: 400, message: '请选择有效的活动板块。' };
   }
-  if (!summary || summary.length > 240 || !body || body.length > 20000) {
-    return { ok: false, status: 400, message: '活动摘要和正文需要填写，并保持在长度限制内。' };
+  if (!imageUrl || !isSafeImageUrl(imageUrl)) {
+    return { ok: false, status: 400, message: '请填写有效的封面地址。' };
   }
-  if (!isSafeImageUrl(imageUrl) || (imageUrl && (!imageAlt || imageAlt.length > 160))) {
-    return { ok: false, status: 400, message: '活动图片地址或图片说明无效。' };
+  if (!isHttpUrl(externalUrl)) {
+    return { ok: false, status: 400, message: '请填写有效的推文链接。' };
   }
-  if (!Number.isInteger(displayOrder) || displayOrder < 0 || displayOrder > 9999) {
-    return { ok: false, status: 400, message: '展示顺序需要是 0 到 9999 的整数。' };
-  }
+
   return {
     ok: true,
-    value: { slug, title, category, summary, body, imageUrl, imageAlt, featured, displayOrder },
+    value: {
+      slug: clean(data.slug) || `post-${randomUUID()}`,
+      title,
+      programId,
+      category: programs.get(programId),
+      imageUrl,
+      imageAlt: `${title}封面`,
+      externalUrl,
+      summary: '',
+      body: '',
+      featured: true,
+      displayOrder: 100,
+    },
   };
 }
 
@@ -52,40 +68,44 @@ export function toPublicActivity(activity) {
     id: activity.id,
     slug: activity.slug,
     title: activity.title,
+    programId: activity.programId,
     category: activity.category,
-    summary: activity.summary,
-    body: activity.body,
     imageUrl: activity.imageUrl,
     imageAlt: activity.imageAlt,
-    featured: activity.featured,
-    displayOrder: activity.displayOrder,
+    externalUrl: activity.externalUrl,
+    createdAt: activity.createdAt,
     updatedAt: activity.updatedAt,
   };
+}
+
+function duplicateLink(store, externalUrl, ignoredId = '') {
+  return store.listAdminActivities({}).some(
+    (activity) => activity.id !== ignoredId && activity.externalUrl === externalUrl,
+  );
 }
 
 export function createActivity(store, input, userId) {
   const validation = validateActivityInput(input);
   if (!validation.ok) return validation;
-  if (store.findActivityBySlug(validation.value.slug)) {
-    return { ok: false, status: 409, message: '活动链接标识已存在。' };
+  if (duplicateLink(store, validation.value.externalUrl)) {
+    return { ok: false, status: 409, message: '这篇推文已经在活动目录中。' };
   }
   return {
     ok: true,
     status: 201,
     activity: store.createActivity({
-      ...validation.value, status: 'draft', createdBy: userId, updatedBy: userId,
+      ...validation.value, status: 'published', createdBy: userId, updatedBy: userId,
     }),
   };
 }
 
 export function updateActivity(store, id, input, userId) {
   const current = store.findActivityById(id);
-  if (!current) return { ok: false, status: 404, message: '活动不存在。' };
+  if (!current || !current.externalUrl) return { ok: false, status: 404, message: '推文不存在。' };
   const validation = validateActivityInput(input, { partial: true, current });
   if (!validation.ok) return validation;
-  const duplicate = store.findActivityBySlug(validation.value.slug);
-  if (duplicate && duplicate.id !== id) {
-    return { ok: false, status: 409, message: '活动链接标识已存在。' };
+  if (duplicateLink(store, validation.value.externalUrl, id)) {
+    return { ok: false, status: 409, message: '这篇推文已经在活动目录中。' };
   }
   return {
     ok: true,
@@ -96,20 +116,19 @@ export function updateActivity(store, id, input, userId) {
 
 export function publishActivity(store, id, userId) {
   const activity = store.findActivityById(id);
-  if (!activity) return { ok: false, status: 404, message: '活动不存在。' };
-  const validation = validateActivityInput(activity);
-  if (!validation.ok) return validation;
+  if (!activity || !activity.externalUrl) return { ok: false, status: 404, message: '推文不存在。' };
   return { ok: true, status: 200, activity: store.setActivityStatus(id, 'published', userId) };
 }
 
 export function archiveActivity(store, id, userId) {
-  if (!store.findActivityById(id)) return { ok: false, status: 404, message: '活动不存在。' };
+  const activity = store.findActivityById(id);
+  if (!activity || !activity.externalUrl) return { ok: false, status: 404, message: '推文不存在。' };
   return { ok: true, status: 200, activity: store.setActivityStatus(id, 'archived', userId) };
 }
 
 export function seedActivityCatalog(store, activities = []) {
   let created = 0;
-  for (const activity of activities) {
+  for (const activity of activities.filter((item) => item.externalUrl && item.programId)) {
     if (store.findActivityById(activity.id) || store.findActivityBySlug(activity.slug)) continue;
     const validation = validateActivityInput(activity);
     if (!validation.ok) continue;

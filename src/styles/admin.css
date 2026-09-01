@@ -116,6 +116,7 @@
 .admin-primary-action,
 .admin-editor__actions button,
 .admin-content-table__actions button,
+.admin-content-table__actions a,
 .admin-editor__head > button,
 .admin-auth__modes button,
 .admin-file-field__current button {
@@ -127,6 +128,7 @@
   background: var(--color-surface);
   font-weight: 750;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .admin-primary-action,
@@ -163,6 +165,36 @@
 
 .admin-list__filters--wide {
   grid-template-columns: minmax(230px, 1fr) minmax(150px, 210px) minmax(220px, 1fr);
+}
+
+.admin-activity-programs {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  padding-top: 22px;
+}
+
+.admin-activity-programs button {
+  min-width: max-content;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--color-line);
+  border-right-width: 0;
+  color: var(--color-muted);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.admin-activity-programs button:first-child { border-radius: 6px 0 0 6px; }
+.admin-activity-programs button:last-child { border-right-width: 1px; border-radius: 0 6px 6px 0; }
+.admin-activity-programs button.is-active {
+  color: var(--detail-action-text);
+  border-color: var(--admin-primary);
+  background: var(--admin-primary);
+}
+
+.admin-activity-programs + .admin-list__filters--wide {
+  grid-template-columns: minmax(260px, 1fr);
 }
 
 .admin-list__filters label,
@@ -351,6 +383,34 @@
 .admin-editor__wide,
 .admin-editor__actions {
   grid-column: 1 / -1;
+}
+
+.admin-content-table__actions a {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  color: var(--color-ink);
+  background: var(--color-surface);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.admin-activity-title {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.admin-activity-title img {
+  width: 72px;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 4px;
+  background: var(--admin-primary-soft);
 }
 
 .admin-check-field {

@@ -20,9 +20,9 @@ test('admin API client sends structured content and raw PDF requests', async () 
   await client.uploadPdf('content-1', new File(['%PDF-test'], '期中卷.pdf', { type: 'application/pdf' }));
   await client.fetchSubmissions({ status: 'pending', query: '复习' });
   await client.fetchAuditLogs({ action: 'submission.approve' });
-  await client.fetchActivities({ status: 'published', category: 'frontier' });
-  await client.createActivity({ slug: 'lab-open-day', title: '实验室开放日' });
-  await client.updateActivity('activity-1', { featured: true, displayOrder: 10 });
+  await client.fetchActivities({ programId: 'laboratory-open-day' });
+  await client.createActivity({ title: '实验室开放日回顾', externalUrl: 'https://mp.weixin.qq.com/s/demo' });
+  await client.updateActivity('activity-1', { title: '实验室开放日纪实' });
   await client.publishActivity('activity-1');
   await client.archiveActivity('activity-1');
 
@@ -35,7 +35,7 @@ test('admin API client sends structured content and raw PDF requests', async () 
   assert.equal(requests[2].options.body instanceof File, true);
   assert.match(requests[3].path, /api\/admin\/submissions/);
   assert.match(requests[4].path, /api\/admin\/audit-logs/);
-  assert.match(requests[5].path, /api\/admin\/activities\?status=published&category=frontier/);
+  assert.match(requests[5].path, /api\/admin\/activities\?programId=laboratory-open-day/);
   assert.equal(requests[6].options.method, 'POST');
   assert.equal(requests[7].options.method, 'PATCH');
   assert.match(requests[8].path, /activity-1\/publish/);
@@ -72,10 +72,12 @@ test('admin page uses the shared header, green sidebar, dense table, and explici
   assert.match(component, /操作日志/);
   assert.match(component, /内容搜索/);
   assert.match(component, /活动管理/);
-  assert.match(component, /推荐到首页“近期活动”/);
-  assert.match(component, /展示顺序/);
-  assert.match(component, /图片说明/);
+  assert.match(component, /新增推文/);
+  assert.match(component, /推文链接/);
+  assert.match(component, /添加到目录/);
+  assert.match(component, /activityPrograms/);
   assert.match(component, /activityImageOptions/);
+  assert.doesNotMatch(component, /推荐到首页“近期活动”/);
   assert.match(component, /activeApiClient\.value\.fetchActivities/);
   assert.match(css, /grid-template-columns:\s*188px\s+minmax\(0,\s*1fr\)/);
   assert.match(css, /var\(--demo-primary\)/);

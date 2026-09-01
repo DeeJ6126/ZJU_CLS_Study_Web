@@ -11,16 +11,22 @@ test('nested activity routes stay on the activity page and expose the selected s
   assert.equal(getActivitySlugFromHash('#activities'), '');
 });
 
-test('activity page renders source-backed filters, imagery, and an editorial directory', () => {
+test('activity page renders six source-backed programs with external push-article directories', () => {
   const component = readFileSync('src/components/ActivityPage.vue', 'utf8');
   const config = readFileSync('src/data/activityConfig.js', 'utf8');
   const css = readFileSync('src/styles/activities.css', 'utf8');
   assert.match(component, /activeActivityClient\.value\.fetchActivities/);
-  assert.match(config, /全部活动/);
-  assert.match(config, /学术前沿/);
-  assert.match(component, /selectedActivity\.imageAlt/);
+  assert.match(config, /学业领航/);
+  assert.match(config, /实验室开放日/);
+  assert.match(config, /专业节宣讲/);
+  assert.match(config, /朋辈辅学/);
+  assert.match(config, /最美三件套/);
+  assert.match(config, /联合活动/);
+  assert.match(component, /activitiesByProgram/);
+  assert.match(component, /activity\.externalUrl/);
+  assert.match(component, /target="_blank"/);
   assert.match(component, /活动目录/);
-  assert.doesNotMatch(component, /报名截止|活动时间|活动地点/);
+  assert.doesNotMatch(component, /selectedParagraphs|activity\.body/);
   assert.match(css, /grid-template-columns/);
   assert.match(css, /@media\s*\(max-width:\s*800px\)/);
 });
@@ -30,6 +36,7 @@ test('homepage recent activities come from the shared activity client while popu
   const data = readFileSync('src/data/homeContent.js', 'utf8');
   assert.match(home, /activeActivityClient\.value\.fetchActivities/);
   assert.match(home, /recentActivities/);
+  assert.match(home, /activity\.externalUrl/);
   assert.match(home, /href="#activities"/);
   assert.match(data, /homePopularResources/);
   assert.match(data, /microbiology-review/);

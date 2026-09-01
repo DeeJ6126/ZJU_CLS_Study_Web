@@ -616,7 +616,7 @@ test('content admin API validates and serves uploaded PDF files', async () => {
   }
 });
 
-test('activity HTTP API seeds public stories and protects administrator management', async () => {
+test('activity HTTP API exposes only administrator-managed push-article entries', async () => {
   const store = createAuthStore({ filename: ':memory:' });
   const quizStore = createQuizStore({ filename: ':memory:' });
   const contentStore = createContentStore({ filename: ':memory:' });
@@ -631,7 +631,7 @@ test('activity HTTP API seeds public stories and protects administrator manageme
     const publicResponse = await fetch(`${baseUrl}/api/activities`);
     const publicBody = await publicResponse.json();
     assert.equal(publicResponse.status, 200);
-    assert.equal(publicBody.activities.length, 6);
+    assert.equal(publicBody.activities.length, 0);
     assert.equal(publicBody.activities.every((item) => item.status === undefined), true);
     assert.equal((await fetch(`${baseUrl}/api/admin/activities`)).status, 401);
 
@@ -648,28 +648,24 @@ test('activity HTTP API seeds public stories and protects administrator manageme
     const create = await fetch(`${baseUrl}/api/admin/activities`, {
       method: 'POST', headers: { 'content-type': 'application/json', cookie },
       body: JSON.stringify({
-        slug: 'new-academic-program', title: '新学术活动', category: 'frontier',
-        summary: '这是一项用于验证管理闭环的活动摘要。', body: '这是完整活动正文。',
-        imageUrl: '/assets/activities/laboratory-open-day.webp', imageAlt: '实验室活动照片',
-        featured: true, displayOrder: 1,
+        title: '实验室开放日回顾', programId: 'laboratory-open-day',
+        imageUrl: '/assets/activities/laboratory-open-day.webp',
+        externalUrl: 'https://mp.weixin.qq.com/s/http-test-lab',
       }),
     });
     const created = await create.json();
     assert.equal(create.status, 201);
-    assert.equal(publicBody.activities.some((item) => item.slug === 'new-academic-program'), false);
-
-    const publish = await fetch(`${baseUrl}/api/admin/activities/${created.activity.id}/publish`, {
-      method: 'POST', headers: { 'content-type': 'application/json', cookie }, body: '{}',
-    });
-    assert.equal(publish.status, 200);
-    const featured = await (await fetch(`${baseUrl}/api/activities?featured=1`)).json();
-    assert.equal(featured.activities[0].slug, 'new-academic-program');
+    assert.equal(created.activity.status, 'published');
+    const published = await (await fetch(`${baseUrl}/api/activities`)).json();
+    assert.equal(published.activities[0].programId, 'laboratory-open-day');
+    assert.equal(published.activities[0].externalUrl, 'https://mp.weixin.qq.com/s/http-test-lab');
+    assert.equal(published.activities[0].status, undefined);
 
     const archive = await fetch(`${baseUrl}/api/admin/activities/${created.activity.id}/archive`, {
       method: 'POST', headers: { 'content-type': 'application/json', cookie }, body: '{}',
     });
     assert.equal(archive.status, 200);
-    assert.equal((await fetch(`${baseUrl}/api/activities/new-academic-program`)).status, 404);
+    assert.equal((await fetch(`${baseUrl}/api/activities/${created.activity.slug}`)).status, 404);
   } finally {
     server.close();
   }

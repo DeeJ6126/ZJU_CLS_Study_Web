@@ -360,21 +360,6 @@ Course hours per week: 2.0-2.0
 Faculty: College of Life Sciences
 Course Summary: Ecology is the study of the relationships between living organisms and their physical environment. This course analyzes the complex relationship from the organism to the population, the community, the ecosystem, the urban and rural system, the urban and rural coupling system until the global multilevel, to train the students’ way of thinking and to deal with the complex things, and to provide the support of the theory, the theory of square and the knowledge of the science, economy and society. This course emphasizes the construction of reasoning system in the face of multiscale world, and finds common laws between hierarchical systems. Ecological construction has become one of the key problems in the development of the country. This course is to train the students to serve the society actively, to make the ecological thought be recognized by the society, and thus the ecology also obtains the new scientific problems.
 
-课程代码：BIO2009F            
-课程名称：微生物学及实验（甲）
-学分：4.0
-周学时：3.0-2.0
-开课部门：生命科学学院
-课程简介：微生物学课程是国家理科基地生物学专业的主干课程，既是一门专业课程，又是一门为其他课程提供基础理论和基本技术的专业基础课，是生物学专业的骨干课程。课程包括了微生物学基础理论的课堂教学、微生物学实验技能训练和课程论文的写作培养。通过本课程的学习，使学生能全面掌握和了解微生物学的基础理论、基础知识和基本技术，训练和学会分析和解决微生物学研究、生产领域中实际问题的基本能力，为学生从事微生物学领域科研、教学、生产、开发等工作建立较好的微生物学理论和技术基础。并具有一定的论文写作能力。
-
-
-Course ID: BIO2009F
-Course Title: Microbiology and Experiments (A)
-Credit Points: 4.0 
-Course hours per week: 3.0-2.0 
-Faculty: College of Life Sciences
-Course Summary: Microbiology is a main course for Biology specialty of National Science Base, and it is a specialty course, also is a specialty fundamental one providing the basic theories and techniques for other courses. The course includes the class teaching of fundamental theories, the practice training of experimental techniques, and the writing training of course paper and experimental design. All of teaching activities make students hold solidly the theory fundament, basic knowledge and basic techniques in microbiology, have the ability of analyzing and resolving problems in research and production of microbiology field, and have the ability of writing paper and experimental design in microbiology.
-
 课程代码：BIO2010F            
 课程名称：微生物学及实验（乙）
 学分：3.0
