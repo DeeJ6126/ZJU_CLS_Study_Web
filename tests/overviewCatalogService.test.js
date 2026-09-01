@@ -66,3 +66,35 @@ test('program semester view shows only periods that contain courses', () => {
     ],
   );
 });
+
+test('2024 curriculum exposes the dedicated short-term sections like 2025', () => {
+  const program2024 = curriculumPrograms['2024'];
+  const program2025 = curriculumPrograms['2025'];
+  const courses2024 = new Set(Object.keys(program2024.semesterByCourse));
+
+  const shortCoursesIn2025 = Object.entries(program2025.semesterByCourse)
+    .filter(([, semester]) => semester.endsWith('-short'));
+
+  for (const [course, semester] of shortCoursesIn2025) {
+    assert.ok(
+      courses2024.has(course),
+      `2024 should include shared short-term course ${course}`,
+    );
+    assert.equal(
+      program2024.semesterByCourse[course],
+      semester,
+      `2024 should place ${course} in ${semester} to match 2025`,
+    );
+  }
+
+  const sections = buildProgramSemesterSections(
+    [...courses2024].map((code) => ({ code })),
+    program2024,
+  );
+  const shortSectionIds = sections
+    .filter((section) => section.id.endsWith('-short'))
+    .map((section) => section.id)
+    .sort();
+
+  assert.deepEqual(shortSectionIds, ['2-short', '3-short']);
+});
