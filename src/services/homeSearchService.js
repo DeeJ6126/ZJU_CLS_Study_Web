@@ -45,7 +45,7 @@ export function buildHomeSearchIndex({
     ...users.map((item) => ({
       id: item.publicId,
       title: item.nickname,
-      subtitle: '个人主页',
+      subtitle: '个人',
       href: `#profile/${encodeURIComponent(item.publicId)}`,
       kind: 'user',
     })),

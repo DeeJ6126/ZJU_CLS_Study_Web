@@ -16,17 +16,19 @@ const props = defineProps({
   notice: { type: String, default: '' },
   nicknameLocked: { type: Boolean, default: false },
   cc98Bound: { type: Boolean, default: false },
+  grade: { type: Number, default: null },
   isDemo: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
-  'save-nickname', 'upload-avatar', 'remove-avatar', 'archive-post', 'submit-revision',
+  'save-nickname', 'save-grade', 'upload-avatar', 'remove-avatar', 'archive-post', 'submit-revision',
   'resubmit', 'bind-cc98', 'preview-course-schedule', 'replace-courses', 'remove-course',
   'remove-favorite', 'edit-comment', 'delete-comment', 'edit-submission', 'withdraw-submission',
   'delete-submission',
 ]);
 const activeSection = ref('profile');
 const nickname = ref('');
+const grade = ref('');
 const editingPostId = ref('');
 const revision = ref({ title: '', summary: '', body: '' });
 const cc98Code = ref('');
@@ -34,10 +36,20 @@ const currentPassword = ref('');
 const editingSubmissionId = ref('');
 const submissionDraft = ref({ title: '', summary: '', body: '' });
 
+const GRADE_OPTIONS = [
+  { value: '', label: '未设置' },
+  { value: '2024', label: '2024 级' },
+  { value: '2025', label: '2025 级' },
+  { value: '2026', label: '2026 级' },
+];
+
 const visiblePosts = computed(() => props.posts.filter((post) => (
   props.isOwn || post.status === 'published' || !post.status
 )));
 watch(() => props.profile?.nickname, (value) => { nickname.value = value ?? ''; }, { immediate: true });
+watch(() => props.grade, (value) => {
+  grade.value = value == null ? '' : String(value);
+}, { immediate: true });
 
 function chooseAvatar(event) {
   const file = event.target.files?.[0];
@@ -70,6 +82,10 @@ function saveSubmission(submission) {
   emit(event, { submission, changes: { ...submissionDraft.value } });
   editingSubmissionId.value = '';
 }
+function saveGrade() {
+  const next = grade.value === '' ? null : Number(grade.value);
+  emit('save-grade', next);
+}
 function contentHref(item) {
   const tab = { experience: 'experiences', material: 'materials', paper: 'papers' }[item.type];
   return buildCourseRoute(item.courseCode, tab, item.routeId || item.id);
@@ -89,11 +105,11 @@ function statusLabel(status) {
           ['posts', '我的帖子'], ['comments', '我的评论'],
         ]" :key="section[0]" :class="{ 'is-active': activeSection === section[0] }" type="button" @click="activeSection = section[0]">{{ section[1] }}</button>
       </template>
-      <strong v-else>个人主页</strong>
+      <strong v-else>个人</strong>
     </aside>
 
     <main class="profile-main">
-      <p v-if="loading" class="profile-state">正在加载个人主页...</p>
+      <p v-if="loading" class="profile-state">正在加载个人...</p>
       <p v-else-if="error" class="profile-state is-error">{{ error }}</p>
       <template v-else-if="profile">
         <p v-if="isDemo" class="profile-demo-notice">演示数据仅保存在当前浏览器，不会提交到服务器。</p>
@@ -112,6 +128,15 @@ function statusLabel(status) {
               <button type="submit">保存昵称</button>
             </form>
             <p v-else-if="isOwn" class="profile-help">昵称已与 CC98 名字绑定。</p>
+            <form v-if="isOwn" class="profile-grade-form" @submit.prevent="saveGrade">
+              <label>
+                <span>所在年级</span>
+                <select v-model="grade">
+                  <option v-for="option in GRADE_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                </select>
+              </label>
+              <button type="submit">保存年级</button>
+            </form>
             <form v-if="isOwn" class="profile-cc98-form" @submit.prevent="emit('bind-cc98', { code: cc98Code, password: currentPassword })">
               <h2>{{ cc98Bound ? '换绑 CC98' : '绑定 CC98' }}</h2>
               <label><span>CC98 验证码</span><input v-model.trim="cc98Code" required /></label>

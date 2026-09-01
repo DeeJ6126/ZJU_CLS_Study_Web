@@ -87,7 +87,7 @@ const emit = defineEmits([
     </div>
 
     <div v-else class="account-popover__signed-in-actions">
-      <button type="button" @click="emit('open-profile')">个人主页</button>
+      <button type="button" @click="emit('open-profile')">个人</button>
       <button type="button" @click="emit('open-notifications')">
         站内消息<span v-if="unreadCount"> {{ unreadCount }}</span>
       </button>

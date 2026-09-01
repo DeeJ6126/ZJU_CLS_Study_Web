@@ -95,7 +95,6 @@ const semesterByCourse2024 = {
 
 const semesterByCourse2025 = {
   BIO2005F: '2-spring-summer',
-  BIO2009F: '2-spring-summer',
   BIO2011F: '2-autumn-winter',
   BIO2012F: '2-autumn-winter',
   BIO2017F: '3-autumn-winter',

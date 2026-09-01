@@ -1,4 +1,5 @@
 import { buildResourceSections } from '../data/courses/resourceCatalog.js';
+import { buildCourseRoute } from '../data/courses/resourcePaths.js';
 import { semesterLabels, semesterOrder } from '../data/courses/programCatalog.js';
 
 function countCourses(groups) {
@@ -54,6 +55,7 @@ export function buildProgramSemesterSections(courses, program) {
     courses: program.courseCodes
       .filter((courseCode) => program.semesterByCourse[courseCode] === semesterId)
       .map((courseCode) => byCode.get(courseCode))
-      .filter(Boolean),
+      .filter(Boolean)
+      .map((course) => ({ ...course, href: buildCourseRoute(course.code) })),
   })).filter((section) => section.courses.length > 0);
 }

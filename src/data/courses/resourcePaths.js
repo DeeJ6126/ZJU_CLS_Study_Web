@@ -51,7 +51,8 @@ export function buildCourseRoute(courseCode, tabId = defaultCourseDetailTab, ite
 }
 
 export function parseResourceHash(hashValue) {
-  const cleanHash = decodeURIComponent(hashValue.replace(/^#/, ''));
+  const valueWithoutQuery = String(hashValue ?? '').split('?')[0];
+  const cleanHash = decodeURIComponent(valueWithoutQuery.replace(/^#/, ''));
   const parts = cleanHash.split('/#').filter(Boolean);
 
   if (parts[0] !== resourceRouteRoot) {

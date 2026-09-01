@@ -6,7 +6,7 @@ import {
   homeResourceSearchItems,
   homeSearchKinds,
 } from '../data/homeContent.js';
-import { activityCategoryLabel } from '../data/activityConfig.js';
+import { activityProgramLabel } from '../data/activityConfig.js';
 import { loadResourceCatalog } from '../data/courses/resourceData.js';
 import { activityApiClient } from '../services/activityApiClient.js';
 import { buildHomeSearchIndex, searchHomeIndex } from '../services/homeSearchService.js';
@@ -36,14 +36,15 @@ const searchIndex = computed(() => buildHomeSearchIndex({
   quizzes: homeQuizSearchItems,
   activities: activities.value.map((item) => ({
     ...item,
-    href: `#activities/${encodeURIComponent(item.slug)}`,
+    summary: activityProgramLabel(item.programId),
+    href: item.externalUrl,
   })),
   users: users.value,
 }));
 
 const searchResults = computed(() => searchHomeIndex(searchIndex.value, query.value, activeKind.value));
 const hasQuery = computed(() => Boolean(query.value.trim()));
-const recentActivities = computed(() => activities.value.filter((item) => item.featured).slice(0, 3));
+const recentActivities = computed(() => activities.value.slice(0, 3));
 
 function selectSearchKind(kindId) {
   activeKind.value = kindId;
@@ -116,7 +117,7 @@ onMounted(async () => {
         <p v-if="catalogMessage" class="home-search__message">{{ catalogMessage }}</p>
       </div>
 
-      <div class="home-search-stage__quicklinks" aria-label="常用入口">
+      <div v-if="!hasQuery" class="home-search-stage__quicklinks" aria-label="常用入口">
         <span>常用入口</span>
         <a href="#quiz">开始刷题</a>
         <a href="#overview">查看培养方案</a>
@@ -137,11 +138,11 @@ onMounted(async () => {
           <article v-for="(activity, index) in recentActivities" :key="activity.id" :class="`is-${['green', 'amber', 'blue'][index % 3]}`">
             <span class="home-activity-card__number">0{{ index + 1 }}</span>
             <div>
-              <p>{{ activityCategoryLabel(activity.category) }}</p>
+              <p>{{ activityProgramLabel(activity.programId) }}</p>
               <h3>{{ activity.title }}</h3>
-              <span>{{ activity.summary }}</span>
+              <span>查看公众号原文</span>
             </div>
-            <a :href="`#activities/${encodeURIComponent(activity.slug)}`">了解活动 <b aria-hidden="true">→</b></a>
+            <a :href="activity.externalUrl" target="_blank" rel="noopener noreferrer">阅读推文 <b aria-hidden="true">↗</b></a>
           </article>
           <p v-if="!recentActivities.length" class="home-activity-grid__empty">暂无近期活动。</p>
         </div>

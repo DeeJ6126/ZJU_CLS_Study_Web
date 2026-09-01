@@ -1,9 +1,30 @@
+function stripHashQuery(hash) {
+  const value = String(hash ?? '').replace(/^#/, '');
+  const queryIndex = value.indexOf('?');
+  return queryIndex === -1 ? value : value.slice(0, queryIndex);
+}
+
+export function getHashQuery(hash) {
+  const value = String(hash ?? '').replace(/^#/, '');
+  const queryIndex = value.indexOf('?');
+  if (queryIndex === -1) {
+    return new URLSearchParams();
+  }
+  return new URLSearchParams(value.slice(queryIndex + 1));
+}
+
+export function buildHashWithQuery(basePage, params = {}) {
+  const entries = Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== '');
+  const search = new URLSearchParams(entries).toString();
+  return `#${basePage}${search ? `?${search}` : ''}`;
+}
+
 export function getDemoPageHref(pageId) {
   return `#${pageId}`;
 }
 
 export function getDemoPageFromHash(hash, pages) {
-  const pageId = String(hash ?? '').replace(/^#/, '');
+  const pageId = stripHashQuery(hash);
   if (pageId === 'resources' || pageId.startsWith('resources/#')) {
     return 'overview';
   }

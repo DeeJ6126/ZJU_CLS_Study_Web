@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { loadResourceCatalog } from '../data/courses/resourceData.js';
 import {
   curriculumOptions,
@@ -10,10 +10,34 @@ import {
   buildProgramCategorySections,
   buildProgramSemesterSections,
 } from '../services/overviewCatalogService.js';
+import {
+  buildHashWithQuery,
+  getHashQuery,
+} from '../services/demoNavigationService.js';
 
+const VALID_GROUPING_MODES = new Set(['category', 'semester']);
+const DEFAULT_PROGRAM_ID = 'all';
+
+function programIdForGrade(grade) {
+  if (grade == null) return '';
+  const year = String(grade);
+  return curriculumPrograms[year] ? year : '';
+}
+
+function readFiltersFromHash() {
+  const params = getHashQuery(window.location.hash);
+  const programId = params.get('program');
+  const grouping = params.get('group');
+  return {
+    programId: curriculumPrograms[programId] ? programId : '',
+    grouping: VALID_GROUPING_MODES.has(grouping) ? grouping : 'category',
+  };
+}
+
+const initialFilters = readFiltersFromHash();
 const courses = ref([]);
-const selectedProgramId = ref('all');
-const groupingMode = ref('category');
+const selectedProgramId = ref(initialFilters.programId || DEFAULT_PROGRAM_ID);
+const groupingMode = ref(initialFilters.grouping);
 const isLoading = ref(true);
 const loadError = ref('');
 const collapsedSections = reactive({});
@@ -21,8 +45,39 @@ const collapsedGroups = reactive({});
 const props = defineProps({
   canManageCourses: { type: Boolean, default: false },
   savedCourseCodes: { type: Array, default: () => [] },
+  userGrade: { type: Number, default: null },
 });
 const emit = defineEmits(['add-course', 'remove-course']);
+
+function applyDefaultFromGrade() {
+  if (selectedProgramId.value !== DEFAULT_PROGRAM_ID) return;
+  const fallback = programIdForGrade(props.userGrade);
+  if (fallback) selectedProgramId.value = fallback;
+}
+
+function syncOverviewHash() {
+  const params = {};
+  if (selectedProgramId.value !== DEFAULT_PROGRAM_ID) {
+    params.program = selectedProgramId.value;
+  }
+  if (groupingMode.value !== 'category') {
+    params.group = groupingMode.value;
+  }
+  const nextHash = buildHashWithQuery('overview', params);
+  if (window.location.hash !== nextHash) {
+    history.replaceState(null, '', `${window.location.pathname}${window.location.search}${nextHash}`);
+  }
+}
+
+watch(
+  [selectedProgramId, groupingMode],
+  () => { syncOverviewHash(); },
+);
+
+watch(
+  () => props.userGrade,
+  () => { applyDefaultFromGrade(); },
+);
 
 const selectedProgram = computed(() => curriculumPrograms[selectedProgramId.value] ?? null);
 const isProgramSelected = computed(() => Boolean(selectedProgram.value));
@@ -64,6 +119,7 @@ function toggleSavedCourse(course) {
 }
 
 onMounted(async () => {
+  applyDefaultFromGrade();
   try {
     const catalog = await loadResourceCatalog();
     courses.value = catalog.courses;

@@ -14,7 +14,7 @@ test('demo student profile supports isolated persistent local actions', async ({
   await selectDemoIdentity(page, 'email');
   await expect(page.locator('.demo-user-chip')).toContainText('演示·蓝桥');
 
-  await page.getByRole('button', { name: '个人主页' }).click();
+  await page.getByRole('button', { name: '个人' }).click();
   await expect(page.locator('.profile-demo-notice')).toContainText('不会提交到服务器');
   await page.getByRole('button', { name: '我的课程' }).click();
   const initialRows = await page.locator('.profile-course-row:not(.profile-course-row--head)').count();
@@ -51,7 +51,7 @@ test('demo administrator approval publishes to the student account', async ({ pa
   await expect(page.locator('.admin-notice').filter({ hasText: '投稿已通过并发布' })).toBeVisible();
 
   await selectDemoIdentity(page, 'cc98');
-  await page.getByRole('button', { name: '个人主页' }).click();
+  await page.getByRole('button', { name: '个人' }).click();
   await page.getByRole('button', { name: '我的帖子' }).click();
   await expect(page.getByRole('link', { name: '微生物学名词辨析表' })).toBeVisible();
   expect(apiWrites).toEqual([]);

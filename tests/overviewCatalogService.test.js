@@ -98,3 +98,14 @@ test('2024 curriculum exposes the dedicated short-term sections like 2025', () =
 
   assert.deepEqual(shortSectionIds, ['2-short', '3-short']);
 });
+
+test('program semester view attaches a course detail href to every course', () => {
+  const sections = buildProgramSemesterSections(courses, curriculumPrograms['2024']);
+
+  const flatCourses = sections.flatMap((section) => section.courses);
+  assert.ok(flatCourses.length > 0);
+  for (const course of flatCourses) {
+    assert.ok(course.href, `course ${course.code} should expose a detail href`);
+    assert.match(course.href, /#resources\/#BIO\d{4}[FM]$/);
+  }
+});

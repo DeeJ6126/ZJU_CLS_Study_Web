@@ -23,6 +23,21 @@ test('resource hash parser reads course, tab, and item route parts', () => {
   });
 });
 
+test('resource hash parser ignores a trailing query suffix used for filter state', () => {
+  assert.deepEqual(parseResourceHash('#overview?program=2025&group=semester'), {
+    section: 'overview',
+    courseCode: '',
+    tabId: 'overview',
+    itemId: '',
+  });
+  assert.deepEqual(parseResourceHash('#resources?program=2025'), {
+    section: 'resources',
+    courseCode: '',
+    tabId: 'overview',
+    itemId: '',
+  });
+});
+
 test('course material paths are centralized for migration', () => {
   assert.equal(
     courseMaterialPaths.BIO2110F.papers,

@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  buildHashWithQuery,
   getDemoPageFromHash,
   getDemoPageHref,
+  getHashQuery,
 } from '../src/services/demoNavigationService.js';
 import { demoTopPages } from '../src/data/quizDemo.js';
 
@@ -31,4 +33,38 @@ test('admin route is reachable without appearing in the student top navigation',
 test('notifications route is account-only and not part of the top navigation', () => {
   assert.equal(getDemoPageFromHash('#notifications', demoTopPages), 'notifications');
   assert.equal(demoTopPages.some((page) => page.id === 'notifications'), false);
+});
+
+test('overview hash with filter query still resolves to the overview page', () => {
+  assert.equal(
+    getDemoPageFromHash('#overview?program=2025&group=semester', demoTopPages),
+    'overview',
+  );
+  assert.equal(
+    getDemoPageFromHash('#resources?program=2025&group=semester', demoTopPages),
+    'overview',
+  );
+});
+
+test('getHashQuery returns parsed params from a hash with a query suffix', () => {
+  const params = getHashQuery('#overview?program=2025&group=semester');
+  assert.equal(params.get('program'), '2025');
+  assert.equal(params.get('group'), 'semester');
+});
+
+test('getHashQuery returns empty params when the hash has no query suffix', () => {
+  const params = getHashQuery('#overview');
+  assert.equal(params.toString(), '');
+});
+
+test('buildHashWithQuery omits empty params and keeps a clean base hash', () => {
+  assert.equal(buildHashWithQuery('overview', {}), '#overview');
+  assert.equal(
+    buildHashWithQuery('overview', { program: '2025', group: '' }),
+    '#overview?program=2025',
+  );
+  assert.equal(
+    buildHashWithQuery('overview', { program: '2025', group: 'semester' }),
+    '#overview?program=2025&group=semester',
+  );
 });
