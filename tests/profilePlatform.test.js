@@ -172,6 +172,76 @@ test('profile HTTP API keeps email private and lets only the owner archive a pos
   }
 });
 
+test('logged-in users can update their own grade through the profile API', async () => {
+  const authStore = createAuthStore({ filename: ':memory:' });
+  const contentStore = createContentStore({ filename: ':memory:' });
+  const quizStore = createQuizStore({ filename: ':memory:' });
+  authStore.initialize();
+  contentStore.initialize();
+  const user = authStore.createUser({
+    email: '3240123@zju.edu.cn',
+    nickname: '年级同学',
+    passwordHash: await hashPassword('12345678'),
+    grade: 2024,
+  });
+  authStore.createSession({ id: 'grade-session', userId: user.id });
+  const { server } = createAuthServer({
+    store: authStore, contentStore, quizStore, emailSender: async () => {},
+  });
+  const port = await listen(server);
+  const baseUrl = `http://127.0.0.1:${port}`;
+  const headers = { cookie: 'study_session=grade-session', 'content-type': 'application/json' };
+  try {
+    const invalid = await fetch(`${baseUrl}/api/account/profile/grade`, {
+      method: 'PATCH', headers, body: JSON.stringify({ grade: 2023 }),
+    });
+    assert.equal(invalid.status, 400);
+
+    const me = await fetch(`${baseUrl}/api/auth/me`, { headers });
+    const meBody = await me.json();
+    assert.equal(meBody.user.grade, 2024);
+
+    const update = await fetch(`${baseUrl}/api/account/profile/grade`, {
+      method: 'PATCH', headers, body: JSON.stringify({ grade: 2026 }),
+    });
+    const updateBody = await update.json();
+    assert.equal(update.status, 200);
+    assert.equal(updateBody.user.grade, 2026);
+    assert.equal(authStore.findUserById(user.id).grade, 2026);
+
+    const clear = await fetch(`${baseUrl}/api/account/profile/grade`, {
+      method: 'PATCH', headers, body: JSON.stringify({ grade: null }),
+    });
+    const clearBody = await clear.json();
+    assert.equal(clear.status, 200);
+    assert.equal(clearBody.user.grade, null);
+  } finally {
+    server.close();
+  }
+});
+
+test('the grade endpoint rejects anonymous requests', async () => {
+  const authStore = createAuthStore({ filename: ':memory:' });
+  const contentStore = createContentStore({ filename: ':memory:' });
+  const quizStore = createQuizStore({ filename: ':memory:' });
+  authStore.initialize();
+  contentStore.initialize();
+  const { server } = createAuthServer({
+    store: authStore, contentStore, quizStore, emailSender: async () => {},
+  });
+  const port = await listen(server);
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/api/account/profile/grade`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ grade: 2025 }),
+    });
+    assert.equal(response.status, 401);
+  } finally {
+    server.close();
+  }
+});
+
 test('owners can edit and withdraw pending submissions and delete rejected submissions', async () => {
   const authStore = createAuthStore({ filename: ':memory:' });
   const contentStore = createContentStore({ filename: ':memory:' });

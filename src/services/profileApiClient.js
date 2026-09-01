@@ -35,6 +35,10 @@ export function updateMyNickname(nickname) {
   return requestJson('api/account/profile', jsonOptions('PATCH', { nickname }));
 }
 
+export function updateMyGrade(grade) {
+  return requestJson('api/account/profile/grade', jsonOptions('PATCH', { grade }));
+}
+
 export function uploadMyAvatar(file) {
   return requestJson('api/account/profile/avatar', {
     method: 'PUT',

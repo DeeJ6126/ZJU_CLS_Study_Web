@@ -34,6 +34,7 @@ export const demoIdentities = [
       avatarColor: '#2d4a2b',
       publicId: 'demo-cc98',
       verifications: { cc98: true, email: false },
+      grade: 2025,
     },
   },
   {
@@ -50,6 +51,7 @@ export const demoIdentities = [
       avatarColor: '#4a6fa5',
       publicId: 'demo-email',
       verifications: { cc98: false, email: true },
+      grade: 2024,
     },
   },
   {
@@ -66,6 +68,7 @@ export const demoIdentities = [
       avatarColor: '#36454f',
       publicId: 'demo-dual',
       verifications: { cc98: true, email: true },
+      grade: 2024,
     },
   },
   {
@@ -82,6 +85,7 @@ export const demoIdentities = [
       avatarColor: '#0066ff',
       publicId: 'demo-admin',
       verifications: { cc98: true, email: false },
+      grade: 2023,
     },
   },
 ];

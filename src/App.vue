@@ -147,6 +147,7 @@ import {
   deleteMySubmission,
   resubmitMySubmission,
   submitPostRevision,
+  updateMyGrade,
   updateMyNickname,
   updateMySubmission,
   uploadMyAvatar,
@@ -509,6 +510,16 @@ function routeFromHash() {
 
 function setPage(pageId) {
   resetPageState(pageId);
+  if (pageId === 'profile') {
+    if (viewer.value.publicId) {
+      activePage.value = pageId;
+      window.location.hash = getProfileHref(viewer.value.publicId);
+    } else {
+      activePage.value = 'home';
+      window.location.hash = getDemoPageHref('home');
+    }
+    return;
+  }
   activePage.value = pageId;
   window.location.hash = getDemoPageHref(pageId);
 }
@@ -2289,6 +2300,21 @@ async function saveProfileNickname(nickname) {
   await loadActiveProfile();
 }
 
+async function saveProfileGrade(grade) {
+  profileNotice.value = '正在保存年级...';
+  const result = isDemoAccount.value
+    ? demoAccountService.updateGrade(activeDemoAccountId.value, grade)
+    : await updateMyGrade(grade);
+  if (!result.ok) {
+    profileNotice.value = result.message;
+    return;
+  }
+  if (isDemoAccount.value) demoDataVersion.value += 1;
+  else studentViewer.value = result.user;
+  profileNotice.value = mutationNotice(result, '年级已保存。');
+  await loadActiveProfile();
+}
+
 async function uploadProfileAvatar(file) {
   profileNotice.value = '正在处理头像...';
   const result = isDemoAccount.value
@@ -2529,6 +2555,7 @@ onBeforeUnmount(() => {
           v-else
           :can-manage-courses="!viewerIsGuest"
           :saved-course-codes="savedCourseCodes"
+          :user-grade="viewer.grade ?? null"
           @add-course="addAccountCourse"
           @remove-course="removeAccountCourse"
         />
@@ -2557,8 +2584,10 @@ onBeforeUnmount(() => {
         :notice="profileNotice"
         :nickname-locked="Boolean(viewer.verifications?.cc98)"
         :cc98-bound="Boolean(viewer.verifications?.cc98)"
+        :grade="viewer.grade ?? null"
         :is-demo="isDemoAccount"
         @save-nickname="saveProfileNickname"
+        @save-grade="saveProfileGrade"
         @upload-avatar="uploadProfileAvatar"
         @remove-avatar="removeProfileAvatar"
         @bind-cc98="bindProfileCc98"

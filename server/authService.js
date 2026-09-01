@@ -49,6 +49,7 @@ export function publicUser(user) {
     role: user.role ?? 'student',
     nickname: user.nickname,
     publicId: user.publicId,
+    grade: user.grade ?? null,
     cc98Nickname: user.cc98Name || '未绑定',
     email: maskEmail(user.email),
     avatarUrl: user.avatarStoredName

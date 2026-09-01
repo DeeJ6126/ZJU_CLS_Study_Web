@@ -242,3 +242,67 @@ test('email code requests enforce hourly IP and service-wide limits', async () =
   assert.equal(globallyLimited.status, 429);
   globalStore.close();
 });
+
+test('email registration auto-derives grade from the 32X0 student id prefix', async () => {
+  const store = createTestStore();
+  const mail = mailOptions();
+  await requestEmailCode(store, { studentId: '3240123', purpose: 'register' }, mail.options);
+  const result = await registerEmail(store, {
+    studentId: '3240123',
+    nickname: '2024新生',
+    code: '123456',
+    password: '12345678',
+  }, mail.options);
+  assert.equal(result.ok, true);
+  assert.equal(result.user.grade, 2024);
+  const persisted = store.findUserByEmail('3240123@zju.edu.cn');
+  assert.equal(persisted.grade, 2024);
+  store.close();
+});
+
+test('email registration stores null grade for student ids without a year mapping', async () => {
+  const store = createTestStore();
+  const mail = mailOptions();
+  await requestEmailCode(store, { studentId: '3230001', purpose: 'register' }, mail.options);
+  const result = await registerEmail(store, {
+    studentId: '3230001',
+    nickname: '老生',
+    code: '123456',
+    password: '12345678',
+  }, mail.options);
+  assert.equal(result.ok, true);
+  assert.equal(result.user.grade, null);
+  store.close();
+});
+
+test('binding an email on a grade-less account fills the grade from the new student id', async () => {
+  const store = createTestStore();
+  await registerCc98(store, { code: 'bio-cc98', password: '12345678' });
+  const login = await loginCc98(store, { cc98Name: 'cc98_bio_visitor', password: '12345678' });
+  const internalUserId = store.findSession(login.sessionId).userId;
+  const mail = mailOptions();
+  await requestEmailCode(store, { studentId: '3250123', purpose: 'bind' }, mail.options);
+  const bound = await bindEmailIdentity(store, internalUserId, {
+    studentId: '3250123', code: '123456',
+  }, mail.options);
+  assert.equal(bound.ok, true);
+  assert.equal(bound.user.grade, 2025);
+  store.close();
+});
+
+test('binding an email does not overwrite an existing grade on the account', async () => {
+  const store = createTestStore();
+  await registerCc98(store, { code: 'bio-cc98', password: '12345678' });
+  const login = await loginCc98(store, { cc98Name: 'cc98_bio_visitor', password: '12345678' });
+  const internalUserId = store.findSession(login.sessionId).userId;
+  store.updateGrade(internalUserId, 2024);
+
+  const mail = mailOptions();
+  await requestEmailCode(store, { studentId: '3250999', purpose: 'bind' }, mail.options);
+  const bound = await bindEmailIdentity(store, internalUserId, {
+    studentId: '3250999', code: '123456',
+  }, mail.options);
+  assert.equal(bound.ok, true);
+  assert.equal(bound.user.grade, 2024);
+  store.close();
+});

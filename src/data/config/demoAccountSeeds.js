@@ -31,7 +31,7 @@ export function createDemoAccountSeeds() {
         user: {
           id: 'demo-cc98', publicId: 'demo-cc98', role: 'student', nickname: '演示·青莲',
           cc98Nickname: 'cc98_demo_leaf', email: '', avatarInitials: '青', avatarColor: '#2d4a2b',
-          avatarUrl: '', verifications: { cc98: true, email: false }, isDemo: true,
+          avatarUrl: '', verifications: { cc98: true, email: false }, isDemo: true, grade: 2025,
         },
         courses: [
           course('BIO2110F', '微生物学及实验', '陈老师', '2025-2026秋冬', '周一3-4;周四6-8', '生物实验楼101;教学楼203'),
@@ -49,7 +49,7 @@ export function createDemoAccountSeeds() {
         user: {
           id: 'demo-email', publicId: 'demo-email', role: 'student', nickname: '演示·蓝桥',
           cc98Nickname: '未绑定', email: '3240100000@zju.edu.cn', avatarInitials: '蓝', avatarColor: '#4a6fa5',
-          avatarUrl: '', verifications: { cc98: false, email: true }, isDemo: true,
+          avatarUrl: '', verifications: { cc98: false, email: true }, isDemo: true, grade: 2024,
         },
         courses: [
           course('BIO2019F', '植物学及实验', '周老师', '2025-2026春夏', '周三6-8', '生物实验楼305'),
@@ -66,7 +66,7 @@ export function createDemoAccountSeeds() {
         user: {
           id: 'demo-dual', publicId: 'demo-dual', role: 'student', nickname: '演示·双认证',
           cc98Nickname: 'cc98_demo_dual', email: '3240100001@zju.edu.cn', avatarInitials: '双', avatarColor: '#36454f',
-          avatarUrl: '', verifications: { cc98: true, email: true }, isDemo: true,
+          avatarUrl: '', verifications: { cc98: true, email: true }, isDemo: true, grade: 2024,
         },
         courses: [
           course('BIO2023M', '分子生物学', '吴老师', '2025-2026秋冬', '周二1-2', '紫金港西1-205'),
@@ -84,7 +84,7 @@ export function createDemoAccountSeeds() {
         user: {
           id: 'demo-admin', publicId: 'demo-admin', role: 'admin', nickname: '演示·管理员',
           cc98Nickname: 'cc98_demo_admin', email: '', avatarInitials: '管', avatarColor: '#0066ff',
-          avatarUrl: '', verifications: { cc98: true, email: false }, isDemo: true,
+          avatarUrl: '', verifications: { cc98: true, email: false }, isDemo: true, grade: 2023,
         },
         courses: [course('BIO2110F', '微生物学及实验', '陈老师', '2025-2026秋冬', '周一3-4', '生物实验楼101')],
         favorites: [], likedContentIds: [], posts: [], submissions: [], comments: [],

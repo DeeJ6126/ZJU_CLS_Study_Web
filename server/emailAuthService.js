@@ -10,6 +10,7 @@ import {
   validatePassword,
   verifyPassword,
 } from './authService.js';
+import { gradeFromStudentId } from './studentGrade.js';
 
 const scrypt = promisify(scryptCallback);
 const purposes = new Set(['register', 'bind', 'password-reset']);
@@ -128,6 +129,7 @@ export async function registerEmail(store, input, options = {}) {
     email,
     nickname,
     passwordHash: await hashPassword(input.password),
+    grade: gradeFromStudentId(email.split('@')[0]),
   });
   store.consumeEmailCode(verified.record.id, verified.consumedAt);
   return { ok: true, status: 201, user: publicUser(user) };
@@ -151,7 +153,13 @@ export async function bindEmailIdentity(store, userId, input, options = {}) {
   }
   const verified = await verifyEmailCode(store, { email, code: input.code, purpose: 'bind' }, options);
   if (!verified.ok) return verified;
-  const next = store.addIdentity(userId, 'email', email);
+  let next = store.addIdentity(userId, 'email', email);
+  if (next.grade == null) {
+    const derivedGrade = gradeFromStudentId(email.split('@')[0]);
+    if (derivedGrade != null) {
+      next = store.updateGrade(userId, derivedGrade);
+    }
+  }
   store.consumeEmailCode(verified.record.id, verified.consumedAt);
   return { ok: true, status: 200, user: publicUser(next) };
 }

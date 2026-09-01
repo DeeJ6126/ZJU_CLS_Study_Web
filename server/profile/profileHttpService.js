@@ -6,6 +6,7 @@ import {
   updateSubmission,
 } from '../content/submissionService.js';
 import { removeStoredFile } from '../content/contentFileService.js';
+import { ALLOWED_GRADES } from '../studentGrade.js';
 
 function publicProfile(user) {
   if (!user) return null;
@@ -111,6 +112,27 @@ export async function handleProfileHttpRequest({
     }
     authStore.updateProfile(userId, { nickname });
     sendJson(response, 200, { user: publicUser(authStore.findUserById(userId)) });
+    return true;
+  }
+
+  if (request.method === 'PATCH' && url.pathname === '/api/account/profile/grade') {
+    if (!String(request.headers['content-type'] ?? '').toLowerCase().startsWith('application/json')) {
+      sendJson(response, 415, { message: '年级修改请求格式无效。' });
+      return true;
+    }
+    const body = await readJsonBody(request);
+    const rawGrade = body.grade;
+    let nextGrade = null;
+    if (rawGrade !== null && rawGrade !== undefined && rawGrade !== '') {
+      const numericGrade = Number(rawGrade);
+      if (!ALLOWED_GRADES.includes(numericGrade)) {
+        sendJson(response, 400, { message: '请选择有效的年级（2024、2025 或 2026）。' });
+        return true;
+      }
+      nextGrade = numericGrade;
+    }
+    const updated = authStore.updateGrade(userId, nextGrade);
+    sendJson(response, 200, { user: publicUser(updated) });
     return true;
   }
 

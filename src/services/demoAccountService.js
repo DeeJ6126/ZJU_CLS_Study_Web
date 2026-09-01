@@ -1,5 +1,6 @@
 import { createDemoAccountSeeds, demoAccountSchemaVersion, demoAccountStorageKey } from '../data/config/demoAccountSeeds.js';
 import { buildCourseRoute } from '../data/courses/resourcePaths.js';
+import { activityProgram } from '../data/activityConfig.js';
 import { bodyToParagraphs } from '../utils/markdownContent.js';
 import { normalizeCourseScheduleRows } from './courseScheduleService.js';
 
@@ -149,6 +150,13 @@ export function createDemoAccountService({
     return updateUser(identityId, { nickname: value, avatarInitials: value.slice(0, 1) });
   }
 
+  function updateGrade(identityId, grade) {
+    if (grade !== null && grade !== undefined && ![2024, 2025, 2026].includes(Number(grade))) {
+      return { ok: false, message: '请选择有效的年级。' };
+    }
+    return updateUser(identityId, { grade: grade == null ? null : Number(grade) });
+  }
+
   function removeAvatar(identityId) {
     return updateUser(identityId, { avatarUrl: '' });
   }
@@ -187,10 +195,16 @@ export function createDemoAccountService({
     if (!/^\d+$/.test(String(studentId ?? ''))) return { ok: false, message: '请输入纯数字学号。' };
     const result = requireAccount(identityId);
     if (!result.ok) return result;
-    return updateUser(identityId, {
+    const updates = {
       email: `${studentId}@zju.edu.cn`,
       verifications: { ...result.value.user.verifications, email: true },
-    });
+    };
+    if (result.value.user.grade == null) {
+      const STUDENT_ID_TO_GRADE = { '3240': 2024, '3250': 2025, '3260': 2026 };
+      const derived = STUDENT_ID_TO_GRADE[String(studentId).slice(0, 4)] ?? null;
+      if (derived != null) updates.grade = derived;
+    }
+    return updateUser(identityId, updates);
   }
 
   async function previewCourseSchedule(identityId, file, workbookReader) {
@@ -409,16 +423,24 @@ export function createDemoAccountService({
       fetchActivities: async (filters = {}) => {
         const all = await ensureActivities();
         return { ok: true, activities: clone(all.filter((item) => (
-          (!filters.status || item.status === filters.status)
-          && (!filters.category || item.category === filters.category)
+          item.externalUrl
+          && (!filters.status || item.status === filters.status)
+          && (!filters.programId || item.programId === filters.programId)
           && (!filters.query || JSON.stringify(item).toLowerCase().includes(String(filters.query).toLowerCase()))
-        )).sort((a, b) => a.displayOrder - b.displayOrder)) };
+        )).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))) };
       },
       createActivity: async (input) => {
         const all = await ensureActivities();
-        if (all.some((item) => item.slug === input.slug)) return { ok: false, message: '活动链接标识已存在。' };
-        const activity = { id: nextId('activity'), status: 'draft', createdAt: now(), updatedAt: now(), ...clone(input) };
-        all.push(activity);
+        if (all.some((item) => item.externalUrl === input.externalUrl)) return { ok: false, message: '这篇推文已经在活动目录中。' };
+        const program = activityProgram(input.programId);
+        if (!program) return { ok: false, message: '请选择有效的活动板块。' };
+        const createdAt = now();
+        const activity = {
+          id: nextId('activity'), slug: nextId('activity-post'), status: 'published', featured: true,
+          category: program.category, imageAlt: `${input.title}封面`, createdAt, updatedAt: createdAt,
+          ...clone(input),
+        };
+        all.unshift(activity);
         read().auditLogs.unshift({ id: nextId('audit'), action: 'activity.create', targetTitle: activity.title, actorName: account('admin').user.nickname, courseCode: '', createdAt: now() });
         return persist({ ok: true, activity: clone(activity) });
       },
@@ -426,8 +448,10 @@ export function createDemoAccountService({
         const all = await ensureActivities();
         const activity = all.find((item) => item.id === id);
         if (!activity) return { ok: false, message: '活动不存在。' };
-        if (all.some((item) => item.id !== id && item.slug === input.slug)) return { ok: false, message: '活动链接标识已存在。' };
-        Object.assign(activity, clone(input), { updatedAt: now() });
+        if (all.some((item) => item.id !== id && item.externalUrl === input.externalUrl)) return { ok: false, message: '这篇推文已经在活动目录中。' };
+        const program = activityProgram(input.programId);
+        if (!program) return { ok: false, message: '请选择有效的活动板块。' };
+        Object.assign(activity, clone(input), { category: program.category, imageAlt: `${input.title}封面`, updatedAt: now() });
         read().auditLogs.unshift({ id: nextId('audit'), action: 'activity.update', targetTitle: activity.title, actorName: account('admin').user.nickname, courseCode: '', createdAt: now() });
         return persist({ ok: true, activity: clone(activity) });
       },
@@ -450,10 +474,10 @@ export function createDemoAccountService({
 
   function createPublicActivityClient() {
     return {
-      async fetchActivities({ featured = false } = {}) {
+      async fetchActivities() {
         const activities = (await ensureActivities())
-          .filter((item) => item.status === 'published' && (!featured || item.featured))
-          .sort((a, b) => a.displayOrder - b.displayOrder);
+          .filter((item) => item.status === 'published' && item.externalUrl && item.programId)
+          .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
         return { ok: true, activities: clone(activities) };
       },
     };
@@ -523,6 +547,7 @@ export function createDemoAccountService({
     removeAvatar,
     bindCc98,
     bindEmail,
+    updateGrade,
     previewCourseSchedule,
     replaceCourses,
     addCourse,

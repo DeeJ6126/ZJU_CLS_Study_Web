@@ -32,6 +32,7 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
       publicId: row.publicId,
       avatarStoredName: row.avatarStoredName ?? '',
       avatarMimeType: row.avatarMimeType ?? '',
+      grade: row.grade ?? null,
       cc98Name: cc98?.displayValue ?? '',
       email: email?.displayValue ?? '',
       identities,
@@ -77,6 +78,9 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
       }
       if (!userColumns.some((column) => column.name === 'avatar_mime_type')) {
         db.exec("alter table users add column avatar_mime_type text not null default ''");
+      }
+      if (!userColumns.some((column) => column.name === 'grade')) {
+        db.exec('alter table users add column grade integer');
       }
       const sessionColumns = db.prepare('pragma table_info(sessions)').all();
       if (!sessionColumns.some((column) => column.name === 'expires_at')) {
@@ -199,7 +203,7 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
       const row = db.prepare(`
         select u.id, u.password_hash as passwordHash, u.role, u.nickname,
           u.public_id as publicId, u.avatar_stored_name as avatarStoredName,
-          u.avatar_mime_type as avatarMimeType
+          u.avatar_mime_type as avatarMimeType, u.grade
         from users u join user_identities i on i.user_id = u.id
         where i.provider = ? and i.identifier = ?
       `).get(provider, normalizeIdentity(provider, identifier));
@@ -217,7 +221,7 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
     findUserById(id) {
       return mapUser(db.prepare(`
         select id, password_hash as passwordHash, role, nickname, public_id as publicId,
-          avatar_stored_name as avatarStoredName, avatar_mime_type as avatarMimeType
+          avatar_stored_name as avatarStoredName, avatar_mime_type as avatarMimeType, grade
         from users where id = ?
       `).get(id));
     },
@@ -225,7 +229,7 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
     findUserByPublicId(publicId) {
       return mapUser(db.prepare(`
         select id, password_hash as passwordHash, role, nickname, public_id as publicId,
-          avatar_stored_name as avatarStoredName, avatar_mime_type as avatarMimeType
+          avatar_stored_name as avatarStoredName, avatar_mime_type as avatarMimeType, grade
         from users where public_id = ?
       `).get(String(publicId ?? '').trim()));
     },
@@ -233,7 +237,7 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
     findUserByNickname(nickname) {
       return mapUser(db.prepare(`
         select id, password_hash as passwordHash, role, nickname, public_id as publicId,
-          avatar_stored_name as avatarStoredName, avatar_mime_type as avatarMimeType
+          avatar_stored_name as avatarStoredName, avatar_mime_type as avatarMimeType, grade
         from users where nickname_normalized = ?
       `).get(normalizeNickname(nickname)));
     },
@@ -243,18 +247,18 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
       if (!normalized) return [];
       return db.prepare(`
         select id, password_hash as passwordHash, role, nickname, public_id as publicId,
-          avatar_stored_name as avatarStoredName, avatar_mime_type as avatarMimeType
+          avatar_stored_name as avatarStoredName, avatar_mime_type as avatarMimeType, grade
         from users where nickname_normalized like ? order by nickname_normalized limit ?
       `).all(`%${normalized}%`, Math.max(1, Math.min(20, Number(limit) || 8))).map(mapUser);
     },
 
-    createUser({ cc98Name = '', email = '', nickname = '', passwordHash, role = 'student' }) {
+    createUser({ cc98Name = '', email = '', nickname = '', passwordHash, role = 'student', grade = null }) {
       const legacyName = cc98Name || `__email__:${randomUUID()}`;
       const displayNickname = String(nickname || cc98Name || email.split('@')[0] || '学生').trim();
       const result = db.prepare(`
         insert into users (
-          cc98_name, password_hash, role, nickname, nickname_normalized, public_id, created_at
-        ) values (?, ?, ?, ?, ?, ?, ?)
+          cc98_name, password_hash, role, nickname, nickname_normalized, public_id, grade, created_at
+        ) values (?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         legacyName,
         passwordHash,
@@ -262,6 +266,7 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
         displayNickname,
         normalizeNickname(displayNickname),
         randomUUID(),
+        grade == null ? null : Number(grade),
         new Date().toISOString(),
       );
       const userId = Number(result.lastInsertRowid);
@@ -274,6 +279,12 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
       const displayNickname = String(nickname ?? '').trim();
       db.prepare('update users set nickname = ?, nickname_normalized = ? where id = ?')
         .run(displayNickname, normalizeNickname(displayNickname), userId);
+      return this.findUserById(userId);
+    },
+
+    updateGrade(userId, grade) {
+      const next = grade == null || grade === '' ? null : Number(grade);
+      db.prepare('update users set grade = ? where id = ?').run(next, userId);
       return this.findUserById(userId);
     },
 
