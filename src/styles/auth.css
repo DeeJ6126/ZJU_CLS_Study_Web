@@ -535,3 +535,28 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+html[data-theme="dark"] .auth-dialog__email-field {
+  background: #0e1622;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .auth-dialog__email-field strong {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .account-popover__switcher {
+  border-top-color: #2a374a;
+}
+html[data-theme="dark"] .account-switcher__label {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .account-switcher__label select {
+  background: #0e1622;
+  border-color: #2a374a;
+  color: #e8edf4;
+}
+html[data-theme="dark"] .account-switcher__hint {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .account-switcher__reset {
+  color: #f0a8a0;
+}

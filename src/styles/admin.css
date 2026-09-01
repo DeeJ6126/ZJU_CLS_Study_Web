@@ -444,6 +444,150 @@
   color: var(--admin-primary);
 }
 
+html[data-theme="dark"] .admin-page {
+  background: #0e1622;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .admin-page__nav {
+  background: #0a121c;
+}
+html[data-theme="dark"] .admin-page__nav nav button:hover,
+html[data-theme="dark"] .admin-page__nav nav button.is-active {
+  color: #0e1622;
+  background: #8ad3bd;
+}
+html[data-theme="dark"] .admin-page__logout {
+  border-color: rgba(232, 237, 244, 0.28);
+}
+html[data-theme="dark"] .admin-page__head h1,
+html[data-theme="dark"] .admin-auth h1,
+html[data-theme="dark"] .admin-page__head h1 {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .admin-page__eyebrow {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .admin-page__nav .admin-page__eyebrow {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .admin-page__head {
+  border-bottom-color: #2a374a;
+}
+html[data-theme="dark"] .admin-primary-action,
+html[data-theme="dark"] .admin-editor__actions button,
+html[data-theme="dark"] .admin-content-table__actions button,
+html[data-theme="dark"] .admin-content-table__actions a,
+html[data-theme="dark"] .admin-editor__head > button,
+html[data-theme="dark"] .admin-auth__modes button,
+html[data-theme="dark"] .admin-file-field__current button {
+  background: #15202f;
+  color: #e8edf4;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .admin-danger-action {
+  color: #f0a8a0 !important;
+  border-color: #6b2e29 !important;
+}
+html[data-theme="dark"] .admin-notice {
+  background: #1d2a3b;
+  color: #e8edf4;
+  border-left-color: #8ad3bd;
+}
+html[data-theme="dark"] .admin-list__filters label,
+html[data-theme="dark"] .admin-editor__form label,
+html[data-theme="dark"] .admin-auth__form label {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .admin-list__filters select,
+html[data-theme="dark"] .admin-list__filters input,
+html[data-theme="dark"] .admin-editor__form input,
+html[data-theme="dark"] .admin-editor__form select,
+html[data-theme="dark"] .admin-editor__form textarea,
+html[data-theme="dark"] .admin-auth__form input {
+  background: #0e1622;
+  border-color: #2a374a;
+  color: #e8edf4;
+}
+html[data-theme="dark"] .admin-audit-row,
+html[data-theme="dark"] .admin-content-table__row,
+html[data-theme="dark"] .admin-editor,
+html[data-theme="dark"] .admin-list__empty,
+html[data-theme="dark"] .admin-auth,
+html[data-theme="dark"] .admin-auth__modes {
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .admin-audit-row small,
+html[data-theme="dark"] .admin-audit-row time,
+html[data-theme="dark"] .admin-content-table__row small,
+html[data-theme="dark"] .admin-content-table__row time,
+html[data-theme="dark"] .admin-content-table__head,
+html[data-theme="dark"] .admin-list__empty {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .admin-content-table__head {
+  background: #1d2a3b;
+}
+html[data-theme="dark"] .admin-content-table__row strong {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .admin-status {
+  background: #1d2a3b;
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .admin-status[data-status="archived"] {
+  color: #f0a8a0;
+  background: #3a1d1d;
+}
+html[data-theme="dark"] .admin-editor__head {
+  background: #1d2a3b;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .admin-editor__head span {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .admin-editor__head strong {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .admin-editor__form {
+  background: #15202f;
+}
+html[data-theme="dark"] .admin-editor__actions {
+  border-top-color: #2a374a;
+}
+html[data-theme="dark"] .admin-file-field {
+  background: #1d2a3b;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .admin-file-field small {
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .admin-file-field__current a {
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .admin-auth {
+  background: #15202f;
+}
+html[data-theme="dark"] .admin-auth > div:first-child > p:last-child {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .admin-auth__modes button.is-active {
+  color: #8ad3bd;
+  box-shadow: inset 0 -3px #8ad3bd;
+}
+html[data-theme="dark"] .admin-activity-programs button {
+  background: #15202f;
+  border-color: #2a374a;
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .admin-activity-programs button.is-active {
+  color: #0e1622;
+  border-color: #8ad3bd;
+  background: #8ad3bd;
+}
+html[data-theme="dark"] .admin-activity-title img {
+  background: #1d2a3b;
+}
+
 .admin-file-field__current {
   justify-content: space-between;
   gap: 14px;

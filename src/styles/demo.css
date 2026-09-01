@@ -7,6 +7,13 @@
   font-family: var(--font-body);
 }
 
+html[data-theme="dark"] .demo-shell {
+  --demo-primary: #6dbfa5;
+  --demo-primary-soft: #1d2a3b;
+  background: #0e1622;
+  color: #e8edf4;
+}
+
 .demo-head {
   position: sticky;
   top: 0;
@@ -21,11 +28,20 @@
   background: rgba(255, 255, 255, 0.96);
 }
 
+html[data-theme="dark"] .demo-head {
+  border-bottom-color: #2a374a;
+  background: rgba(14, 22, 34, 0.92);
+}
+
 .demo-brand {
   display: grid;
   gap: 2px;
   color: #245e48;
   text-decoration: none;
+}
+
+html[data-theme="dark"] .demo-brand {
+  color: #8ad3bd;
 }
 
 .demo-brand span {
@@ -38,6 +54,10 @@
   font-size: 11px;
   letter-spacing: 0;
   text-transform: uppercase;
+}
+
+html[data-theme="dark"] .demo-brand strong {
+  color: #8a98ad;
 }
 
 .demo-topnav {
@@ -76,9 +96,18 @@
   text-decoration: none;
 }
 
+html[data-theme="dark"] .demo-topnav a {
+  color: #b3c4d6;
+}
+
 .demo-topnav a.is-active {
   background: #e7f0eb;
   color: #245e48;
+}
+
+html[data-theme="dark"] .demo-topnav a.is-active {
+  background: #1d2a3b;
+  color: #8ad3bd;
 }
 
 .demo-user-chip {
@@ -87,6 +116,11 @@
   color: #ffffff;
   cursor: pointer;
   font-weight: 900;
+}
+
+html[data-theme="dark"] .demo-user-chip {
+  background: #8ad3bd;
+  color: #0e1622;
 }
 
 .demo-user-chip__tag {
@@ -98,6 +132,19 @@
   font-size: 11px;
   font-weight: 700;
   vertical-align: 1px;
+}
+
+html[data-theme="dark"] .demo-user-chip__tag {
+  background: rgba(14, 22, 34, 0.18);
+  color: #0e1622;
+}
+
+.demo-account {
+  position: relative;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
 .demo-account {
@@ -1250,6 +1297,341 @@
   margin: 14px 0 0;
   color: #d64b4b;
   font-weight: 900;
+}
+
+html[data-theme="dark"] .quiz-demo {
+  background: #0e1622;
+}
+html[data-theme="dark"] .quiz-market-tabs button {
+  background: #15202f;
+  color: #b3c4d6;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .quiz-market-tabs button.is-active {
+  background: #8ad3bd;
+  color: #0e1622;
+  border-color: #8ad3bd;
+}
+html[data-theme="dark"] .quiz-course-card {
+  background: #15202f;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .quiz-course-card h2 {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .quiz-course-card p {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .quiz-course-card.is-pending button {
+  background: #1d2a3b;
+  color: #8a98ad;
+}
+html[data-theme="dark"] .range-panel {
+  background: #15202f;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .range-panel__head h2 {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .range-panel__head p,
+html[data-theme="dark"] .range-panel__hint {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .range-options button {
+  background: #1d2a3b;
+  border-color: #2a374a;
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .range-card {
+  background: #15202f;
+  border-color: #2a374a;
+  color: #e8edf4;
+}
+html[data-theme="dark"] .range-card em {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .range-card span {
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .range-panel__actions .secondary-button,
+html[data-theme="dark"] .practice-question__head .danger-button {
+  background: #1d2a3b;
+  color: #b3c4d6;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .practice-question__head .danger-button {
+  color: #f0a8a0;
+}
+html[data-theme="dark"] .practice-layout,
+html[data-theme="dark"] .quiz-range-shell {
+  background: #15202f;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .practice-menu {
+  border-right-color: #2a374a;
+}
+html[data-theme="dark"] .practice-menu button {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .question-jump {
+  background: #1d2a3b;
+  border-right-color: #2a374a;
+}
+html[data-theme="dark"] .practice-overview-head,
+html[data-theme="dark"] .practice-question-panel__head {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .practice-overview-head span,
+html[data-theme="dark"] .practice-question-panel__head span {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .practice-overview-row {
+  background: #15202f;
+  border-color: #2a374a;
+  color: #e8edf4;
+}
+html[data-theme="dark"] .practice-overview-row strong {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .practice-overview-row.is-active {
+  background: #1d2a3b;
+  color: #8ad3bd;
+  border-color: #8ad3bd;
+}
+html[data-theme="dark"] .practice-question-panel {
+  border-top-color: #2a374a;
+}
+html[data-theme="dark"] .question-jump-grid button {
+  border-color: transparent;
+}
+html[data-theme="dark"] .question-grid-cell {
+  background: #1d2a3b;
+  border-color: #2a374a;
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .question-grid-cell.is-active {
+  background: #8ad3bd;
+  color: #0e1622;
+  border-color: #8ad3bd;
+}
+html[data-theme="dark"] .question-grid-cell.is-correct {
+  background: #1d3a25;
+  border-color: #6dbfa5;
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .question-grid-cell.is-incorrect {
+  background: #3a1d1d;
+  border-color: #d68a3e;
+  color: #f0a8a0;
+}
+html[data-theme="dark"] .practice-question__head button {
+  background: #1d2a3b;
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .practice-question__head span,
+html[data-theme="dark"] .practice-question__meta {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .practice-question h1 {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .practice-question__image {
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .practice-options button,
+html[data-theme="dark"] .option-button {
+  background: #15202f;
+  border-color: #2a374a;
+  color: #e8edf4;
+}
+html[data-theme="dark"] .practice-options button.is-selected,
+html[data-theme="dark"] .option-button.is-selected {
+  background: #1d2a3b;
+  border-color: #8ad3bd;
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .practice-options button.is-correct,
+html[data-theme="dark"] .option-button.is-correct {
+  background: #1d3a25;
+  border-color: #6dbfa5;
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .practice-options button.is-incorrect,
+html[data-theme="dark"] .option-button.is-incorrect {
+  background: #3a1d1d;
+  border-color: #d64b4b;
+  color: #f0a8a0;
+}
+html[data-theme="dark"] .practice-textarea {
+  background: #0e1622;
+  border-color: #2a374a;
+  color: #e8edf4;
+}
+html[data-theme="dark"] .language-toggle {
+  background: #15202f;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .language-toggle button {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .vocabulary-picker-toggle {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .vocabulary-pick-line button {
+  background: #1d2a3b;
+  border-color: #2a374a;
+  color: #e8edf4;
+}
+html[data-theme="dark"] .vocabulary-feedback {
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .vocabulary-item {
+  background: #15202f;
+  border-color: #2a374a;
+  color: #e8edf4;
+}
+html[data-theme="dark"] .result-stats strong {
+  background: #15202f;
+  border-color: #2a374a;
+  color: #e8edf4;
+}
+html[data-theme="dark"] .quiz-course-app,
+html[data-theme="dark"] .molecular-quiz-app,
+html[data-theme="dark"] .botany-quiz-app,
+html[data-theme="dark"] .microbiology-quiz-app {
+  background: #0e1622;
+}
+html[data-theme="dark"] .quiz-course-nav,
+html[data-theme="dark"] .molecular-quiz-nav,
+html[data-theme="dark"] .botany-quiz-nav,
+html[data-theme="dark"] .microbiology-quiz-nav {
+  background: #15202f;
+  border-right-color: #2a374a;
+}
+html[data-theme="dark"] .quiz-course-nav strong,
+html[data-theme="dark"] .molecular-quiz-nav strong,
+html[data-theme="dark"] .botany-quiz-nav strong,
+html[data-theme="dark"] .microbiology-quiz-nav strong {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .quiz-course-nav button,
+html[data-theme="dark"] .molecular-quiz-nav button,
+html[data-theme="dark"] .botany-quiz-nav button,
+html[data-theme="dark"] .microbiology-quiz-nav button {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .quiz-course-nav button:hover,
+html[data-theme="dark"] .molecular-quiz-nav button:hover,
+html[data-theme="dark"] .botany-quiz-nav button:hover,
+html[data-theme="dark"] .microbiology-quiz-nav button:hover {
+  background: #1d2a3b;
+}
+html[data-theme="dark"] .quiz-course-back,
+html[data-theme="dark"] .molecular-back,
+html[data-theme="dark"] .botany-back,
+html[data-theme="dark"] .microbiology-back {
+  color: #8a98ad !important;
+}
+html[data-theme="dark"] .molecular-hero,
+html[data-theme="dark"] .molecular-category-group,
+html[data-theme="dark"] .molecular-record-card,
+html[data-theme="dark"] .botany-hero,
+html[data-theme="dark"] .botany-gallery-card,
+html[data-theme="dark"] .microbiology-hero,
+html[data-theme="dark"] .microbiology-record-card {
+  background: #15202f;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .molecular-hero h2,
+html[data-theme="dark"] .botany-hero h2,
+html[data-theme="dark"] .microbiology-hero h2 {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .molecular-hero span,
+html[data-theme="dark"] .molecular-record-card span,
+html[data-theme="dark"] .botany-hero span,
+html[data-theme="dark"] .botany-gallery-card span,
+html[data-theme="dark"] .microbiology-hero span,
+html[data-theme="dark"] .microbiology-record-card span {
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .molecular-hero p,
+html[data-theme="dark"] .molecular-category-group p,
+html[data-theme="dark"] .molecular-empty,
+html[data-theme="dark"] .botany-hero p,
+html[data-theme="dark"] .botany-empty,
+html[data-theme="dark"] .microbiology-hero p,
+html[data-theme="dark"] .microbiology-empty {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .molecular-category-group__head h3,
+html[data-theme="dark"] .molecular-record-card h3,
+html[data-theme="dark"] .botany-gallery-card strong,
+html[data-theme="dark"] .microbiology-record-card h3 {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .botany-slice-image,
+html[data-theme="dark"] .botany-gallery-card img {
+  border-color: #2a374a;
+  background: #1d2a3b;
+}
+html[data-theme="dark"] .practice-result {
+  background: #1d2a3b;
+  color: #e8edf4;
+}
+html[data-theme="dark"] .practice-result p,
+html[data-theme="dark"] .markdown-answer p {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .markdown-answer {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .markdown-answer h3,
+html[data-theme="dark"] .markdown-answer h4 {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .markdown-answer pre {
+  background: #0e1622;
+  color: #e8edf4;
+}
+html[data-theme="dark"] .demo-message {
+  color: #f0a8a0;
+}
+html[data-theme="dark"] .demo-search input {
+  background: #15202f;
+  border-color: #2a374a;
+  color: #e8edf4;
+}
+html[data-theme="dark"] .demo-home h1 {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .demo-placeholder h1 {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .demo-search span {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .demo-placeholder p {
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .demo-head .demo-search input {
+  background: #15202f;
+  border-color: #2a374a;
+  color: #e8edf4;
+}
+html[data-theme="dark"] .range-options button.is-selected,
+html[data-theme="dark"] .range-card.is-selected {
+  background: #1d2a3b;
+  border-color: #8ad3bd;
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .practice-menu button.is-active {
+  background: #1d2a3b;
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .quiz-market-tabs button:hover {
+  background: #1d2a3b;
+  color: #e8edf4;
 }
 
 @media (max-width: 1100px) {

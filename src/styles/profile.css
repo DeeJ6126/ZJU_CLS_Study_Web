@@ -15,6 +15,10 @@
   border-top: 3px solid #2f624c;
 }
 
+html[data-theme="dark"] .profile-sidebar {
+  border-top-color: #8ad3bd;
+}
+
 .profile-sidebar a,
 .profile-sidebar button,
 .profile-sidebar strong {
@@ -391,6 +395,206 @@
   margin-left: 8px;
   color: #925d24;
   font-style: normal;
+}
+
+html[data-theme="dark"] .profile-sidebar a,
+html[data-theme="dark"] .profile-sidebar button,
+html[data-theme="dark"] .profile-sidebar strong {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .profile-sidebar button.is-active {
+  background: #1d2a3b;
+  color: #8ad3bd;
+  box-shadow: inset 3px 0 0 #8ad3bd;
+  font-weight: 700;
+}
+html[data-theme="dark"] .profile-identity h1,
+html[data-theme="dark"] .profile-posts h2,
+html[data-theme="dark"] .profile-post-row h3 {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .profile-identity > div > p {
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .profile-state.is-error {
+  color: #f0a8a0;
+}
+html[data-theme="dark"] .profile-notice {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .profile-demo-notice {
+  color: #d6b56a;
+}
+html[data-theme="dark"] .profile-avatar-block > span {
+  background: #1d2a3b;
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .profile-nickname-form {
+  background: #15202f;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .profile-nickname-form label > span,
+html[data-theme="dark"] .profile-revision-form label > span,
+html[data-theme="dark"] .profile-cc98-form label > span {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .profile-nickname-form input,
+html[data-theme="dark"] .profile-revision-form input,
+html[data-theme="dark"] .profile-revision-form textarea,
+html[data-theme="dark"] .profile-cc98-form input {
+  background: #0e1622;
+  border-color: #2a374a;
+  color: #e8edf4;
+}
+html[data-theme="dark"] .profile-cc98-form {
+  background: #15202f;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .profile-cc98-form h2 {
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .profile-nickname-form button,
+html[data-theme="dark"] .profile-cc98-form button,
+html[data-theme="dark"] .profile-revision-form button,
+html[data-theme="dark"] .profile-post-row > button {
+  background: #8ad3bd;
+  color: #0e1622;
+  border-color: #8ad3bd;
+}
+html[data-theme="dark"] .profile-file-button,
+html[data-theme="dark"] .profile-text-button {
+  background: #1d2a3b;
+  color: #b3c4d6;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .profile-posts > header,
+html[data-theme="dark"] .profile-submission-head > div > p,
+html[data-theme="dark"] .profile-section-head > div > p {
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .profile-post-row {
+  border-color: #2a374a;
+  background: #15202f;
+}
+html[data-theme="dark"] .profile-post-row h3 a {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .profile-post-row p {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .profile-post-row span {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .profile-course-row {
+  border-color: #2a374a;
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .profile-course-row > span {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .profile-course-row a {
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .profile-course-row small {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .profile-course-row em {
+  color: #d68a3e;
+}
+html[data-theme="dark"] .profile-post-row > button.is-danger,
+html[data-theme="dark"] .profile-revision-form > div > button.is-danger {
+  background: #4a1f1b;
+  color: #f0a8a0;
+  border-color: #6b2e29;
+}
+html[data-theme="dark"] .profile-cc98-form > button {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .profile-help {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .profile-identity {
+  background: #15202f;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .profile-posts,
+html[data-theme="dark"] .profile-management,
+html[data-theme="dark"] .notifications-main {
+  background: #15202f;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .profile-posts > header,
+html[data-theme="dark"] .profile-management > header,
+html[data-theme="dark"] .profile-post-row {
+  background: #15202f;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .profile-notice,
+html[data-theme="dark"] .profile-state {
+  background: #1d2a3b;
+  color: #b3c4d6;
+  border-top: 1px solid #2a374a;
+}
+html[data-theme="dark"] .profile-notice {
+  border-left: 3px solid #8ad3bd;
+}
+html[data-theme="dark"] .profile-submission-head {
+  background: #15202f;
+}
+html[data-theme="dark"] .profile-management h1,
+html[data-theme="dark"] .notifications-head h1 {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .profile-management > header p,
+html[data-theme="dark"] .notifications-head p {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .profile-nickname-form,
+html[data-theme="dark"] .profile-cc98-form {
+  background: #15202f;
+  border: 1px solid #2a374a;
+  border-radius: 6px;
+  padding: 16px;
+}
+html[data-theme="dark"] .profile-cc98-form {
+  border-top: 1px solid #2a374a;
+}
+html[data-theme="dark"] .course-import-preview {
+  background: #1d2a3b;
+  border-color: #2a374a;
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .profile-course-table {
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .profile-course-row--head {
+  background: #1d2a3b;
+  color: #8a98ad;
+}
+html[data-theme="dark"] .profile-revision-form {
+  border-top-color: #2a374a;
+}
+html[data-theme="dark"] .notifications-head {
+  background: #15202f;
+  border-color: #2a374a;
+}
+html[data-theme="dark"] .notification-list > article {
+  border-color: #2a374a;
+  background: #15202f;
+}
+html[data-theme="dark"] .notification-list > article.is-unread {
+  background: #1d2a3b;
+}
+html[data-theme="dark"] .notification-list p {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .notification-list time {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .notification-actor img,
+html[data-theme="dark"] .notification-actor span {
+  background: #1d2a3b;
+  color: #8ad3bd;
 }
 
 .notifications-page {

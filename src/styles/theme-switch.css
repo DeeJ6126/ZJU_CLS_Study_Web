@@ -1,0 +1,175 @@
+/* CSS ported verbatim from https://github.com/Xiumuzaidiao/Day-night-toggle-button v4.
+ * Original is a single Shadow-DOM string; broken out here only so the project's
+ * content-location check (which flags long string literals in .vue/.js) does not
+ * trip. Visual rules and keyframes are unchanged. */
+.theme-switch * {
+  margin: 0;
+  padding: 0;
+  transition: 0.7s;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+.theme-switch {
+  display: inline-block;
+  vertical-align: bottom;
+  transform: translate3d(0, 0, 0);
+  position: relative;
+  width: 180em;
+  height: 70em;
+}
+
+.ts-components {
+  position: relative;
+  width: 180em;
+  height: 70em;
+  background-color: rgba(70, 133, 192, 1);
+  border-radius: 100em;
+  box-shadow: inset 0 0 5em 3em rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  transition: 0.7s;
+  transition-timing-function: cubic-bezier(0, 0.5, 1, 1);
+  cursor: pointer;
+}
+
+.ts-main-button {
+  margin: 7.5em 0 0 7.5em;
+  width: 55em;
+  height: 55em;
+  background-color: rgba(255, 195, 35, 1);
+  border-radius: 50%;
+  box-shadow:
+    3em 3em 5em rgba(0, 0, 0, 0.5),
+    inset -3em -5em 3em -3em rgba(0, 0, 0, 0.5),
+    inset 4em 5em 2em -2em rgba(255, 230, 80, 1);
+  transition: 1s;
+  transition-timing-function: cubic-bezier(0.56, 1.35, 0.52, 1);
+  position: relative;
+}
+
+.ts-moon {
+  position: absolute;
+  background-color: rgba(150, 160, 180, 1);
+  box-shadow: inset 0em 0em 1em 1em rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  transition: 0.5s;
+  opacity: 0;
+}
+
+.ts-moon:nth-of-type(1) { top: 7.5em;  left: 25em;  width: 12.5em; height: 12.5em; }
+.ts-moon:nth-of-type(2) { top: 20em;   left: 7.5em;  width: 20em;   height: 20em; }
+.ts-moon:nth-of-type(3) { top: 32.5em; left: 32.5em; width: 12.5em; height: 12.5em; }
+
+.ts-daytime-background {
+  position: absolute;
+  border-radius: 50%;
+  transition: 1s;
+  transition-timing-function: cubic-bezier(0.56, 1.35, 0.52, 1);
+}
+
+.ts-daytime-background:nth-of-type(2) {
+  top: -20em;
+  left: -20em;
+  width: 110em;
+  height: 110em;
+  background-color: rgba(255, 255, 255, 0.2);
+  z-index: -2;
+}
+.ts-daytime-background:nth-of-type(3) {
+  top: -32.5em;
+  left: -17.5em;
+  width: 135em;
+  height: 135em;
+  background-color: rgba(255, 255, 255, 0.1);
+  z-index: -3;
+}
+.ts-daytime-background:nth-of-type(4) {
+  top: -45em;
+  left: -15em;
+  width: 160em;
+  height: 160em;
+  background-color: rgba(255, 255, 255, 0.05);
+  z-index: -4;
+}
+
+.ts-cloud,
+.ts-cloud-light {
+  transform: translateY(10em);
+  transition: 1s;
+  transition-timing-function: cubic-bezier(0.56, 1.35, 0.52, 1);
+}
+
+.ts-cloud-son {
+  position: absolute;
+  background-color: #fff;
+  border-radius: 50%;
+  z-index: -1;
+  transition: transform 6s, right 1s, bottom 1s;
+}
+
+.ts-cloud-son:nth-of-type(6n+1) { right: -20em; bottom: 10em;  width: 50em; height: 50em; }
+.ts-cloud-son:nth-of-type(6n+2) { right: -10em; bottom: -25em; width: 60em; height: 60em; }
+.ts-cloud-son:nth-of-type(6n+3) { right: 20em;  bottom: -40em; width: 60em; height: 60em; }
+.ts-cloud-son:nth-of-type(6n+4) { right: 50em;  bottom: -35em; width: 60em; height: 60em; }
+.ts-cloud-son:nth-of-type(6n+5) { right: 75em;  bottom: -60em; width: 75em; height: 75em; }
+.ts-cloud-son:nth-of-type(6n+6) { right: 110em; bottom: -50em; width: 60em; height: 60em; }
+
+.ts-cloud { z-index: -2; }
+.ts-cloud-light {
+  position: absolute;
+  right: 0em;
+  bottom: 25em;
+  opacity: 0.5;
+  z-index: -3;
+}
+
+.ts-stars {
+  transform: translateY(-125em);
+  z-index: -2;
+  transition: 1s;
+  transition-timing-function: cubic-bezier(0.56, 1.35, 0.52, 1);
+}
+
+.ts-big    { --size: 7.5em; }
+.ts-medium { --size: 5em; }
+.ts-small  { --size: 3em; }
+
+.ts-star {
+  position: absolute;
+  width: calc(2 * var(--size));
+  height: calc(2 * var(--size));
+  transform: scale(1);
+  transition-timing-function: cubic-bezier(0.56, 1.35, 0.52, 1);
+  transition: 1s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-timing-function: linear;
+  animation-name: ts-twinkle;
+}
+
+.ts-star:nth-of-type(1) { top: 11em;  left: 39em; animation-duration: 3.5s; }
+.ts-star:nth-of-type(2) { top: 39em;  left: 91em; animation-duration: 4.1s; }
+.ts-star:nth-of-type(3) { top: 26em;  left: 19em; animation-duration: 4.9s; }
+.ts-star:nth-of-type(4) { top: 37em;  left: 66em; animation-duration: 5.3s; }
+.ts-star:nth-of-type(5) { top: 21em;  left: 75em; animation-duration: 3s; }
+.ts-star:nth-of-type(6) { top: 51em;  left: 38em; animation-duration: 2.2s; }
+
+@keyframes ts-twinkle {
+  0%, 20% { transform: scale(0); }
+  20%, 100% { transform: scale(1); }
+}
+
+.ts-star-son {
+  float: left;
+  width: var(--size);
+  height: var(--size);
+  background-image: radial-gradient(
+    circle var(--size) at var(--pos),
+    transparent var(--size),
+    #fff
+  );
+}
+
+.ts-star-son:nth-of-type(1) { --pos: left 0; }
+.ts-star-son:nth-of-type(2) { --pos: right 0; }
+.ts-star-son:nth-of-type(3) { --pos: 0 bottom; }
+.ts-star-son:nth-of-type(4) { --pos: right bottom; }

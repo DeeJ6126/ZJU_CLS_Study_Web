@@ -235,6 +235,93 @@
   color: #75827c;
 }
 
+html[data-theme="dark"] .overview-empty {
+  color: #8a98ad;
+}
+
+html[data-theme="dark"] .overview-head {
+  border-bottom-color: #2a374a;
+}
+html[data-theme="dark"] .overview-head p {
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .overview-head h1 {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .overview-head > span {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .overview-controls > label > span,
+html[data-theme="dark"] .overview-grouping > span {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .overview-controls select {
+  border-color: #2a374a;
+  background: #15202f;
+  color: #e8edf4;
+}
+html[data-theme="dark"] .overview-grouping button {
+  border-color: #2a374a;
+  background: #15202f;
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .overview-grouping button.is-active {
+  border-color: #8ad3bd;
+  background: #1d2a3b;
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .overview-section {
+  border-top-color: #8ad3bd;
+  background: #15202f;
+}
+html[data-theme="dark"] .overview-section__head {
+  border-bottom-color: #2a374a;
+  color: #e8edf4;
+  background: #1d2a3b;
+}
+html[data-theme="dark"] .overview-section__head strong {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .overview-section__head em {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .overview-section__body {
+  border-top-color: #2a374a;
+  background: #15202f;
+}
+html[data-theme="dark"] .overview-group {
+  border-color: #2a374a;
+  background: #15202f;
+}
+html[data-theme="dark"] .overview-group__head strong {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .overview-group__head span {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .overview-course-grid > article {
+  border-color: #2a374a;
+  background: #15202f;
+}
+html[data-theme="dark"] .overview-course-grid > article:hover {
+  border-color: #8ad3bd;
+  background: #1d2a3b;
+}
+html[data-theme="dark"] .overview-course-grid > article > a strong {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .overview-course-grid > article > a > span {
+  color: #8ad3bd;
+}
+html[data-theme="dark"] .overview-course-grid > article > a small {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .overview-course-grid > article > button {
+  color: #8ad3bd;
+  background: #1d2a3b;
+  border-color: #2a374a;
+}
+
 @media (max-width: 960px) {
   .overview-course-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

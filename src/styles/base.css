@@ -241,8 +241,84 @@ html[data-theme="tech-innovation"] {
   --detail-shadow-hover: 0 14px 30px rgba(0, 102, 255, 0.26);
 }
 
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --color-ink: #e8edf4;
+  --color-muted: #8a98ad;
+  --color-soft: #0e1622;
+  --color-surface: #15202f;
+  --color-surface-translucent: rgba(21, 32, 47, 0.85);
+  --color-sidebar: #0a121c;
+  --color-sidebar-raised: #15202f;
+  --color-sidebar-text: #e8edf4;
+  --color-sidebar-muted: #8a98ad;
+  --color-line: #2a374a;
+  --color-primary: #6dbfa5;
+  --color-primary-strong: #8ad3bd;
+  --color-accent: #8ad3bd;
+  --color-lab: #1d2a3b;
+  --color-input: #0e1622;
+  --color-input-border: #2a374a;
+  --color-avatar-text: #0e1622;
+  --color-theme-option: #15202f;
+  --color-theme-option-active: #1d2a3b;
+  --resource-accent: #8ad3bd;
+  --resource-panel: #15202f;
+  --resource-border: #2a374a;
+  --resource-card-bg: #15202f;
+  --resource-card-bg-hover: #1d2a3b;
+  --resource-card-border: #2a374a;
+  --resource-card-border-hover: #8ad3bd;
+  --resource-card-title: #e8edf4;
+  --resource-card-code: #8a98ad;
+  --resource-card-shadow-hover: 0 10px 22px rgba(0, 0, 0, 0.45);
+  --resource-chip-bg: #1d2a3b;
+  --resource-chip-text: #b3c4d6;
+  --detail-accent: #8ad3bd;
+  --detail-link: #8ad3bd;
+  --detail-surface: #15202f;
+  --detail-surface-strong: #1d2a3b;
+  --detail-border: #2a374a;
+  --detail-border-strong: #8ad3bd;
+  --detail-fact-bg: #0e1622;
+  --detail-list-bg: #0e1622;
+  --detail-tab-shell: #1d2a3b;
+  --detail-tab-active: #15202f;
+  --detail-action-bg: #8ad3bd;
+  --detail-action-text: #0e1622;
+  --detail-chip-bg: #1d2a3b;
+  --detail-chip-text: #b3c4d6;
+  --detail-avatar-bg: #8ad3bd;
+  --detail-avatar-text: #0e1622;
+  --detail-hero-wash: transparent;
+  --detail-organism-a: transparent;
+  --detail-organism-b: transparent;
+  --detail-shadow: none;
+  --detail-shadow-hover: 0 14px 30px rgba(0, 0, 0, 0.5);
+  --shadow-soft: none;
+}
+
 * {
   box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  transition: background-color 0.4s ease;
+}
+
+body,
+.demo-shell,
+.demo-head,
+.demo-sidebar,
+.home-feed,
+.home-section-card,
+.profile-page,
+.overview-page,
+.course-detail-page,
+.activities-page,
+.notifications-page {
+  transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
 }
 
 html {

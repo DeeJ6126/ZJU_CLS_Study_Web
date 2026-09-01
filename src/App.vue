@@ -16,6 +16,7 @@ import AccountPopover from './components/account/AccountPopover.vue';
 import AuthDialog from './components/account/AuthDialog.vue';
 import NotificationsPage from './components/account/NotificationsPage.vue';
 import ProfilePage from './components/profile/ProfilePage.vue';
+import ThemeSwitch from './components/ThemeSwitch.vue';
 import {
   addQuizMistake,
   createQuizSession,
@@ -2463,6 +2464,7 @@ onBeforeUnmount(() => {
         </a>
       </nav>
       <div class="demo-account">
+        <ThemeSwitch class="demo-theme-switch" />
         <button
           class="demo-user-chip"
           type="button"
