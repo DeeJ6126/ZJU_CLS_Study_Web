@@ -46,6 +46,17 @@ test('overview hash with filter query still resolves to the overview page', () =
   );
 });
 
+test('in-page section anchors stay on their parent page instead of falling back to home', () => {
+  assert.equal(
+    getDemoPageFromHash('#activity-program-academic-voyage', demoTopPages),
+    'activities',
+  );
+  assert.equal(
+    getDemoPageFromHash('#resource-bio2110f-materials', demoTopPages),
+    'overview',
+  );
+});
+
 test('getHashQuery returns parsed params from a hash with a query suffix', () => {
   const params = getHashQuery('#overview?program=2025&group=semester');
   assert.equal(params.get('program'), '2025');

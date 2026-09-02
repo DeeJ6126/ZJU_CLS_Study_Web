@@ -40,6 +40,12 @@ export function getDemoPageFromHash(hash, pages) {
   if (pageId === 'notifications') {
     return 'notifications';
   }
+  if (pageId.startsWith('activity-program-')) {
+    return 'activities';
+  }
+  if (pageId.startsWith('resource-')) {
+    return 'overview';
+  }
   return pages.some((page) => page.id === pageId) ? pageId : 'home';
 }
 
