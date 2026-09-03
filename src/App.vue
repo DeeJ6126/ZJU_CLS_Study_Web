@@ -187,6 +187,10 @@ const studentViewer = ref(guestViewer());
 const demoIdentityId = ref(loadDemoIdentityId());
 setQuizAnonymousMode(Boolean(demoIdentityId.value));
 const demoDataVersion = ref(0);
+// Re-read the demo user store on every read so external mutations (e.g. an
+// admin moderation flow that mutates the demo store outside Vue's reactivity)
+// still surface in the UI. We use demoDataVersion as a manual trigger to
+// keep the computed cheap.
 const viewer = computed(() => {
   demoDataVersion.value;
   return demoIdentityId.value

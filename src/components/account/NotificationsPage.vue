@@ -1,5 +1,6 @@
 <script setup>
 import { getProfileHref } from '../../services/demoNavigationService.js';
+import { formatRelativeTime, isoDateTime } from '../../utils/timeFormat.js';
 
 defineProps({
   notifications: { type: Array, default: () => [] },
@@ -33,7 +34,7 @@ const emit = defineEmits(['read', 'read-all', 'open-target']);
           <div>
             <strong>{{ notification.title }}</strong>
             <p>{{ notification.body }}</p>
-            <time>{{ notification.createdAt }}</time>
+            <time :datetime="isoDateTime(notification.createdAt)">{{ formatRelativeTime(notification.createdAt) }}</time>
           </div>
           <button type="button" @click="emit('open-target', notification)">查看</button>
           <button v-if="!notification.readAt" type="button" @click="emit('read', notification)">标为已读</button>

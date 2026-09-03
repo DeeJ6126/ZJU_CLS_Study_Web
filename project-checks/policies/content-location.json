@@ -1,6 +1,6 @@
 {
   "description": "User-facing long-form content belongs in public/, not Vue components.",
-  "scanRoots": ["src/components", "src/App.vue"],
+  "scanRoots": ["src/components"],
   "publicContentRoots": [
     "public/resource",
     "public/showcase",

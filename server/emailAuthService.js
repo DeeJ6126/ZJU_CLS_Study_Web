@@ -104,7 +104,13 @@ export async function requestEmailCode(store, input, options = {}) {
   });
   try {
     await options.sendEmail({ to: email, code, purpose, expiresInMinutes: 10 });
-  } catch {
+  } catch (error) {
+    // Surface the failure for operators without leaking the recipient to logs.
+    // The smtpMailer already redacts the recipient; record the purpose only.
+    console.error('[email] send failed', {
+      purpose,
+      error: error?.message ?? String(error),
+    });
     store.deleteEmailCode(record.id);
     return { ok: false, status: 503, message: '验证码发送失败，请稍后重试。' };
   }
