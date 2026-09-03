@@ -8,6 +8,7 @@ dist/
 .superpowers/
 server/data/auth.sqlite
 server/data/content.sqlite
+server/data/student-homepages.sqlite
 server/data/content-uploads/
 server/data/profile-avatars/
 .codex-*.log
