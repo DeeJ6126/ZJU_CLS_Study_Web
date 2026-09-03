@@ -2,6 +2,7 @@ import { createDemoAccountSeeds, demoAccountSchemaVersion, demoAccountStorageKey
 import { buildCourseRoute } from '../data/courses/resourcePaths.js';
 import { activityProgram } from '../data/activityConfig.js';
 import { bodyToParagraphs } from '../utils/markdownContent.js';
+import { percentageToGPA } from '../utils/gradeConversion.js';
 import { normalizeCourseScheduleRows } from './courseScheduleService.js';
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -288,7 +289,15 @@ export function createDemoAccountService({
     const result = requireAccount(identityId);
     if (!result.ok) return result;
     if (!String(input?.title ?? '').trim() || !String(input?.body ?? '').trim()) return { ok: false, message: '请填写标题和正文。' };
-    const submission = { ...clone(input), id: nextId('submission'), status: 'pending', reviewNote: '', createdAt: now(), submitterPublicId: result.value.user.publicId, submitterName: result.value.user.nickname };
+    const normalized = clone(input);
+    if ((normalized.gradePercentage ?? '') !== '' && !normalized.gpa) {
+      const num = Number(normalized.gradePercentage);
+      if (Number.isFinite(num)) {
+        const gpa = percentageToGPA(num);
+        normalized.gpa = Number.isFinite(gpa) ? gpa.toFixed(1) : '';
+      }
+    }
+    const submission = { ...normalized, id: nextId('submission'), status: 'pending', reviewNote: '', createdAt: now(), submitterPublicId: result.value.user.publicId, submitterName: result.value.user.nickname };
     result.value.submissions.unshift(submission);
     account('admin').notifications.unshift({ id: nextId('notification'), title: '有新的待审核投稿', body: `${result.value.user.nickname}提交了“${submission.title}”。`, createdAt: now(), readAt: '', target: null, actor: publicOwner(result.value.user) });
     return persist({ ok: true, submission: clone(submission) });

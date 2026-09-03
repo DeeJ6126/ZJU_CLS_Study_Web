@@ -20,6 +20,6 @@ test('contribution modal requests the required submission fields', () => {
   assert.match(contributionBox, /v-model="form.title"/);
   assert.match(contributionBox, /v-model="form.cc98Link"/);
   assert.match(contributionBox, /v-model="form.body"/);
-  assert.match(contributionBox, /绩点（选填）/);
+  assert.match(contributionBox, /成绩百分制（选填/);
   assert.match(contributionBox, /投稿审核/);
 });

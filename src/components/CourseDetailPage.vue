@@ -1,10 +1,12 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 import CommentSection from './CommentSection.vue';
 import ContributionBox from './ContributionBox.vue';
 import FavoriteButton from './FavoriteButton.vue';
 import { buildCourseRoute, courseDetailTabs } from '../data/courses/resourcePaths.js';
 import { getProfileHref } from '../services/demoNavigationService.js';
+import { formatGrade } from '../utils/gradeConversion.js';
+import { isUbbFormat, ubbToHtml } from '../utils/ubbParser.js';
 
 const props = defineProps({
   course: {
@@ -75,7 +77,6 @@ const emit = defineEmits([
   'back', 'open-quiz', 'toggle-favorite', 'add-comment', 'update-comment', 'delete-comment',
   'submit-contribution', 'toggle-like',
 ]);
-const gpaVisible = ref(false);
 
 const activeTab = computed(
   () => courseDetailTabs.find((tab) => tab.id === props.activeTabId) ?? courseDetailTabs[0],
@@ -89,8 +90,31 @@ const activeItemFavoriteKey = computed(() => {
 });
 const activeItemComments = computed(() => props.commentsByKey[activeItemFavoriteKey.value] ?? []);
 
-watch(() => activeItem.value?.id, () => {
-  gpaVisible.value = false;
+const activeItemBody = computed(() => {
+  const item = activeItem.value;
+  if (!item) return { html: '', isUbb: false };
+  const body = String(item.body ?? '');
+  const isUbb = isUbbFormat(item.bodyFormat) || /\[\/?(b|i|u|s|url|img|size|color|quote|code|smiley|align)\b/i.test(body);
+  return {
+    html: isUbb ? ubbToHtml(body) : '',
+    paragraphs: isUbb ? [] : String(item.body ?? '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean),
+    isUbb,
+  };
+});
+
+const activeItemGradeLabel = computed(() => {
+  const item = activeItem.value;
+  if (!item) return '';
+  if (item.gradePercentage != null && item.gradePercentage !== '') {
+    return formatGrade(item.gradePercentage);
+  }
+  if (item.gpa != null && item.gpa !== '') {
+    const gpa = Number(item.gpa);
+    if (Number.isFinite(gpa) && gpa > 0) {
+      return `${gpa.toFixed(1)}`;
+    }
+  }
+  return '';
 });
 
 function tabHref(tabId) {
@@ -178,31 +202,51 @@ function emitContribution(payload) {
         <a class="course-subpage__return" :href="tabHref('experiences')">返回学习心得</a>
         <article class="article-detail-card">
           <div class="article-detail-card__head">
-            <div>
+            <div class="article-detail-card__title-block">
               <p class="course-detail__kicker">学习心得</p>
               <h1 id="experience-title">{{ activeItem.title }}</h1>
+              <p v-if="activeItem.subtitle" class="article-detail-card__subtitle">{{ activeItem.subtitle }}</p>
             </div>
-            <aside class="article-detail-card__identity">
+            <div class="article-detail-card__author">
               <a v-if="activeItem.owner" class="article-author-link" :href="getProfileHref(activeItem.owner.publicId)">{{ activeItem.owner.nickname }}</a>
               <strong v-else>{{ activeItem.author }}</strong>
-              <a v-if="activeItem.cc98Url" :href="activeItem.cc98Url" target="_blank" rel="noopener noreferrer" title="查看作者的 CC98 帖子">
+              <a
+                v-if="activeItem.cc98Url"
+                class="article-cc98-badge"
+                :href="activeItem.cc98Url"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="查看作者的 CC98 帖子"
+              >
                 <img class="cc98-icon" :src="cc98IconUrl" alt="CC98" />
               </a>
-              <button v-if="activeItem.gpa" class="article-gpa-toggle" type="button" @click="gpaVisible = !gpaVisible">
-                {{ gpaVisible ? `绩点 ${activeItem.gpa} · 隐藏绩点` : '查看绩点' }}
-              </button>
-              <button class="article-like-button" :class="{ 'is-active': activeItem.viewerLiked }" type="button" @click="emit('toggle-like', activeItem.contentId)">
-                {{ activeItem.viewerLiked ? '已赞' : '点赞' }} {{ activeItem.likeCount || 0 }}
-              </button>
-              <FavoriteButton
-                :active="favoriteKeys.includes(activeItemFavoriteKey)"
-                :disabled="!canFavorite"
-                @toggle="emitFavorite(activeItem.contentId)"
-              />
-            </aside>
+            </div>
           </div>
           <p v-if="likeNotice" class="article-detail-card__notice">{{ likeNotice }}</p>
-          <p v-for="paragraph in activeItem.paragraphs" :key="paragraph">{{ paragraph }}</p>
+          <div v-if="activeItemBody.isUbb" class="article-body article-body--ubb" v-html="activeItemBody.html"></div>
+          <template v-else>
+            <p v-for="paragraph in activeItemBody.paragraphs" :key="paragraph">{{ paragraph }}</p>
+          </template>
+          <div class="article-detail-card__actions">
+            <button
+              type="button"
+              class="article-action-button"
+              :disabled="!activeItemGradeLabel"
+            >查看成绩 {{ activeItemGradeLabel || '—' }}</button>
+            <button
+              class="article-action-button"
+              :class="{ 'is-active': activeItem.viewerLiked }"
+              type="button"
+              @click="emit('toggle-like', activeItem.contentId)"
+            >
+              {{ activeItem.viewerLiked ? '已赞' : '点赞' }} {{ activeItem.likeCount || 0 }}
+            </button>
+            <FavoriteButton
+              :active="favoriteKeys.includes(activeItemFavoriteKey)"
+              :disabled="!canFavorite"
+              @toggle="emitFavorite(activeItem.contentId)"
+            />
+          </div>
         </article>
 
         <CommentSection
@@ -246,34 +290,54 @@ function emitContribution(payload) {
         <a class="course-subpage__return" :href="tabHref('materials')">返回复习资料</a>
         <article class="article-detail-card">
           <div class="article-detail-card__head">
-            <div>
+            <div class="article-detail-card__title-block">
               <p class="course-detail__kicker">复习资料</p>
               <h1 id="material-title">{{ activeItem.title }}</h1>
+              <p v-if="activeItem.subtitle" class="article-detail-card__subtitle">{{ activeItem.subtitle }}</p>
             </div>
-            <aside class="article-detail-card__identity">
+            <div class="article-detail-card__author">
               <a v-if="activeItem.owner" class="article-author-link" :href="getProfileHref(activeItem.owner.publicId)">{{ activeItem.owner.nickname }}</a>
               <strong v-else>{{ activeItem.author }}</strong>
-              <a v-if="activeItem.cc98Url" :href="activeItem.cc98Url" target="_blank" rel="noopener noreferrer" title="查看作者的 CC98 帖子">
+              <a
+                v-if="activeItem.cc98Url"
+                class="article-cc98-badge"
+                :href="activeItem.cc98Url"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="查看作者的 CC98 帖子"
+              >
                 <img class="cc98-icon" :src="cc98IconUrl" alt="CC98" />
               </a>
-              <button v-if="activeItem.gpa" class="article-gpa-toggle" type="button" @click="gpaVisible = !gpaVisible">
-                {{ gpaVisible ? `绩点 ${activeItem.gpa} · 隐藏绩点` : '查看绩点' }}
-              </button>
-              <button class="article-like-button" :class="{ 'is-active': activeItem.viewerLiked }" type="button" @click="emit('toggle-like', activeItem.contentId)">
-                {{ activeItem.viewerLiked ? '已赞' : '点赞' }} {{ activeItem.likeCount || 0 }}
-              </button>
-              <FavoriteButton
-                :active="favoriteKeys.includes(activeItemFavoriteKey)"
-                :disabled="!canFavorite"
-                @toggle="emitFavorite(activeItem.contentId)"
-              />
-            </aside>
+            </div>
           </div>
           <p v-if="likeNotice" class="article-detail-card__notice">{{ likeNotice }}</p>
-          <p v-for="paragraph in activeItem.paragraphs" :key="paragraph">{{ paragraph }}</p>
+          <div v-if="activeItemBody.isUbb" class="article-body article-body--ubb" v-html="activeItemBody.html"></div>
+          <template v-else>
+            <p v-for="paragraph in activeItemBody.paragraphs" :key="paragraph">{{ paragraph }}</p>
+          </template>
           <a v-if="activeItem.externalUrl" class="course-action-link" :href="activeItem.externalUrl" target="_blank" rel="noreferrer">
             打开刷题网站
           </a>
+          <div class="article-detail-card__actions">
+            <button
+              type="button"
+              class="article-action-button"
+              :disabled="!activeItemGradeLabel"
+            >查看成绩 {{ activeItemGradeLabel || '—' }}</button>
+            <button
+              class="article-action-button"
+              :class="{ 'is-active': activeItem.viewerLiked }"
+              type="button"
+              @click="emit('toggle-like', activeItem.contentId)"
+            >
+              {{ activeItem.viewerLiked ? '已赞' : '点赞' }} {{ activeItem.likeCount || 0 }}
+            </button>
+            <FavoriteButton
+              :active="favoriteKeys.includes(activeItemFavoriteKey)"
+              :disabled="!canFavorite"
+              @toggle="emitFavorite(activeItem.contentId)"
+            />
+          </div>
         </article>
 
         <CommentSection

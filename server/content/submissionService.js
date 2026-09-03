@@ -1,5 +1,29 @@
 import { validateContentInput } from './contentService.js';
 
+const GRADE_TABLE = [
+  { min: 95, max: 100, score: 5.0 },
+  { min: 92, max: 94, score: 4.8 },
+  { min: 89, max: 91, score: 4.5 },
+  { min: 86, max: 88, score: 4.2 },
+  { min: 83, max: 85, score: 3.9 },
+  { min: 80, max: 82, score: 3.6 },
+  { min: 77, max: 79, score: 3.3 },
+  { min: 74, max: 76, score: 3.0 },
+  { min: 71, max: 73, score: 2.7 },
+  { min: 68, max: 70, score: 2.4 },
+  { min: 65, max: 67, score: 2.1 },
+  { min: 62, max: 64, score: 1.8 },
+  { min: 60, max: 61, score: 1.5 },
+  { min: 0, max: 59, score: 0 },
+];
+
+function percentageToGPA(percentage) {
+  const num = Number(percentage);
+  if (!Number.isFinite(num)) return null;
+  const entry = GRADE_TABLE.find((row) => num >= row.min && num <= row.max);
+  return entry ? entry.score : 0;
+}
+
 function actorFields(actor) {
   return {
     actorId: actor?.id ?? null,
@@ -20,6 +44,12 @@ function log(store, action, submission, actor, detail = '') {
 }
 
 function submissionInput(input, fallback = {}) {
+  const gradePercentage = String(input.gradePercentage ?? fallback.gradePercentage ?? '').trim();
+  let gpa = String(input.gpa ?? fallback.gpa ?? '').trim();
+  if (gradePercentage && !gpa) {
+    const computed = percentageToGPA(gradePercentage);
+    if (computed !== null) gpa = computed.toFixed(1);
+  }
   return {
     courseCode: input.courseCode ?? fallback.courseCode,
     type: input.type ?? fallback.type,
@@ -27,9 +57,11 @@ function submissionInput(input, fallback = {}) {
     summary: input.summary ?? fallback.summary,
     author: input.author ?? fallback.author,
     body: input.body ?? fallback.body,
+    bodyFormat: input.bodyFormat ?? fallback.bodyFormat ?? 'markdown',
     externalUrl: input.externalUrl ?? fallback.externalUrl,
     cc98Url: input.cc98Url ?? fallback.cc98Url,
-    gpa: input.gpa ?? fallback.gpa,
+    gpa,
+    gradePercentage,
     year: input.year ?? fallback.year,
     teacher: input.teacher ?? fallback.teacher,
     imageName: input.imageName ?? fallback.imageName ?? '',

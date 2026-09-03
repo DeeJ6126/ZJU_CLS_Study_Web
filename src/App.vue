@@ -1940,8 +1940,10 @@ async function submitCourseContribution(payload) {
     summary: payload.subtitle,
     author: payload.cc98Name || viewer.value.nickname || '',
     body: payload.body,
+    bodyFormat: payload.bodyFormat || 'markdown',
     cc98Url: payload.cc98Link,
     gpa: payload.gpa,
+    gradePercentage: payload.gradePercentage,
     externalUrl: payload.materialLink,
     imageName: payload.imageName,
   };

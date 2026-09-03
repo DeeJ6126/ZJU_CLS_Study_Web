@@ -77,15 +77,17 @@ test('course detail content is loaded through the shared API client instead of i
   assert.match(component, /:class="\{ 'is-active': activeTab\.id === tab\.id \}"/);
 });
 
-test('learning cards keep compact metadata while article details expose CC98, hidden GPA, and anonymous likes', () => {
+test('learning cards keep compact metadata while article details expose CC98, persistent grade label, and anonymous likes', () => {
   const component = readFileSync('src/components/CourseDetailPage.vue', 'utf8');
   const css = readFileSync('src/styles/course-detail.css', 'utf8');
 
   assert.match(component, /learning-card__title/);
   assert.match(component, /learning-card__author/);
   assert.match(component, /cc98-icon/);
-  assert.match(component, /查看绩点/);
-  assert.match(component, /隐藏绩点/);
+  assert.match(component, /查看成绩\s+\{\{\s*activeItemGradeLabel/);
   assert.match(component, /toggle-like/);
-  assert.match(css, /\.article-detail-card__identity/);
+  assert.match(css, /\.article-detail-card__author/);
+  assert.match(css, /\.article-action-button/);
+  assert.doesNotMatch(css, /\.article-grade-badge/);
+  assert.doesNotMatch(css, /\.article-detail-card__identity/);
 });

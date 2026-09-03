@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref } from 'vue';
+import { computed, nextTick, reactive, ref } from 'vue';
 
 const props = defineProps({
   tabLabel: {
@@ -27,9 +27,13 @@ const form = reactive({
   body: '',
   imageName: '',
   materialLink: '',
-  gpa: '',
+  gradePercentage: '',
+  bodyFormat: 'markdown',
 });
 const pdfFile = ref(null);
+const bodyTextarea = ref(null);
+
+const isUbb = computed(() => form.bodyFormat === 'ubb');
 
 function resetForm() {
   form.title = '';
@@ -39,7 +43,8 @@ function resetForm() {
   form.body = '';
   form.imageName = '';
   form.materialLink = '';
-  form.gpa = '';
+  form.gradePercentage = '';
+  form.bodyFormat = 'markdown';
   pdfFile.value = null;
 }
 
@@ -61,6 +66,65 @@ function handlePdfChange(event) {
   pdfFile.value = event.target.files?.[0] ?? null;
 }
 
+function switchFormat(format) {
+  form.bodyFormat = format;
+}
+
+function wrapSelection(openTag, closeTag) {
+  const textarea = bodyTextarea.value;
+  if (!textarea) return;
+  const start = textarea.selectionStart ?? form.body.length;
+  const end = textarea.selectionEnd ?? form.body.length;
+  const before = form.body.slice(0, start);
+  const selected = form.body.slice(start, end);
+  const after = form.body.slice(end);
+  form.body = `${before}${openTag}${selected}${closeTag}${after}`;
+  nextTick(() => {
+    textarea.focus();
+    const caret = start + openTag.length + selected.length;
+    textarea.setSelectionRange(caret, caret);
+  });
+}
+
+const ubbToolbar = [
+  { label: 'B', title: '加粗', wrap: ['[b]', '[/b]'] },
+  { label: 'I', title: '斜体', wrap: ['[i]', '[/i]'] },
+  { label: 'U', title: '下划线', wrap: ['[u]', '[/u]'] },
+  { label: 'S', title: '删除线', wrap: ['[s]', '[/s]'] },
+  { label: '🔗', title: '链接', wrap: ['[url=]', '[/url]'], prompt: '请输入链接地址' },
+  { label: '🖼', title: '图片', wrap: ['[img]', '[/img]'], prompt: '请输入图片地址' },
+  { label: '"', title: '引用', wrap: ['[quote]', '[/quote]'] },
+  { label: '< >', title: '代码', wrap: ['[code]', '[/code]'] },
+  { label: 'T1', title: '字号', wrap: ['[size=3]', '[/size]'] },
+  { label: '🎨', title: '颜色', wrap: ['[color=#333]', '[/color]'], prompt: '请输入颜色（#hex 或 red）' },
+  { label: '☺', title: '表情', wrap: ['[smiley]', '[/smiley]'], prompt: '表情代号' },
+];
+
+function applyUbbTag(action) {
+  if (!isUbb.value) {
+    form.bodyFormat = 'ubb';
+    nextTick(() => applyUbbTag(action));
+    return;
+  }
+  let openTag = action.wrap[0];
+  let closeTag = action.wrap[1];
+  if (action.prompt) {
+    if (typeof window === 'undefined') return;
+    const value = window.prompt(action.title + '：' + (action.prompt || ''));
+    if (!value) return;
+    if (action.label === '🔗') openTag = `[url=${value}]`;
+    else if (action.label === '🖼') {
+      form.body = `${form.body}[img]${value}[/img]`;
+      return;
+    } else if (action.label === '🎨') openTag = `[color=${value}]`;
+    else if (action.label === '☺') {
+      form.body = `${form.body}[smiley]${value}[/smiley]`;
+      return;
+    }
+  }
+  wrapSelection(openTag, closeTag);
+}
+
 function submitContribution() {
   if (!props.canSubmit) {
     notice.value = '需要登录并完成 CC98 或浙大邮箱认证后才可以投稿。';
@@ -72,15 +136,22 @@ function submitContribution() {
     return;
   }
 
+  const percentage = form.gradePercentage.trim();
+  if (percentage && (Number.isNaN(Number(percentage)) || Number(percentage) < 0 || Number(percentage) > 100)) {
+    notice.value = '百分制成绩需要在 0-100 之间。';
+    return;
+  }
+
   emit('submit-contribution', {
     title: form.title.trim(),
     subtitle: form.subtitle.trim(),
     cc98Name: form.cc98Name.trim(),
     cc98Link: form.cc98Link.trim(),
     body: form.body.trim(),
+    bodyFormat: form.bodyFormat,
     imageName: form.imageName,
     materialLink: form.materialLink.trim(),
-    gpa: form.gpa.trim(),
+    gradePercentage: percentage,
     pdfFile: pdfFile.value,
   });
   notice.value = '投稿已发送审核。';
@@ -128,11 +199,47 @@ function submitContribution() {
             </label>
 
             <label v-if="tabLabel === '学习心得'">
-              <span>绩点（选填）</span>
-              <input v-model="form.gpa" type="text" inputmode="decimal" placeholder="0.00 - 5.00" />
+              <span>成绩百分制（选填，0-100）</span>
+              <input v-model="form.gradePercentage" type="number" min="0" max="100" step="1" placeholder="如 95" />
             </label>
 
-            <label class="contribution-form__wide">
+            <div v-if="tabLabel === '学习心得'" class="contribution-form__wide contribution-form__format">
+              <div class="contribution-form__format-head">
+                <span>内容格式</span>
+                <div class="contribution-form__format-tabs" role="tablist">
+                  <button
+                    type="button"
+                    role="tab"
+                    :class="{ 'is-active': form.bodyFormat === 'markdown' }"
+                    @click="switchFormat('markdown')"
+                  >Markdown</button>
+                  <button
+                    type="button"
+                    role="tab"
+                    :class="{ 'is-active': form.bodyFormat === 'ubb' }"
+                    @click="switchFormat('ubb')"
+                  >UBB（论坛格式）</button>
+                </div>
+              </div>
+              <div v-if="isUbb" class="contribution-form__ubb-toolbar" aria-label="UBB 工具栏">
+                <button
+                  v-for="action in ubbToolbar"
+                  :key="action.label"
+                  type="button"
+                  class="contribution-form__ubb-button"
+                  :title="action.title"
+                  @click="applyUbbTag(action)"
+                >{{ action.label }}</button>
+              </div>
+              <textarea
+                ref="bodyTextarea"
+                v-model="form.body"
+                :placeholder="isUbb ? '支持 [b] 加粗 [i] 斜体 [u] 下划线 [s] 删除线 [url=...] 链接 [img] 图片 [quote] 引用 [code] 代码 [size=3] 字号 [color=#xxx] 颜色 [smiley] 表情 [align=left|center|right] 对齐' : '支持 Markdown 格式：**加粗** *斜体* [链接](url) > 引用 等'"
+                rows="6"
+              ></textarea>
+            </div>
+
+            <label v-else class="contribution-form__wide">
               <span>内容</span>
               <textarea v-model="form.body" rows="5"></textarea>
             </label>
