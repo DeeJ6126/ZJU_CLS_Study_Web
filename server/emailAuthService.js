@@ -15,6 +15,15 @@ import { gradeFromStudentId } from './studentGrade.js';
 const scrypt = promisify(scryptCallback);
 const purposes = new Set(['register', 'bind', 'password-reset']);
 
+/**
+ * @typedef {import('./authService.js').PublicUser} PublicUser
+ * @typedef {import('./authService.js').ServiceResult} ServiceResult
+ */
+
+/**
+ * @param {unknown} value
+ * @returns {string} numeric student id, or '' if input is not all digits.
+ */
 export function normalizeStudentId(value) {
   const studentId = String(value ?? '').trim();
   return /^\d+$/.test(studentId) ? studentId : '';
@@ -59,6 +68,15 @@ async function verifyEmailCode(store, { email, code, purpose }, options = {}) {
   return { ok: true, record, consumedAt: now.toISOString() };
 }
 
+/**
+ * Generate and "send" a one-time 6-digit email code. The smtpMailer is
+ * injected so tests can swap in a stub.
+ *
+ * @param {import('./authService.js').Store} store
+ * @param {{email?: string, studentId?: string, purpose: 'register'|'bind'|'password-reset', requestIpHash?: string}} input
+ * @param {{sendEmail?: Function, codeGenerator?: Function, now?: Function}} [options]
+ * @returns {Promise<ServiceResult<never>>}
+ */
 export async function requestEmailCode(store, input, options = {}) {
   const email = studentEmail(input);
   const purpose = String(input.purpose ?? 'register');
@@ -117,6 +135,12 @@ export async function requestEmailCode(store, input, options = {}) {
   return { ok: true, status: 202, message: '验证码已发送。' };
 }
 
+/**
+ * @param {import('./authService.js').Store} store
+ * @param {{studentId: string|number, nickname: string, password: string, code: string, email?: string}} input
+ * @param {{now?: Function}} [options]
+ * @returns {Promise<ServiceResult<PublicUser>>}
+ */
 export async function registerEmail(store, input, options = {}) {
   const email = studentEmail(input);
   const nickname = String(input.nickname ?? '').trim();
@@ -141,6 +165,11 @@ export async function registerEmail(store, input, options = {}) {
   return { ok: true, status: 201, user: publicUser(user) };
 }
 
+/**
+ * @param {import('./authService.js').Store} store
+ * @param {{studentId: string|number, email?: string, password: string}} input
+ * @returns {Promise<ServiceResult<PublicUser>>}
+ */
 export async function loginEmail(store, input) {
   const email = studentEmail(input);
   const user = email ? store.findUserByEmail(email) : null;
@@ -151,6 +180,13 @@ export async function loginEmail(store, input) {
   return { ok: true, status: 200, sessionId, user: publicUser(user) };
 }
 
+/**
+ * @param {import('./authService.js').Store} store
+ * @param {number|string} userId
+ * @param {{code: string}} input
+ * @param {{now?: Function}} [options]
+ * @returns {Promise<ServiceResult<PublicUser>>}
+ */
 export async function bindEmailIdentity(store, userId, input, options = {}) {
   const email = studentEmail(input);
   const user = store.findUserById(userId);
@@ -170,6 +206,13 @@ export async function bindEmailIdentity(store, userId, input, options = {}) {
   return { ok: true, status: 200, user: publicUser(next) };
 }
 
+/**
+ * @param {import('./authService.js').Store} store
+ * @param {{studentId: string|number, code: string, password: string}} input
+ *   The `password` field is the *new* password the user is choosing.
+ * @param {{now?: Function}} [options]
+ * @returns {Promise<ServiceResult<never>>}
+ */
 export async function resetPasswordByEmail(store, input, options = {}) {
   const email = studentEmail(input);
   const user = email ? store.findUserByEmail(email) : null;

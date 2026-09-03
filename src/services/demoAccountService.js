@@ -31,6 +31,19 @@ async function defaultActivityLoader() {
   return (await response.json()).activities ?? [];
 }
 
+/**
+ * Factory for the in-browser demo account service. The service is a
+ * singleton-shaped object that exposes the same surface as the server-side
+ * auth/content APIs so the UI can run end-to-end without the backend.
+ *
+ * @param {Object} [options]
+ * @param {Storage|null} [options.storage] window.localStorage-compatible
+ *   facade. Tests can inject an in-memory implementation.
+ * @param {() => string} [options.now] ISO-timestamp generator.
+ * @param {() => Promise<Object[]>} [options.activityLoader] Loader for
+ *   activities from the public asset catalog.
+ * @returns {object} the demo service handle.
+ */
 export function createDemoAccountService({
   storage = defaultStorage(), now = () => new Date().toISOString(), activityLoader = defaultActivityLoader,
 } = {}) {
@@ -585,4 +598,5 @@ export function createDemoAccountService({
   };
 }
 
+/** Shared singleton returned by `createDemoAccountService()` with default options. */
 export const demoAccountService = createDemoAccountService();

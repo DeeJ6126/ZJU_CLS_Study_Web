@@ -6,6 +6,10 @@ const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
+/**
+ * @param {unknown} value
+ * @returns {{date: Date, time: number}|null}
+ */
 function parseTimestamp(value) {
   if (!value) return null;
   const date = new Date(value);
@@ -14,6 +18,15 @@ function parseTimestamp(value) {
   return { date, time };
 }
 
+/**
+ * Compact human label such as "刚刚" / "5 分钟前" / "3 小时前" / "2 天前" /
+ * "2026-08-01" (for entries older than a week). Returns '' for invalid input
+ * and "刚刚" for future timestamps.
+ *
+ * @param {unknown} value ISO timestamp or anything `new Date(...)` accepts.
+ * @param {number} [now] Override for the reference time (useful in tests).
+ * @returns {string}
+ */
 export function formatRelativeTime(value, now = Date.now()) {
   const parsed = parseTimestamp(value);
   if (!parsed) return '';
@@ -36,6 +49,10 @@ export function formatRelativeTime(value, now = Date.now()) {
   return parsed.date.toISOString().slice(0, 10);
 }
 
+/**
+ * @param {unknown} value
+ * @returns {string} ISO-8601 string suitable for `<time datetime="...">`, or ''.
+ */
 export function isoDateTime(value) {
   const parsed = parseTimestamp(value);
   return parsed ? parsed.date.toISOString() : '';

@@ -3,12 +3,45 @@ import { promisify } from 'node:util';
 
 const scrypt = promisify(scryptCallback);
 
+/**
+ * @typedef {Object} Store
+ * @description Persistence facade used by every auth function. See
+ *   server/authStore.js for the full surface.
+ */
+
+/**
+ * @typedef {Object} PublicUser
+ * @property {string} id
+ * @property {'guest'|'student'|'developer'|'admin'} role
+ * @property {string} nickname
+ * @property {string} [publicId]
+ * @property {string|null} [grade]
+ * @property {string} cc98Nickname
+ * @property {string} email
+ * @property {string} [avatarUrl]
+ * @property {string} avatarInitials
+ * @property {string} avatarColor
+ * @property {{cc98: boolean, email: boolean}} verifications
+ */
+
+/**
+ * @template T
+ * @typedef {Object} ServiceResult
+ * @property {boolean} ok
+ * @property {number} status  HTTP-style status code.
+ * @property {string} message Human-readable message (also sent to client).
+ * @property {T}      [user]
+ * @property {string} [sessionId]
+ */
+
+/** @type {PublicUser} */
 export const guestUser = {
   id: 'guest',
   role: 'guest',
   nickname: '访客',
   cc98Nickname: '未绑定',
   email: '',
+  avatarUrl: '',
   avatarInitials: 'G',
   avatarColor: '#708090',
   verifications: {
@@ -23,10 +56,22 @@ function normalizeText(value) {
 
 const reservedNicknames = new Set(['admin', 'administrator', '管理员', '系统', '生科智学']);
 
+/**
+ * Lowercase + trim a nickname for case-insensitive comparisons. Used to
+ * detect collisions against the reserved-name set and existing users.
+ *
+ * @param {unknown} value
+ * @returns {string} normalized nickname, or '' for non-string / empty input.
+ */
 export function normalizeNickname(value) {
   return normalizeText(value).toLocaleLowerCase('zh-CN');
 }
 
+/**
+ * @param {unknown} value
+ * @returns {boolean} true when the nickname is 2-20 word characters
+ *   (letters, numbers, _, -) and is not a reserved system name.
+ */
 export function validateNickname(value) {
   const nickname = normalizeText(value);
   return /^[\p{L}\p{N}_-]{2,20}$/u.test(nickname)
@@ -39,6 +84,13 @@ function maskEmail(email) {
   return `${local.slice(0, Math.min(2, local.length))}*****@${domain}`;
 }
 
+/**
+ * Convert a database user row into a public-facing object. Masks the email
+ * and resolves the avatar URL. Returns `guestUser` when given no row.
+ *
+ * @param {Object|null} user Database row from authStore.
+ * @returns {PublicUser}
+ */
 export function publicUser(user) {
   if (!user) {
     return guestUser;
@@ -64,12 +116,21 @@ export function publicUser(user) {
   };
 }
 
+/**
+ * @param {string} password
+ * @returns {Promise<string>} salt and scrypt-derived key, separated by ':'.
+ */
 export async function hashPassword(password) {
   const salt = randomBytes(16).toString('hex');
   const key = await scrypt(password, salt, 64);
   return `${salt}:${key.toString('hex')}`;
 }
 
+/**
+ * @param {string} password
+ * @param {string} passwordHash
+ * @returns {Promise<boolean>} true when the password matches the stored hash.
+ */
 export async function verifyPassword(password, passwordHash) {
   const [salt, key] = String(passwordHash).split(':');
   if (!salt || !key) {
@@ -86,6 +147,12 @@ function validatePassword(password) {
 
 export { validatePassword };
 
+/**
+ * Create a server-side session row and return its opaque id.
+ * @param {Store} store
+ * @param {number|string} userId
+ * @returns {string} sessionId (empty when userId is falsy).
+ */
 export function createSession(store, userId) {
   if (!userId) {
     return '';
@@ -95,6 +162,14 @@ export function createSession(store, userId) {
   return sessionId;
 }
 
+/**
+ * Register a brand-new user from a one-time CC98 verification code.
+ *
+ * @param {Store} store
+ * @param {{code: string, password: string}} input
+ * @param {{adminCc98Names?: Set<string>}} [options]
+ * @returns {Promise<ServiceResult<PublicUser>>}
+ */
 export async function registerCc98(store, { code, password }, { adminCc98Names = new Set() } = {}) {
   const normalizedCode = normalizeText(code);
 
@@ -134,6 +209,11 @@ export async function registerCc98(store, { code, password }, { adminCc98Names =
   };
 }
 
+/**
+ * @param {Store} store
+ * @param {{cc98Name: string, password: string}} input
+ * @returns {Promise<ServiceResult<PublicUser>>} ok=true carries sessionId + user.
+ */
 export async function loginCc98(store, { cc98Name, password }) {
   const user = store.findUserByCc98Name(normalizeText(cc98Name));
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
@@ -149,6 +229,13 @@ export async function loginCc98(store, { cc98Name, password }) {
   };
 }
 
+/**
+ * @param {Store} store
+ * @param {number|string} userId
+ * @param {string} currentSessionId
+ * @param {{code: string, password: string}} input
+ * @returns {Promise<ServiceResult<PublicUser>>}
+ */
 export async function bindOrRebindCc98(store, userId, currentSessionId, { code, password }) {
   const user = store.findUserById(userId);
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
@@ -177,6 +264,12 @@ export async function bindOrRebindCc98(store, userId, currentSessionId, { code, 
   }
 }
 
+/**
+ * Resolve the current user from a session id, falling back to `guestUser`.
+ * @param {Store} store
+ * @param {string} [sessionId]
+ * @returns {PublicUser}
+ */
 export function getCurrentUser(store, sessionId) {
   const session = sessionId ? store.findSession(sessionId) : null;
   if (!session) {
@@ -185,6 +278,11 @@ export function getCurrentUser(store, sessionId) {
   return publicUser(store.findUserById(session.userId));
 }
 
+/**
+ * @param {Store} store
+ * @param {string} [sessionId]
+ * @returns {void}
+ */
 export function logout(store, sessionId) {
   if (sessionId) {
     store.deleteSession(sessionId);

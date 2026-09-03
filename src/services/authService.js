@@ -1,15 +1,74 @@
+// Frontend authentication / authorization helpers. The functions in this
+// module are pure: they take a User-shaped object and return booleans or
+// display descriptors. No DOM, no network — safe to call from any layer.
+
+/**
+ * @typedef {Object} UserVerifications
+ * @property {boolean} [cc98]  True when the user has been verified through CC98.
+ * @property {boolean} [email] True when the user has been verified through a ZJU email.
+ */
+
+/**
+ * @typedef {Object} User
+ * @property {string|number} id                Stable user identifier.
+ * @property {'guest'|'student'|'developer'|'admin'} role Account role.
+ * @property {string} [nickname]               Display name.
+ * @property {string} [cc98Nickname]           CC98 handle if linked.
+ * @property {string} [email]                  Email address if linked.
+ * @property {string} [publicId]              Public handle used in profile URLs.
+ * @property {UserVerifications} [verifications] Verification flags.
+ * @property {string} [avatarUrl]              Avatar image URL.
+ */
+
+/**
+ * @typedef {Object} AccountState
+ * @property {'guest'|'developer'|'admin'|'dual'|'cc98'|'email'|'student'} id
+ * @property {string} label        Human-readable label.
+ * @property {string} description Short tooltip-style description.
+ */
+
+/**
+ * @typedef {Object} Message
+ * @property {string} id
+ * @property {string} [toUserId]   Recipient user id.
+ * @property {'developer'|'admin'} [toRole] Recipient role (broadcast).
+ * @property {string|number} fromUserId
+ * @property {string} title
+ * @property {string} body
+ * @property {string} createdAt    ISO timestamp.
+ * @property {boolean} read
+ */
+
+/**
+ * @param {User|null|undefined} user
+ * @returns {boolean} true when the user is logged in OR has a verified identity.
+ */
 export function isAuthenticated(user) {
   return Boolean(user && (user.role !== 'guest' || user.verifications?.cc98 || user.verifications?.email));
 }
 
+/**
+ * @param {User|null|undefined} user
+ * @returns {boolean} true when the user holds the admin role.
+ */
 export function isAdministrator(user) {
   return Boolean(user && user.role === 'admin');
 }
 
+/**
+ * Verified users can submit, comment, and have full UGC rights.
+ * @param {User|null|undefined} user
+ * @returns {boolean}
+ */
 export function isVerifiedUser(user) {
   return Boolean(user?.verifications?.cc98 || user?.verifications?.email || ['developer', 'admin'].includes(user?.role));
 }
 
+/**
+ * Derive a human-friendly account state descriptor for the UI badge area.
+ * @param {User|null|undefined} user
+ * @returns {AccountState}
+ */
 export function getAccountState(user) {
   if (!isAuthenticated(user)) {
     return {
@@ -69,6 +128,10 @@ export function getAccountState(user) {
   };
 }
 
+/**
+ * @param {User|null|undefined} user
+ * @returns {string[]} list of short badge labels shown next to the user chip.
+ */
 export function getVerificationBadges(user) {
   if (!isAuthenticated(user)) {
     return ['未登录'];
@@ -95,26 +158,61 @@ export function getVerificationBadges(user) {
   return badges.length ? badges : ['已登录'];
 }
 
+/**
+ * @param {User|null|undefined} user
+ * @returns {boolean} true when the user may submit 学习心得/复习资料/历年试卷.
+ */
 export function canSubmitResource(user) {
   return isVerifiedUser(user);
 }
 
+/**
+ * @param {User|null|undefined} user
+ * @returns {boolean}
+ */
 export function canComment(user) {
   return isVerifiedUser(user);
 }
 
+/**
+ * @param {User|null|undefined} user
+ * @returns {boolean} true when the user may favorite a content item.
+ */
 export function canFavorite(user) {
   return isAuthenticated(user);
 }
 
+/**
+ * @param {User|null|undefined} user
+ * @returns {boolean} true when the user is CC98-verified but not yet email-verified.
+ */
 export function canBindEmailIdentity(user) {
   return Boolean(isAuthenticated(user) && user.verifications?.cc98 && !user.verifications?.email);
 }
 
+/**
+ * @param {User|null|undefined} user
+ * @returns {boolean} true when the user can request a CC98 prototype verification code.
+ */
 export function canRequestCc98PrototypeVerification(user) {
   return Boolean(user && !['developer', 'admin'].includes(user.role) && !user.verifications?.cc98);
 }
 
+/**
+ * Build an inbox message describing a new submission for the developer queue.
+ *
+ * @param {Object} params
+ * @param {User} params.fromUser
+ * @param {string} params.courseCode
+ * @param {'experiences'|'materials'|'papers'} params.tabId
+ * @param {string} params.title
+ * @param {string} [params.subtitle]
+ * @param {string} [params.cc98Name]
+ * @param {string} [params.cc98Link]
+ * @param {string} [params.body]
+ * @param {string} [params.materialLink]
+ * @returns {Message}
+ */
 export function createSubmissionMessage({
   fromUser,
   courseCode,
@@ -145,6 +243,15 @@ export function createSubmissionMessage({
   };
 }
 
+/**
+ * @param {Object} params
+ * @param {User} params.fromUser
+ * @param {string|number} params.toUserId
+ * @param {string} params.courseCode
+ * @param {string} params.tabId
+ * @param {string} params.itemTitle
+ * @returns {Message}
+ */
 export function createCommentMessage({ fromUser, toUserId, courseCode, tabId, itemTitle }) {
   return {
     id: `comment-${courseCode}-${tabId}-${Date.now()}`,
@@ -157,6 +264,11 @@ export function createCommentMessage({ fromUser, toUserId, courseCode, tabId, it
   };
 }
 
+/**
+ * @param {Message} message
+ * @param {User} user
+ * @returns {boolean}
+ */
 export function messageBelongsToUser(message, user) {
   if (message.toUserId === user.id) {
     return true;

@@ -6,6 +6,17 @@
 // token rather than disappearing. Output is HTML-safe: source text is escaped
 // first, then UBB tags are mapped to a constrained tag allowlist.
 
+/**
+ * Escape characters that have HTML semantics. Used as the first pass before
+ * UBB-to-HTML substitution so user input can never produce raw tags.
+ *
+ * @param {unknown} text
+ * @returns {string} HTML-safe escaped string.
+ */
+function escapeHtml(text) {
+  return String(text).replace(/[&<>"']/g, (ch) => escapeMap[ch]);
+}
+
 const escapeMap = {
   '&': '&amp;',
   '<': '&lt;',
@@ -14,10 +25,13 @@ const escapeMap = {
   "'": '&#39;',
 };
 
-function escapeHtml(text) {
-  return String(text).replace(/[&<>"']/g, (ch) => escapeMap[ch]);
-}
-
+/**
+ * Allow only URL schemes that cannot execute scripts. Returns '' when the
+ * scheme is missing or unsafe; the caller is expected to drop the link.
+ *
+ * @param {unknown} url
+ * @returns {string} sanitized URL or empty string.
+ */
 function sanitizeUrl(url) {
   const trimmed = String(url ?? '').trim();
   if (!trimmed) return '';
@@ -112,6 +126,18 @@ function paragraphsToHtml(escaped) {
     .join('');
 }
 
+/**
+ * Render UBB source text as HTML for v-html injection. The pipeline is:
+ *   1. HTML-escape the input so raw HTML can never survive.
+ *   2. Substitute UBB tags against an allowlist of safe HTML.
+ *   3. Wrap paragraphs in <p> with single \n turned into <br>.
+ *
+ * Output is always safe to assign to v-html; unknown UBB tags stay visible
+ * as plain text (e.g. `[bilibili]…[/bilibili]`).
+ *
+ * @param {unknown} input Raw UBB text (may be null/undefined).
+ * @returns {string} HTML string. Returns '' for empty input.
+ */
 export function ubbToHtml(input) {
   const text = String(input ?? '');
   if (!text) return '';
@@ -120,6 +146,10 @@ export function ubbToHtml(input) {
   return paragraphsToHtml(withTags);
 }
 
+/**
+ * @param {unknown} format
+ * @returns {boolean} true when the content format field is the UBB variant.
+ */
 export function isUbbFormat(format) {
   return String(format ?? '').toLowerCase() === 'ubb';
 }

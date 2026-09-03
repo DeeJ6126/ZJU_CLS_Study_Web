@@ -3,6 +3,14 @@
 // the top (100-95 → 5.0, 6 values) and the bottom step (61-60 → 1.5, 2
 // values); scores below 60 map to 0.
 
+/**
+ * @typedef {Object} GradeRow
+ * @property {number} min
+ * @property {number} max
+ * @property {number} score
+ */
+
+/** @type {GradeRow[]} */
 const GRADE_TABLE = [
   { min: 95, max: 100, score: 5.0 },
   { min: 92, max: 94, score: 4.8 },
@@ -20,6 +28,11 @@ const GRADE_TABLE = [
   { min: 0, max: 59, score: 0 },
 ];
 
+/**
+ * Convert a 0-100 percentage to the 5-point GPA scale.
+ * @param {unknown} percentage
+ * @returns {number|null} GPA in [0, 5.0] or null when input is not numeric.
+ */
 export function percentageToGPA(percentage) {
   if (percentage == null || percentage === '') return null;
   const num = Number(percentage);
@@ -28,6 +41,12 @@ export function percentageToGPA(percentage) {
   return entry ? entry.score : 0;
 }
 
+/**
+ * Format a percentage as "5.0/95" — GPA on the left, raw percentage on the
+ * right. Returns '' when the input is empty, non-numeric, or zero.
+ * @param {unknown} percentage
+ * @returns {string}
+ */
 export function formatGrade(percentage) {
   if (percentage == null || percentage === '') return '';
   const num = Number(percentage);
@@ -37,6 +56,10 @@ export function formatGrade(percentage) {
   return `${gpa.toFixed(1)}/${Math.round(num)}`;
 }
 
+/**
+ * @param {unknown} percentage
+ * @returns {boolean} true when the value is a finite number in [0, 100].
+ */
 export function percentageIsValid(percentage) {
   if (percentage == null || percentage === '') return false;
   if (typeof percentage === 'string' && percentage.trim() === '') return false;
