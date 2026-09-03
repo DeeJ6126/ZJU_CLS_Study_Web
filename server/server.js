@@ -54,6 +54,8 @@ import { importStaticCourseContent } from './content/contentImportService.js';
 import { handleContentHttpRequest } from './content/contentHttpService.js';
 import { handleActivityHttpRequest } from './activity/activityHttpService.js';
 import { seedActivityCatalog } from './activity/activityService.js';
+import { createStudentHomepageStore } from './studentHomepage/studentHomepageStore.js';
+import { handleStudentHomepageHttpRequest } from './studentHomepage/studentHomepageHttpService.js';
 import {
   maxAvatarBytes,
   readAvatarFile,
@@ -164,6 +166,9 @@ export function createAuthServer({
   store = createAuthStore({ filename: process.env.AUTH_DB_FILE ?? 'server/data/auth.sqlite' }),
   quizStore = createQuizStore({ filename: process.env.QUIZ_DB_FILE ?? process.env.AUTH_DB_FILE ?? 'server/data/auth.sqlite' }),
   contentStore = createContentStore({ filename: process.env.CONTENT_DB_FILE ?? 'server/data/content.sqlite' }),
+  studentHomepageStore = createStudentHomepageStore({
+    filename: process.env.STUDENT_HOMEPAGE_DB_FILE ?? 'server/data/student-homepages.sqlite',
+  }),
   uploadDirectory = process.env.CONTENT_UPLOAD_DIR ?? 'server/data/content-uploads',
   avatarDirectory = process.env.PROFILE_AVATAR_DIR ?? 'server/data/profile-avatars',
   adminCc98Names = parseAdminCc98Names(process.env.ADMIN_CC98_NAMES),
@@ -177,6 +182,33 @@ export function createAuthServer({
   for (const cc98Name of adminCc98Names) {
     store.promoteAdminByCc98Name(cc98Name);
   }
+  studentHomepageStore.initialize();
+  studentHomepageStore.seedHomepages([
+    {
+      id: 'demo-homepage-1',
+      name: '张明远',
+      href: 'https://example.com/~zhangmy',
+      sortOrder: 0,
+    },
+    {
+      id: 'demo-homepage-2',
+      name: '李雨桐',
+      href: 'https://example.com/~liyutong',
+      sortOrder: 1,
+    },
+    {
+      id: 'demo-homepage-3',
+      name: '王思源',
+      href: 'https://example.com/~wangsy',
+      sortOrder: 2,
+    },
+    {
+      id: 'demo-homepage-4',
+      name: '陈嘉宁',
+      href: 'https://example.com/~chenjn',
+      sortOrder: 3,
+    },
+  ]);
   quizStore.initialize();
   importConfiguredQuizCollections(quizStore);
   contentStore.initialize();
@@ -429,6 +461,19 @@ export function createAuthServer({
         readJsonBody,
       });
       if (activityHandled) {
+        return;
+      }
+      const studentHomepageHandled = await handleStudentHomepageHttpRequest({
+        request,
+        response,
+        url,
+        user: currentUser,
+        userId: quizUserId,
+        studentHomepageStore,
+        sendJson,
+        readJsonBody,
+      });
+      if (studentHomepageHandled) {
         return;
       }
       const contentHandled = await handleContentHttpRequest({
