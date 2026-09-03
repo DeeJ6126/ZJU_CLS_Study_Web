@@ -21,6 +21,7 @@ const GRADE_TABLE = [
 ];
 
 export function percentageToGPA(percentage) {
+  if (percentage == null || percentage === '') return null;
   const num = Number(percentage);
   if (!Number.isFinite(num)) return null;
   const entry = GRADE_TABLE.find((row) => num >= row.min && num <= row.max);
@@ -28,6 +29,7 @@ export function percentageToGPA(percentage) {
 }
 
 export function formatGrade(percentage) {
+  if (percentage == null || percentage === '') return '';
   const num = Number(percentage);
   if (!Number.isFinite(num) || num <= 0) return '';
   const gpa = percentageToGPA(num);
@@ -36,6 +38,8 @@ export function formatGrade(percentage) {
 }
 
 export function percentageIsValid(percentage) {
+  if (percentage == null || percentage === '') return false;
+  if (typeof percentage === 'string' && percentage.trim() === '') return false;
   const num = Number(percentage);
   return Number.isFinite(num) && num >= 0 && num <= 100;
 }

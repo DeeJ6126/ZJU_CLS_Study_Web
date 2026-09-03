@@ -25,12 +25,24 @@ function sanitizeUrl(url) {
   return '';
 }
 
+function unescapeHtml(text) {
+  return String(text)
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
 function applyReplacements(input) {
   let text = input;
 
-  // [code]...[/code] — escape inner content for verbatim display.
+  // [code]...[/code] — strip the outer escape so inner content is shown
+  // verbatim, then re-escape the inner. The outer escape would otherwise
+  // double-escape our entities.
   text = text.replace(/\[code\]([\s\S]*?)\[\/code\]/g, (_, inner) => {
-    const safe = escapeHtml(inner);
+    const raw = unescapeHtml(inner);
+    const safe = escapeHtml(raw);
     return `<pre class="ubb-code"><code>${safe}</code></pre>`;
   });
 
