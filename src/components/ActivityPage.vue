@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 
 import { activityPrograms } from '../data/activityConfig.js';
 import { activityApiClient } from '../services/activityApiClient.js';
+import { getActivityDetailHref } from '../services/demoNavigationService.js';
 import { publicAssetPath } from '../utils/publicPath.js';
 
 const props = defineProps({
@@ -27,6 +28,10 @@ function activityImage(path) {
   return path ? publicAssetPath(path) : '';
 }
 
+function programDetailHref(programId) {
+  return getActivityDetailHref(programId);
+}
+
 onMounted(async () => {
   const result = await activeActivityClient.value.fetchActivities();
   loading.value = false;
@@ -49,7 +54,7 @@ onMounted(async () => {
     </header>
 
     <nav class="activities-jump" aria-label="活动板块">
-      <a v-for="program in activityPrograms" :key="program.id" :href="`#activity-program-${program.id}`">
+      <a v-for="program in activityPrograms" :key="program.id" :href="programDetailHref(program.id)">
         {{ program.label }}
       </a>
     </nav>
@@ -71,8 +76,13 @@ onMounted(async () => {
           </figure>
           <div>
             <span>{{ String(programIndex + 1).padStart(2, '0') }}</span>
-            <h2 :id="`activity-program-title-${program.id}`">{{ program.label }}</h2>
+            <h2 :id="`activity-program-title-${program.id}`">
+              <a :href="programDetailHref(program.id)">{{ program.label }}</a>
+            </h2>
             <p>{{ program.summary }}</p>
+            <a class="activity-program__detail-link" :href="programDetailHref(program.id)">
+              查看活动详情 <b aria-hidden="true">↗</b>
+            </a>
           </div>
         </div>
 

@@ -34,6 +34,9 @@ export function getDemoPageFromHash(hash, pages) {
   if (pageId === 'activities' || pageId.startsWith('activities/')) {
     return 'activities';
   }
+  if (pageId === 'activity' || pageId.startsWith('activity/')) {
+    return 'activity-detail';
+  }
   if (pageId === 'profile' || pageId.startsWith('profile/')) {
     return 'profile';
   }
@@ -52,6 +55,15 @@ export function getDemoPageFromHash(hash, pages) {
 export function getActivitySlugFromHash(hash) {
   const value = String(hash ?? '').replace(/^#activities\/?/, '');
   return value ? decodeURIComponent(value) : '';
+}
+
+export function getActivityDetailSlugFromHash(hash) {
+  const value = String(hash ?? '').replace(/^#activity\/?/, '');
+  return value ? decodeURIComponent(value) : '';
+}
+
+export function getActivityDetailHref(slug) {
+  return `#activity/${encodeURIComponent(slug)}`;
 }
 
 export function getProfileIdFromHash(hash) {

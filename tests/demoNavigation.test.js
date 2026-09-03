@@ -57,6 +57,17 @@ test('in-page section anchors stay on their parent page instead of falling back 
   );
 });
 
+test('activity detail route resolves to a separate page from the activities index', () => {
+  assert.equal(
+    getDemoPageFromHash('#activity/academic-voyage', demoTopPages),
+    'activity-detail',
+  );
+  assert.equal(
+    getDemoPageFromHash('#activity/laboratory-open-day', demoTopPages),
+    'activity-detail',
+  );
+});
+
 test('getHashQuery returns parsed params from a hash with a query suffix', () => {
   const params = getHashQuery('#overview?program=2025&group=semester');
   assert.equal(params.get('program'), '2025');
