@@ -1,24 +1,9 @@
-function createRequester(fetchImpl) {
-  return async function request(path, options = {}) {
-    try {
-      const response = await fetchImpl(path, { credentials: 'include', ...options });
-      const data = await response.json();
-      return response.ok
-        ? { ok: true, status: response.status, ...data }
-        : { ok: false, status: response.status, message: data.message ?? '请求失败。' };
-    } catch {
-      return { ok: false, status: 0, message: '账号数据服务暂时无法连接。' };
-    }
-  };
-}
+import { createRequestClient } from './apiClient.js';
 
 export function createAccountDataApiClient(fetchImpl = fetch) {
-  const request = createRequester(fetchImpl);
-  const json = (method, body = {}) => ({
-    method,
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+  const { request } = createRequestClient({ name: 'account-data', fetchImpl, networkErrorMessage: '账号数据服务暂时无法连接。' });
+  const json = (method, body) => (body === undefined ? { method } : { method, body });
+
   return {
     fetchCourses: () => request('api/account/courses'),
     previewCourseSchedule: (file) => request('api/account/courses/import-preview', {

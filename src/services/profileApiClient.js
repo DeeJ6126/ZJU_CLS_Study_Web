@@ -1,92 +1,85 @@
-async function requestJson(path, options = {}) {
-  try {
-    const response = await fetch(path, { credentials: 'include', ...options });
-    const data = await response.json();
-    if (!response.ok) {
-      return { ok: false, status: response.status, message: data.message ?? '请求失败。' };
-    }
-    return { ok: true, status: response.status, ...data };
-  } catch {
-    return { ok: false, status: 0, message: '账号服务暂时无法连接。' };
-  }
-}
+import { createRequestClient } from './apiClient.js';
 
-function jsonOptions(method, body = {}) {
+export function createProfileApiClient(fetchImpl = fetch) {
+  const { request } = createRequestClient({ name: 'profile', fetchImpl, networkErrorMessage: '账号服务暂时无法连接。' });
+
+  const json = (method, body) => (body === undefined ? { method } : { method, body });
+
   return {
-    method,
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(body),
+    searchProfiles(query) {
+      return request(`api/profiles?query=${encodeURIComponent(query)}`);
+    },
+    fetchPublicProfile(publicId) {
+      return request(`api/profiles/${encodeURIComponent(publicId)}`);
+    },
+    fetchMyProfile() {
+      return request('api/account/profile');
+    },
+    updateMyNickname(nickname) {
+      return request('api/account/profile', json('PATCH', { nickname }));
+    },
+    updateMyGrade(grade) {
+      return request('api/account/profile/grade', json('PATCH', { grade }));
+    },
+    uploadMyAvatar(file) {
+      return request('api/account/profile/avatar', {
+        method: 'PUT',
+        headers: {
+          'content-type': file.type,
+          'x-profile-upload': 'avatar',
+        },
+        body: file,
+      });
+    },
+    removeMyAvatar() {
+      return request('api/account/profile/avatar', { method: 'DELETE' });
+    },
+    bindMyCc98(input) {
+      return request('api/account/cc98', json('PUT', input));
+    },
+    submitPostRevision(contentId, changes) {
+      return request(
+        `api/account/posts/${encodeURIComponent(contentId)}/revisions`,
+        json('POST', changes),
+      );
+    },
+    archiveMyPost(contentId) {
+      return request(
+        `api/account/posts/${encodeURIComponent(contentId)}/archive`,
+        json('POST'),
+      );
+    },
+    resubmitMySubmission(submissionId, changes = {}) {
+      return request(
+        `api/account/submissions/${encodeURIComponent(submissionId)}/resubmit`,
+        json('POST', changes),
+      );
+    },
+    updateMySubmission(submissionId, changes) {
+      return request(`api/account/submissions/${encodeURIComponent(submissionId)}`, json('PATCH', changes));
+    },
+    withdrawMySubmission(submissionId) {
+      return request(`api/account/submissions/${encodeURIComponent(submissionId)}/withdraw`, json('POST'));
+    },
+    deleteMySubmission(submissionId) {
+      return request(`api/account/submissions/${encodeURIComponent(submissionId)}`, { method: 'DELETE' });
+    },
   };
 }
 
-export function searchProfiles(query) {
-  return requestJson(`api/profiles?query=${encodeURIComponent(query)}`);
-}
+export const profileApiClient = createProfileApiClient();
 
-export function fetchPublicProfile(publicId) {
-  return requestJson(`api/profiles/${encodeURIComponent(publicId)}`);
-}
-
-export function fetchMyProfile() {
-  return requestJson('api/account/profile');
-}
-
-export function updateMyNickname(nickname) {
-  return requestJson('api/account/profile', jsonOptions('PATCH', { nickname }));
-}
-
-export function updateMyGrade(grade) {
-  return requestJson('api/account/profile/grade', jsonOptions('PATCH', { grade }));
-}
-
-export function uploadMyAvatar(file) {
-  return requestJson('api/account/profile/avatar', {
-    method: 'PUT',
-    headers: {
-      'content-type': file.type,
-      'x-profile-upload': 'avatar',
-    },
-    body: file,
-  });
-}
-
-export function removeMyAvatar() {
-  return requestJson('api/account/profile/avatar', { method: 'DELETE' });
-}
-
-export function bindMyCc98(input) {
-  return requestJson('api/account/cc98', jsonOptions('PUT', input));
-}
-
-export function submitPostRevision(contentId, changes) {
-  return requestJson(
-    `api/account/posts/${encodeURIComponent(contentId)}/revisions`,
-    jsonOptions('POST', changes),
-  );
-}
-
-export function archiveMyPost(contentId) {
-  return requestJson(
-    `api/account/posts/${encodeURIComponent(contentId)}/archive`,
-    jsonOptions('POST'),
-  );
-}
-
-export function resubmitMySubmission(submissionId, changes = {}) {
-  return requestJson(
-    `api/account/submissions/${encodeURIComponent(submissionId)}/resubmit`,
-    jsonOptions('POST', changes),
-  );
-}
-
-export function updateMySubmission(submissionId, changes) {
-  return requestJson(`api/account/submissions/${encodeURIComponent(submissionId)}`, jsonOptions('PATCH', changes));
-}
-
-export function withdrawMySubmission(submissionId) {
-  return requestJson(`api/account/submissions/${encodeURIComponent(submissionId)}/withdraw`, jsonOptions('POST'));
-}
-
-export function deleteMySubmission(submissionId) {
-  return requestJson(`api/account/submissions/${encodeURIComponent(submissionId)}`, { method: 'DELETE' });
-}
+export const searchProfiles = (...args) => profileApiClient.searchProfiles(...args);
+export const fetchPublicProfile = (...args) => profileApiClient.fetchPublicProfile(...args);
+export const fetchMyProfile = (...args) => profileApiClient.fetchMyProfile(...args);
+export const updateMyNickname = (...args) => profileApiClient.updateMyNickname(...args);
+export const updateMyGrade = (...args) => profileApiClient.updateMyGrade(...args);
+export const uploadMyAvatar = (...args) => profileApiClient.uploadMyAvatar(...args);
+export const removeMyAvatar = (...args) => profileApiClient.removeMyAvatar(...args);
+export const bindMyCc98 = (...args) => profileApiClient.bindMyCc98(...args);
+export const submitPostRevision = (...args) => profileApiClient.submitPostRevision(...args);
+export const archiveMyPost = (...args) => profileApiClient.archiveMyPost(...args);
+export const resubmitMySubmission = (...args) => profileApiClient.resubmitMySubmission(...args);
+export const updateMySubmission = (...args) => profileApiClient.updateMySubmission(...args);
+export const withdrawMySubmission = (...args) => profileApiClient.withdrawMySubmission(...args);
+export const deleteMySubmission = (...args) => profileApiClient.deleteMySubmission(...args);

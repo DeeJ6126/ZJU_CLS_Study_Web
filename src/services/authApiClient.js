@@ -1,51 +1,35 @@
+import { createJsonClient } from './apiClient.js';
+
 export function createAuthApiClient(fetchImpl = fetch) {
-  async function requestJson(path, options = {}) {
-    try {
-      const response = await fetchImpl(path, {
-        credentials: 'include',
-        ...options,
-        headers: {
-          'content-type': 'application/json',
-          ...(options.headers ?? {}),
-        },
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        return { ok: false, status: response.status, message: data.message ?? '请求失败。' };
-      }
-      return { ok: true, status: response.status, ...data };
-    } catch {
-      return { ok: false, status: 0, message: '账号服务暂时无法连接。' };
-    }
-  }
+  const { requestJson } = createJsonClient({ name: 'auth', fetchImpl, networkErrorMessage: '账号服务暂时无法连接。' });
 
   return {
     fetchCurrentUser() {
       return requestJson('api/auth/me');
     },
     registerCc98({ code, password }) {
-      return requestJson('api/auth/register/cc98', { method: 'POST', body: JSON.stringify({ code, password }) });
+      return requestJson('api/auth/register/cc98', { method: 'POST', body: { code, password } });
     },
     loginCc98({ cc98Name, password }) {
-      return requestJson('api/auth/login/cc98', { method: 'POST', body: JSON.stringify({ cc98Name, password }) });
+      return requestJson('api/auth/login/cc98', { method: 'POST', body: { cc98Name, password } });
     },
     requestEmailCode({ studentId, purpose }) {
-      return requestJson('api/auth/email/code', { method: 'POST', body: JSON.stringify({ studentId, purpose }) });
+      return requestJson('api/auth/email/code', { method: 'POST', body: { studentId, purpose } });
     },
     registerEmail({ studentId, nickname, code, password }) {
       return requestJson('api/auth/register/email', {
-        method: 'POST', body: JSON.stringify({ studentId, nickname, code, password }),
+        method: 'POST', body: { studentId, nickname, code, password },
       });
     },
     loginEmail({ studentId, password }) {
-      return requestJson('api/auth/login/email', { method: 'POST', body: JSON.stringify({ studentId, password }) });
+      return requestJson('api/auth/login/email', { method: 'POST', body: { studentId, password } });
     },
     bindEmail({ studentId, code }) {
-      return requestJson('api/auth/bind/email', { method: 'POST', body: JSON.stringify({ studentId, code }) });
+      return requestJson('api/auth/bind/email', { method: 'POST', body: { studentId, code } });
     },
     resetEmailPassword({ studentId, code, password }) {
       return requestJson('api/auth/password/reset/email', {
-        method: 'POST', body: JSON.stringify({ studentId, code, password }),
+        method: 'POST', body: { studentId, code, password },
       });
     },
     logout() {

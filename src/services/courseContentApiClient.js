@@ -1,6 +1,7 @@
 import { buildCourseRoute } from '../data/courses/resourcePaths.js';
 import { bodyToParagraphs, parseMarkdownDocument } from '../utils/markdownContent.js';
 import { publicAssetPath } from '../utils/publicPath.js';
+import { createRawClient } from './apiClient.js';
 
 const tabByType = {
   experience: 'experiences',
@@ -27,11 +28,9 @@ function normalizeItem(item, courseCode, tabId) {
   };
 }
 
-async function loadFromApi(courseCode, fetchImpl) {
-  const response = await fetchImpl(`api/content/courses/${encodeURIComponent(courseCode)}`, {
-    credentials: 'include',
-  });
-  if (!response.ok) {
+async function loadFromApi(courseCode, fetchRaw) {
+  const response = await fetchRaw(`api/content/courses/${encodeURIComponent(courseCode)}`);
+  if (!response || !response.ok) {
     throw new Error('Course content API unavailable');
   }
   const data = await response.json();
@@ -45,10 +44,10 @@ async function loadFromApi(courseCode, fetchImpl) {
   return collections;
 }
 
-async function loadStaticCollection(course, tabId, fetchImpl) {
+async function loadStaticCollection(course, tabId, fetchRaw) {
   return Promise.all((course[tabId] ?? []).map(async (sourceItem) => {
-    const response = await fetchImpl(publicAssetPath(sourceItem.url));
-    if (!response.ok) {
+    const response = await fetchRaw(publicAssetPath(sourceItem.url));
+    if (!response || !response.ok) {
       throw new Error(`Static content unavailable: ${sourceItem.url}`);
     }
     const document = parseMarkdownDocument(await response.text());
@@ -67,12 +66,13 @@ async function loadStaticCollection(course, tabId, fetchImpl) {
 }
 
 export async function loadCourseContent(course, { fetchImpl = fetch } = {}) {
+  const { fetchRaw } = createRawClient({ name: 'course-content', fetchImpl });
   try {
-    return await loadFromApi(course.code, fetchImpl);
+    return await loadFromApi(course.code, fetchRaw);
   } catch {
     const collections = emptyCollections('static');
     for (const tabId of ['experiences', 'materials', 'papers']) {
-      collections[tabId] = await loadStaticCollection(course, tabId, fetchImpl);
+      collections[tabId] = await loadStaticCollection(course, tabId, fetchRaw);
     }
     return collections;
   }
