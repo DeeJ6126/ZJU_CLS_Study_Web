@@ -17,6 +17,7 @@ import AuthDialog from './components/account/AuthDialog.vue';
 import NotificationsPage from './components/account/NotificationsPage.vue';
 import ProfilePage from './components/profile/ProfilePage.vue';
 import ThemeSwitch from './components/ThemeSwitch.vue';
+import SearchBar from './components/SearchBar.vue';
 import {
   addQuizMistake,
   createQuizSession,
@@ -2183,7 +2184,11 @@ async function handleRequestEmailCode(payload) {
   authNotice.value = '正在发送验证码...';
   const result = await requestEmailVerificationCode(payload);
   authBusy.value = false;
-  authNotice.value = result.ok ? result.message : result.message;
+  authNotice.value = result.message;
+  if (result.ok) {
+    // Briefly show success before the user fills the code in.
+    authInitialTab.value = 'email';
+  }
 }
 
 async function handleRegisterEmail(payload) {
@@ -2465,6 +2470,7 @@ onBeforeUnmount(() => {
           {{ page.label }}
         </a>
       </nav>
+      <SearchBar class="demo-search-bar" />
       <div class="demo-account">
         <ThemeSwitch class="demo-theme-switch" />
         <button

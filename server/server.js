@@ -56,6 +56,7 @@ import { handleActivityHttpRequest } from './activity/activityHttpService.js';
 import { seedActivityCatalog } from './activity/activityService.js';
 import { createStudentHomepageStore } from './studentHomepage/studentHomepageStore.js';
 import { handleStudentHomepageHttpRequest } from './studentHomepage/studentHomepageHttpService.js';
+import { handleSearchHttpRequest } from './search/searchHttpService.js';
 import {
   maxAvatarBytes,
   readAvatarFile,
@@ -476,6 +477,18 @@ export function createAuthServer({
       if (studentHomepageHandled) {
         return;
       }
+      const searchHandled = handleSearchHttpRequest({
+        request,
+        response,
+        url,
+        contentStore,
+        courseCatalog,
+        studentHomepageStore,
+        sendJson,
+      });
+      if (searchHandled) {
+        return;
+      }
       const contentHandled = await handleContentHttpRequest({
         request,
         response,
@@ -799,6 +812,16 @@ export function createAuthServer({
 
       sendJson(response, 404, { message: 'Not found' });
     } catch (error) {
+      // Surface uncaught errors with structured context so production incidents
+      // leave a trail. The generic 500 keeps the public surface stable.
+      const ctx = {
+        method: request.method,
+        path: url?.pathname ?? '',
+        userId: quizUserId || null,
+        error: error?.message ?? String(error),
+        stack: error?.stack,
+      };
+      console.error('[server] uncaught error', ctx);
       sendJson(response, 500, { message: 'Server error' });
     }
   });

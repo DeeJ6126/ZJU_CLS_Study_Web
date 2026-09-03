@@ -13,5 +13,6 @@ import './styles/overview.css';
 import './styles/admin.css';
 import './styles/profile.css';
 import './styles/demo.css';
+import './styles/search-bar.css';
 
 createApp(App).mount('#app');
