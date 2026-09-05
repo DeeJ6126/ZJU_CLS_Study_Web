@@ -1980,6 +1980,20 @@ async function syncPageFromHash() {
       }
     }
   }
+
+  // HI-NAV-1: in-page anchor scroll. Hashes like `#overview#course-anchor`
+  // or `#profile#comments` should jump to the matching element. We wait
+  // one tick so the page has rendered, then look up the anchor.
+  const hash = String(window.location.hash ?? '');
+  const anchorMatch = hash.match(/#([^/?#]+)$/);
+  const anchorId = anchorMatch && !['home', 'overview', 'profile', 'activities', 'activity-detail', 'notifications', 'admin', 'quiz', 'about'].includes(anchorMatch[1]) ? anchorMatch[1] : '';
+  if (anchorId) {
+    await nextTick();
+    const target = typeof document !== 'undefined' ? document.getElementById(anchorId) : null;
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
 }
 
 async function loadActiveProfile() {
