@@ -210,6 +210,27 @@ async function selectDemoIdentity(identityId) {
   demoIdentityId.value = identityId ?? '';
   setQuizAnonymousMode(Boolean(demoIdentityId.value));
   saveDemoIdentityId(demoIdentityId.value);
+  // HI-STATE-1/2: drop in-memory state that belongs to the previous
+  // identity so the new account never sees a stale page / mistake /
+  // session / comment cache from the old one.
+  activeCollectionSlug.value = '';
+  activeCourseCode.value = '';
+  quizView.value = 'catalog';
+  session.value = null;
+  activeOverviewCourse.value = null;
+  overviewContentLoading.value = false;
+  commentsByContentId.value = {};
+  activeProfilePublicId.value = '';
+  profileView.value = { profile: null, posts: [], submissions: [], comments: [] };
+  profileNotice.value = '';
+  profileLoading.value = false;
+  courseImportPreview.value = null;
+  notifications.value = [];
+  unreadNotificationCount.value = 0;
+  notificationNotice.value = '';
+  contributionNotice.value = '';
+  likeNotice.value = '';
+  commentNotice.value = '';
   demoDataVersion.value += 1;
   await loadAccountData();
   if (activePage.value === 'admin' && identityId !== 'admin') {
