@@ -334,6 +334,45 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
       return this.findUserById(userId);
     },
 
+    // HI-SEC-5: combine the CC98 identity replacement with session
+    // invalidation in a single transaction so a partially-applied state
+    // (identity swapped but old sessions still alive) can never exist.
+    replaceCc98IdentityAndInvalidateSessions(userId, cc98Name, verificationCode, currentSessionId) {
+      const displayName = String(cc98Name ?? '').trim();
+      db.exec('begin immediate');
+      try {
+        const codeResult = db.prepare(`
+          update verification_codes set used_by_user_id = ?, used_at = ?
+          where code = ? and used_by_user_id is null
+        `).run(userId, new Date().toISOString(), verificationCode);
+        if (Number(codeResult.changes) !== 1) {
+          throw new Error('verification-code-unavailable');
+        }
+        db.prepare("delete from user_identities where user_id = ? and provider = 'cc98'").run(userId);
+        db.prepare(`
+          insert into user_identities (user_id, provider, identifier, display_value, verified_at)
+          values (?, 'cc98', ?, ?, ?)
+        `).run(
+          userId,
+          normalizeIdentity('cc98', displayName),
+          displayName,
+          new Date().toISOString(),
+        );
+        db.prepare(`
+          update users set cc98_name = ?, nickname = ?, nickname_normalized = ? where id = ?
+        `).run(displayName, displayName, normalizeNickname(displayName), userId);
+        // Invalidate other sessions in the same transaction so we never
+        // leave a window where the old identity still has a live session.
+        db.prepare('delete from sessions where user_id = ? and id <> ?')
+          .run(userId, currentSessionId ?? '');
+        db.exec('commit');
+      } catch (error) {
+        db.exec('rollback');
+        throw error;
+      }
+      return this.findUserById(userId);
+    },
+
     promoteAdminByCc98Name(cc98Name) {
       const user = this.findUserByCc98Name(cc98Name);
       if (!user) return null;

@@ -276,8 +276,11 @@ export async function bindOrRebindCc98(store, userId, currentSessionId, { code, 
     return { ok: false, status: 409, message: '该 CC98 名字与已有昵称冲突。' };
   }
   try {
-    const next = store.replaceCc98Identity(userId, cc98Name, normalizedCode);
-    store.deleteOtherSessions(userId, currentSessionId);
+    // HI-SEC-5: identity replacement + session invalidation in one
+    // transaction so a partial state can never leak through.
+    const next = store.replaceCc98IdentityAndInvalidateSessions(
+      userId, cc98Name, normalizedCode, currentSessionId,
+    );
     return { ok: true, status: 200, user: publicUser(next) };
   } catch {
     return { ok: false, status: 409, message: 'CC98 绑定失败，请更换验证码后重试。' };
