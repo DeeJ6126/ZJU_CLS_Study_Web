@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, reactive, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue';
 
 const props = defineProps({
   tabLabel: {
@@ -55,6 +55,56 @@ function closeModal() {
   isOpen.value = false;
   notice.value = '';
 }
+
+const panelRef = ref(null);
+
+function focusableElements() {
+  const root = panelRef.value;
+  if (!root) return [];
+  return Array.from(root.querySelectorAll(
+    'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+  ));
+}
+
+function trapTab(event) {
+  if (event.key !== 'Tab') return;
+  const focusables = focusableElements();
+  if (!focusables.length) return;
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+function onKeydown(event) {
+  if (!isOpen.value) return;
+  if (event.key === 'Escape') {
+    event.stopPropagation();
+    closeModal();
+    return;
+  }
+  trapTab(event);
+}
+
+watch(isOpen, async (open) => {
+  if (open) {
+    document.addEventListener('keydown', onKeydown);
+    await nextTick();
+    const first = focusableElements()[0];
+    if (first) first.focus();
+  } else {
+    document.removeEventListener('keydown', onKeydown);
+  }
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onKeydown);
+});
 
 function handlePdfChange(event) {
   pdfFile.value = event.target.files?.[0] ?? null;
@@ -161,7 +211,7 @@ function submitContribution() {
     <Teleport to="body">
       <div v-if="isOpen" class="contribution-modal" role="dialog" aria-modal="true" aria-labelledby="contribution-title">
         <button class="contribution-modal__scrim" type="button" aria-label="关闭投稿窗口" @click="closeModal"></button>
-        <section class="contribution-modal__panel">
+        <section ref="panelRef" class="contribution-modal__panel">
           <header class="contribution-modal__head">
             <div>
               <p class="course-detail__kicker">{{ tabLabel }}</p>
