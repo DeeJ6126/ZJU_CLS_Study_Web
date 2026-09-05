@@ -64,7 +64,7 @@
   height: 40px;
   padding: 0 36px 0 12px;
   border: 1px solid #cfd9d3;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   background: #ffffff;
   color: #243b32;
   font: inherit;
@@ -79,7 +79,7 @@
   height: 40px;
   padding: 0 14px;
   border: 1px solid #cfd9d3;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   background: #ffffff;
   color: #65736c;
   cursor: pointer;
@@ -185,7 +185,7 @@
   position: relative;
   min-height: 92px;
   border: 1px solid #dce4df;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: #ffffff;
 }
 

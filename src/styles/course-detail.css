@@ -738,7 +738,7 @@ html[data-theme="dark"] .article-body--ubb .ubb-code {
 
 .comment-form-hint code {
   padding: 1px 5px;
-  border-radius: 3px;
+  border-radius: 2px;
   background: var(--detail-chip-bg);
   color: var(--detail-chip-text);
   font: inherit;
@@ -1289,7 +1289,7 @@ html[data-theme="dark"] .contribution-form__ubb-button:hover {
   margin: 10px 0 0;
   padding: 12px;
   overflow: auto;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: var(--detail-surface);
 }
 
