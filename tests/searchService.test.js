@@ -197,3 +197,53 @@ test('search total sums across all four groups', () => {
   assert.equal(result.results.homepages.length, 1);
   assert.equal(result.total, 4);
 });
+
+test('search splits query on whitespace so 微生物 学 matches 微生物学', () => {
+  const result = searchAll({
+    query: '微生物 学',
+    contentStore: createContentStore(),
+    courseCatalog: catalog,
+    studentHomepageStore: createHomepageStore(),
+  });
+  assert.equal(result.results.courses.length, 1);
+  assert.equal(result.results.courses[0].code, 'BIO2110F');
+});
+
+test('search splits query on whitespace and matches English code BIO 2110', () => {
+  const result = searchAll({
+    query: 'BIO 2110',
+    contentStore: createContentStore(),
+    courseCatalog: catalog,
+    studentHomepageStore: createHomepageStore(),
+  });
+  assert.equal(result.results.courses.length, 1);
+  assert.equal(result.results.courses[0].code, 'BIO2110F');
+});
+
+test('search applies AND semantics across tokens so only items matching every token survive', () => {
+  const items = [
+    { id: 'both', type: 'experience', title: '微生物学心得', summary: '期末复习', author: '', courseCode: 'BIO2110F', status: 'published' },
+    { id: 'one', type: 'experience', title: '微生物前沿', summary: '无关', author: '', courseCode: 'BIO2028M', status: 'published' },
+  ];
+  const result = searchAll({
+    query: '微生物 学',
+    contentStore: createContentStore(items),
+    courseCatalog: catalog,
+    studentHomepageStore: createHomepageStore(),
+  });
+  assert.equal(result.results.content.length, 1);
+  assert.equal(result.results.content[0].id, 'both');
+  assert.equal(result.results.courses.length, 1);
+  assert.equal(result.results.courses[0].code, 'BIO2110F');
+});
+
+test('search treats runs of whitespace as a single separator', () => {
+  const result = searchAll({
+    query: '  微生物    学  ',
+    contentStore: createContentStore(),
+    courseCatalog: catalog,
+    studentHomepageStore: createHomepageStore(),
+  });
+  assert.equal(result.results.courses.length, 1);
+  assert.equal(result.results.courses[0].code, 'BIO2110F');
+});

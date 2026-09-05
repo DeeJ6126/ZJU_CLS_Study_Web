@@ -12,6 +12,15 @@ function normalize(value) {
   return String(value ?? '').trim().toLocaleLowerCase();
 }
 
+function tokenizeQuery(query) {
+  return normalize(query).split(/\s+/).filter(Boolean);
+}
+
+function matchesAllTokens(text, tokens) {
+  if (!tokens.length) return true;
+  return tokens.every((token) => text.includes(token));
+}
+
 function searchableItem(item) {
   return {
     ...item,
@@ -58,12 +67,12 @@ export function buildHomeSearchIndex({
 }
 
 export function searchHomeIndex(index, query, kind = 'course', limit = 6) {
-  const normalizedQuery = normalize(query);
-  if (!normalizedQuery) {
+  const tokens = tokenizeQuery(query);
+  if (!tokens.length) {
     return [];
   }
 
   return index
-    .filter((item) => item.kind === kind && item.searchText.includes(normalizedQuery))
+    .filter((item) => item.kind === kind && matchesAllTokens(item.searchText, tokens))
     .slice(0, limit);
 }

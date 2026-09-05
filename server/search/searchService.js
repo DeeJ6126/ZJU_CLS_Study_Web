@@ -52,7 +52,9 @@ export function searchAll({
   studentHomepageStore,
 } = {}) {
   const safeQuery = normalizeQuery(query);
-  const tokens = safeQuery ? [safeQuery.toLowerCase()] : [];
+  const tokens = safeQuery
+    ? safeQuery.toLowerCase().split(/\s+/).filter(Boolean)
+    : [];
   const safeLimit = clampLimit(limit);
 
   if (!tokens.length) {
