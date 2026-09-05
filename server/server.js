@@ -79,9 +79,30 @@ function parseCookies(header = '') {
   );
 }
 
+// HI-SEC-1: cap JSON body size to prevent trivial memory-DoS via
+//   unlimited for-await accumulation. The cap matches the largest
+//   expected payload (a single submission with ~20 KB body + metadata).
+const MAX_JSON_BODY_BYTES = 256 * 1024;
+
+class HttpError extends Error {
+  constructor(statusCode, message) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
+
 async function readJsonBody(request) {
+  const declaredLength = Number(request.headers['content-length'] ?? 0);
+  if (declaredLength > MAX_JSON_BODY_BYTES) {
+    throw new HttpError(413, '请求体过大。');
+  }
   const chunks = [];
+  let size = 0;
   for await (const chunk of request) {
+    size += chunk.length;
+    if (size > MAX_JSON_BODY_BYTES) {
+      throw new HttpError(413, '请求体过大。');
+    }
     chunks.push(chunk);
   }
   const text = Buffer.concat(chunks).toString('utf8');
@@ -816,6 +837,12 @@ export function createAuthServer({
 
       sendJson(response, 404, { message: 'Not found' });
     } catch (error) {
+      // HI-SEC-1: HttpError carries a client-safe status (e.g. 413 for
+      // over-sized body) so we don't have to wrap every handler.
+      if (error instanceof HttpError) {
+        sendJson(response, error.statusCode, { message: error.message });
+        return;
+      }
       // Surface uncaught errors with structured context so production incidents
       // leave a trail. The generic 500 keeps the public surface stable.
       const ctx = {
