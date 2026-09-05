@@ -114,6 +114,45 @@ function switchFormat(format) {
   form.bodyFormat = format;
 }
 
+// HI-UI-4: replace blocking window.prompt with an inline input shown
+// directly in the toolbar. `pendingPrompt` holds the toolbar action that
+// needs a parameter; clearing it cancels the action.
+const pendingPrompt = ref(null);
+const promptInput = ref('');
+const promptInputRef = ref(null);
+
+function openPrompt(action) {
+  pendingPrompt.value = action;
+  promptInput.value = '';
+  nextTick(() => promptInputRef.value?.focus());
+}
+
+function cancelPrompt() {
+  pendingPrompt.value = null;
+  promptInput.value = '';
+}
+
+function confirmPrompt() {
+  const action = pendingPrompt.value;
+  const value = promptInput.value.trim();
+  if (!action || !value) {
+    cancelPrompt();
+    return;
+  }
+  applyPromptedUbbTag(action, value);
+  cancelPrompt();
+}
+
+function applyPromptedUbbTag(action, value) {
+  if (action.label === '🔗') wrapSelection(`[url=${value}]`, '[/url]');
+  else if (action.label === '🖼') {
+    form.body = `${form.body}[img]${value}[/img]`;
+  } else if (action.label === '🎨') wrapSelection(`[color=${value}]`, '[/color]');
+  else if (action.label === '☺') {
+    form.body = `${form.body}[smiley]${value}[/smiley]`;
+  }
+}
+
 function wrapSelection(openTag, closeTag) {
   const textarea = bodyTextarea.value;
   if (!textarea) return;
@@ -150,22 +189,14 @@ function applyUbbTag(action) {
     nextTick(() => applyUbbTag(action));
     return;
   }
+  // Actions that need a parameter (URL, image URL, color, smiley) open an
+  // inline input via openPrompt() instead of blocking on window.prompt.
+  if (action.prompt) {
+    openPrompt(action);
+    return;
+  }
   let openTag = action.wrap[0];
   let closeTag = action.wrap[1];
-  if (action.prompt) {
-    if (typeof window === 'undefined') return;
-    const value = window.prompt(action.title + '：' + (action.prompt || ''));
-    if (!value) return;
-    if (action.label === '🔗') openTag = `[url=${value}]`;
-    else if (action.label === '🖼') {
-      form.body = `${form.body}[img]${value}[/img]`;
-      return;
-    } else if (action.label === '🎨') openTag = `[color=${value}]`;
-    else if (action.label === '☺') {
-      form.body = `${form.body}[smiley]${value}[/smiley]`;
-      return;
-    }
-  }
   wrapSelection(openTag, closeTag);
 }
 
@@ -273,6 +304,20 @@ function submitContribution() {
                   :title="action.title"
                   @click="applyUbbTag(action)"
                 >{{ action.label }}</button>
+              </div>
+              <div v-if="pendingPrompt" class="contribution-form__ubb-prompt" role="dialog" aria-label="UBB 参数输入">
+                <label>
+                  <span>{{ pendingPrompt.title }}</span>
+                  <input
+                    ref="promptInputRef"
+                    v-model.trim="promptInput"
+                    :placeholder="pendingPrompt.prompt || ''"
+                    @keydown.enter.prevent="confirmPrompt"
+                    @keydown.escape.prevent="cancelPrompt"
+                  />
+                </label>
+                <button type="button" class="secondary-button" @click="confirmPrompt">确定</button>
+                <button type="button" class="secondary-button" @click="cancelPrompt">取消</button>
               </div>
               <textarea
                 ref="bodyTextarea"
