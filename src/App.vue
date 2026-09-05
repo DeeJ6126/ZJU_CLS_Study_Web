@@ -264,6 +264,10 @@ const activePracticeRangeId = ref('');
 const answeredQuestionStatus = ref({});
 const session = ref(null);
 const interaction = ref(createQuizInteractionState({ questionType: '' }));
+// quizScope must be declared before any read*/write* call uses it.
+// It is intentionally a plain function (not computed) so call sites
+// always read the *current* viewer/demoIdentityId rather than a snapshot.
+const quizScope = computed(() => viewer?.id || demoIdentityId || 'guest');
 const molecularLanguage = ref(readMolecularLanguage(quizScope.value));
 const molecularReviewTerms = ref([]);
 const molecularReviewIndex = ref(0);
@@ -1785,7 +1789,6 @@ async function migrateLocalQuizData() {
   writeMicrobiologyVocabularyRecords(quizScope.value, []);
 }
 
-const quizScope = computed(() => viewer?.id || demoIdentityId || 'guest');
 function persistGuestRecords(records, writer) {
   return viewerIsGuest.value || isDemoAccount.value ? writer(quizScope.value, records) : records;
 }
