@@ -2382,6 +2382,12 @@ async function handleLogout() {
   microbiologyMistakeRecords.value = readMicrobiologyMistakes(quizScope.value);
   microbiologyVocabularyRecords.value = readMicrobiologyVocabularyRecords(quizScope.value);
   accountOpen.value = false;
+  // HI-NAV-2: after logout the user is back to guest, so URL should
+  // return to #home. Without this, deep-linked /profile or /admin
+  // pages stay in the URL and confuse the next user of the device.
+  if (typeof window !== 'undefined' && window.location.hash !== '#home') {
+    window.location.hash = '#home';
+  }
 }
 
 function openOwnProfile() {
