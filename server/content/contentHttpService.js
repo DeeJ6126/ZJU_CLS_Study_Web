@@ -75,6 +75,10 @@ function actorFrom(user, userId) {
     id: userId,
     nickname: user?.nickname ?? '',
     cc98Nickname: user?.cc98Nickname ?? '',
+    // Forward verification + role so service-layer guards (CRIT-RES-3) can
+    // decide if the user is allowed to submit content.
+    verifications: user?.verifications ?? null,
+    role: user?.role ?? 'student',
   };
 }
 
@@ -454,9 +458,22 @@ export async function handleContentHttpRequest({
   const reviewMatch = url.pathname.match(/^\/api\/admin\/submissions\/([^/]+)\/(approve|reject)$/);
   if (request.method === 'POST' && reviewMatch) {
     const body = await readJsonBody(request);
+    // CRIT-RES-4: capture the revision target's existing file so we can clean
+    // up the on-disk PDF after approval, otherwise a successful revision
+    // leaks the previous file (revisionTarget.file is overwritten by
+    // attachFile inside approveSubmission).
+    const submissionId = decodeURIComponent(reviewMatch[1]);
+    const pendingSubmission = contentStore.findSubmissionById(submissionId);
+    const oldRevisionFile = pendingSubmission?.submissionKind === 'revision'
+      ? contentStore.findById(pendingSubmission.targetContentId)?.file
+      : null;
     const result = reviewMatch[2] === 'approve'
-      ? approveSubmission(contentStore, decodeURIComponent(reviewMatch[1]), actor)
-      : rejectSubmission(contentStore, decodeURIComponent(reviewMatch[1]), actor, body.note);
+      ? approveSubmission(contentStore, submissionId, actor)
+      : rejectSubmission(contentStore, submissionId, actor, body.note);
+    if (result.ok && reviewMatch[2] === 'approve' && oldRevisionFile?.storedName
+        && oldRevisionFile.storedName !== result.item?.file?.storedName) {
+      removeStoredFile(uploadDirectory, oldRevisionFile.storedName);
+    }
     if (result.ok && result.submission?.submitterId) {
       const approved = reviewMatch[2] === 'approve';
       const revision = result.submission.submissionKind === 'revision';

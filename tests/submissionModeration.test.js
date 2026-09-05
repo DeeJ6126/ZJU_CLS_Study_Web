@@ -26,7 +26,7 @@ test('authenticated submissions stay pending until an administrator approves the
     body: '正文',
     cc98Url: 'https://www.cc98.org/topic/123',
     gpa: '4.32',
-  }, { id: 7, cc98Nickname: 'submitter' });
+  }, { id: 7, cc98Nickname: 'submitter', verifications: { cc98: 'submitter' } });
 
   assert.equal(created.ok, true);
   assert.equal(created.submission.status, 'pending');
@@ -50,15 +50,27 @@ test('authenticated submissions stay pending until an administrator approves the
 
 test('submission validation rejects unsafe links and invalid GPA values', () => {
   const store = createTestStore();
+  const submitter = { id: 7, cc98Nickname: 'submitter', verifications: { cc98: 'submitter' } };
   const unsafeLink = createSubmission(store, {
     courseCode: 'BIO2110F', type: 'experience', title: '标题', body: '正文', cc98Url: 'javascript:alert(1)',
-  }, { id: 7, cc98Nickname: 'submitter' });
+  }, submitter);
   assert.equal(unsafeLink.status, 400);
 
   const invalidGpa = createSubmission(store, {
     courseCode: 'BIO2110F', type: 'experience', title: '标题', body: '正文', gpa: '5.01',
-  }, { id: 7, cc98Nickname: 'submitter' });
+  }, submitter);
   assert.equal(invalidGpa.status, 400);
+  store.close();
+});
+
+test('unverified logged-in users cannot submit content', () => {
+  const store = createTestStore();
+  const result = createSubmission(store, {
+    courseCode: 'BIO2110F', type: 'experience', title: '匿名投稿', body: '正文',
+  }, { id: 7, cc98Nickname: 'submitter' });
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 403);
+  assert.match(result.message, /CC98.*邮箱/);
   store.close();
 });
 
@@ -66,7 +78,7 @@ test('rejected submissions cannot later be approved', () => {
   const store = createTestStore();
   const created = createSubmission(store, {
     courseCode: 'BIO2110F', type: 'experience', title: '待审核', body: '正文',
-  }, { id: 7, cc98Nickname: 'submitter' });
+  }, { id: 7, cc98Nickname: 'submitter', verifications: { cc98: 'submitter' } });
   const rejected = rejectSubmission(store, created.submission.id, { id: 2, cc98Nickname: 'admin' }, '内容过少');
   assert.equal(rejected.submission.status, 'rejected');
   assert.equal(approveSubmission(store, created.submission.id, { id: 2, cc98Nickname: 'admin' }).status, 409);

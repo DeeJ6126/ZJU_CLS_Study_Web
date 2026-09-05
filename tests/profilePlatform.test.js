@@ -70,7 +70,7 @@ test('approved revisions replace the published body without creating a second po
     title: '新标题',
     summary: '新摘要',
     body: '新正文',
-  }, { id: 7, nickname: '作者' });
+  }, { id: 7, nickname: '作者', verifications: { cc98: '作者' } });
 
   assert.equal(revision.ok, true);
   assert.equal(contentStore.findById(item.id).title, '原标题');
@@ -93,7 +93,7 @@ test('a revision cannot overwrite a post that changed while review was pending',
   });
   const revision = createRevisionSubmission(contentStore, item.id, {
     title: '待审核标题', body: '待审核正文',
-  }, { id: 7, nickname: '作者' });
+  }, { id: 7, nickname: '作者', verifications: { cc98: '作者' } });
   contentStore.updateItem(item.id, { title: '管理员新标题', updatedBy: 1 });
 
   const approved = approveSubmission(contentStore, revision.submission.id, {
@@ -113,7 +113,7 @@ test('an archived post can be resubmitted and returns only after administrator a
   });
   const revision = createRevisionSubmission(contentStore, item.id, {
     title: '重新发布', body: '更新正文',
-  }, { id: 7, nickname: '作者' });
+  }, { id: 7, nickname: '作者', verifications: { cc98: '作者' } });
   assert.equal(revision.ok, true);
   assert.equal(contentStore.findById(item.id).status, 'archived');
   assert.equal(approveSubmission(contentStore, revision.submission.id, { id: 1, cc98Nickname: '管理员' }).ok, true);

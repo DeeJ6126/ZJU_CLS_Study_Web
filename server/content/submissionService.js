@@ -31,6 +31,12 @@ function actorFields(actor) {
   };
 }
 
+function isVerifiedUser(user) {
+  if (!user) return false;
+  if (user.role === 'admin') return true;
+  return Boolean(user.verifications?.cc98) || Boolean(user.verifications?.email);
+}
+
 function log(store, action, submission, actor, detail = '') {
   store.createAuditLog({
     action,
@@ -80,6 +86,12 @@ function validateSubmission(input, current = null) {
 
 export function createSubmission(store, input, user) {
   if (!user?.id) return { ok: false, status: 401, message: '请先登录后投稿。' };
+  // Defense in depth: even though the HTTP layer enforces verification, callers
+  // (tests, demo, future endpoints) must also reject unverified users so we
+  // never store a submission from a guest / email-only / CC98-only flow.
+  if (!isVerifiedUser(user)) {
+    return { ok: false, status: 403, message: '完成 CC98 或浙大邮箱认证后才可以投稿。' };
+  }
   const validation = validateSubmission(input);
   if (!validation.ok) return validation;
   return {
@@ -96,6 +108,9 @@ export function createSubmission(store, input, user) {
 
 export function createRevisionSubmission(store, targetId, input, user) {
   if (!user?.id) return { ok: false, status: 401, message: '请先登录后编辑。' };
+  if (!isVerifiedUser(user)) {
+    return { ok: false, status: 403, message: '完成 CC98 或浙大邮箱认证后才可以编辑投稿。' };
+  }
   const target = store.findById(targetId);
   if (!target) return { ok: false, status: 404, message: '帖子不存在。' };
   if (target.ownerId !== user.id) return { ok: false, status: 403, message: '不能编辑他人的帖子。' };
