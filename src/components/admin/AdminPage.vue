@@ -842,7 +842,7 @@ onMounted(initialize);
               <label><span>绩点（选填）</span><input v-model.trim="submissionForm.gpa" inputmode="decimal"></label>
               <label v-if="submissionForm.type === 'material'"><span>资料链接</span><input v-model.trim="submissionForm.externalUrl" type="url"></label>
               <label class="admin-editor__wide"><span>正文</span><textarea v-model="submissionForm.body" rows="10"></textarea></label>
-              <label class="admin-editor__wide"><span>拒绝原因（选填）</span><input v-model.trim="rejectionNote" maxlength="500"></label>
+              <label class="admin-editor__wide"><span>拒绝原因（选填）</span><textarea v-model.trim="rejectionNote" rows="3" maxlength="500" placeholder="说明拒绝理由,会作为审核备注展示给作者。"></textarea></label>
               <footer class="admin-editor__actions">
                 <button type="button" @click="submissionEditorOpen = false">关闭</button>
                 <button v-if="submissionForm.status === 'pending'" type="submit" :disabled="actionBusy">保存修改</button>
