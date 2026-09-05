@@ -2202,6 +2202,19 @@ async function removeAccountCourse(course) {
   else profileNotice.value = resultData.message;
 }
 
+// OverviewPage 在用户点击与自己所在 hash 相同的课程卡片时会上抛该事件。
+// 浏览器不会为同 hash 触发 hashchange，所以这里主动重新跑一次 syncPageFromHash
+// 来重新加载课程内容并滚回顶部。
+function onOverviewNavigateCourse(payload) {
+  if (!payload || !payload.href) return;
+  if (window.location.hash === payload.href) {
+    syncPageFromHash();
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+}
+
 async function removeProfileFavorite(favorite) {
   const resultData = isDemoAccount.value
     ? demoAccountService.removeFavorite(activeDemoAccountId.value, favorite.id)
@@ -2695,6 +2708,7 @@ onBeforeUnmount(() => {
           :user-grade="viewer.grade ?? null"
           @add-course="addAccountCourse"
           @remove-course="removeAccountCourse"
+          @navigate-course="onOverviewNavigateCourse"
         />
       </template>
 

@@ -47,7 +47,7 @@ const props = defineProps({
   savedCourseCodes: { type: Array, default: () => [] },
   userGrade: { type: Number, default: null },
 });
-const emit = defineEmits(['add-course', 'remove-course']);
+const emit = defineEmits(['add-course', 'remove-course', 'navigate-course']);
 
 function applyDefaultFromGrade() {
   if (selectedProgramId.value !== DEFAULT_PROGRAM_ID) return;
@@ -116,6 +116,18 @@ function toggleSavedCourse(course) {
     courseCode: course.code,
     courseName: course.name,
   });
+}
+
+function handleCourseLinkClick(event, course) {
+  // 当点击的课程 hash 与当前 hash 相同时，浏览器不会触发 hashchange，
+  // 导致 syncPageFromHash 不会重新执行。显式上抛 navigate 事件，
+  // App.vue 监听后会主动调用 syncPageFromHash 重新加载课程内容。
+  const target = course?.href;
+  if (!target) return;
+  if (window.location.hash === target) {
+    event.preventDefault();
+    emit('navigate-course', { href: target });
+  }
 }
 
 onMounted(async () => {
@@ -231,7 +243,7 @@ onMounted(async () => {
 
             <div v-if="!collapsedGroups[group.id]" class="overview-course-grid">
               <article v-for="course in group.courses" :key="course.code">
-                <a :href="course.href">
+                <a :href="course.href" @click="handleCourseLinkClick($event, course)">
                   <strong>{{ course.name }}</strong>
                   <span>{{ course.code }}</span>
                   <small>{{ course.credits }} 学分 · {{ course.totalHours }} 学时</small>

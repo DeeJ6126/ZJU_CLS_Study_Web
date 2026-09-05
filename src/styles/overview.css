@@ -183,6 +183,8 @@
 
 .overview-course-grid > article {
   position: relative;
+  display: flex;
+  flex-direction: column;
   min-height: 92px;
   border: 1px solid #dce4df;
   border-radius: var(--radius-sm);
@@ -190,11 +192,11 @@
 }
 
 .overview-course-grid > article > a {
+  flex: 1;
   display: grid;
   align-content: center;
   gap: 5px;
-  min-height: 92px;
-  padding: 13px 15px 42px;
+  padding: 13px 15px;
   color: #21382f;
   text-decoration: none;
 }
@@ -215,9 +217,8 @@
 }
 
 .overview-course-grid > article > button {
-  position: absolute;
-  right: 10px;
-  bottom: 9px;
+  align-self: flex-end;
+  margin: 0 10px 9px;
   padding: 5px 8px;
   color: #2f624c;
   font: inherit;
@@ -225,7 +226,7 @@
   font-weight: 700;
   background: #eef4f0;
   border: 1px solid #c8d8cf;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
