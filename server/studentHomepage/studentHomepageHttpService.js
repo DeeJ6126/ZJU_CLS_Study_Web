@@ -51,11 +51,15 @@ export async function handleStudentHomepageHttpRequest({
   request, response, url, user, userId, studentHomepageStore, sendJson, readJsonBody,
 }) {
   if (request.method === 'GET' && url.pathname === '/api/student-homepages') {
-    sendJson(response, 200, { homepages: studentHomepageStore.listHomepages() });
+    sendJson(response, 200, { homepages: studentHomepageStore.listHomepages({ status: 'approved' }) });
     return true;
   }
 
   if (request.method === 'POST' && url.pathname === '/api/student-homepages/applications') {
+    if (!userId) {
+      sendJson(response, 401, { message: '请先登录后申请收录。' });
+      return true;
+    }
     if (!String(request.headers['content-type'] ?? '').toLowerCase().startsWith('application/json')) {
       sendJson(response, 415, { message: '申请请求格式无效。' });
       return true;
@@ -89,6 +93,11 @@ export async function handleStudentHomepageHttpRequest({
 
   if (request.method === 'GET' && url.pathname === '/api/admin/student-homepages') {
     sendJson(response, 200, { homepages: studentHomepageStore.listHomepages() });
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/admin/student-homepages/statuses') {
+    sendJson(response, 200, { statuses: ['pending', 'approved'] });
     return true;
   }
 
