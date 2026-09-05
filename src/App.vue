@@ -22,7 +22,6 @@ import SearchBar from './components/SearchBar.vue';
 import {
   addQuizMistake,
   createQuizSession,
-  claimQuizSession,
   fetchQuizAccountState,
   fetchQuizSession,
   fetchQuizCategories,
@@ -1693,7 +1692,19 @@ async function refreshQuizAccountState(collectionSlug) {
 
 async function migrateLocalQuizData() {
   if (viewerIsGuest.value || isDemoAccount.value) return;
-  if (session.value?.id) await claimQuizSession(session.value.id);
+  // CRIT-STATE-2: the localStorage keys are now scoped per identity (see
+  // CRIT-STATE-1), so a real user never reads demo/guest mistake records.
+  // No further guard needed: read* functions read from `quizScope.value`
+  // (real user id) which is empty for a freshly logged-in account.
+  // CRIT-STATE-3: drop any in-memory anonymous practice session that may
+  // have been started by a previous identity. Claiming such a session
+  // would transfer question order, answers, and progress to the real
+  // account, polluting the new account's quiz history.
+  if (session.value) {
+    session.value = null;
+    activeCollectionSlug.value = '';
+    quizView.value = 'catalog';
+  }
   const entries = [
     ['molecular-biology-review', readMolecularMistakes(quizScope.value), readVocabularyRecords(quizScope.value)],
     ['botany-slice', readBotanyMistakes(quizScope.value), []],
