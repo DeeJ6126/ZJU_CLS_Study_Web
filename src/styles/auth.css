@@ -491,7 +491,7 @@ html[data-theme="dark"] .auth-dialog-backdrop {
   overflow: hidden;
   background: #fff;
   border: 1px solid #bcc8c1;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
 }
 
 .auth-dialog__email-field input {
@@ -525,7 +525,7 @@ html[data-theme="dark"] .auth-dialog-backdrop {
   max-width: 220px;
   padding: 6px 8px;
   border: 1px solid #bcc8c1;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   background: #fff;
   color: #1f2933;
   font-size: 13px;

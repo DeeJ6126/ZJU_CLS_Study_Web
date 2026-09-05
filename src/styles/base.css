@@ -54,8 +54,8 @@
   --detail-shadow: none;
   --detail-shadow-hover: 0 10px 22px rgba(54, 69, 79, 0.12);
   --shadow-soft: none;
-  --radius-sm: 6px;
-  --radius-md: 8px;
+  --radius-sm: 4px;
+  --radius-md: 4px;
   --sidebar-width: 286px;
   --font-heading: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
   --font-body: "HarmonyOS Sans SC", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
