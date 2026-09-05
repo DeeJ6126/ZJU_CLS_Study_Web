@@ -23,9 +23,13 @@ const roots = computed(() => props.comments
     replies: props.comments.filter((reply) => reply.parentCommentId === comment.id),
   })));
 
+const MIN_COMMENT_LENGTH = 2;
+
 function submitComment() {
   const body = draft.value.trim();
-  if (!body || !props.canComment || props.busy) return;
+  // HI-UI-9: require at least 2 non-whitespace characters so empty / single
+  // emoji / punctuation-only comments don't get sent.
+  if (body.length < MIN_COMMENT_LENGTH || !props.canComment || props.busy) return;
   emit('add-comment', { body, parentCommentId: replyTo.value?.id ?? '' });
   draft.value = '';
   replyTo.value = null;
@@ -34,12 +38,21 @@ function submitComment() {
 function startEdit(comment) {
   editingId.value = comment.id;
   editingBody.value = comment.body;
+  // HI-UI-6: switching into edit mode cancels any in-progress reply so the
+  // next submit doesn't accidentally reply to the wrong comment.
+  replyTo.value = null;
 }
 
 function saveEdit(comment) {
   const body = editingBody.value.trim();
-  if (body) emit('update-comment', { comment, body });
+  if (body.length < MIN_COMMENT_LENGTH) {
+    editingId.value = '';
+    return;
+  }
+  emit('update-comment', { comment, body });
   editingId.value = '';
+  // HI-UI-6: also clear reply state after a successful edit.
+  replyTo.value = null;
 }
 </script>
 
