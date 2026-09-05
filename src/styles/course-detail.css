@@ -693,6 +693,23 @@ html[data-theme="dark"] .article-body--ubb .ubb-code {
   gap: 8px;
 }
 
+.comment-form-hint {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.comment-form-hint code {
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--detail-chip-bg);
+  color: var(--detail-chip-text);
+  font: inherit;
+  font-size: 11px;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
 .comment-form label span {
   color: var(--color-muted);
   font-size: 12px;

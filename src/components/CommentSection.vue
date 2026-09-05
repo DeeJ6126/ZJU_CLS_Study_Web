@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { getProfileHref } from '../services/demoNavigationService.js';
+import { renderCommentBody } from '../utils/commentUbb.js';
 
 const props = defineProps({
   comments: { type: Array, default: () => [] },
@@ -58,7 +59,7 @@ function saveEdit(comment) {
             <span v-else>{{ comment.author.nickname?.slice(0, 1) }}</span>
             <strong>{{ comment.author.nickname }}</strong>
           </a>
-          <p>{{ comment.body }}</p>
+          <p class="comment-body" v-html="renderCommentBody(comment.body)"></p>
           <footer>
             <time>{{ comment.createdAt }}</time>
             <button v-if="canComment && !comment.deleted" type="button" @click="replyTo = comment">回复</button>
@@ -79,7 +80,7 @@ function saveEdit(comment) {
               <span v-else>{{ reply.author.nickname?.slice(0, 1) }}</span>
               <strong>{{ reply.author.nickname }}</strong>
             </a>
-            <p>{{ reply.body }}</p>
+            <p class="comment-body" v-html="renderCommentBody(reply.body)"></p>
             <footer>
               <time>{{ reply.createdAt }}</time>
               <button v-if="canComment && !reply.deleted" type="button" @click="replyTo = comment">回复</button>
@@ -103,6 +104,7 @@ function saveEdit(comment) {
         <span>{{ user.nickname }} 的评论</span>
         <textarea v-model="draft" rows="3" maxlength="1000" placeholder="写下你的补充或问题"></textarea>
       </label>
+      <p class="comment-form-hint">支持 UBB 标签 (如 <code>[b]加粗[/b]</code>、<code>[code]代码[/code]</code>、<code>[url=链接]文本[/url]</code>)</p>
       <button type="submit" :disabled="!draft.trim() || busy">发布评论</button>
     </form>
     <p v-else class="permission-note">需要完成 CC98 或浙大邮箱认证后才可以评论。</p>
