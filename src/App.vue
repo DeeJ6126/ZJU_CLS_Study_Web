@@ -2029,7 +2029,7 @@ async function toggleContentFavorite(contentId) {
 }
 
 async function addContentComment({ contentId, body, parentCommentId }) {
-  if (!contentId) return;
+  if (!contentId || viewerIsGuest.value || !userCanComment.value) return;
   commentBusy.value = true;
   const resultData = isDemoAccount.value
     ? demoAccountService.createComment(activeDemoAccountId.value, activeOverviewItem.value, { body, parentCommentId })
@@ -2040,6 +2040,7 @@ async function addContentComment({ contentId, body, parentCommentId }) {
 }
 
 async function updateContentComment({ comment, body }) {
+  if (viewerIsGuest.value || !userCanComment.value) return;
   commentBusy.value = true;
   const resultData = isDemoAccount.value
     ? demoAccountService.updateComment(activeDemoAccountId.value, comment.id, body)
@@ -2050,6 +2051,7 @@ async function updateContentComment({ comment, body }) {
 }
 
 async function deleteContentComment(comment) {
+  if (viewerIsGuest.value || !userCanComment.value) return;
   if (!window.confirm('确定删除这条评论吗？回复上下文仍会保留。')) return;
   commentBusy.value = true;
   const resultData = isDemoAccount.value

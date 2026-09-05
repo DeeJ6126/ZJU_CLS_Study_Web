@@ -464,6 +464,9 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
     },
 
     addFavorite(userId, contentId) {
+      if (!contentId || typeof contentId !== 'string') {
+        throw new Error('addFavorite requires a non-empty contentId string');
+      }
       db.prepare(`
         insert into user_favorites (user_id, content_id, created_at) values (?, ?, ?)
         on conflict(user_id, content_id) do nothing
