@@ -55,8 +55,8 @@
   text-decoration: none;
 }
 
-.activities-jump a:first-child { border-radius: 6px 0 0 6px; }
-.activities-jump a:last-child { border-right-width: 1px; border-radius: 0 6px 6px 0; }
+.activities-jump a:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+.activities-jump a:last-child { border-right-width: 1px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
 .activities-jump a:hover { color: var(--demo-surface); background: var(--demo-primary); }
 
 .activities-state {

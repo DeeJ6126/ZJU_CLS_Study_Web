@@ -79,7 +79,7 @@ html[data-theme="dark"] .demo-brand strong {
 .botany-quiz-nav button,
 .botany-gallery-card button {
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font: inherit;
 }
 
@@ -126,7 +126,7 @@ html[data-theme="dark"] .demo-user-chip {
 .demo-user-chip__tag {
   margin-left: 6px;
   padding: 2px 6px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: #ffffff22;
   color: #ffffff;
   font-size: 11px;
@@ -186,7 +186,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
   height: 56px;
   padding: 0 18px;
   border: 1px solid #d7dde7;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #ffffff;
   color: #1f2933;
   font: inherit;
@@ -263,7 +263,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
   gap: 14px;
   padding: 18px;
   border: 1px solid #dfe5ee;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #ffffff;
 }
 
@@ -311,7 +311,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
 .range-panel {
   padding: 20px;
   border: 1px solid #dfe5ee;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #ffffff;
 }
 
@@ -382,7 +382,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
   gap: 10px;
   padding: 14px;
   border: 1px solid #d7dde7;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #ffffff;
   color: #1f2933;
   cursor: pointer;
@@ -434,7 +434,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
   display: grid;
   grid-template-columns: 108px 312px minmax(0, 1fr);
   border: 1px solid #e3e7ed;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #ffffff;
   overflow: hidden;
 }
@@ -444,7 +444,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
   display: grid;
   grid-template-columns: 108px minmax(0, 1fr);
   border: 1px solid #e3e7ed;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #ffffff;
   overflow: hidden;
 }
@@ -512,7 +512,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
   gap: 12px;
   padding: 0 12px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #ffffff;
   color: #1f2933;
   cursor: pointer;
@@ -558,7 +558,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
   place-items: center;
   padding: 0;
   border-color: #d7dde7;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #ffffff;
   color: #4b5565;
   cursor: pointer;
@@ -629,7 +629,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
   max-height: 420px;
   object-fit: contain;
   border: 1px solid #dfe5ee;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .practice-options,
@@ -691,7 +691,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
   min-height: 130px;
   padding: 14px;
   border: 1px solid #d7dde7;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font: inherit;
   resize: vertical;
 }
@@ -709,14 +709,14 @@ html[data-theme="dark"] .demo-user-chip__tag {
   gap: 4px;
   padding: 3px;
   border: 1px solid #d6dde8;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #f7f9fc;
 }
 
 .language-toggle button {
   min-width: 42px;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: #526071;
 }
@@ -742,7 +742,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
 
 .vocabulary-pick-line button {
   border: 1px solid #d9e1ee;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: #fff;
   color: #1f2937;
   font: inherit;
@@ -770,7 +770,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
   align-items: center;
   padding: 12px 14px;
   border: 1px solid #d9e1ee;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #fff;
   color: #1f2937;
 }
@@ -785,7 +785,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
 .result-stats strong {
   padding: 12px;
   border: 1px solid #d9e1ee;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #f8fafc;
 }
 
@@ -914,7 +914,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
 .molecular-record-card {
   padding: 22px;
   border: 1px solid #dfe5ee;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #ffffff;
 }
 
@@ -1036,7 +1036,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
 .botany-hero {
   padding: 22px;
   border: 1px solid #dfe5ee;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #ffffff;
 }
 
@@ -1097,7 +1097,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
   max-height: 58vh;
   object-fit: contain;
   border: 1px solid #dfe5ee;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #ffffff;
 }
 
@@ -1111,7 +1111,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
   gap: 10px;
   padding: 14px;
   border: 1px solid #dfe5ee;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #ffffff;
 }
 
@@ -1119,7 +1119,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: #eef1f5;
 }
 
@@ -1185,7 +1185,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
 .microbiology-record-card {
   padding: 22px;
   border: 1px solid #dfe5ee;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #ffffff;
 }
 
@@ -1247,7 +1247,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
   margin-top: 18px;
   padding: 16px;
   border-left: 4px solid var(--demo-primary);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: #f2f5f9;
 }
 
@@ -1288,7 +1288,7 @@ html[data-theme="dark"] .demo-user-chip__tag {
   margin: 10px 0 0;
   padding: 12px;
   overflow: auto;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: #eef1f5;
   color: #1f2933;
 }
