@@ -270,6 +270,39 @@ const isLoading = ref(false);
 const accountOpen = ref(false);
 const authDialogOpen = ref(false);
 const authDialogMode = ref('login');
+
+// HI-UI-3: close account popover on click outside or Esc.
+const accountPopoverRef = ref(null);
+
+function onAccountPopoverDocumentClick(event) {
+  if (!accountOpen.value) return;
+  const root = accountPopoverRef.value;
+  if (root && !root.contains(event.target)) {
+    accountOpen.value = false;
+  }
+}
+
+function onAccountPopoverKeydown(event) {
+  if (accountOpen.value && event.key === 'Escape') {
+    event.stopPropagation();
+    accountOpen.value = false;
+  }
+}
+
+watch(accountOpen, async (open) => {
+  if (open) {
+    document.addEventListener('click', onAccountPopoverDocumentClick);
+    document.addEventListener('keydown', onAccountPopoverKeydown);
+  } else {
+    document.removeEventListener('click', onAccountPopoverDocumentClick);
+    document.removeEventListener('keydown', onAccountPopoverKeydown);
+  }
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onAccountPopoverDocumentClick);
+  document.removeEventListener('keydown', onAccountPopoverKeydown);
+});
 const authInitialTab = ref('cc98');
 const authNotice = ref('');
 const authBusy = ref(false);
@@ -2521,11 +2554,12 @@ onBeforeUnmount(() => {
           type="button"
           :aria-expanded="accountOpen"
           aria-label="打开账号面板"
-          @click="accountOpen = !accountOpen"
+          @click.stop="accountOpen = !accountOpen"
         >
           {{ viewerIsGuest ? '游客' : viewer.nickname }}
           <span v-if="demoIdentityId" class="demo-user-chip__tag">演示</span>
         </button>
+        <div ref="accountPopoverRef" class="demo-account__popover-wrapper">
         <AccountPopover
           v-if="accountOpen"
           :user="viewer"
@@ -2549,6 +2583,7 @@ onBeforeUnmount(() => {
           @open-register-email="openAuthDialog('register', 'email')"
           @open-bind-email="openAuthDialog('bind', 'email')"
         />
+        </div>
       </div>
     </header>
 
