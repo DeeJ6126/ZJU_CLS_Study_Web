@@ -390,13 +390,14 @@ test('submission moderation, audit logs, and anonymous likes work through HTTP',
     contentStore,
     uploadDirectory: directory,
     adminCc98Names: new Set(['cc98_bio_visitor']),
+    adminInviteToken: 'shared-admin-token',
   });
   const port = await listen(server);
   const baseUrl = `http://127.0.0.1:${port}`;
 
   async function registerAndLogin(code, cc98Name, password) {
     await fetch(`${baseUrl}/api/auth/register/cc98`, {
-      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code, password }),
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code, password, adminInviteToken: 'shared-admin-token' }),
     });
     const response = await fetch(`${baseUrl}/api/auth/login/cc98`, {
       method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ cc98Name, password }),
@@ -472,9 +473,9 @@ test('content admin API protects writes and publishes content to the public cour
   const quizStore = createQuizStore({ filename: ':memory:' });
   const contentStore = createContentStore({ filename: ':memory:' });
   const uploadDirectory = mkdtempSync(join(tmpdir(), 'zjubio-http-content-'));
-  const { server } = createAuthServer({
-    store, quizStore, contentStore, uploadDirectory,
+  const { server } = createAuthServer({ store, quizStore, contentStore, uploadDirectory,
     adminCc98Names: new Set(['cc98_bio_visitor']),
+    adminInviteToken: 'shared-admin-token',
   });
   const port = await listen(server);
   const baseUrl = `http://127.0.0.1:${port}`;
@@ -482,7 +483,7 @@ test('content admin API protects writes and publishes content to the public cour
   async function registerAndLogin(code, cc98Name, password) {
     await fetch(`${baseUrl}/api/auth/register/cc98`, {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ code, password }),
+      body: JSON.stringify({ code, password, adminInviteToken: 'shared-admin-token' }),
     });
     const login = await fetch(`${baseUrl}/api/auth/login/cc98`, {
       method: 'POST', headers: { 'content-type': 'application/json' },
@@ -533,9 +534,9 @@ test('content admin API validates and serves uploaded PDF files', async () => {
   const quizStore = createQuizStore({ filename: ':memory:' });
   const contentStore = createContentStore({ filename: ':memory:' });
   const uploadDirectory = mkdtempSync(join(tmpdir(), 'zjubio-http-files-'));
-  const { server } = createAuthServer({
-    store, quizStore, contentStore, uploadDirectory,
+  const { server } = createAuthServer({ store, quizStore, contentStore, uploadDirectory,
     adminCc98Names: new Set(['cc98_bio_visitor']),
+    adminInviteToken: 'shared-admin-token',
   });
   const port = await listen(server);
   const baseUrl = `http://127.0.0.1:${port}`;
@@ -543,7 +544,7 @@ test('content admin API validates and serves uploaded PDF files', async () => {
   try {
     await fetch(`${baseUrl}/api/auth/register/cc98`, {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ code: 'bio-cc98', password: 'admin-pass-123' }),
+      body: JSON.stringify({ code: 'bio-cc98', password: 'admin-pass-123', adminInviteToken: 'shared-admin-token' }),
     });
     const login = await fetch(`${baseUrl}/api/auth/login/cc98`, {
       method: 'POST', headers: { 'content-type': 'application/json' },
@@ -623,6 +624,7 @@ test('activity HTTP API exposes only administrator-managed push-article entries'
   const { server } = createAuthServer({
     store, quizStore, contentStore,
     adminCc98Names: new Set(['cc98_bio_visitor']),
+    adminInviteToken: 'shared-admin-token',
   });
   const port = await listen(server);
   const baseUrl = `http://127.0.0.1:${port}`;
@@ -637,7 +639,7 @@ test('activity HTTP API exposes only administrator-managed push-article entries'
 
     await fetch(`${baseUrl}/api/auth/register/cc98`, {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ code: 'bio-cc98', password: 'admin-pass-123' }),
+      body: JSON.stringify({ code: 'bio-cc98', password: 'admin-pass-123', adminInviteToken: 'shared-admin-token' }),
     });
     const login = await fetch(`${baseUrl}/api/auth/login/cc98`, {
       method: 'POST', headers: { 'content-type': 'application/json' },

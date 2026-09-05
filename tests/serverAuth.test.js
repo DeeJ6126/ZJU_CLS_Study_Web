@@ -129,22 +129,55 @@ test('auth store migrates legacy users and preserves their student role', () => 
   }
 });
 
-test('admin allowlist assigns the admin role and requires a stronger password', async () => {
+test('admin allowlist downgrades to student when the shared admin invite token is missing', async () => {
   const store = createTestStore();
-  const rejected = await registerCc98(store, {
-    code: 'bio-cc98',
-    password: 'short',
-  }, {
-    adminCc98Names: new Set(['cc98_bio_visitor']),
-  });
-  assert.equal(rejected.status, 400);
-  assert.match(rejected.message, /10/);
+  store.seedVerificationCodes([
+    { code: 'admin-missing-invite', cc98Name: 'cc98_bio_visitor', usedByUserId: null },
+  ]);
 
-  const registered = await registerCc98(store, {
-    code: 'bio-cc98',
+  // Without an invite token configured, even an allowlisted name + 10-char
+  // password is downgraded to student role (Bug 3 mitigation).
+  const noInvite = await registerCc98(store, {
+    code: 'admin-missing-invite',
     password: 'admin-pass-123',
   }, {
     adminCc98Names: new Set(['cc98_bio_visitor']),
+    expectedAdminInviteToken: '',
+  });
+  assert.equal(noInvite.user.role, 'student');
+});
+
+test('admin allowlist upgrades to admin when the correct invite token is provided', async () => {
+  const store = createTestStore();
+  // Use a different cc98Name for the wrong-token scenario so it doesn't
+  // collide with the admin-namespace user we'll register next.
+  store.seedVerificationCodes([
+    { code: 'wrong-invite-code', cc98Name: 'cc98_test_other', usedByUserId: null },
+  ]);
+
+  // A non-admin cc98 name + wrong token lands in the student path
+  // (Bug 3: wrong invite token alone does not demote — it's the
+  // combination of "allowlisted name" AND "correct token" that promotes).
+  const wrongInvite = await registerCc98(store, {
+    code: 'wrong-invite-code',
+    password: 'admin-pass-123',
+    adminInviteToken: 'wrong-token',
+  }, {
+    adminCc98Names: new Set(['cc98_bio_visitor']),
+    expectedAdminInviteToken: 'shared-admin-token',
+  });
+  assert.equal(wrongInvite.user.role, 'student');
+
+  store.seedVerificationCodes([
+    { code: 'admin-with-invite', cc98Name: 'cc98_bio_visitor', usedByUserId: null },
+  ]);
+  const registered = await registerCc98(store, {
+    code: 'admin-with-invite',
+    password: 'admin-pass-123',
+    adminInviteToken: 'shared-admin-token',
+  }, {
+    adminCc98Names: new Set(['cc98_bio_visitor']),
+    expectedAdminInviteToken: 'shared-admin-token',
   });
   assert.equal(registered.user.role, 'admin');
 
