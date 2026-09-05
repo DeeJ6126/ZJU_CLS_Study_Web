@@ -68,6 +68,81 @@ test('demo profile, favorite, comment, and notification actions use API-shaped r
   assert.equal(service.markAllNotificationsRead('email').unreadCount, 0);
 });
 
+test('Bug 7: comments on adminContent push a notification to the admin identity', () => {
+  const service = createDemoAccountService({ storage: createMemoryStorage(), now: () => '2026-08-23T12:00:00.000Z' });
+  // Inject an admin-published content item directly into the demo state. The
+  // admin client API has its own createContent, but it stores in the same
+  // state.adminContent slot the bug fix checks.
+  const storage = service.createAdminClient();
+  // Build a deterministic adminContent entry through the public listComments
+  // path is not possible, so call createContent and then drive a comment on
+  // the resulting id.
+  return storage.createContent({
+    id: 'admin-content-1', courseCode: 'BIO2110F', type: 'material', title: '管理员资料', status: 'published', body: '正文',
+  }).then((created) => {
+    const before = service.getPrivateProfile('admin').notifications.length;
+    const result = service.createComment(
+      'cc98',
+      { id: created.item.id, courseCode: 'BIO2110F', type: 'material', title: '管理员资料' },
+      { body: '管理员资料下面的评论' },
+    );
+    assert.equal(result.ok, true);
+    const after = service.getPrivateProfile('admin').notifications.length;
+    assert.equal(after, before + 1, 'admin should receive a new comment notification');
+    const newest = service.getPrivateProfile('admin').notifications[0];
+    assert.equal(newest.title, '帖子收到新评论');
+    assert.match(newest.body, /管理员资料/);
+    assert.equal(newest.actor.publicId, 'demo-cc98');
+    assert.equal(newest.readAt, '');
+  });
+});
+
+test('Bug 8: nested replies flatten to the root comment id and notify the root author', () => {
+  const service = createDemoAccountService({ storage: createMemoryStorage(), now: () => '2026-08-23T12:00:00.000Z' });
+  const contentItem = { id: 'demo-post-cc98-1', courseCode: 'BIO2110F', type: 'experience', title: '微生物学复习节奏记录' };
+
+  // cc98 owns the post; email posts a top-level comment.
+  const root = service.createComment('email', contentItem, { body: '首条评论' });
+  assert.equal(root.ok, true);
+  const rootId = root.comment.id;
+
+  // cc98 (the post owner) replies to that root comment.
+  const reply = service.createComment('cc98', contentItem, { body: '作者回复', parentCommentId: rootId });
+  assert.equal(reply.ok, true);
+  assert.equal(reply.comment.parentCommentId, rootId, 'first-level reply keeps the root id');
+
+  // email then replies to the reply — it must be flattened to the same root.
+  const nested = service.createComment('email', contentItem, { body: '再次回复', parentCommentId: reply.comment.id });
+  assert.equal(nested.ok, true);
+  assert.equal(nested.comment.parentCommentId, rootId, 'nested reply is flattened to root');
+
+  // The root comment's author (email) must have received a reply notification.
+  const emailNotifs = service.getPrivateProfile('email').notifications;
+  const newest = emailNotifs[0];
+  assert.equal(newest.title, '评论收到回复');
+  assert.match(newest.body, /回复了你的评论/);
+  assert.equal(newest.actor.publicId, 'demo-cc98');
+});
+
+test('Bug 9: replying to a deleted or missing parent comment is rejected', () => {
+  const service = createDemoAccountService({ storage: createMemoryStorage(), now: () => '2026-08-23T12:00:00.000Z' });
+  const contentItem = { id: 'demo-post-cc98-1', courseCode: 'BIO2110F', type: 'experience', title: '微生物学复习节奏记录' };
+
+  // Missing parent: there is no comment with this id.
+  const missing = service.createComment('cc98', contentItem, { body: '回复不存在的评论', parentCommentId: 'demo-comment-does-not-exist' });
+  assert.equal(missing.ok, false);
+  assert.match(missing.message, /回复的评论不存在/);
+
+  // Deleted parent: create then delete a comment, then try to reply to it.
+  const created = service.createComment('cc98', contentItem, { body: '先创建再删' });
+  assert.equal(created.ok, true);
+  const deleted = service.deleteComment('cc98', created.comment.id);
+  assert.equal(deleted.ok, true);
+  const blocked = service.createComment('email', contentItem, { body: '回复已删除', parentCommentId: created.comment.id });
+  assert.equal(blocked.ok, false);
+  assert.match(blocked.message, /回复的评论不存在/);
+});
+
 test('demo administrator can approve and reject submissions across identities', async () => {
   const service = createDemoAccountService({ storage: createMemoryStorage(), now: () => '2026-08-23T12:00:00.000Z' });
   const admin = service.createAdminClient();

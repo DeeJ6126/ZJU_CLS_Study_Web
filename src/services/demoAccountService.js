@@ -353,6 +353,21 @@ export function createDemoAccountService({
     return persist({ ok: true });
   }
 
+  function findCommentById(commentId) {
+    for (const owner of Object.values(read().accounts)) {
+      const found = owner.comments.find((entry) => entry.id === commentId);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  function findCommentAuthorIdentityId(commentId) {
+    for (const [identityId, owner] of Object.entries(read().accounts)) {
+      if (owner.comments.some((entry) => entry.id === commentId)) return identityId;
+    }
+    return '';
+  }
+
   function listComments(contentId, viewerIdentityId = '') {
     const comments = Object.entries(read().accounts).flatMap(([ownerIdentityId, owner]) => owner.comments
       .filter((item) => item.contentId === contentId)
@@ -363,9 +378,46 @@ export function createDemoAccountService({
   function createComment(identityId, contentItem, { body, parentCommentId = '' }) {
     const owner = account(identityId);
     if (!owner || !String(body ?? '').trim()) return { ok: false, message: '评论内容不能为空。' };
-    const comment = { id: nextId('comment'), contentId: contentItem.contentId ?? contentItem.id, courseCode: contentItem.courseCode, type: contentItem.type, routeId: contentItem.routeId ?? contentItem.id, itemTitle: contentItem.title, body: String(body).trim(), parentCommentId, deleted: false, createdAt: now() };
+    let rootParentId = '';
+    if (parentCommentId) {
+      const parent = findCommentById(parentCommentId);
+      if (!parent || parent.deleted) return { ok: false, message: '回复的评论不存在。' };
+      rootParentId = parent.parentCommentId || parent.id;
+    }
+    const comment = { id: nextId('comment'), contentId: contentItem.contentId ?? contentItem.id, courseCode: contentItem.courseCode, type: contentItem.type, routeId: contentItem.routeId ?? contentItem.id, itemTitle: contentItem.title, body: String(body).trim(), parentCommentId: rootParentId, deleted: false, createdAt: now() };
     owner.comments.unshift(comment);
+    pushCommentNotifications({ comment, rootParentId, commenter: { identityId, user: owner.user } });
     return persist({ ok: true, comment: clone(comment) });
+  }
+
+  function pushCommentNotifications({ comment, rootParentId, commenter }) {
+    const targetIdentityId = rootParentId
+      ? findCommentAuthorIdentityId(rootParentId)
+      : findContentOwnerIdentityId(comment.contentId);
+    if (!targetIdentityId || targetIdentityId === commenter.identityId) return;
+    const target = account(targetIdentityId);
+    if (!target) return;
+    const title = rootParentId ? '评论收到回复' : '帖子收到新评论';
+    const body = rootParentId
+      ? `${commenter.user.nickname} 回复了你的评论。`
+      : `${commenter.user.nickname} 评论了「${comment.itemTitle}」。`;
+    target.notifications.unshift({
+      id: nextId('notification'),
+      title,
+      body,
+      createdAt: now(),
+      readAt: '',
+      target: { courseCode: comment.courseCode, type: comment.type, routeId: comment.routeId },
+      actor: publicOwner(commenter.user),
+    });
+  }
+
+  function findContentOwnerIdentityId(targetId) {
+    if (read().adminContent?.some((item) => item.id === targetId)) return 'admin';
+    for (const [identityId, owner] of Object.entries(read().accounts)) {
+      if (owner.posts.some((post) => post.id === targetId || post.contentId === targetId)) return identityId;
+    }
+    return '';
   }
 
   function updateComment(identityId, id, body) {
