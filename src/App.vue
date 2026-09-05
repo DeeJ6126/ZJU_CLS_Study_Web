@@ -9,6 +9,7 @@ import TextAnswerQuestionView from './components/quiz/TextAnswerQuestionView.vue
 import TrueFalseQuestionView from './components/quiz/TrueFalseQuestionView.vue';
 import HomePage from './components/HomePage.vue';
 import ActivityPage from './components/ActivityPage.vue';
+import ActivityDetailPage from './components/ActivityDetailPage.vue';
 import OverviewPage from './components/OverviewPage.vue';
 import CourseDetailPage from './components/CourseDetailPage.vue';
 import AdminPage from './components/admin/AdminPage.vue';
@@ -1759,7 +1760,14 @@ function notificationTargetHref(notification) {
 async function openNotification(notification) {
   if (!notification.readAt) await markNotificationRead(notification);
   const href = notificationTargetHref(notification);
-  if (href) window.location.hash = href;
+  if (href) {
+    window.location.hash = href;
+    return;
+  }
+  // No resolvable target — surface the reason so the user knows why nothing happened.
+  notificationNotice.value = notification.target
+    ? '该通知已无对应资源,无法跳转。'
+    : '该通知无可跳转的目标,可能内容已被删除。';
 }
 
 async function markNotificationRead(notification) {
@@ -1808,6 +1816,12 @@ async function syncPageFromHash() {
 
   if (nextPage === 'activities') {
     activeActivitySlug.value = getActivitySlugFromHash(window.location.hash);
+    activeOverviewCourse.value = null;
+    return;
+  }
+
+  if (nextPage === 'activity-detail') {
+    activeActivitySlug.value = getActivityDetailSlugFromHash(window.location.hash);
     activeOverviewCourse.value = null;
     return;
   }
@@ -2647,6 +2661,12 @@ onBeforeUnmount(() => {
       <ActivityPage
         v-else-if="activePage === 'activities'"
         :active-slug="activeActivitySlug"
+        :activity-client="demoIdentityId ? demoActivityPublicClient : null"
+      />
+
+      <ActivityDetailPage
+        v-else-if="activePage === 'activity-detail'"
+        :slug="activeActivitySlug"
         :activity-client="demoIdentityId ? demoActivityPublicClient : null"
       />
 

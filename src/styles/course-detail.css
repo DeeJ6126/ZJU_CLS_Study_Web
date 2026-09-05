@@ -525,6 +525,33 @@ html[data-theme="dark"] .cc98-icon {
   border-top: 1px solid var(--detail-border);
 }
 
+.article-detail-card__grade {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--detail-grade-bg, #e8f0e8);
+  color: var(--detail-grade-text, #2a4a2a);
+}
+
+.article-detail-card__grade--empty {
+  background: var(--detail-grade-empty-bg, #f0f0f0);
+  color: var(--detail-grade-empty-text, #777);
+  font-weight: 500;
+}
+
+html[data-theme="dark"] .article-detail-card__grade {
+  background: #1d2a3b;
+  color: #97d3bc;
+}
+
+html[data-theme="dark"] .article-detail-card__grade--empty {
+  background: #2a2a2a;
+  color: #888;
+}
+
 .article-action-button {
   display: inline-flex;
   align-items: center;

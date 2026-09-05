@@ -18,8 +18,8 @@ function createHomepageStore(items = []) {
 
 const catalog = {
   courses: [
-    { code: 'BIO2110F', name: '微生物学', englishName: 'Microbiology', introduction: '微生物学课程是国家理科基地生物学专业的主干课程。', tag: '专业基础', category: 'basic', href: '/#/resources/#BIO2110F' },
-    { code: 'BIO2028M', name: '生物化学', englishName: 'Biochemistry', introduction: '生物大分子结构与功能。', tag: '专业必修', category: 'major', href: '/#/resources/#BIO2028M' },
+    { code: 'BIO2110F', name: '微生物学', englishName: 'Microbiology', introduction: '微生物学课程是国家理科基地生物学专业的主干课程。', tag: '专业基础', category: 'basic', href: '#resources/#BIO2110F' },
+    { code: 'BIO2028M', name: '生物化学', englishName: 'Biochemistry', introduction: '生物大分子结构与功能。', tag: '专业必修', category: 'major', href: '#resources/#BIO2028M' },
   ],
 };
 
@@ -76,7 +76,7 @@ test('search matches content items by title, summary, author, and courseCode', (
   });
   assert.equal(result.results.content.length, 1);
   assert.equal(result.results.content[0].id, 'a');
-  assert.match(result.results.content[0].href, /#\/resources\/#BIO2110F\/experiences\/a/);
+  assert.match(result.results.content[0].href, /^#resources\/#BIO2110F\/experiences\/a$/);
 
   const byAuthor = searchAll({
     query: '李四',
@@ -122,7 +122,7 @@ test('search matches activities by title and category', () => {
   });
   assert.equal(result.results.activities.length, 1);
   assert.equal(result.results.activities[0].slug, 'a1');
-  assert.equal(result.results.activities[0].href, '#/activity/a1');
+  assert.equal(result.results.activities[0].href, '#activity/a1');
 });
 
 test('search matches student homepages by name and href', () => {

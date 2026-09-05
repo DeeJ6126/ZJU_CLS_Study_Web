@@ -84,7 +84,7 @@ test('learning cards keep compact metadata while article details expose CC98, pe
   assert.match(component, /learning-card__title/);
   assert.match(component, /learning-card__author/);
   assert.match(component, /cc98-icon/);
-  assert.match(component, /查看成绩\s+\{\{\s*activeItemGradeLabel/);
+  assert.match(component, /article-detail-card__grade/);
   assert.match(component, /toggle-like/);
   assert.match(css, /\.article-detail-card__author/);
   assert.match(css, /\.article-action-button/);

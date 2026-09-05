@@ -241,11 +241,16 @@ function emitContribution(payload) {
             <p v-for="paragraph in activeItemBody.paragraphs" :key="paragraph">{{ paragraph }}</p>
           </template>
           <div class="article-detail-card__actions">
-            <button
-              type="button"
-              class="article-action-button"
-              :disabled="!activeItemGradeLabel"
-            >查看成绩 {{ activeItemGradeLabel || '—' }}</button>
+            <span
+              v-if="activeItemGradeLabel"
+              class="article-detail-card__grade"
+              aria-label="本资源关联的成绩"
+            >成绩 {{ activeItemGradeLabel }}</span>
+            <span
+              v-else
+              class="article-detail-card__grade article-detail-card__grade--empty"
+              aria-label="本资源暂无成绩"
+            >暂无成绩</span>
             <button
               class="article-action-button"
               :class="{ 'is-active': activeItem.viewerLiked }"
@@ -332,11 +337,16 @@ function emitContribution(payload) {
             打开刷题网站
           </a>
           <div class="article-detail-card__actions">
-            <button
-              type="button"
-              class="article-action-button"
-              :disabled="!activeItemGradeLabel"
-            >查看成绩 {{ activeItemGradeLabel || '—' }}</button>
+            <span
+              v-if="activeItemGradeLabel"
+              class="article-detail-card__grade"
+              aria-label="本资源关联的成绩"
+            >成绩 {{ activeItemGradeLabel }}</span>
+            <span
+              v-else
+              class="article-detail-card__grade article-detail-card__grade--empty"
+              aria-label="本资源暂无成绩"
+            >暂无成绩</span>
             <button
               class="article-action-button"
               :class="{ 'is-active': activeItem.viewerLiked }"

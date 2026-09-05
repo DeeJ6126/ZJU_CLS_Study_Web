@@ -33,15 +33,19 @@ function routeForContent(item) {
     : item.type === 'material'
       ? 'materials'
       : 'papers';
-  return `/#/resources/#${item.courseCode}/${tab}/${item.id}`;
+  // Use app's #resources/... protocol (no leading slash) so the router's
+  // `pageId.startsWith('resources/#')` branch in getDemoPageFromHash matches.
+  return `#resources/#${item.courseCode}/${tab}/${item.id}`;
 }
 
 function routeForActivity(item) {
-  return `#/activity/${item.slug}`;
+  // Use app's #activity/... protocol (no leading slash) so the router's
+  // `pageId.startsWith('activity/')` branch resolves to 'activity-detail'.
+  return `#activity/${item.slug}`;
 }
 
 function courseHref(course) {
-  return course.href ?? `/#/resources/#${course.code}`;
+  return course.href ?? `#resources/#${course.code}`;
 }
 
 export function searchAll({

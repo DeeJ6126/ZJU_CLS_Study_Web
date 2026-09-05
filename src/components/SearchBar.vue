@@ -109,12 +109,20 @@ function clearQuery() {
 
 function visitResult(href) {
   if (!href) return;
-  if (href.startsWith('#/') || href.startsWith('#')) {
-    window.location.hash = href.replace(/^#?\//, '#/');
-  } else if (href.startsWith('/')) {
-    window.location.hash = `#${href}`;
+  // Normalize any leading `#/` or `/` to `#` so the hash router
+  // (which expects `#<pageId>` with no leading slash) matches the protocol.
+  let nextHash = href;
+  if (nextHash.startsWith('#/')) {
+    nextHash = `#${nextHash.slice(2)}`;
+  } else if (nextHash.startsWith('/')) {
+    nextHash = `#${nextHash.slice(1)}`;
+  } else if (!nextHash.startsWith('#') && /^(resources|activity|activities|profile|notifications|admin|quiz|overview|home|about)(\/|$|\?)/.test(nextHash)) {
+    nextHash = `#${nextHash}`;
+  }
+  if (nextHash.startsWith('#') || nextHash.startsWith('?')) {
+    window.location.hash = nextHash;
   } else {
-    window.location.href = href;
+    window.location.href = nextHash;
   }
   isOpen.value = false;
 }
