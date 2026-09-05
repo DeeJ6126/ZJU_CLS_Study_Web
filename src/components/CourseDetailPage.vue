@@ -41,6 +41,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  favoriteCount: {
+    type: Number,
+    default: 0,
+  },
   favoriteKeys: {
     type: Array,
     default: () => [],
@@ -85,6 +89,10 @@ const activeCollection = computed(() => (
   Array.isArray(props.course[activeTab.value.id]) ? props.course[activeTab.value.id] : []
 ));
 const activeItem = computed(() => activeCollection.value.find((item) => item.id === props.activeItemId) ?? null);
+const favoriteCountLabel = computed(() => {
+  const count = Number(props.favoriteCount) || 0;
+  return `${count} 人收藏`;
+});
 const activeItemFavoriteKey = computed(() => {
   return activeItem.value?.contentId ?? '';
 });
@@ -172,6 +180,11 @@ function emitContribution(payload) {
           <div class="course-detail__label-row">
             <span>{{ course.category }}</span>
             <span>{{ course.code }}</span>
+            <span
+              class="course-detail__favorite-count"
+              data-testid="course-detail-favorite-count"
+              :title="favoriteCount > 0 ? `${favoriteCount} 位同学收藏了这门课` : '还没有同学收藏这门课'"
+            >❤️ {{ favoriteCountLabel }}</span>
           </div>
           <h1 id="course-detail-title">{{ course.name }}</h1>
           <p>{{ course.overview }}</p>

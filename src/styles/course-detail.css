@@ -158,6 +158,15 @@
   letter-spacing: 0;
 }
 
+.course-detail__favorite-count {
+  background: var(--detail-action-bg);
+  border-color: var(--detail-action-bg);
+  color: var(--detail-action-text);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: default;
+}
+
 .course-detail__hero-main p {
   max-width: 860px;
   color: var(--color-muted);

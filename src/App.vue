@@ -169,6 +169,7 @@ import {
   saveDemoIdentityId,
 } from './services/demoIdentityService.js';
 import { demoAccountService } from './services/demoAccountService.js';
+import { countUsersFavoritingCourse } from './services/favoriteService.js';
 
 const topPages = demoTopPages;
 const supportedCourses = demoSupportedCourses;
@@ -292,6 +293,16 @@ const quizProgressByCollection = ref({});
 const activeOverviewHasQuiz = computed(() => supportedCourses.some((course) => (
   course.code === activeOverviewCourse.value?.code
 )));
+// Counts how many distinct demo accounts have favorited at least one item
+// of the currently-open course. The badge in CourseDetailPage uses this
+// value so visitors can see how popular a course is at a glance. We only
+// have a demo-side answer today; the real backend has no per-course
+// aggregate, so non-demo sessions report 0 to avoid a misleading number.
+const favoriteCount = computed(() => {
+  const courseCode = activeOverviewCourse.value?.code;
+  if (!courseCode || !isDemoAccount.value) return 0;
+  return countUsersFavoritingCourse(demoAccountService.getAllAccounts(), courseCode);
+});
 const activeCourse = computed(
   () => supportedCourses.find((course) => course.code === activeCourseCode.value) ?? null,
 );
@@ -2546,6 +2557,7 @@ onBeforeUnmount(() => {
           :can-submit="userCanSubmit"
           :can-comment="userCanComment"
           :can-favorite="userCanFavorite"
+          :favorite-count="favoriteCount"
           :has-quiz="activeOverviewHasQuiz"
           :favorite-keys="favoriteContentIds"
           :comments-by-key="commentsByContentId"

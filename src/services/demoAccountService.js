@@ -80,6 +80,14 @@ export function createDemoAccountService({
     return read().accounts[identityId] ?? null;
   }
 
+  function getAllAccounts() {
+    // Return a defensive clone of the accounts map so external readers
+    // (e.g. `countUsersFavoritingCourse`) can iterate favorites without
+    // mutating the underlying store. Tests rely on this snapshot to
+    // assert cross-account aggregates.
+    return clone(read().accounts);
+  }
+
   function identityByPublicId(publicId) {
     return Object.entries(read().accounts).find(([, value]) => value.user.publicId === publicId)?.[0] ?? '';
   }
@@ -272,7 +280,14 @@ export function createDemoAccountService({
     if (!result.ok) return result;
     const id = item?.contentId ?? item?.id;
     if (!id) return { ok: false, message: '该内容暂时无法收藏。' };
-    if (!result.value.favorites.some((favorite) => favorite.id === id)) result.value.favorites.push({ ...clone(item), id });
+    if (!result.value.favorites.some((favorite) => favorite.id === id)) {
+      // Ensure every saved favorite carries a `courseCode` so consumers
+      // (e.g. `countUsersFavoritingCourse`) can group favorites by course
+      // without reverse-engineering routes.
+      const stored = { ...clone(item), id };
+      if (!stored.courseCode) stored.courseCode = '';
+      result.value.favorites.push(stored);
+    }
     return persist({ ok: true, favorites: clone(result.value.favorites) });
   }
 
@@ -647,6 +662,7 @@ export function createDemoAccountService({
     createPublicActivityClient,
     getPublishedCourseContent,
     resetAccount,
+    getAllAccounts,
   };
 }
 
