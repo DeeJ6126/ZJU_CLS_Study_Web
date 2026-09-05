@@ -25,7 +25,6 @@ const form = reactive({
   cc98Name: '',
   cc98Link: '',
   body: '',
-  imageName: '',
   materialLink: '',
   gradePercentage: '',
   bodyFormat: 'markdown',
@@ -41,7 +40,6 @@ function resetForm() {
   form.cc98Name = '';
   form.cc98Link = '';
   form.body = '';
-  form.imageName = '';
   form.materialLink = '';
   form.gradePercentage = '';
   form.bodyFormat = 'markdown';
@@ -56,10 +54,6 @@ function openModal() {
 function closeModal() {
   isOpen.value = false;
   notice.value = '';
-}
-
-function handleImageChange(event) {
-  form.imageName = event.target.files?.[0]?.name ?? '';
 }
 
 function handlePdfChange(event) {
@@ -149,7 +143,6 @@ function submitContribution() {
     cc98Link: form.cc98Link.trim(),
     body: form.body.trim(),
     bodyFormat: form.bodyFormat,
-    imageName: form.imageName,
     materialLink: form.materialLink.trim(),
     gradePercentage: percentage,
     pdfFile: pdfFile.value,
@@ -244,10 +237,14 @@ function submitContribution() {
               <textarea v-model="form.body" rows="5"></textarea>
             </label>
 
-            <label>
-              <span>图片（选填）</span>
-              <input type="file" accept="image/*" @change="handleImageChange" />
-            </label>
+            <!-- CRIT-RES-1: the file input was a stub — only the filename
+                 was sent to the server, the binary was never uploaded. Use
+                 the UBB [img]URL[/img] tag (above) or paste a CC98 image
+                 link to embed images in your post. -->
+            <p class="contribution-form__hint">
+              插入图片请在内容里用 UBB <code>[img]图片地址[/img]</code>,
+              或在 CC98 上传后粘贴图片链接。
+            </p>
 
             <label>
               <span>复习资料链接</span>

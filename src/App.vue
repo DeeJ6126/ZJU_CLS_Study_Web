@@ -1988,7 +1988,6 @@ async function submitCourseContribution(payload) {
     gpa: payload.gpa,
     gradePercentage: payload.gradePercentage,
     externalUrl: payload.materialLink,
-    imageName: payload.imageName,
   };
   let result = isDemoAccount.value
     ? demoAccountService.createSubmission(activeDemoAccountId.value, input)
