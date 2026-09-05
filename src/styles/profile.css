@@ -54,7 +54,7 @@ html[data-theme="dark"] .profile-sidebar {
   padding: 32px;
   background: #fff;
   border: 1px solid #d8dfda;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .profile-identity h1,
@@ -103,7 +103,7 @@ html[data-theme="dark"] .profile-sidebar {
   font-weight: 700;
   background: #2f624c;
   border: 1px solid #2f624c;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
@@ -161,7 +161,7 @@ html[data-theme="dark"] .profile-sidebar {
   color: #24382f;
   font: inherit;
   border: 1px solid #bcc8c1;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
 }
 
 .profile-cc98-form button {
@@ -171,7 +171,7 @@ html[data-theme="dark"] .profile-sidebar {
   font-weight: 700;
   background: #2f624c;
   border: 1px solid #2f624c;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 .profile-nickname-form label,
@@ -190,7 +190,7 @@ html[data-theme="dark"] .profile-sidebar {
   color: #24382f;
   font: inherit;
   border: 1px solid #bcc8c1;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
 }
 
 .profile-nickname-form button,
@@ -350,7 +350,7 @@ html[data-theme="dark"] .profile-sidebar {
   font-weight: 700;
   background: #2f624c;
   border: 1px solid #2f624c;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
@@ -553,7 +553,7 @@ html[data-theme="dark"] .profile-nickname-form,
 html[data-theme="dark"] .profile-cc98-form {
   background: #15202f;
   border: 1px solid #2a374a;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   padding: 16px;
 }
 html[data-theme="dark"] .profile-cc98-form {
