@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
   addQuizMistake,
   createQuizSession,
@@ -14,7 +14,6 @@ import {
   buildNextQuestionTarget,
   buildSubmitAnswer,
   createQuizInteractionState,
-  handleQuizKey,
   resetQuizInteraction,
   selectPendingAnswer,
   updateTextAnswer,
@@ -217,26 +216,6 @@ async function moveToNextQuestion() {
   await moveQuestion(buildNextQuestionTarget(session.value, result.value));
 }
 
-async function handleKeydown(event) {
-  if (!session.value || (event.target?.tagName === 'TEXTAREA' && !(event.key === ' ' && result.value))) {
-    return;
-  }
-  const action = handleQuizKey(interaction.value, event);
-  if (action.action === 'select') {
-    event.preventDefault();
-    interaction.value = action.state;
-  } else if (action.action === 'submit') {
-    event.preventDefault();
-    await submitAnswer();
-  } else if (action.action === 'next') {
-    event.preventDefault();
-    await moveToNextQuestion();
-  } else if (action.action === 'previous') {
-    event.preventDefault();
-    await moveQuestion('previous');
-  }
-}
-
 function imageUrl(path) {
   return publicAssetPath(`/resource/quiz/${props.courseCode}/${activeCollectionSlug.value}/${path}`);
 }
@@ -249,14 +228,6 @@ watch(() => props.courseCode, () => {
 watch(activeCollectionSlug, () => {
   session.value = null;
   loadCategories();
-});
-
-onMounted(() => {
-  window.addEventListener('keydown', handleKeydown);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', handleKeydown);
 });
 </script>
 
