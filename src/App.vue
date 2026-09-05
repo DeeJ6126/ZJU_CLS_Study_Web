@@ -244,17 +244,17 @@ const activePracticeRangeId = ref('');
 const answeredQuestionStatus = ref({});
 const session = ref(null);
 const interaction = ref(createQuizInteractionState({ questionType: '' }));
-const molecularLanguage = ref(readMolecularLanguage());
+const molecularLanguage = ref(readMolecularLanguage(quizScope.value));
 const molecularReviewTerms = ref([]);
 const molecularReviewIndex = ref(0);
 const molecularReviewShowAnswer = ref(false);
-const vocabularyRecords = ref(readVocabularyRecords());
-const molecularMistakeRecords = ref(readMolecularMistakes());
-const botanyMistakeRecords = ref(readBotanyMistakes());
-const microbiologyMistakeRecords = ref(readMicrobiologyMistakes());
+const vocabularyRecords = ref(readVocabularyRecords(quizScope.value));
+const molecularMistakeRecords = ref(readMolecularMistakes(quizScope.value));
+const botanyMistakeRecords = ref(readBotanyMistakes(quizScope.value));
+const microbiologyMistakeRecords = ref(readMicrobiologyMistakes(quizScope.value));
 const botanyGalleryItems = ref([]);
 const botanyGalleryActiveCategory = ref('');
-const microbiologyVocabularyRecords = ref(readMicrobiologyVocabularyRecords());
+const microbiologyVocabularyRecords = ref(readMicrobiologyVocabularyRecords(quizScope.value));
 const microbiologyPastExams = ref([]);
 const microbiologyPastExamQuestions = ref([]);
 const activePastExamId = ref('');
@@ -649,9 +649,9 @@ async function loadCategories() {
 
   categories.value = resultData.categories ?? [];
   if (isBotanyCollection.value) {
-    selectedCategorySourceIds.value = normalizeBotanyCategorySelection(readBotanySelection(), categories.value);
+    selectedCategorySourceIds.value = normalizeBotanyCategorySelection(readBotanySelection(quizScope.value), categories.value);
   } else if (isMicrobiologyCollection.value) {
-    selectedCategorySourceIds.value = normalizeMicrobiologyCategorySelection(readMicrobiologySelection(), categories.value);
+    selectedCategorySourceIds.value = normalizeMicrobiologyCategorySelection(readMicrobiologySelection(quizScope.value), categories.value);
   } else {
     selectedCategorySourceIds.value = [];
   }
@@ -767,7 +767,7 @@ function getQuestionStatus(sourceQuestionId) {
 }
 
 function setMolecularLanguage(language) {
-  molecularLanguage.value = writeMolecularLanguage(language);
+  molecularLanguage.value = writeMolecularLanguage(quizScope.value, language);
 }
 
 function focusTranslationInputIfNeeded(question = activeQuestion.value) {
@@ -1298,19 +1298,19 @@ function movePastExamQuestion(direction) {
 }
 
 function selectAllBotanyCategories() {
-  selectedCategorySourceIds.value = writeBotanySelection(categories.value.map((category) => category.sourceId));
+  selectedCategorySourceIds.value = writeBotanySelection(quizScope.value, categories.value.map((category) => category.sourceId));
 }
 
 function clearBotanyCategories() {
-  selectedCategorySourceIds.value = writeBotanySelection([]);
+  selectedCategorySourceIds.value = writeBotanySelection(quizScope.value, []);
 }
 
 function selectAllMicrobiologyCategories() {
-  selectedCategorySourceIds.value = writeMicrobiologySelection(categories.value.map((category) => category.sourceId));
+  selectedCategorySourceIds.value = writeMicrobiologySelection(quizScope.value, categories.value.map((category) => category.sourceId));
 }
 
 function clearMicrobiologyCategories() {
-  selectedCategorySourceIds.value = writeMicrobiologySelection([]);
+  selectedCategorySourceIds.value = writeMicrobiologySelection(quizScope.value, []);
 }
 
 function isBotanyMistake(sourceQuestionId) {
@@ -1695,9 +1695,9 @@ async function migrateLocalQuizData() {
   if (viewerIsGuest.value || isDemoAccount.value) return;
   if (session.value?.id) await claimQuizSession(session.value.id);
   const entries = [
-    ['molecular-biology-review', readMolecularMistakes(), readVocabularyRecords()],
-    ['botany-slice', readBotanyMistakes(), []],
-    ['microbiology-final-review', readMicrobiologyMistakes(), readMicrobiologyVocabularyRecords()],
+    ['molecular-biology-review', readMolecularMistakes(quizScope.value), readVocabularyRecords(quizScope.value)],
+    ['botany-slice', readBotanyMistakes(quizScope.value), []],
+    ['microbiology-final-review', readMicrobiologyMistakes(quizScope.value), readMicrobiologyVocabularyRecords(quizScope.value)],
   ];
   for (const [collectionSlug, mistakes, vocabulary] of entries) {
     const resultData = mistakes.length || vocabulary.length
@@ -1713,16 +1713,18 @@ async function migrateLocalQuizData() {
       : await fetchQuizAccountState(collectionSlug);
     if (resultData.ok) applyQuizAccountState(collectionSlug, resultData.state);
   }
-  writeMolecularMistakes([]);
-  writeBotanyMistakes([]);
-  writeMicrobiologyMistakes([]);
-  writeVocabularyRecords([]);
-  writeMicrobiologyVocabularyRecords([]);
+  writeMolecularMistakes(quizScope.value, []);
+  writeBotanyMistakes(quizScope.value, []);
+  writeMicrobiologyMistakes(quizScope.value, []);
+  writeVocabularyRecords(quizScope.value, []);
+  writeMicrobiologyVocabularyRecords(quizScope.value, []);
 }
 
+const quizScope = computed(() => viewer?.id || demoIdentityId || 'guest');
 function persistGuestRecords(records, writer) {
-  return viewerIsGuest.value || isDemoAccount.value ? writer(records) : records;
+  return viewerIsGuest.value || isDemoAccount.value ? writer(quizScope.value, records) : records;
 }
+
 
 async function storeVocabularyRecord(collectionSlug, record) {
   if (viewerIsGuest.value || isDemoAccount.value) return;
@@ -2310,11 +2312,11 @@ async function handleLogout() {
   commentsByContentId.value = {};
   quizProgressByCollection.value = {};
   session.value = null;
-  vocabularyRecords.value = readVocabularyRecords();
-  molecularMistakeRecords.value = readMolecularMistakes();
-  botanyMistakeRecords.value = readBotanyMistakes();
-  microbiologyMistakeRecords.value = readMicrobiologyMistakes();
-  microbiologyVocabularyRecords.value = readMicrobiologyVocabularyRecords();
+  vocabularyRecords.value = readVocabularyRecords(quizScope.value);
+  molecularMistakeRecords.value = readMolecularMistakes(quizScope.value);
+  botanyMistakeRecords.value = readBotanyMistakes(quizScope.value);
+  microbiologyMistakeRecords.value = readMicrobiologyMistakes(quizScope.value);
+  microbiologyVocabularyRecords.value = readMicrobiologyVocabularyRecords(quizScope.value);
   accountOpen.value = false;
 }
 

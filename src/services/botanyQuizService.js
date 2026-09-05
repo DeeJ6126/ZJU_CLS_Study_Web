@@ -2,6 +2,17 @@ const selectionKey = 'botany-slice-selection';
 const mistakesKey = 'botany-slice-mistakes';
 const organOrder = ['叶', '根', '茎', '花', '植物组织'];
 
+// CRIT-STATE-1: localStorage keys are namespaced by the active scope (user
+// identity id, demo identity id, or "guest") so different accounts never
+// share selection state or mistake records.
+function safeScope(scope) {
+  return String(scope ?? '').trim() || 'guest';
+}
+
+function keyFor(base, scope) {
+  return `${base}:${safeScope(scope)}`;
+}
+
 function nonEmpty(value) {
   return String(value ?? '').trim();
 }
@@ -22,18 +33,18 @@ export function selectedBotanyImageCount(categorySourceIds = [], categories = []
     .reduce((sum, category) => sum + Number(category.questionCount ?? 0), 0);
 }
 
-export function readBotanySelection(storage = globalThis.localStorage) {
+export function readBotanySelection(scope, storage = globalThis.localStorage) {
   try {
-    return JSON.parse(storage?.getItem(selectionKey) ?? '[]').map(nonEmpty).filter(Boolean);
+    return JSON.parse(storage?.getItem(keyFor(selectionKey, scope)) ?? '[]').map(nonEmpty).filter(Boolean);
   } catch {
     return [];
   }
 }
 
-export function writeBotanySelection(categorySourceIds = [], storage = globalThis.localStorage) {
+export function writeBotanySelection(scope, categorySourceIds = [], storage = globalThis.localStorage) {
   const normalized = Array.from(new Set(categorySourceIds.map(nonEmpty))).filter(Boolean);
   try {
-    storage?.setItem(selectionKey, JSON.stringify(normalized));
+    storage?.setItem(keyFor(selectionKey, scope), JSON.stringify(normalized));
   } catch {
     // localStorage can be unavailable in tests or privacy modes.
   }
@@ -96,18 +107,18 @@ export function normalizeBotanyMistakes(records = []) {
   return Array.from(byQuestion.values()).sort((left, right) => right.lastAddedAt.localeCompare(left.lastAddedAt));
 }
 
-export function readBotanyMistakes(storage = globalThis.localStorage) {
+export function readBotanyMistakes(scope, storage = globalThis.localStorage) {
   try {
-    return normalizeBotanyMistakes(JSON.parse(storage?.getItem(mistakesKey) ?? '[]'));
+    return normalizeBotanyMistakes(JSON.parse(storage?.getItem(keyFor(mistakesKey, scope)) ?? '[]'));
   } catch {
     return [];
   }
 }
 
-export function writeBotanyMistakes(records = [], storage = globalThis.localStorage) {
+export function writeBotanyMistakes(scope, records = [], storage = globalThis.localStorage) {
   const normalized = normalizeBotanyMistakes(records);
   try {
-    storage?.setItem(mistakesKey, JSON.stringify(normalized));
+    storage?.setItem(keyFor(mistakesKey, scope), JSON.stringify(normalized));
   } catch {
     // localStorage can be unavailable in tests or privacy modes.
   }

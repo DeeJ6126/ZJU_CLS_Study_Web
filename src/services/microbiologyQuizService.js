@@ -4,6 +4,15 @@ const vocabularyKey = 'microbiology-vocabulary';
 const validStatuses = new Set(['new', 'learning', 'mastered']);
 const vocabularyPattern = /[A-Za-z0-9][A-Za-z0-9+/]*(?:[-'][A-Za-z0-9+/]+)*/g;
 
+// CRIT-STATE-1: localStorage keys are namespaced by the active scope.
+function safeScope(scope) {
+  return String(scope ?? '').trim() || 'guest';
+}
+
+function keyFor(base, scope) {
+  return `${base}:${safeScope(scope)}`;
+}
+
 function nonEmpty(value) {
   return String(value ?? '').trim();
 }
@@ -49,18 +58,18 @@ export function selectedMicrobiologyQuestionCount(categorySourceIds = [], catego
     .reduce((sum, category) => sum + Number(category.questionCount ?? 0), 0);
 }
 
-export function readMicrobiologySelection(storage = globalThis.localStorage) {
+export function readMicrobiologySelection(scope, storage = globalThis.localStorage) {
   try {
-    return JSON.parse(storage?.getItem(selectionKey) ?? '[]').map(nonEmpty).filter(Boolean);
+    return JSON.parse(storage?.getItem(keyFor(selectionKey, scope)) ?? '[]').map(nonEmpty).filter(Boolean);
   } catch {
     return [];
   }
 }
 
-export function writeMicrobiologySelection(categorySourceIds = [], storage = globalThis.localStorage) {
+export function writeMicrobiologySelection(scope, categorySourceIds = [], storage = globalThis.localStorage) {
   const normalized = Array.from(new Set(categorySourceIds.map(nonEmpty))).filter(Boolean);
   try {
-    storage?.setItem(selectionKey, JSON.stringify(normalized));
+    storage?.setItem(keyFor(selectionKey, scope), JSON.stringify(normalized));
   } catch {
     // localStorage can be unavailable in tests or privacy modes.
   }
@@ -123,18 +132,18 @@ export function normalizeMicrobiologyMistakes(records = []) {
   return Array.from(byQuestion.values()).sort((left, right) => right.lastAnsweredAt.localeCompare(left.lastAnsweredAt));
 }
 
-export function readMicrobiologyMistakes(storage = globalThis.localStorage) {
+export function readMicrobiologyMistakes(scope, storage = globalThis.localStorage) {
   try {
-    return normalizeMicrobiologyMistakes(JSON.parse(storage?.getItem(mistakesKey) ?? '[]'));
+    return normalizeMicrobiologyMistakes(JSON.parse(storage?.getItem(keyFor(mistakesKey, scope)) ?? '[]'));
   } catch {
     return [];
   }
 }
 
-export function writeMicrobiologyMistakes(records = [], storage = globalThis.localStorage) {
+export function writeMicrobiologyMistakes(scope, records = [], storage = globalThis.localStorage) {
   const normalized = normalizeMicrobiologyMistakes(records);
   try {
-    storage?.setItem(mistakesKey, JSON.stringify(normalized));
+    storage?.setItem(keyFor(mistakesKey, scope), JSON.stringify(normalized));
   } catch {
     // localStorage can be unavailable in tests or privacy modes.
   }
@@ -190,18 +199,18 @@ export function normalizeMicrobiologyVocabularyRecords(records = []) {
   return Array.from(byKey.values()).sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
 }
 
-export function readMicrobiologyVocabularyRecords(storage = globalThis.localStorage) {
+export function readMicrobiologyVocabularyRecords(scope, storage = globalThis.localStorage) {
   try {
-    return normalizeMicrobiologyVocabularyRecords(JSON.parse(storage?.getItem(vocabularyKey) ?? '[]'));
+    return normalizeMicrobiologyVocabularyRecords(JSON.parse(storage?.getItem(keyFor(vocabularyKey, scope)) ?? '[]'));
   } catch {
     return [];
   }
 }
 
-export function writeMicrobiologyVocabularyRecords(records = [], storage = globalThis.localStorage) {
+export function writeMicrobiologyVocabularyRecords(scope, records = [], storage = globalThis.localStorage) {
   const normalized = normalizeMicrobiologyVocabularyRecords(records);
   try {
-    storage?.setItem(vocabularyKey, JSON.stringify(normalized));
+    storage?.setItem(keyFor(vocabularyKey, scope), JSON.stringify(normalized));
   } catch {
     // localStorage can be unavailable in tests or privacy modes.
   }

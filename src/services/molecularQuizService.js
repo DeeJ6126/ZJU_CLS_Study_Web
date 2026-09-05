@@ -2,6 +2,15 @@ const molecularLanguageKey = 'molecular-biology-language';
 const vocabularyKey = 'molecular-biology-vocabulary';
 const mistakesKey = 'molecular-biology-mistakes';
 const validStatuses = new Set(['new', 'learning', 'mastered']);
+
+// CRIT-STATE-1: localStorage keys are namespaced by the active scope.
+function safeScope(scope) {
+  return String(scope ?? '').trim() || 'guest';
+}
+
+function keyFor(base, scope) {
+  return `${base}:${safeScope(scope)}`;
+}
 const pronounceableAcronyms = new Set(['DNA', 'RNA']);
 
 function normalizeLanguage(language) {
@@ -16,18 +25,18 @@ function normalizedTerm(term) {
   return nonEmpty(term).toLowerCase();
 }
 
-export function readMolecularLanguage(storage = globalThis.localStorage) {
+export function readMolecularLanguage(scope, storage = globalThis.localStorage) {
   try {
-    return normalizeLanguage(storage?.getItem(molecularLanguageKey));
+    return normalizeLanguage(storage?.getItem(keyFor(molecularLanguageKey, scope)));
   } catch {
     return 'zh';
   }
 }
 
-export function writeMolecularLanguage(language, storage = globalThis.localStorage) {
+export function writeMolecularLanguage(scope, language, storage = globalThis.localStorage) {
   const normalized = normalizeLanguage(language);
   try {
-    storage?.setItem(molecularLanguageKey, normalized);
+    storage?.setItem(keyFor(molecularLanguageKey, scope), normalized);
   } catch {
     // localStorage can be unavailable in tests or privacy modes.
   }
@@ -140,18 +149,18 @@ export function normalizeVocabularyRecords(records = []) {
   return Array.from(byTerm.values());
 }
 
-export function readVocabularyRecords(storage = globalThis.localStorage) {
+export function readVocabularyRecords(scope, storage = globalThis.localStorage) {
   try {
-    return normalizeVocabularyRecords(JSON.parse(storage?.getItem(vocabularyKey) ?? '[]'));
+    return normalizeVocabularyRecords(JSON.parse(storage?.getItem(keyFor(vocabularyKey, scope)) ?? '[]'));
   } catch {
     return [];
   }
 }
 
-export function writeVocabularyRecords(records, storage = globalThis.localStorage) {
+export function writeVocabularyRecords(scope, records, storage = globalThis.localStorage) {
   const normalized = normalizeVocabularyRecords(records);
   try {
-    storage?.setItem(vocabularyKey, JSON.stringify(normalized));
+    storage?.setItem(keyFor(vocabularyKey, scope), JSON.stringify(normalized));
   } catch {
     // localStorage can be unavailable in tests or privacy modes.
   }
@@ -224,18 +233,18 @@ export function normalizeMolecularMistakes(records = []) {
   return Array.from(byQuestion.values()).sort((left, right) => right.lastAnsweredAt.localeCompare(left.lastAnsweredAt));
 }
 
-export function readMolecularMistakes(storage = globalThis.localStorage) {
+export function readMolecularMistakes(scope, storage = globalThis.localStorage) {
   try {
-    return normalizeMolecularMistakes(JSON.parse(storage?.getItem(mistakesKey) ?? '[]'));
+    return normalizeMolecularMistakes(JSON.parse(storage?.getItem(keyFor(mistakesKey, scope)) ?? '[]'));
   } catch {
     return [];
   }
 }
 
-export function writeMolecularMistakes(records, storage = globalThis.localStorage) {
+export function writeMolecularMistakes(scope, records, storage = globalThis.localStorage) {
   const normalized = normalizeMolecularMistakes(records);
   try {
-    storage?.setItem(mistakesKey, JSON.stringify(normalized));
+    storage?.setItem(keyFor(mistakesKey, scope), JSON.stringify(normalized));
   } catch {
     // localStorage can be unavailable in tests or privacy modes.
   }
