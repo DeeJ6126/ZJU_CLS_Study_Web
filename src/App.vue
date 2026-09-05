@@ -2195,17 +2195,23 @@ async function removeProfileFavorite(favorite) {
 }
 
 async function editProfileComment(comment) {
-  const body = window.prompt('修改评论', comment.body);
-  if (body === null || !body.trim()) return;
+  // HI-UI-7: ProfilePage now provides an inline textarea and passes the
+  // new body via the emit payload, so we don't need window.prompt here.
+  const body = String(comment.body ?? '').trim();
+  if (body.length < 2) {
+    profileNotice.value = '评论内容至少需要 2 个字符。';
+    return;
+  }
   const resultData = isDemoAccount.value
-    ? demoAccountService.updateComment(activeDemoAccountId.value, comment.id, body.trim())
-    : await commentApiClient.update(comment.id, body.trim());
+    ? demoAccountService.updateComment(activeDemoAccountId.value, comment.id, body)
+    : await commentApiClient.update(comment.id, body);
   profileNotice.value = mutationNotice(resultData, '评论已更新。');
   if (resultData.ok) await loadActiveProfile();
 }
 
 async function deleteProfileComment(comment) {
-  if (!window.confirm('确定删除这条评论吗？')) return;
+  // HI-UI-7: confirmation now happens inline in ProfilePage instead of
+  // blocking the browser with window.confirm.
   const resultData = isDemoAccount.value
     ? demoAccountService.deleteComment(activeDemoAccountId.value, comment.id)
     : await commentApiClient.remove(comment.id);

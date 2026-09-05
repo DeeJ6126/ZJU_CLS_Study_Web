@@ -30,6 +30,9 @@ const activeSection = ref('profile');
 const nickname = ref('');
 const grade = ref('');
 const editingPostId = ref('');
+const editingCommentId = ref('');
+const editingCommentBody = ref('');
+const pendingDeleteComment = ref(null);
 const revision = ref({ title: '', summary: '', body: '' });
 const cc98Code = ref('');
 const currentPassword = ref('');
@@ -50,6 +53,28 @@ watch(() => props.profile?.nickname, (value) => { nickname.value = value ?? ''; 
 watch(() => props.grade, (value) => {
   grade.value = value == null ? '' : String(value);
 }, { immediate: true });
+
+function startCommentEdit(comment) {
+  editingCommentId.value = comment.id;
+  editingCommentBody.value = comment.body ?? '';
+}
+
+function cancelCommentEdit() {
+  editingCommentId.value = '';
+  editingCommentBody.value = '';
+}
+
+function confirmDeleteComment(comment) {
+  pendingDeleteComment.value = null;
+  emit('delete-comment', comment);
+}
+
+function saveCommentEdit(comment) {
+  const body = editingCommentBody.value.trim();
+  if (body.length < 2) return;
+  emit('edit-comment', { ...comment, body });
+  cancelCommentEdit();
+}
 
 function chooseAvatar(event) {
   const file = event.target.files?.[0];
@@ -204,7 +229,34 @@ function statusLabel(status) {
         <section v-if="isOwn && activeSection === 'comments'" class="profile-management">
           <header><div><p>My Discussions</p><h1>我的评论</h1></div><span>{{ comments.length }} 条</span></header>
           <p v-if="!comments.length" class="profile-state">还没有发表过评论。</p>
-          <article v-for="comment in comments" v-else :key="comment.id" class="profile-post-row"><div><span>{{ comment.courseCode }} · {{ comment.itemTitle }}</span><p>{{ comment.body }}</p><a :href="comment.href">查看原文</a></div><div v-if="!comment.deleted" class="profile-post-actions"><button type="button" @click="emit('edit-comment', comment)">编辑</button><button type="button" @click="emit('delete-comment', comment)">删除</button></div></article>
+          <article v-for="comment in comments" v-else :key="comment.id" class="profile-post-row">
+            <div>
+              <span>{{ comment.courseCode }} · {{ comment.itemTitle }}</span>
+              <p v-if="editingCommentId !== comment.id">{{ comment.body }}</p>
+              <template v-else>
+                <textarea
+                  v-model="editingCommentBody"
+                  rows="3"
+                  maxlength="1000"
+                  aria-label="修改评论"
+                ></textarea>
+                <div class="profile-post-actions">
+                  <button type="button" @click="saveCommentEdit(comment)">保存</button>
+                  <button type="button" @click="cancelCommentEdit">取消</button>
+                </div>
+              </template>
+              <a :href="comment.href">查看原文</a>
+            </div>
+            <div v-if="!comment.deleted && editingCommentId !== comment.id" class="profile-post-actions">
+              <button type="button" @click="startCommentEdit(comment)">编辑</button>
+              <button type="button" @click="pendingDeleteComment = comment">删除</button>
+            </div>
+            <div v-if="pendingDeleteComment?.id === comment.id" class="profile-confirm">
+              <p>确定删除这条评论吗?</p>
+              <button type="button" @click="confirmDeleteComment(comment)">确认删除</button>
+              <button type="button" @click="pendingDeleteComment = null">取消</button>
+            </div>
+          </article>
         </section>
       </template>
     </main>
