@@ -344,6 +344,26 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
       return mapItem(db.prepare(`select ${selectColumns} from content_items where source_path = ?`).get(sourcePath));
     },
 
+    findPublishedByExternalUrl(externalUrl, { excludeId = '' } = {}) {
+      if (!externalUrl) return null;
+      const row = db.prepare(`
+        select ${selectColumns} from content_items
+        where external_url = ? and status = 'published' and id != ?
+        limit 1
+      `).get(externalUrl, excludeId);
+      return row ? mapItem(row) : null;
+    },
+
+    findPublishedByCc98Url(cc98Url, { excludeId = '' } = {}) {
+      if (!cc98Url) return null;
+      const row = db.prepare(`
+        select ${selectColumns} from content_items
+        where cc98_url = ? and status = 'published' and id != ?
+        limit 1
+      `).get(cc98Url, excludeId);
+      return row ? mapItem(row) : null;
+    },
+
     updateItem(id, changes) {
       const current = this.findById(id);
       if (!current) {

@@ -173,6 +173,7 @@ export function createAuthServer({
   uploadDirectory = process.env.CONTENT_UPLOAD_DIR ?? 'server/data/content-uploads',
   avatarDirectory = process.env.PROFILE_AVATAR_DIR ?? 'server/data/profile-avatars',
   adminCc98Names = parseAdminCc98Names(process.env.ADMIN_CC98_NAMES),
+  adminInviteToken = String(process.env.ADMIN_INVITE_TOKEN ?? ''),
   emailSender = createSmtpEmailSender(),
   emailCodeGenerator,
   emailNow,
@@ -255,7 +256,10 @@ export function createAuthServer({
       }
 
       if (request.method === 'POST' && url.pathname === '/api/auth/register/cc98') {
-        const result = await registerCc98(store, await readJsonBody(request), { adminCc98Names });
+        const result = await registerCc98(store, await readJsonBody(request), {
+          adminCc98Names,
+          expectedAdminInviteToken: adminInviteToken,
+        });
         sendJson(response, result.status, result.ok ? { user: result.user } : { message: result.message });
         return;
       }

@@ -165,12 +165,24 @@ export function createSession(store, userId) {
 /**
  * Register a brand-new user from a one-time CC98 verification code.
  *
+ * Admin role is granted only when BOTH conditions hold: the CC98 name is
+ * on the allowlist AND the caller knows the shared admin invite token.
+ * The token check prevents an attacker who obtained an unused admin seed
+ * code from creating an admin account by guessing a 10+ character
+ * password. The role downgrades silently to 'student' if either check
+ * fails — that is by design: we don't want to leak whether a given
+ * CC98 name is on the allowlist.
+ *
  * @param {Store} store
- * @param {{code: string, password: string}} input
- * @param {{adminCc98Names?: Set<string>}} [options]
+ * @param {{code: string, password: string, adminInviteToken?: string}} input
+ * @param {{adminCc98Names?: Set<string>, expectedAdminInviteToken?: string}} [options]
  * @returns {Promise<ServiceResult<PublicUser>>}
  */
-export async function registerCc98(store, { code, password }, { adminCc98Names = new Set() } = {}) {
+export async function registerCc98(
+  store,
+  { code, password, adminInviteToken = '' },
+  { adminCc98Names = new Set(), expectedAdminInviteToken = '' } = {},
+) {
   const normalizedCode = normalizeText(code);
 
   const verificationCode = store.findVerificationCode(normalizedCode);
@@ -179,10 +191,13 @@ export async function registerCc98(store, { code, password }, { adminCc98Names =
   }
 
   const normalizedName = normalizeText(verificationCode.cc98Name);
-  const isAdmin = adminCc98Names.has(normalizedName);
+  const nameMatchesAdminAllowlist = adminCc98Names.has(normalizedName);
+  const isAdmin = nameMatchesAdminAllowlist
+    && expectedAdminInviteToken.length > 0
+    && adminInviteToken === expectedAdminInviteToken;
   const passwordIsValid = isAdmin ? String(password ?? '').length >= 10 : validatePassword(password);
   if (!normalizedName || !passwordIsValid) {
-    if (isAdmin) {
+    if (nameMatchesAdminAllowlist) {
       return { ok: false, status: 400, message: '管理员密码至少需要 10 位。' };
     }
     return { ok: false, status: 400, message: '请填写有效验证码和至少 8 位密码。' };
@@ -193,6 +208,11 @@ export async function registerCc98(store, { code, password }, { adminCc98Names =
   }
   if (store.findUserByNickname(normalizedName)) {
     return { ok: false, status: 409, message: '该昵称已被使用。' };
+  }
+  // Reserved-nickname check is part of the front-end validator; mirror it
+  // server-side so a direct API call can't bypass it.
+  if (!validateNickname(normalizedName)) {
+    return { ok: false, status: 400, message: '该 CC98 名字不可用作账号，请联系管理员。' };
   }
 
   const user = store.createUser({

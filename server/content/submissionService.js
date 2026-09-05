@@ -156,6 +156,20 @@ export function approveSubmission(store, id, actor) {
     && !submission.file && !revisionTarget?.file) {
     return { ok: false, status: 400, message: '复习资料至少需要正文、链接或 PDF。' };
   }
+  // Reject duplicates of an already-published item with the same link
+  // (Bug 5). The two columns are searched independently because the
+  // existing schema stores them in separate fields — calling
+  // findPublishedByExternalUrl with the cc98Url value would never match.
+  for (const [url, findFn, label] of [
+    [submission.externalUrl, store.findPublishedByExternalUrl, '链接'],
+    [submission.cc98Url, store.findPublishedByCc98Url, 'CC98 链接'],
+  ]) {
+    if (!url || !findFn) continue;
+    const dup = findFn(url, { excludeId: revisionTarget?.id ?? '' });
+    if (dup) {
+      return { ok: false, status: 409, message: `已有相同${label}的已发布内容。` };
+    }
+  }
   const itemFields = {
     courseCode: submission.courseCode,
     type: submission.type,
