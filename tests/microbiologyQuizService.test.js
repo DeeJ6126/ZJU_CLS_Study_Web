@@ -74,6 +74,8 @@ test('microbiology vocabulary helpers tokenize, dedupe, and keep source context'
     questionNumber: 1,
     chapterId: 1,
     chapterTitle: '绪论',
+    addedAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
   });
   const duplicate = createMicrobiologyVocabularyRecord('dna', {
     contextText: 'DNA polymerase appears here',
@@ -82,6 +84,8 @@ test('microbiology vocabulary helpers tokenize, dedupe, and keep source context'
     questionNumber: 1,
     chapterId: 1,
     chapterTitle: '绪论',
+    addedAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
   });
   const records = normalizeMicrobiologyVocabularyRecords([first, duplicate]);
 
