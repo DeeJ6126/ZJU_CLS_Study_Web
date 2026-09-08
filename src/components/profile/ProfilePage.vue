@@ -14,15 +14,13 @@ const props = defineProps({
   loading: { type: Boolean, default: false },
   error: { type: String, default: '' },
   notice: { type: String, default: '' },
-  nicknameLocked: { type: Boolean, default: false },
-  cc98Bound: { type: Boolean, default: false },
   grade: { type: Number, default: null },
   isDemo: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
   'save-nickname', 'save-grade', 'upload-avatar', 'remove-avatar', 'archive-post', 'submit-revision',
-  'resubmit', 'bind-cc98', 'preview-course-schedule', 'replace-courses', 'remove-course',
+  'resubmit', 'preview-course-schedule', 'replace-courses', 'remove-course',
   'remove-favorite', 'edit-comment', 'delete-comment', 'edit-submission', 'withdraw-submission',
   'delete-submission',
 ]);
@@ -34,8 +32,6 @@ const editingCommentId = ref('');
 const editingCommentBody = ref('');
 const pendingDeleteComment = ref(null);
 const revision = ref({ title: '', summary: '', body: '' });
-const cc98Code = ref('');
-const currentPassword = ref('');
 const editingSubmissionId = ref('');
 const submissionDraft = ref({ title: '', summary: '', body: '' });
 
@@ -148,11 +144,10 @@ function statusLabel(status) {
           </div>
           <div>
             <p>生科智学用户</p><h1>{{ profile.nickname }}</h1>
-            <form v-if="isOwn && !nicknameLocked" class="profile-nickname-form" @submit.prevent="emit('save-nickname', nickname)">
+            <form v-if="isOwn" class="profile-nickname-form" @submit.prevent="emit('save-nickname', nickname)">
               <label><span>昵称</span><input v-model.trim="nickname" minlength="2" maxlength="20" required /></label>
               <button type="submit">保存昵称</button>
             </form>
-            <p v-else-if="isOwn" class="profile-help">昵称已与 CC98 名字绑定。</p>
             <form v-if="isOwn" class="profile-grade-form" @submit.prevent="saveGrade">
               <label>
                 <span>所在年级</span>
@@ -161,12 +156,6 @@ function statusLabel(status) {
                 </select>
               </label>
               <button type="submit">保存年级</button>
-            </form>
-            <form v-if="isOwn" class="profile-cc98-form" @submit.prevent="emit('bind-cc98', { code: cc98Code, password: currentPassword })">
-              <h2>{{ cc98Bound ? '换绑 CC98' : '绑定 CC98' }}</h2>
-              <label><span>CC98 验证码</span><input v-model.trim="cc98Code" required /></label>
-              <label><span>当前密码</span><input v-model="currentPassword" type="password" minlength="8" required /></label>
-              <button type="submit">{{ cc98Bound ? '确认换绑' : '确认绑定' }}</button>
             </form>
           </div>
         </section>

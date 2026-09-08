@@ -19,7 +19,7 @@ test('profile page separates public posts from owner management controls', () =>
   assert.match(profileSource, /我的帖子/);
   assert.match(profileSource, /上传头像/);
   assert.match(profileSource, /提交修改/);
-  assert.match(profileSource, /换绑 CC98/);
+  assert.doesNotMatch(profileSource, /换绑 CC98|绑定 CC98/);
   assert.match(profileSource, /我的课程/);
   assert.match(profileSource, /导入课表/);
   assert.match(profileSource, /确认替换课程清单/);

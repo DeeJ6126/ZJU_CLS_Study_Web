@@ -120,6 +120,6 @@ function saveEdit(comment) {
       <p class="comment-form-hint">支持 UBB 标签 (如 <code>[b]加粗[/b]</code>、<code>[code]代码[/code]</code>、<code>[url=链接]文本[/url]</code>)</p>
       <button type="submit" :disabled="!draft.trim() || busy">发布评论</button>
     </form>
-    <p v-else class="permission-note">需要完成 CC98 或浙大邮箱认证后才可以评论。</p>
+    <p v-else class="permission-note">需要完成学号认证后才可以评论。</p>
   </section>
 </template>

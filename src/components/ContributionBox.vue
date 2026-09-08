@@ -47,7 +47,7 @@ function resetForm() {
 }
 
 function openModal() {
-  notice.value = props.canSubmit ? '' : '需要登录并完成 CC98 或浙大邮箱认证后才可以投稿。';
+  notice.value = props.canSubmit ? '' : '需要完成学号认证后才可以投稿。';
   isOpen.value = true;
 }
 
@@ -202,7 +202,7 @@ function applyUbbTag(action) {
 
 function submitContribution() {
   if (!props.canSubmit) {
-    notice.value = '需要登录并完成 CC98 或浙大邮箱认证后才可以投稿。';
+    notice.value = '需要完成学号认证后才可以投稿。';
     return;
   }
 

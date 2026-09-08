@@ -1,4 +1,4 @@
-import { publicUser, validateNickname } from '../authService.js';
+import { canLeaveSiteTrace, publicUser, validateNickname } from '../authService.js';
 import { toPublicContentItem } from '../content/contentService.js';
 import {
   createRevisionSubmission,
@@ -34,12 +34,14 @@ export async function handleProfileHttpRequest({
   contentStore,
   sendJson,
   readJsonBody,
-  visitorId = '',
   uploadDirectory = '',
 }) {
+  const traceIdentity = canLeaveSiteTrace(user) && userId ? `user:${userId}` : '';
   if (request.method === 'GET' && url.pathname === '/api/profiles') {
     const query = url.searchParams.get('query') ?? '';
-    const profiles = authStore.searchUsersByNickname(query).map(publicProfile);
+    const profiles = authStore.searchUsersByNickname(query)
+      .filter(canLeaveSiteTrace)
+      .map(publicProfile);
     sendJson(response, 200, { profiles });
     return true;
   }
@@ -47,13 +49,13 @@ export async function handleProfileHttpRequest({
   const publicProfileMatch = url.pathname.match(/^\/api\/profiles\/([^/]+)$/);
   if (request.method === 'GET' && publicProfileMatch) {
     const target = authStore.findUserByPublicId(decodeURIComponent(publicProfileMatch[1]));
-    if (!target) {
+    if (!target || !canLeaveSiteTrace(target)) {
       sendJson(response, 404, { message: '用户不存在。' });
       return true;
     }
     const owner = publicProfile(target);
     const posts = contentStore.listPublishedByOwner(target.id).map((item) => (
-      toPublicContentItem(item, contentStore.getLikeState(item.id, visitorId), owner)
+      toPublicContentItem(item, contentStore.getLikeState(item.id, traceIdentity), owner)
     ));
     sendJson(response, 200, { profile: owner, posts });
     return true;
@@ -64,8 +66,8 @@ export async function handleProfileHttpRequest({
     && !url.pathname.startsWith('/api/account/submissions')) {
     return false;
   }
-  if (!userId) {
-    sendJson(response, 401, { message: '请先登录账号。' });
+  if (!canLeaveSiteTrace(user)) {
+    sendJson(response, userId ? 403 : 401, { message: '完成学号认证后才可以使用账号功能。' });
     return true;
   }
 
@@ -146,7 +148,7 @@ export async function handleProfileHttpRequest({
       contentStore,
       decodeURIComponent(revisionMatch[1]),
       await readJsonBody(request),
-      { id: userId, nickname: user.nickname, cc98Nickname: user.cc98Nickname },
+      { ...user, id: userId },
     );
     sendJson(response, result.status, result.ok
       ? { submission: result.submission }
@@ -199,11 +201,7 @@ export async function handleProfileHttpRequest({
     const changes = String(request.headers['content-type'] ?? '').toLowerCase().startsWith('application/json')
       ? await readJsonBody(request)
       : {};
-    const result = createSubmission(contentStore, { ...previous, ...changes }, {
-      id: userId,
-      nickname: user.nickname,
-      cc98Nickname: user.cc98Nickname,
-    });
+    const result = createSubmission(contentStore, { ...previous, ...changes }, { ...user, id: userId });
     sendJson(response, result.status, result.ok
       ? { submission: result.submission }
       : { message: result.message });

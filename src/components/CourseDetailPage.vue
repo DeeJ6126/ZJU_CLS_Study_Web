@@ -255,6 +255,8 @@ function emitContribution(payload) {
               class="article-action-button"
               :class="{ 'is-active': activeItem.viewerLiked }"
               type="button"
+              :disabled="!canFavorite"
+              :title="canFavorite ? '' : '完成学号认证后可点赞'"
               @click="emit('toggle-like', activeItem.contentId)"
             >
               {{ activeItem.viewerLiked ? '已赞' : '点赞' }} {{ activeItem.likeCount || 0 }}
@@ -351,6 +353,8 @@ function emitContribution(payload) {
               class="article-action-button"
               :class="{ 'is-active': activeItem.viewerLiked }"
               type="button"
+              :disabled="!canFavorite"
+              :title="canFavorite ? '' : '完成学号认证后可点赞'"
               @click="emit('toggle-like', activeItem.contentId)"
             >
               {{ activeItem.viewerLiked ? '已赞' : '点赞' }} {{ activeItem.likeCount || 0 }}

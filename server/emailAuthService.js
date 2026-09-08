@@ -138,14 +138,23 @@ export async function requestEmailCode(store, input, options = {}) {
 /**
  * @param {import('./authService.js').Store} store
  * @param {{studentId: string|number, nickname: string, password: string, code: string, email?: string}} input
- * @param {{now?: Function}} [options]
+ * @param {{now?: Function, adminStudentIds?: Set<string>}} [options]
  * @returns {Promise<ServiceResult<PublicUser>>}
  */
 export async function registerEmail(store, input, options = {}) {
   const email = studentEmail(input);
+  const studentId = email ? email.split('@')[0] : '';
   const nickname = String(input.nickname ?? '').trim();
-  if (!email || !validatePassword(input.password) || !validateNickname(nickname)) {
-    return { ok: false, status: 400, message: '请填写纯数字学号、有效昵称和至少 8 位密码。' };
+  const isAdmin = Boolean(studentId && options.adminStudentIds?.has(studentId));
+  const passwordValid = isAdmin
+    ? String(input.password ?? '').length >= 10
+    : validatePassword(input.password);
+  if (!email || !passwordValid || !validateNickname(nickname)) {
+    return {
+      ok: false,
+      status: 400,
+      message: `请填写纯数字学号、有效昵称和至少 ${isAdmin ? 10 : 8} 位密码。`,
+    };
   }
   if (store.findUserByEmail(email)) {
     return { ok: false, status: 409, message: '该邮箱无法用于注册。' };
@@ -159,6 +168,7 @@ export async function registerEmail(store, input, options = {}) {
     email,
     nickname,
     passwordHash: await hashPassword(input.password),
+    role: isAdmin ? 'admin' : 'student',
     grade: gradeFromStudentId(email.split('@')[0]),
   });
   store.consumeEmailCode(verified.record.id, verified.consumedAt);

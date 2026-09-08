@@ -642,6 +642,28 @@ html[data-theme="dark"] .admin-activity-title img {
   gap: 16px;
 }
 
+.admin-auth__student-id,
+.admin-auth__code {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-auth__student-id strong {
+  color: var(--color-muted);
+}
+
+.admin-auth__code button {
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--admin-primary);
+  border-radius: var(--radius-sm);
+  color: var(--admin-primary);
+  background: transparent;
+  font-weight: 750;
+}
+
 @media (max-width: 860px) {
   .admin-page {
     width: min(100% - 24px, 720px);

@@ -7,6 +7,7 @@ import { getSeedVerificationCodes } from './verificationSeed.js';
 import { createAuthStore } from './authStore.js';
 import {
   bindOrRebindCc98,
+  canLeaveSiteTrace,
   getCurrentUser,
   loginCc98,
   logout,
@@ -179,6 +180,10 @@ function parseAdminCc98Names(value = '') {
   return new Set(String(value).split(',').map((name) => name.trim()).filter(Boolean));
 }
 
+function parseAdminStudentIds(value = '') {
+  return new Set(String(value).split(',').map((id) => id.trim()).filter((id) => /^\d+$/.test(id)));
+}
+
 const staticCourseRoot = fileURLToPath(new URL('../public/resource/courses', import.meta.url));
 const activityCatalog = JSON.parse(
   readFileSync(fileURLToPath(new URL('../public/content/activities/catalog.json', import.meta.url)), 'utf8'),
@@ -194,6 +199,7 @@ export function createAuthServer({
   uploadDirectory = process.env.CONTENT_UPLOAD_DIR ?? 'server/data/content-uploads',
   avatarDirectory = process.env.PROFILE_AVATAR_DIR ?? 'server/data/profile-avatars',
   adminCc98Names = parseAdminCc98Names(process.env.ADMIN_CC98_NAMES),
+  adminStudentIds = parseAdminStudentIds(process.env.ADMIN_STUDENT_IDS),
   adminInviteToken = String(process.env.ADMIN_INVITE_TOKEN ?? ''),
   emailSender = createSmtpEmailSender(),
   emailCodeGenerator,
@@ -206,6 +212,9 @@ export function createAuthServer({
   store.seedVerificationCodes(getSeedVerificationCodes());
   for (const cc98Name of adminCc98Names) {
     store.promoteAdminByCc98Name(cc98Name);
+  }
+  for (const studentId of adminStudentIds) {
+    store.promoteAdminByEmail(`${studentId}@zju.edu.cn`);
   }
   studentHomepageStore.initialize();
   studentHomepageStore.seedHomepages([
@@ -247,7 +256,8 @@ export function createAuthServer({
       const cookies = parseCookies(request.headers.cookie);
       const sessionId = cookies[sessionCookieName] ?? '';
       const quizUserId = getAuthenticatedUserId(store, sessionId);
-      const visitorId = cookies.study_visitor ?? '';
+      const currentUser = getCurrentUser(store, sessionId);
+      const quizAccountUserId = canLeaveSiteTrace(currentUser) ? quizUserId : null;
 
       if (request.method === 'GET' && url.pathname === '/api/health') {
         sendJson(response, 200, { ok: true });
@@ -331,7 +341,10 @@ export function createAuthServer({
       }
 
       if (request.method === 'POST' && url.pathname === '/api/auth/register/email') {
-        const result = await registerEmail(store, await readJsonBody(request), { now: emailNow });
+        const result = await registerEmail(store, await readJsonBody(request), {
+          now: emailNow,
+          adminStudentIds,
+        });
         sendJson(response, result.status, result.ok ? { user: result.user } : { message: result.message });
         return;
       }
@@ -417,8 +430,8 @@ export function createAuthServer({
       }
 
       if (request.method === 'PUT' && url.pathname === '/api/account/profile/avatar') {
-        if (!quizUserId) {
-          sendJson(response, 401, { message: '请先登录后上传头像。' });
+        if (!canLeaveSiteTrace(currentUser)) {
+          sendJson(response, quizUserId ? 403 : 401, { message: '完成学号认证后才可以上传头像。' });
           return;
         }
         if (request.headers['x-profile-upload'] !== 'avatar') {
@@ -447,8 +460,8 @@ export function createAuthServer({
       }
 
       if (request.method === 'DELETE' && url.pathname === '/api/account/profile/avatar') {
-        if (!quizUserId) {
-          sendJson(response, 401, { message: '请先登录后移除头像。' });
+        if (!canLeaveSiteTrace(currentUser)) {
+          sendJson(response, quizUserId ? 403 : 401, { message: '完成学号认证后才可以移除头像。' });
           return;
         }
         const previous = store.findUserById(quizUserId);
@@ -458,12 +471,12 @@ export function createAuthServer({
         return;
       }
 
-      const currentUser = getCurrentUser(store, sessionId);
       const accountHandled = await handleAccountHttpRequest({
         request,
         response,
         url,
         userId: quizUserId,
+        user: currentUser,
         authStore: store,
         contentStore,
         sendJson,
@@ -485,7 +498,6 @@ export function createAuthServer({
         contentStore,
         sendJson,
         readJsonBody,
-        visitorId,
         uploadDirectory,
       });
       if (profileHandled) {
@@ -540,7 +552,6 @@ export function createAuthServer({
         uploadDirectory,
         sendJson,
         readJsonBody,
-        visitorId,
       });
       if (contentHandled) {
         return;
@@ -644,13 +655,13 @@ export function createAuthServer({
 
       if (url.pathname.startsWith('/api/quiz/')) {
         if (request.method === 'GET' && url.pathname === '/api/quiz/account-state') {
-          if (!quizUserId) {
+          if (!quizAccountUserId) {
             sendJson(response, 401, { message: '请先登录后同步学习记录。' });
             return;
           }
           sendJson(response, 200, {
             state: getQuizAccountState(quizStore, {
-              userId: quizUserId,
+              userId: quizAccountUserId,
               collectionSlug: url.searchParams.get('collectionSlug') ?? '',
             }),
           });
@@ -658,24 +669,24 @@ export function createAuthServer({
         }
 
         if (request.method === 'POST' && url.pathname === '/api/quiz/account-state/merge') {
-          if (!quizUserId) {
+          if (!quizAccountUserId) {
             sendJson(response, 401, { message: '请先登录后同步学习记录。' });
             return;
           }
           const body = await readJsonBody(request);
-          const result = mergeQuizAccountState(quizStore, { userId: quizUserId, ...body });
+          const result = mergeQuizAccountState(quizStore, { userId: quizAccountUserId, ...body });
           sendJson(response, result.status, result.ok ? { state: result.state } : { message: result.message });
           return;
         }
 
         const claimSessionMatch = url.pathname.match(/^\/api\/quiz\/sessions\/([^/]+)\/claim$/);
         if (request.method === 'POST' && claimSessionMatch) {
-          if (!quizUserId) {
+          if (!quizAccountUserId) {
             sendJson(response, 401, { message: '请先登录后认领练习记录。' });
             return;
           }
           const result = claimPracticeSession(quizStore, {
-            userId: quizUserId,
+            userId: quizAccountUserId,
             sessionId: decodeURIComponent(claimSessionMatch[1]),
           });
           sendJson(response, result.ok ? 200 : result.status, result.ok ? { session: result.session } : { message: result.message });
@@ -684,12 +695,12 @@ export function createAuthServer({
 
         const vocabularyMatch = url.pathname.match(/^\/api\/quiz\/vocabulary\/([^/]+)\/([^/]+)$/);
         if ((request.method === 'PUT' || request.method === 'DELETE') && vocabularyMatch) {
-          if (!quizUserId) {
+          if (!quizAccountUserId) {
             sendJson(response, 401, { message: '请先登录后管理生词本。' });
             return;
           }
           const input = {
-            userId: quizUserId,
+            userId: quizAccountUserId,
             collectionSlug: decodeURIComponent(vocabularyMatch[1]),
             recordKey: decodeURIComponent(vocabularyMatch[2]),
           };
@@ -703,7 +714,7 @@ export function createAuthServer({
         if (request.method === 'POST' && url.pathname === '/api/quiz/sessions') {
           const body = await readJsonBody(request);
           const result = createPracticeSession(quizStore, {
-            userId: quizUserId,
+            userId: quizAccountUserId,
             collectionSlug: body.collectionSlug,
             mode: body.mode,
             categorySourceIds: body.categorySourceIds,
@@ -717,7 +728,7 @@ export function createAuthServer({
         const sessionLookupMatch = url.pathname.match(/^\/api\/quiz\/sessions\/([^/]+)$/);
         if (request.method === 'GET' && sessionLookupMatch) {
           const result = getPracticeSession(quizStore, {
-            userId: quizUserId,
+            userId: quizAccountUserId,
             sessionId: sessionLookupMatch[1],
           });
           sendServiceResult(response, result, 200, 'session');
@@ -728,7 +739,7 @@ export function createAuthServer({
         if (request.method === 'POST' && sessionNavigationMatch) {
           const body = await readJsonBody(request);
           const result = navigatePracticeSession(quizStore, {
-            userId: quizUserId,
+            userId: quizAccountUserId,
             sessionId: sessionNavigationMatch[1],
             direction: body.direction,
             currentIndex: body.currentIndex,
@@ -741,7 +752,7 @@ export function createAuthServer({
         if (request.method === 'POST' && sessionAnswerMatch) {
           const body = await readJsonBody(request);
           const result = submitSessionAnswer(quizStore, {
-            userId: quizUserId,
+            userId: quizAccountUserId,
             sessionId: sessionAnswerMatch[1],
             sourceQuestionId: body.sourceQuestionId,
             answer: body.answer,
@@ -754,7 +765,7 @@ export function createAuthServer({
         if (request.method === 'POST' && sessionRevealMatch) {
           const body = await readJsonBody(request);
           const result = revealSessionAnswer(quizStore, {
-            userId: quizUserId,
+            userId: quizAccountUserId,
             sessionId: sessionRevealMatch[1],
             sourceQuestionId: body.sourceQuestionId,
           });
@@ -766,7 +777,7 @@ export function createAuthServer({
         if (request.method === 'POST' && sessionSelfJudgeMatch) {
           const body = await readJsonBody(request);
           const result = selfJudgeSessionAnswer(quizStore, {
-            userId: quizUserId,
+            userId: quizAccountUserId,
             sessionId: sessionSelfJudgeMatch[1],
             sourceQuestionId: body.sourceQuestionId,
             isCorrect: body.isCorrect,
@@ -776,13 +787,13 @@ export function createAuthServer({
         }
 
         if (request.method === 'POST' && url.pathname === '/api/quiz/mistakes') {
-          if (!quizUserId) {
+          if (!quizAccountUserId) {
             sendJson(response, 401, { message: '登录成为用户后可以保存错题本。' });
             return;
           }
           const body = await readJsonBody(request);
           const result = addManualMistake(quizStore, {
-            userId: quizUserId,
+            userId: quizAccountUserId,
             collectionSlug: body.collectionSlug,
             sourceQuestionId: body.sourceQuestionId,
             answer: body.answer,
@@ -792,13 +803,13 @@ export function createAuthServer({
         }
 
         if (request.method === 'GET' && url.pathname === '/api/quiz/progress') {
-          if (!quizUserId) {
+          if (!quizAccountUserId) {
             sendJson(response, 401, { message: '登录成为用户后可以保存练习进度。' });
             return;
           }
           sendJson(response, 200, {
             progress: getProgress(quizStore, {
-              userId: quizUserId,
+              userId: quizAccountUserId,
               collectionSlug: url.searchParams.get('collectionSlug') ?? '',
             }),
           });
@@ -807,12 +818,12 @@ export function createAuthServer({
 
         const deleteMistakeMatch = url.pathname.match(/^\/api\/quiz\/mistakes\/([^/]+)$/);
         if (request.method === 'DELETE' && deleteMistakeMatch) {
-          if (!quizUserId) {
+          if (!quizAccountUserId) {
             sendJson(response, 401, { message: '登录成为用户后可以管理错题本。' });
             return;
           }
           const result = removeMistake(quizStore, {
-            userId: quizUserId,
+            userId: quizAccountUserId,
             collectionSlug: url.searchParams.get('collectionSlug') ?? '',
             sourceQuestionId: deleteMistakeMatch[1],
           });
@@ -821,13 +832,13 @@ export function createAuthServer({
         }
 
         if (request.method === 'GET' && url.pathname === '/api/quiz/mistakes') {
-          if (!quizUserId) {
+          if (!quizAccountUserId) {
             sendJson(response, 401, { message: '登录成为用户后可以查看错题本。' });
             return;
           }
           sendJson(response, 200, {
             mistakes: getMistakes(quizStore, {
-              userId: quizUserId,
+              userId: quizAccountUserId,
               collectionSlug: url.searchParams.get('collectionSlug') ?? '',
             }),
           });
@@ -835,13 +846,13 @@ export function createAuthServer({
         }
 
         if (request.method === 'POST' && url.pathname === '/api/quiz/progress/reset') {
-          if (!quizUserId) {
+          if (!quizAccountUserId) {
             sendJson(response, 401, { message: '登录成为用户后可以重置练习记录。' });
             return;
           }
           const body = await readJsonBody(request);
           const result = resetPracticeRecords(quizStore, {
-            userId: quizUserId,
+            userId: quizAccountUserId,
             collectionSlug: body.collectionSlug,
             scope: body.scope,
           });

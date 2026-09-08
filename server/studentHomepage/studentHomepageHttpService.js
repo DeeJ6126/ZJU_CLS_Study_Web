@@ -6,6 +6,7 @@ import {
   rejectStudentHomepageApplication,
   updateStudentHomepage,
 } from './studentHomepageService.js';
+import { canLeaveSiteTrace } from '../authService.js';
 
 function adminAuthorized(user) {
   return user?.role === 'admin';
@@ -56,8 +57,8 @@ export async function handleStudentHomepageHttpRequest({
   }
 
   if (request.method === 'POST' && url.pathname === '/api/student-homepages/applications') {
-    if (!userId) {
-      sendJson(response, 401, { message: '请先登录后申请收录。' });
+    if (!canLeaveSiteTrace(user)) {
+      sendJson(response, userId ? 403 : 401, { message: '完成学号认证后才可以申请收录。' });
       return true;
     }
     if (!String(request.headers['content-type'] ?? '').toLowerCase().startsWith('application/json')) {

@@ -12,7 +12,7 @@ const scrypt = promisify(scryptCallback);
 /**
  * @typedef {Object} PublicUser
  * @property {string} id
- * @property {'guest'|'student'|'developer'|'admin'} role
+ * @property {'guest'|'student'|'admin'} role
  * @property {string} nickname
  * @property {string} [publicId]
  * @property {string|null} [grade]
@@ -114,6 +114,20 @@ export function publicUser(user) {
       email: Boolean(user.email),
     },
   };
+}
+
+/**
+ * Persistent account and public-content writes require a verified numeric ZJU
+ * student identity. Administrators are trusted for compatibility with already
+ * provisioned administrator accounts while new administrators are created from
+ * the student-ID allowlist.
+ */
+export function canLeaveSiteTrace(user) {
+  return Boolean(user && (
+    user.role === 'admin'
+    || user.verifications?.email
+    || user.email
+  ));
 }
 
 /**

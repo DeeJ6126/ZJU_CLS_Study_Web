@@ -4,18 +4,18 @@ Lightweight Node backend for the current application.
 
 ## Current Responsibilities
 
-- CC98-code registration and numeric-student-ID `@zju.edu.cn` email registration.
+- Numeric-student-ID `@zju.edu.cn` registration, with legacy CC98 endpoints retained but hidden from the frontend.
 - Email/password login, one-time email binding, email-code password recovery, and CC98 rebinding.
 - Password hashing.
 - Cookie session login/logout.
 - SQLite storage in `server/data/auth.sqlite`.
 - Quiz collection import, grading, and practice APIs.
-- Student practice without login; user-only saved progress and mistakes.
+- Student practice without login; student-ID-verified account sync for saved progress and mistakes.
 - Administrator-only course-content maintenance.
 - Published course-content API and controlled PDF delivery.
 - Student submission intake and administrator moderation.
 - Published activity catalog plus administrator activity drafting, homepage recommendation, ordering, publishing, and archiving.
-- Anonymous post likes and administrator operation logs.
+- Student-ID-verified post likes and administrator operation logs.
 - Public profiles, nickname search, avatar uploads, and owner post management.
 - Private course lists with XLSX timetable preview/import.
 - Account favorites, identified comments/replies, and in-site notifications.
@@ -64,21 +64,19 @@ hashes and hashed request IPs.
 
 ## Administrator setup
 
-Set both the administrator CC98 allowlist and a high-entropy registration token
-before starting the server:
+Set the numeric student-ID allowlist before starting the server:
 
 ```powershell
-$env:ADMIN_CC98_NAMES="cc98_bio_visitor"
-$env:ADMIN_INVITE_TOKEN="replace-with-a-long-random-secret"
+$env:ADMIN_STUDENT_IDS="3220100000,3230100000"
 npm.cmd run server
 ```
 
-An allowlisted user receives the `admin` role only when the registration request
-also supplies the exact `ADMIN_INVITE_TOKEN`; otherwise the account is created as
-a student. The ordinary frontend registration form does not expose this token, so
-administrator creation is a controlled provisioning flow. Administrator passwords
-must be at least 10 characters. The management page is available at `#admin` and
-is intentionally absent from the student navigation.
+An allowlisted student ID receives the `admin` role only after the corresponding
+`@zju.edu.cn` mailbox passes the normal registration-code check. Administrator
+passwords must be at least 10 characters. Existing allowlisted email accounts are
+promoted on server startup. The management page is available at `#admin` and is
+intentionally absent from student navigation. `ADMIN_CC98_NAMES` and
+`ADMIN_INVITE_TOKEN` remain available only for legacy backend provisioning.
 
 Optional persistent-path settings:
 
@@ -94,10 +92,10 @@ $env:STUDENT_HOMEPAGE_DB_FILE="server/data/student-homepages.sqlite"
 Existing Markdown under `public/resource/courses/` is imported idempotently when
 the server starts. The original files remain a read-only frontend fallback.
 
-Approved submissions are converted into published `content_items` records. Likes
-use a year-long anonymous `study_visitor` cookie so login is not required and one
-browser can hold at most one active like per content item. Administrator content
-and moderation mutations are recorded in the operation log.
+Approved submissions are converted into published `content_items` records. Likes,
+favorites, comments, submissions, profile changes, account synchronization, and
+student-homepage applications require a verified student ID (or administrator).
+Administrator content and moderation mutations are recorded in the operation log.
 
 Activity records use a separate `activity_items` table in the content database.
 `public/content/activities/catalog.json` is imported idempotently on startup;
@@ -132,8 +130,8 @@ current published version visible until approval.
 
 ## Account data and timetable imports
 
-Authenticated account endpoints manage private courses, favorites, notifications,
-and quiz synchronization. Timetable upload accepts only XLSX files up to 5 MB and
+Student-ID-verified account endpoints manage private courses, favorites,
+notifications, and quiz synchronization. Timetable upload accepts only XLSX files up to 5 MB and
 uses `read-excel-file`; the original workbook is never stored. Preview scans the
 first 30 rows of every worksheet for the six required headers, merges repeated
 course codes, retains unmatched courses, and writes only after confirmation.
@@ -158,6 +156,9 @@ The expected server project path is now:
 ```txt
 /var/www/html/zjubio/
 ```
+
+The server-specific Apache and Supervisor templates, environment-file launcher,
+and verified operation order are documented in `deploy/README.md`.
 
 The frontend should be built with `npm run build`, and Apache should serve `dist/` while proxying API requests to the Node backend.
 

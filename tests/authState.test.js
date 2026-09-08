@@ -5,8 +5,6 @@ import { defaultUserId, getTestUserById, testUsers } from '../src/data/config/te
 import {
   canComment,
   canFavorite,
-  canBindEmailIdentity,
-  canRequestCc98PrototypeVerification,
   canSubmitResource,
   createCommentMessage,
   createSubmissionMessage,
@@ -18,65 +16,60 @@ import { mergeUserAuthOverride } from '../src/services/accountStateService.js';
 import { getNextAvatarColor } from '../src/services/avatarService.js';
 import { createFavoriteKey, isFavorited, toggleFavorite } from '../src/services/favoriteService.js';
 
-test('test users cover guest, single verification, dual verification, and developer states', () => {
+test('account states expose only guest and student labels to ordinary users', () => {
   assert.equal(defaultUserId, 'guest');
   assert.deepEqual(
     testUsers.map((user) => user.id),
-    ['guest', 'cc98-user', 'email-user', 'dual-user', 'developer'],
+    ['guest', 'student', 'admin'],
   );
 
   assert.equal(getAccountState(getTestUserById('guest')).label, '游客');
-  assert.equal(getAccountState(getTestUserById('cc98-user')).label, 'CC98认证');
-  assert.equal(getAccountState(getTestUserById('email-user')).label, '邮箱认证');
-  assert.equal(getAccountState(getTestUserById('dual-user')).label, 'CC98 + 邮箱认证');
-  assert.equal(getAccountState(getTestUserById('developer')).label, '开发者');
+  assert.equal(getAccountState(getTestUserById('student')).label, '学号认证学生');
+  assert.equal(getAccountState(getTestUserById('admin')).label, '管理员');
 });
 
 test('backend administrator role has a dedicated account label and verified permissions', () => {
   const admin = {
     id: 'cc98-99', role: 'admin', nickname: '管理员',
-    verifications: { cc98: true, email: false },
+    verifications: { cc98: false, email: true },
   };
   assert.equal(getAccountState(admin).label, '管理员');
-  assert.deepEqual(getVerificationBadges(admin), ['管理员', 'CC98认证']);
+  assert.deepEqual(getVerificationBadges(admin), ['管理员', '学号认证']);
   assert.equal(canSubmitResource(admin), true);
   assert.equal(canComment(admin), true);
   assert.equal(isAdministrator(admin), true);
-  assert.equal(isAdministrator(getTestUserById('developer')), false);
 });
 
 test('resource permissions allow verified users to submit and comment while guests are blocked', () => {
   const guest = getTestUserById('guest');
-  const cc98User = getTestUserById('cc98-user');
-  const developer = getTestUserById('developer');
+  const cc98User = {
+    ...guest,
+    id: 'legacy-cc98-user',
+    role: 'student',
+    verifications: { cc98: true, email: false },
+  };
+  const emailUser = getTestUserById('student');
 
   assert.equal(canSubmitResource(guest), false);
   assert.equal(canComment(guest), false);
   assert.equal(canFavorite(guest), false);
 
-  assert.equal(canSubmitResource(cc98User), true);
-  assert.equal(canComment(cc98User), true);
-  assert.equal(canFavorite(cc98User), true);
+  assert.equal(canSubmitResource(cc98User), false);
+  assert.equal(canComment(cc98User), false);
+  assert.equal(canFavorite(cc98User), false);
 
-  assert.equal(canSubmitResource(developer), true);
-  assert.equal(canComment(developer), true);
-});
-
-test('only signed-in CC98 users without an email can bind a ZJU email', () => {
-  assert.equal(canBindEmailIdentity(getTestUserById('guest')), false);
-  assert.equal(canBindEmailIdentity(getTestUserById('cc98-user')), true);
-  assert.equal(canBindEmailIdentity(getTestUserById('email-user')), false);
-  assert.equal(canBindEmailIdentity(getTestUserById('dual-user')), false);
+  assert.equal(canSubmitResource(emailUser), true);
+  assert.equal(canComment(emailUser), true);
+  assert.equal(canFavorite(emailUser), true);
 });
 
 test('verification badges stay compatible with future backend auth providers', () => {
   assert.deepEqual(getVerificationBadges(getTestUserById('guest')), ['未登录']);
-  assert.deepEqual(getVerificationBadges(getTestUserById('cc98-user')), ['CC98认证']);
-  assert.deepEqual(getVerificationBadges(getTestUserById('email-user')), ['邮箱认证']);
-  assert.deepEqual(getVerificationBadges(getTestUserById('dual-user')), ['CC98认证', '邮箱认证']);
+  assert.deepEqual(getVerificationBadges(getTestUserById('student')), ['学号认证']);
+  assert.deepEqual(getVerificationBadges(getTestUserById('admin')), ['管理员', '学号认证']);
 });
 
-test('cc98 front-end prototype override enables the existing verified-user model', () => {
+test('a legacy CC98-only override cannot enable persistent-write permissions', () => {
   const prototypeUser = mergeUserAuthOverride(getTestUserById('guest'), {
     guest: {
       verifications: { cc98: true },
@@ -84,19 +77,11 @@ test('cc98 front-end prototype override enables the existing verified-user model
     },
   });
 
-  assert.equal(getAccountState(prototypeUser).label, 'CC98认证');
-  assert.deepEqual(getVerificationBadges(prototypeUser), ['CC98认证']);
-  assert.equal(canSubmitResource(prototypeUser), true);
-  assert.equal(canComment(prototypeUser), true);
-  assert.equal(canFavorite(prototypeUser), true);
-  assert.equal(canRequestCc98PrototypeVerification(prototypeUser), false);
-});
-
-test('cc98 prototype form visibility stays in the auth service', () => {
-  assert.equal(canRequestCc98PrototypeVerification(getTestUserById('guest')), true);
-  assert.equal(canRequestCc98PrototypeVerification(getTestUserById('email-user')), true);
-  assert.equal(canRequestCc98PrototypeVerification(getTestUserById('cc98-user')), false);
-  assert.equal(canRequestCc98PrototypeVerification(getTestUserById('developer')), false);
+  assert.equal(getAccountState(prototypeUser).label, '游客');
+  assert.deepEqual(getVerificationBadges(prototypeUser), ['未登录']);
+  assert.equal(canSubmitResource(prototypeUser), false);
+  assert.equal(canComment(prototypeUser), false);
+  assert.equal(canFavorite(prototypeUser), false);
 });
 
 test('favorite helpers keep favorites keyed by content type and item id', () => {
@@ -109,8 +94,8 @@ test('favorite helpers keep favorites keyed by content type and item id', () => 
   assert.equal(isFavorited(afterRemove, key), false);
 });
 
-test('message factories route submissions to developers and comments to content owners', () => {
-  const submitter = getTestUserById('dual-user');
+test('message factories route submissions to administrators and comments to content owners', () => {
+  const submitter = getTestUserById('student');
   const submission = createSubmissionMessage({
     fromUser: submitter,
     courseCode: 'BIO2110F',
@@ -119,15 +104,15 @@ test('message factories route submissions to developers and comments to content 
   });
   const comment = createCommentMessage({
     fromUser: submitter,
-    toUserId: 'cc98-user',
+    toUserId: 'student',
     courseCode: 'BIO2110F',
     tabId: 'experiences',
     itemTitle: '先画结构图，再处理零碎记忆',
   });
 
-  assert.equal(submission.toRole, 'developer');
+  assert.equal(submission.toRole, 'admin');
   assert.match(submission.title, /投稿申请/);
-  assert.equal(comment.toUserId, 'cc98-user');
+  assert.equal(comment.toUserId, 'student');
   assert.match(comment.title, /新评论/);
 });
 

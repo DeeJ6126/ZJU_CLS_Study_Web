@@ -147,3 +147,15 @@ and homepage recent feed must read the same published records.
 Impact: do not hardcode homepage activities or model them as course resources.
 The static catalog is only the source-backed initial seed and offline fallback;
 administrator edits are durable backend data.
+
+### 19. Public identity has three product roles
+
+The product exposes only guest, student-ID-verified student, and administrator.
+Guests keep all read-only discovery and anonymous practice flows. Any action that
+creates a public or account-persistent trace requires numeric student-ID email
+verification; administrators add server-enforced management privileges. Legacy
+CC98 endpoints remain backend-only and do not independently grant write rights.
+
+Impact: new write endpoints must call the shared server authorization helper,
+frontend permission copy must refer to student-ID verification, and new
+administrators are provisioned through `ADMIN_STUDENT_IDS` plus mailbox proof.

@@ -1,12 +1,13 @@
 import { maxCourseScheduleBytes, parseCourseScheduleWorkbook } from './courseScheduleService.js';
+import { canLeaveSiteTrace } from '../authService.js';
 
 function isJson(request) {
   return String(request.headers['content-type'] ?? '').toLowerCase().startsWith('application/json');
 }
 
-function requireAccount(sendJson, response, userId) {
-  if (userId) return true;
-  sendJson(response, 401, { message: '请先登录账号。' });
+function requireAccount(sendJson, response, userId, user) {
+  if (canLeaveSiteTrace(user)) return true;
+  sendJson(response, userId ? 403 : 401, { message: '完成学号认证后才可以使用账号功能。' });
   return false;
 }
 
@@ -71,6 +72,7 @@ export async function handleAccountHttpRequest({
   response,
   url,
   userId,
+  user,
   authStore,
   contentStore,
   sendJson,
@@ -81,7 +83,7 @@ export async function handleAccountHttpRequest({
   if (!url.pathname.startsWith('/api/account/courses')
     && !url.pathname.startsWith('/api/account/favorites')
     && !url.pathname.startsWith('/api/account/notifications')) return false;
-  if (!requireAccount(sendJson, response, userId)) return true;
+  if (!requireAccount(sendJson, response, userId, user)) return true;
 
   if (request.method === 'GET' && url.pathname === '/api/account/courses') {
     sendJson(response, 200, { courses: courseViews(authStore.listUserCourses(userId), catalogCodes) });

@@ -380,6 +380,13 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
       return this.findUserById(user.id);
     },
 
+    promoteAdminByEmail(email) {
+      const user = this.findUserByEmail(email);
+      if (!user) return null;
+      db.prepare("update users set role = 'admin' where id = ?").run(user.id);
+      return this.findUserById(user.id);
+    },
+
     updatePassword(userId, passwordHash) {
       db.prepare('update users set password_hash = ? where id = ?').run(passwordHash, userId);
       db.prepare('delete from sessions where user_id = ?').run(userId);

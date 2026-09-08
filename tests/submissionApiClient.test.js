@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createSubmissionApiClient } from '../src/services/submissionApiClient.js';
 
-test('submission client creates submissions, uploads PDFs, and toggles anonymous likes', async () => {
+test('submission client creates submissions, uploads PDFs, and toggles authenticated likes', async () => {
   const requests = [];
   const client = createSubmissionApiClient(async (path, options = {}) => {
     requests.push({ path, options });

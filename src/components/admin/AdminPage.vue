@@ -3,9 +3,10 @@ import { computed, onMounted, reactive, ref } from 'vue';
 
 import {
   fetchCurrentUser,
-  loginCc98Account,
+  loginEmailAccount,
   logoutAccount,
-  registerCc98Account,
+  registerEmailAccount,
+  requestEmailVerificationCode,
 } from '../../services/authApiClient.js';
 import { adminApiClient as defaultAdminApiClient } from '../../services/adminApiClient.js';
 import { isAdministrator } from '../../services/authService.js';
@@ -45,7 +46,7 @@ const currentUser = ref(null);
 const authMode = ref('login');
 const authBusy = ref(false);
 const authNotice = ref('');
-const credentials = reactive({ code: '', cc98Name: '', password: '' });
+const credentials = reactive({ code: '', studentId: '', nickname: '', password: '' });
 const courses = ref([]);
 const selectedCourseCode = ref('BIO2110F');
 const selectedType = ref('experience');
@@ -239,18 +240,17 @@ async function submitAuth() {
   try {
     let result;
     if (authMode.value === 'register') {
-      result = await registerCc98Account({ code: credentials.code, password: credentials.password });
-      if (result.ok) {
-        result = await loginCc98Account({
-          cc98Name: result.user.cc98Nickname,
-          password: credentials.password,
-        });
-      }
-    } else {
-      result = await loginCc98Account({
-        cc98Name: credentials.cc98Name,
+      result = await registerEmailAccount({
+        studentId: credentials.studentId,
+        nickname: credentials.nickname,
+        code: credentials.code,
         password: credentials.password,
       });
+      if (result.ok) {
+        result = await loginEmailAccount({ studentId: credentials.studentId, password: credentials.password });
+      }
+    } else {
+      result = await loginEmailAccount({ studentId: credentials.studentId, password: credentials.password });
     }
 
     if (!result.ok) {
@@ -270,6 +270,17 @@ async function submitAuth() {
   } finally {
     authBusy.value = false;
   }
+}
+
+async function requestAdminEmailCode() {
+  authBusy.value = true;
+  authNotice.value = '正在发送验证码...';
+  const result = await requestEmailVerificationCode({
+    studentId: credentials.studentId,
+    purpose: 'register',
+  });
+  authBusy.value = false;
+  authNotice.value = result.message;
 }
 
 function changeView(view, type = '') {
@@ -556,7 +567,7 @@ onMounted(initialize);
         <div>
           <p class="admin-page__eyebrow">生科智学管理端</p>
           <h1 id="admin-title">{{ authMode === 'login' ? '管理员登录' : '首次注册' }}</h1>
-          <p>使用已加入管理员白名单的 CC98 账号进入资源维护平台。</p>
+          <p>使用已加入管理员学号白名单的浙大邮箱账号进入资源维护平台。</p>
         </div>
         <div class="admin-auth__modes" role="tablist" aria-label="登录方式">
           <button type="button" :class="{ 'is-active': authMode === 'login' }" @click="authMode = 'login'">管理员登录</button>
@@ -564,16 +575,26 @@ onMounted(initialize);
         </div>
         <form class="admin-auth__form" @submit.prevent="submitAuth">
           <label v-if="authMode === 'register'">
-            <span>CC98 验证码</span>
-            <input v-model.trim="credentials.code" required autocomplete="one-time-code">
+            <span>昵称</span>
+            <input v-model.trim="credentials.nickname" required minlength="2" maxlength="20" autocomplete="nickname">
           </label>
-          <label v-else>
-            <span>CC98 名字</span>
-            <input v-model.trim="credentials.cc98Name" required autocomplete="username">
+          <label>
+            <span>管理员学号</span>
+            <span class="admin-auth__student-id">
+              <input v-model.trim="credentials.studentId" required inputmode="numeric" pattern="[0-9]+" autocomplete="username">
+              <strong>@zju.edu.cn</strong>
+            </span>
+          </label>
+          <label v-if="authMode === 'register'">
+            <span>邮箱验证码</span>
+            <span class="admin-auth__code">
+              <input v-model.trim="credentials.code" required inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+              <button type="button" :disabled="authBusy || !credentials.studentId" @click="requestAdminEmailCode">发送验证码</button>
+            </span>
           </label>
           <label>
             <span>密码</span>
-            <input v-model="credentials.password" type="password" required :minlength="authMode === 'register' ? 10 : 4" autocomplete="current-password">
+            <input v-model="credentials.password" type="password" required :minlength="authMode === 'register' ? 10 : 8" :autocomplete="authMode === 'register' ? 'new-password' : 'current-password'">
           </label>
           <p v-if="authNotice" class="admin-notice" role="status">{{ authNotice }}</p>
           <button class="admin-primary-action" type="submit" :disabled="authBusy">

@@ -10,8 +10,8 @@ export const seedMessages = [
   },
   {
     id: 'seed-submission-dev',
-    toRole: 'developer',
-    fromUserId: 'email-user',
+    toRole: 'admin',
+    fromUserId: 'student',
     title: '新的投稿申请',
     body: '蓝桥同学想为 BIO2110F 补充一份复习资料。',
     createdAt: '前端测试消息',

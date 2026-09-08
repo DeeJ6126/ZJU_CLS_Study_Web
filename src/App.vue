@@ -117,7 +117,6 @@ import {
 } from './services/microbiologyQuizService.js';
 import {
   canComment,
-  canBindEmailIdentity,
   canFavorite,
   canSubmitResource,
   getAccountState,
@@ -129,19 +128,15 @@ import { loadCourseContent } from './services/courseContentApiClient.js';
 import { accountDataApiClient } from './services/accountDataApiClient.js';
 import { commentApiClient } from './services/commentApiClient.js';
 import {
-  bindEmailAccount,
   fetchCurrentUser,
-  loginCc98Account,
   loginEmailAccount,
   logoutAccount,
-  registerCc98Account,
   registerEmailAccount,
   requestEmailVerificationCode,
   resetEmailAccountPassword,
 } from './services/authApiClient.js';
 import {
   archiveMyPost,
-  bindMyCc98,
   fetchMyProfile,
   fetchPublicProfile,
   removeMyAvatar,
@@ -327,7 +322,6 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', onAccountPopoverDocumentClick);
   document.removeEventListener('keydown', onAccountPopoverKeydown);
 });
-const authInitialTab = ref('cc98');
 const authNotice = ref('');
 const authBusy = ref(false);
 const profileView = ref({ profile: null, posts: [], submissions: [], comments: [] });
@@ -412,7 +406,6 @@ const userCanFavorite = computed(() => canFavorite(viewer.value));
 const accountState = computed(() => getAccountState(viewer.value));
 const verificationBadges = computed(() => getVerificationBadges(viewer.value));
 const viewerIsGuest = computed(() => !isAuthenticated(viewer.value));
-const viewerCanBindEmail = computed(() => canBindEmailIdentity(viewer.value));
 const viewerIsAdministrator = computed(() => isAdministrator(viewer.value));
 const activeProfileIsOwn = computed(() => (
   Boolean(activeProfilePublicId.value)
@@ -2248,9 +2241,8 @@ async function deleteProfileComment(comment) {
   if (resultData.ok) await loadActiveProfile();
 }
 
-function openAuthDialog(mode, initialTab = 'cc98') {
+function openAuthDialog(mode) {
   authDialogMode.value = mode;
-  authInitialTab.value = initialTab;
   authNotice.value = '';
   authDialogOpen.value = true;
   accountOpen.value = false;
@@ -2271,40 +2263,6 @@ async function finishAuthentication(user) {
   }
 }
 
-async function handleRegisterCc98(payload) {
-  authBusy.value = true;
-  authNotice.value = '';
-  const registered = await registerCc98Account(payload);
-  if (!registered.ok) {
-    authNotice.value = registered.message;
-    authBusy.value = false;
-    return;
-  }
-  const loggedIn = await loginCc98Account({
-    cc98Name: registered.user.cc98Nickname,
-    password: payload.password,
-  });
-  authBusy.value = false;
-  if (!loggedIn.ok) {
-    authDialogMode.value = 'login';
-    authNotice.value = '注册成功，请使用刚才设置的密码登录。';
-    return;
-  }
-  finishAuthentication(loggedIn.user);
-}
-
-async function handleLoginCc98(payload) {
-  authBusy.value = true;
-  authNotice.value = '';
-  const result = await loginCc98Account(payload);
-  authBusy.value = false;
-  if (result.ok) {
-    finishAuthentication(result.user);
-  } else {
-    authNotice.value = result.message;
-  }
-}
-
 async function handleRequestEmailCode(payload) {
   if (isDemoAccount.value) {
     authNotice.value = /^\d+$/.test(String(payload.studentId ?? ''))
@@ -2319,7 +2277,6 @@ async function handleRequestEmailCode(payload) {
   authNotice.value = result.message;
   if (result.ok) {
     // Briefly show success before the user fills the code in.
-    authInitialTab.value = 'email';
   }
 }
 
@@ -2336,7 +2293,6 @@ async function handleRegisterEmail(payload) {
   authBusy.value = false;
   if (!loggedIn.ok) {
     authDialogMode.value = 'login';
-    authInitialTab.value = 'email';
     authNotice.value = '注册成功，请使用刚才设置的密码登录。';
     return;
   }
@@ -2347,30 +2303,6 @@ async function handleLoginEmail(payload) {
   authBusy.value = true;
   authNotice.value = '';
   const result = await loginEmailAccount(payload);
-  authBusy.value = false;
-  if (result.ok) {
-    finishAuthentication(result.user);
-  } else {
-    authNotice.value = result.message;
-  }
-}
-
-async function handleBindEmail(payload) {
-  if (isDemoAccount.value) {
-    const result = /^\d{6}$/.test(String(payload.code ?? ''))
-      ? demoAccountService.bindEmail(activeDemoAccountId.value, payload.studentId)
-      : { ok: false, message: '演示模式请输入任意 6 位数字验证码。' };
-    authNotice.value = mutationNotice(result, '演示邮箱已绑定。');
-    if (result.ok) {
-      authDialogOpen.value = false;
-      demoDataVersion.value += 1;
-      await loadAccountData();
-    }
-    return;
-  }
-  authBusy.value = true;
-  authNotice.value = '';
-  const result = await bindEmailAccount(payload);
   authBusy.value = false;
   if (result.ok) {
     finishAuthentication(result.user);
@@ -2390,7 +2322,6 @@ async function handleResetEmailPassword(payload) {
   }
   studentViewer.value = guestViewer();
   authDialogMode.value = 'login';
-  authInitialTab.value = 'email';
   authNotice.value = '密码已重置，请使用新密码登录。';
 }
 
@@ -2486,21 +2417,6 @@ async function removeProfileAvatar() {
     else studentViewer.value = result.user;
     await loadActiveProfile();
   }
-}
-
-async function bindProfileCc98(payload) {
-  profileNotice.value = '正在验证 CC98...';
-  const result = isDemoAccount.value
-    ? demoAccountService.bindCc98(activeDemoAccountId.value, payload)
-    : await bindMyCc98(payload);
-  if (!result.ok) {
-    profileNotice.value = result.message;
-    return;
-  }
-  if (isDemoAccount.value) demoDataVersion.value += 1;
-  else studentViewer.value = result.user;
-  profileNotice.value = mutationNotice(result, 'CC98 绑定已更新。');
-  await loadActiveProfile();
 }
 
 async function archiveProfilePost(post) {
@@ -2627,7 +2543,6 @@ onBeforeUnmount(() => {
           :account-state="accountState"
           :badges="verificationBadges"
           :is-guest="viewerIsGuest"
-          :can-bind-email="viewerCanBindEmail"
           :can-open-admin="viewerIsAdministrator"
           :unread-count="unreadNotificationCount"
           :demo-options="demoIdentityOptions"
@@ -2640,9 +2555,7 @@ onBeforeUnmount(() => {
           @open-notifications="openNotifications"
           @open-admin="openAdminPage"
           @open-login="openAuthDialog('login')"
-          @open-register-cc98="openAuthDialog('register', 'cc98')"
-          @open-register-email="openAuthDialog('register', 'email')"
-          @open-bind-email="openAuthDialog('bind', 'email')"
+          @open-register-email="openAuthDialog('register')"
         />
         </div>
       </div>
@@ -2651,18 +2564,14 @@ onBeforeUnmount(() => {
     <AuthDialog
       v-if="authDialogOpen"
       :mode="authDialogMode"
-      :initial-tab="authInitialTab"
       :message="authNotice"
       :busy="authBusy"
       @close="authDialogOpen = false"
-      @switch-mode="(mode) => openAuthDialog(mode, 'email')"
-      @submit-register-cc98="handleRegisterCc98"
-      @submit-login-cc98="handleLoginCc98"
+      @switch-mode="openAuthDialog"
       @request-email-code="handleRequestEmailCode"
       @submit-register-email="handleRegisterEmail"
       @submit-login-email="handleLoginEmail"
       @submit-reset-email="handleResetEmailPassword"
-      @submit-bind-email="handleBindEmail"
     />
 
     <main class="demo-main">
@@ -2733,15 +2642,12 @@ onBeforeUnmount(() => {
         :loading="profileLoading"
         :error="profileError"
         :notice="profileNotice"
-        :nickname-locked="Boolean(viewer.verifications?.cc98)"
-        :cc98-bound="Boolean(viewer.verifications?.cc98)"
         :grade="viewer.grade ?? null"
         :is-demo="isDemoAccount"
         @save-nickname="saveProfileNickname"
         @save-grade="saveProfileGrade"
         @upload-avatar="uploadProfileAvatar"
         @remove-avatar="removeProfileAvatar"
-        @bind-cc98="bindProfileCc98"
         @archive-post="archiveProfilePost"
         @submit-revision="reviseProfilePost"
         @resubmit="resubmitProfileSubmission"

@@ -121,6 +121,26 @@ test('email registration creates a shared user identity and supports password lo
   store.close();
 });
 
+test('administrator student-ID allowlist grants admin only after mailbox verification', async () => {
+  const store = createTestStore();
+  const mail = mailOptions();
+  await requestEmailCode(store, { studentId: '3220100000', purpose: 'register' }, mail.options);
+  const options = { ...mail.options, adminStudentIds: new Set(['3220100000']) };
+
+  const shortPassword = await registerEmail(store, {
+    studentId: '3220100000', nickname: '管理同学', code: '123456', password: '12345678',
+  }, options);
+  assert.equal(shortPassword.status, 400);
+
+  const registered = await registerEmail(store, {
+    studentId: '3220100000', nickname: '管理同学', code: '123456', password: 'admin-pass-123',
+  }, options);
+  assert.equal(registered.ok, true);
+  assert.equal(registered.user.role, 'admin');
+  assert.equal(registered.user.verifications.email, true);
+  store.close();
+});
+
 test('verified email codes reset passwords but cannot be reused', async () => {
   const store = createTestStore();
   const mail = mailOptions();

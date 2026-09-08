@@ -33,11 +33,11 @@ function withWindow(storage) {
   };
 }
 
-test('demo options expose the five identity choices with labels', () => {
+test('demo options expose the three product identity choices with labels', () => {
   const options = getDemoIdentityOptions();
   assert.deepEqual(
     options.map((option) => option.id),
-    ['guest', 'cc98', 'email', 'dual', 'admin'],
+    ['guest', 'student', 'admin'],
   );
   for (const option of options) {
     assert.ok(option.label);
@@ -45,24 +45,19 @@ test('demo options expose the five identity choices with labels', () => {
   }
 });
 
-test('demo users cover guest, single auth, dual auth, and admin states', () => {
+test('demo users cover guest, student-ID verified, and admin states', () => {
   const guest = buildDemoUser('guest');
   assert.equal(guest.role, 'guest');
   assert.deepEqual(guest.verifications, { cc98: false, email: false });
   assert.equal(guest.isDemo, true);
 
-  const cc98 = buildDemoUser('cc98');
-  assert.equal(cc98.role, 'student');
-  assert.deepEqual(cc98.verifications, { cc98: true, email: false });
-
-  const email = buildDemoUser('email');
-  assert.deepEqual(email.verifications, { cc98: false, email: true });
-
-  const dual = buildDemoUser('dual');
-  assert.deepEqual(dual.verifications, { cc98: true, email: true });
+  const student = buildDemoUser('student');
+  assert.equal(student.role, 'student');
+  assert.deepEqual(student.verifications, { cc98: false, email: true });
 
   const admin = buildDemoUser('admin');
   assert.equal(admin.role, 'admin');
+  assert.deepEqual(admin.verifications, { cc98: false, email: true });
 });
 
 test('demo account switcher exposes local persistence and reset controls', () => {

@@ -26,7 +26,7 @@ test('authenticated submissions stay pending until an administrator approves the
     body: '正文',
     cc98Url: 'https://www.cc98.org/topic/123',
     gpa: '4.32',
-  }, { id: 7, cc98Nickname: 'submitter', verifications: { cc98: 'submitter' } });
+  }, { id: 7, nickname: 'submitter', verifications: { email: true } });
 
   assert.equal(created.ok, true);
   assert.equal(created.submission.status, 'pending');
@@ -50,7 +50,7 @@ test('authenticated submissions stay pending until an administrator approves the
 
 test('submission validation rejects unsafe links and invalid GPA values', () => {
   const store = createTestStore();
-  const submitter = { id: 7, cc98Nickname: 'submitter', verifications: { cc98: 'submitter' } };
+  const submitter = { id: 7, nickname: 'submitter', verifications: { email: true } };
   const unsafeLink = createSubmission(store, {
     courseCode: 'BIO2110F', type: 'experience', title: '标题', body: '正文', cc98Url: 'javascript:alert(1)',
   }, submitter);
@@ -70,7 +70,7 @@ test('unverified logged-in users cannot submit content', () => {
   }, { id: 7, cc98Nickname: 'submitter' });
   assert.equal(result.ok, false);
   assert.equal(result.status, 403);
-  assert.match(result.message, /CC98.*邮箱/);
+  assert.match(result.message, /学号认证/);
   store.close();
 });
 
@@ -78,14 +78,14 @@ test('rejected submissions cannot later be approved', () => {
   const store = createTestStore();
   const created = createSubmission(store, {
     courseCode: 'BIO2110F', type: 'experience', title: '待审核', body: '正文',
-  }, { id: 7, cc98Nickname: 'submitter', verifications: { cc98: 'submitter' } });
+  }, { id: 7, nickname: 'submitter', verifications: { email: true } });
   const rejected = rejectSubmission(store, created.submission.id, { id: 2, cc98Nickname: 'admin' }, '内容过少');
   assert.equal(rejected.submission.status, 'rejected');
   assert.equal(approveSubmission(store, created.submission.id, { id: 2, cc98Nickname: 'admin' }).status, 409);
   store.close();
 });
 
-test('anonymous likes toggle once per visitor and are included in public content', () => {
+test('content likes toggle once per authenticated identity and are included in public content', () => {
   const store = createTestStore();
   const item = store.createItem({
     courseCode: 'BIO2110F', type: 'experience', title: '心得', body: '正文', status: 'published',

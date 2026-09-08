@@ -19,10 +19,6 @@ defineProps({
     type: Boolean,
     required: true,
   },
-  canBindEmail: {
-    type: Boolean,
-    default: false,
-  },
   unreadCount: { type: Number, default: 0 },
   demoOptions: {
     type: Array,
@@ -37,8 +33,7 @@ defineProps({
 });
 
 const emit = defineEmits([
-  'logout', 'open-login', 'open-register-cc98',
-  'open-register-email', 'open-bind-email', 'open-profile', 'open-notifications',
+  'logout', 'open-login', 'open-register-email', 'open-profile', 'open-notifications',
   'open-admin',
   'select-demo',
   'reset-demo',
@@ -59,12 +54,8 @@ const emit = defineEmits([
             <dd>{{ user.nickname }}</dd>
           </div>
           <div>
-            <dt>CC98昵称</dt>
-            <dd>{{ user.cc98Nickname || '未绑定' }}</dd>
-          </div>
-          <div>
-            <dt>注册邮箱</dt>
-            <dd>{{ user.email || '未绑定' }}</dd>
+            <dt>学号邮箱</dt>
+            <dd>{{ user.email || '未认证' }}</dd>
           </div>
         </dl>
       </div>
@@ -81,8 +72,7 @@ const emit = defineEmits([
     </div>
 
     <div v-if="isGuest" class="account-popover__actions">
-      <button type="button" @click="emit('open-register-cc98')">CC98注册</button>
-      <button type="button" @click="emit('open-register-email')">浙大邮箱注册</button>
+      <button type="button" @click="emit('open-register-email')">学号认证注册</button>
       <button type="button" @click="emit('open-login')">登录</button>
     </div>
 
@@ -92,13 +82,6 @@ const emit = defineEmits([
         站内消息<span v-if="unreadCount"> {{ unreadCount }}</span>
       </button>
       <button v-if="canOpenAdmin" type="button" @click="emit('open-admin')">管理后台</button>
-      <button
-        v-if="canBindEmail"
-        type="button"
-        @click="emit('open-bind-email')"
-      >
-        绑定浙大邮箱
-      </button>
       <button class="account-popover__logout" type="button" @click="emit('logout')">退出登录</button>
     </div>
 

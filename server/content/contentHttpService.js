@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
-import { randomUUID } from 'node:crypto';
 import { basename, join } from 'node:path';
+import { canLeaveSiteTrace } from '../authService.js';
 
 import {
   archiveContentItem,
@@ -125,9 +125,9 @@ export async function handleContentHttpRequest({
   uploadDirectory,
   sendJson,
   readJsonBody,
-  visitorId = '',
 }) {
   const actor = actorFrom(user, userId);
+  const traceIdentity = canLeaveSiteTrace(user) && userId ? `user:${userId}` : '';
   const commentListMatch = url.pathname.match(/^\/api\/content\/items\/([^/]+)\/comments$/);
   if (request.method === 'GET' && commentListMatch) {
     const contentId = decodeURIComponent(commentListMatch[1]);
@@ -145,12 +145,8 @@ export async function handleContentHttpRequest({
     return true;
   }
   if (request.method === 'POST' && commentListMatch) {
-    if (!userId) {
-      sendJson(response, 401, { message: '请先登录后评论。' });
-      return true;
-    }
-    if (!user?.verifications?.cc98 && !user?.verifications?.email && user?.role !== 'admin') {
-      sendJson(response, 403, { message: '完成 CC98 或浙大邮箱认证后才可以评论。' });
+    if (!canLeaveSiteTrace(user)) {
+      sendJson(response, userId ? 403 : 401, { message: '完成学号认证后才可以评论。' });
       return true;
     }
     if (!String(request.headers['content-type'] ?? '').toLowerCase().startsWith('application/json')) {
@@ -187,8 +183,8 @@ export async function handleContentHttpRequest({
 
   const commentMatch = url.pathname.match(/^\/api\/comments\/([^/]+)$/);
   if ((request.method === 'PATCH' || request.method === 'DELETE') && commentMatch) {
-    if (!userId) {
-      sendJson(response, 401, { message: '请先登录后管理评论。' });
+    if (!canLeaveSiteTrace(user)) {
+      sendJson(response, userId ? 403 : 401, { message: '完成学号认证后才可以管理评论。' });
       return true;
     }
     const id = decodeURIComponent(commentMatch[1]);
@@ -208,7 +204,7 @@ export async function handleContentHttpRequest({
       items: contentStore.listPublishedByCourse(courseCode).map((item) => (
         toPublicContentItem(
           item,
-          contentStore.getLikeState(item.id, visitorId),
+          contentStore.getLikeState(item.id, traceIdentity),
           publicOwner(item.ownerId ? authStore?.findUserById(item.ownerId) : null),
         )
       )),
@@ -245,6 +241,10 @@ export async function handleContentHttpRequest({
 
   const likeMatch = url.pathname.match(/^\/api\/content\/([^/]+)\/like$/);
   if (request.method === 'POST' && likeMatch) {
+    if (!canLeaveSiteTrace(user)) {
+      sendJson(response, userId ? 403 : 401, { message: '完成学号认证后才可以点赞。' });
+      return true;
+    }
     if (!String(request.headers['content-type'] ?? '').toLowerCase().startsWith('application/json')) {
       sendJson(response, 415, { message: '点赞请求格式无效。' });
       return true;
@@ -254,17 +254,14 @@ export async function handleContentHttpRequest({
       sendJson(response, 404, { message: '内容不存在。' });
       return true;
     }
-    const resolvedVisitorId = visitorId || randomUUID();
-    const result = contentStore.toggleLike(item.id, resolvedVisitorId);
-    sendJson(response, 200, result, visitorId ? {} : {
-      'set-cookie': `study_visitor=${encodeURIComponent(resolvedVisitorId)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000`,
-    });
+    const result = contentStore.toggleLike(item.id, traceIdentity);
+    sendJson(response, 200, result);
     return true;
   }
 
   if (request.method === 'POST' && url.pathname === '/api/submissions') {
-    if (!userId) {
-      sendJson(response, 401, { message: '请先登录后投稿。' });
+    if (!canLeaveSiteTrace(user)) {
+      sendJson(response, userId ? 403 : 401, { message: '完成学号认证后才可以投稿。' });
       return true;
     }
     if (!String(request.headers['content-type'] ?? '').toLowerCase().startsWith('application/json')) {
@@ -278,8 +275,8 @@ export async function handleContentHttpRequest({
 
   const submissionFileMatch = url.pathname.match(/^\/api\/submissions\/([^/]+)\/file$/);
   if (request.method === 'PUT' && submissionFileMatch) {
-    if (!userId) {
-      sendJson(response, 401, { message: '请先登录后上传文件。' });
+    if (!canLeaveSiteTrace(user)) {
+      sendJson(response, userId ? 403 : 401, { message: '完成学号认证后才可以上传文件。' });
       return true;
     }
     const submission = contentStore.findSubmissionById(decodeURIComponent(submissionFileMatch[1]));

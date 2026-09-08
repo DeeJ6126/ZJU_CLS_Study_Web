@@ -63,10 +63,16 @@ test('auth http server registers, logs in, returns current user, and logs out', 
   }
 });
 
-test('quiz http API lets students practice while users store session progress and mistakes', async () => {
+test('quiz http API lets guests practice while student-ID accounts store progress and mistakes', async () => {
   const store = createAuthStore({ filename: ':memory:' });
   const quizStore = createQuizStore({ filename: ':memory:' });
-  const { server } = createAuthServer({ store, quizStore });
+  const { server } = createAuthServer({
+    store,
+    quizStore,
+    emailSender: async () => {},
+    emailCodeGenerator: () => '123456',
+    emailNow: () => new Date('2026-09-08T00:00:00.000Z'),
+  });
   const port = await listen(server);
   const baseUrl = `http://127.0.0.1:${port}`;
 
@@ -119,21 +125,22 @@ test('quiz http API lets students practice while users store session progress an
     });
     assert.equal(studentMistake.status, 401);
 
-    await fetch(`${baseUrl}/api/auth/register/cc98`, {
+    await fetch(`${baseUrl}/api/auth/email/code`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ studentId: '3220100000', purpose: 'register' }),
+    });
+    await fetch(`${baseUrl}/api/auth/register/email`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        code: 'bio-cc98',
-        password: 'test-pass',
+        studentId: '3220100000', nickname: '刷题同学', code: '123456', password: 'test-pass',
       }),
     });
-    const login = await fetch(`${baseUrl}/api/auth/login/cc98`, {
+    const login = await fetch(`${baseUrl}/api/auth/login/email`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        cc98Name: 'cc98_bio_visitor',
-        password: 'test-pass',
-      }),
+      body: JSON.stringify({ studentId: '3220100000', password: 'test-pass' }),
     });
     const cookie = login.headers.get('set-cookie');
 
@@ -379,7 +386,7 @@ test('email auth HTTP API sends codes, registers, logs in, binds, and resets pas
   }
 });
 
-test('submission moderation, audit logs, and anonymous likes work through HTTP', async () => {
+test('student-ID submissions, moderation, and authenticated likes work through HTTP', async () => {
   const directory = mkdtempSync(join(tmpdir(), 'study-submissions-'));
   const store = createAuthStore({ filename: ':memory:' });
   const quizStore = createQuizStore({ filename: ':memory:' });
@@ -391,6 +398,9 @@ test('submission moderation, audit logs, and anonymous likes work through HTTP',
     uploadDirectory: directory,
     adminCc98Names: new Set(['cc98_bio_visitor']),
     adminInviteToken: 'shared-admin-token',
+    emailSender: async () => {},
+    emailCodeGenerator: () => '123456',
+    emailNow: () => new Date('2026-09-08T00:00:00.000Z'),
   });
   const port = await listen(server);
   const baseUrl = `http://127.0.0.1:${port}`;
@@ -405,13 +415,35 @@ test('submission moderation, audit logs, and anonymous likes work through HTTP',
     return response.headers.get('set-cookie');
   }
 
+  async function registerAndLoginStudent(studentId, nickname, password) {
+    await fetch(`${baseUrl}/api/auth/email/code`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ studentId, purpose: 'register' }),
+    });
+    await fetch(`${baseUrl}/api/auth/register/email`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ studentId, nickname, code: '123456', password }),
+    });
+    const response = await fetch(`${baseUrl}/api/auth/login/email`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ studentId, password }),
+    });
+    return response.headers.get('set-cookie');
+  }
+
   try {
     const guestSubmission = await fetch(`${baseUrl}/api/submissions`, {
       method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
     });
     assert.equal(guestSubmission.status, 401);
 
-    const studentCookie = await registerAndLogin('zjubio-test-001', 'zjubio_test_001', 'test-pass');
+    const legacyCc98Cookie = await registerAndLogin('zjubio-test-001', 'zjubio_test_001', 'test-pass');
+    const legacySubmission = await fetch(`${baseUrl}/api/submissions`, {
+      method: 'POST', headers: { 'content-type': 'application/json', cookie: legacyCc98Cookie }, body: '{}',
+    });
+    assert.equal(legacySubmission.status, 403);
+
+    const studentCookie = await registerAndLoginStudent('3220100000', '投稿同学', 'test-pass');
     const submitted = await fetch(`${baseUrl}/api/submissions`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', cookie: studentCookie },
@@ -448,13 +480,18 @@ test('submission moderation, audit logs, and anonymous likes work through HTTP',
     assert.equal(item.gpa, '4.20');
     assert.equal(item.likeCount, 0);
 
-    const liked = await fetch(`${baseUrl}/api/content/${item.id}/like`, {
+    const guestLike = await fetch(`${baseUrl}/api/content/${item.id}/like`, {
       method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
+    });
+    assert.equal(guestLike.status, 401);
+
+    const liked = await fetch(`${baseUrl}/api/content/${item.id}/like`, {
+      method: 'POST', headers: { 'content-type': 'application/json', cookie: studentCookie }, body: '{}',
     });
     const likedBody = await liked.json();
     assert.equal(likedBody.liked, true);
     assert.equal(likedBody.likeCount, 1);
-    assert.match(liked.headers.get('set-cookie'), /study_visitor=/);
+    assert.equal(liked.headers.get('set-cookie'), null);
 
     const logs = await fetch(`${baseUrl}/api/admin/audit-logs?action=submission.approve`, {
       headers: { cookie: adminCookie },

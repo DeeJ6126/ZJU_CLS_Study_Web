@@ -11,7 +11,7 @@
 /**
  * @typedef {Object} User
  * @property {string|number} id                Stable user identifier.
- * @property {'guest'|'student'|'developer'|'admin'} role Account role.
+ * @property {'guest'|'student'|'admin'} role Account role.
  * @property {string} [nickname]               Display name.
  * @property {string} [cc98Nickname]           CC98 handle if linked.
  * @property {string} [email]                  Email address if linked.
@@ -22,7 +22,7 @@
 
 /**
  * @typedef {Object} AccountState
- * @property {'guest'|'developer'|'admin'|'dual'|'cc98'|'email'|'student'} id
+ * @property {'guest'|'student'|'admin'} id
  * @property {string} label        Human-readable label.
  * @property {string} description Short tooltip-style description.
  */
@@ -31,7 +31,7 @@
  * @typedef {Object} Message
  * @property {string} id
  * @property {string} [toUserId]   Recipient user id.
- * @property {'developer'|'admin'} [toRole] Recipient role (broadcast).
+ * @property {'admin'} [toRole] Recipient role (broadcast).
  * @property {string|number} fromUserId
  * @property {string} title
  * @property {string} body
@@ -44,7 +44,7 @@
  * @returns {boolean} true when the user is logged in OR has a verified identity.
  */
 export function isAuthenticated(user) {
-  return Boolean(user && (user.role !== 'guest' || user.verifications?.cc98 || user.verifications?.email));
+  return Boolean(user && (user.role === 'admin' || user.verifications?.email));
 }
 
 /**
@@ -56,12 +56,13 @@ export function isAdministrator(user) {
 }
 
 /**
- * Verified users can submit, comment, and have full UGC rights.
+ * Only student-ID verified users and administrators can leave persistent
+ * traces such as likes, favorites, comments, submissions, or profile edits.
  * @param {User|null|undefined} user
  * @returns {boolean}
  */
 export function isVerifiedUser(user) {
-  return Boolean(user?.verifications?.cc98 || user?.verifications?.email || ['developer', 'admin'].includes(user?.role));
+  return Boolean(user?.role === 'admin' || user?.verifications?.email);
 }
 
 /**
@@ -78,14 +79,6 @@ export function getAccountState(user) {
     };
   }
 
-  if (user.role === 'developer') {
-    return {
-      id: 'developer',
-      label: '开发者',
-      description: '可接收投稿申请，并用于测试平台管理状态。',
-    };
-  }
-
   if (user.role === 'admin') {
     return {
       id: 'admin',
@@ -94,37 +87,10 @@ export function getAccountState(user) {
     };
   }
 
-  const hasCc98 = Boolean(user.verifications?.cc98);
-  const hasEmail = Boolean(user.verifications?.email);
-
-  if (hasCc98 && hasEmail) {
-    return {
-      id: 'dual',
-      label: 'CC98 + 邮箱认证',
-      description: '已完成两类认证，可投稿、评论和收藏。',
-    };
-  }
-
-  if (hasCc98) {
-    return {
-      id: 'cc98',
-      label: 'CC98认证',
-      description: '已通过 CC98 验证码认证，可投稿、评论和收藏。',
-    };
-  }
-
-  if (hasEmail) {
-    return {
-      id: 'email',
-      label: '邮箱认证',
-      description: '已通过浙大邮箱验证码认证，可投稿、评论和收藏。',
-    };
-  }
-
   return {
     id: 'student',
-    label: '已登录',
-    description: '账号已登录，认证状态待补充。',
+    label: '学号认证学生',
+    description: '已通过浙大学号邮箱认证，可使用需要留痕的功能。',
   };
 }
 
@@ -137,25 +103,10 @@ export function getVerificationBadges(user) {
     return ['未登录'];
   }
 
-  if (user.role === 'developer') {
-    return ['开发者', 'CC98认证', '邮箱认证'];
-  }
-
   if (user.role === 'admin') {
-    return ['管理员', ...(user.verifications?.cc98 ? ['CC98认证'] : [])];
+    return ['管理员', ...(user.verifications?.email ? ['学号认证'] : [])];
   }
-
-  const badges = [];
-
-  if (user.verifications?.cc98) {
-    badges.push('CC98认证');
-  }
-
-  if (user.verifications?.email) {
-    badges.push('邮箱认证');
-  }
-
-  return badges.length ? badges : ['已登录'];
+  return ['学号认证'];
 }
 
 /**
@@ -179,27 +130,11 @@ export function canComment(user) {
  * @returns {boolean} true when the user may favorite a content item.
  */
 export function canFavorite(user) {
-  return isAuthenticated(user);
+  return isVerifiedUser(user);
 }
 
 /**
- * @param {User|null|undefined} user
- * @returns {boolean} true when the user is CC98-verified but not yet email-verified.
- */
-export function canBindEmailIdentity(user) {
-  return Boolean(isAuthenticated(user) && user.verifications?.cc98 && !user.verifications?.email);
-}
-
-/**
- * @param {User|null|undefined} user
- * @returns {boolean} true when the user can request a CC98 prototype verification code.
- */
-export function canRequestCc98PrototypeVerification(user) {
-  return Boolean(user && !['developer', 'admin'].includes(user.role) && !user.verifications?.cc98);
-}
-
-/**
- * Build an inbox message describing a new submission for the developer queue.
+ * Build an inbox message describing a new submission for the administrator queue.
  *
  * @param {Object} params
  * @param {User} params.fromUser
@@ -234,7 +169,7 @@ export function createSubmissionMessage({
 
   return {
     id: `submission-${courseCode}-${tabId}-${Date.now()}`,
-    toRole: 'developer',
+    toRole: 'admin',
     fromUserId: fromUser.id,
     title: '新的投稿申请',
     body: `${fromUser.nickname} 想在 ${courseCode} 的${tabId === 'experiences' ? '学习心得' : tabId === 'materials' ? '复习资料' : '历年试卷'}中投稿：${title}${extra ? `。${extra}` : ''}`,

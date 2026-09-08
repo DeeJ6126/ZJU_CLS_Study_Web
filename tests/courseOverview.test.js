@@ -77,7 +77,7 @@ test('course detail content is loaded through the shared API client instead of i
   assert.match(component, /:class="\{ 'is-active': activeTab\.id === tab\.id \}"/);
 });
 
-test('learning cards keep compact metadata while article details expose CC98, persistent grade label, and anonymous likes', () => {
+test('learning cards keep compact metadata while article details expose CC98, persistent grade label, and authenticated likes', () => {
   const component = readFileSync('src/components/CourseDetailPage.vue', 'utf8');
   const css = readFileSync('src/styles/course-detail.css', 'utf8');
 

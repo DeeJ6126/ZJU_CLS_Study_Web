@@ -10,7 +10,7 @@ import { getTestUserById } from '../src/data/config/testUsers.js';
 
 test('account auth overrides merge by user id without leaking to other users', () => {
   const guest = getTestUserById('guest');
-  const emailUser = getTestUserById('email-user');
+  const emailUser = getTestUserById('student');
   const overrides = {
     guest: {
       verifications: { cc98: true },

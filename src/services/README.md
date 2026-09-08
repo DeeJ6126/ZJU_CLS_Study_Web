@@ -5,7 +5,7 @@ Shared business logic and API clients.
 ## Main Files
 
 - `authService.js`: account state labels, verification badges, and submit/comment/favorite permission rules.
-- `authApiClient.js`: browser API calls for CC98/email registration, password login, email binding, recovery, current-user lookup, and logout.
+- `authApiClient.js`: browser API calls for student-ID email registration, login, recovery, current-user lookup, and logout; legacy CC98 methods remain unmounted.
 - `cc98VerificationService.js`: legacy/front-end prototype CC98 code matching boundary.
 - `accountStateService.js`: local auth override helpers from the earlier prototype.
 - `courseOverviewService.js`: course overview field shaping.
@@ -28,7 +28,7 @@ Shared business logic and API clients.
 - `overviewCatalogService.js`: overview filtering, category grouping, semester grouping, and unique course counts.
 - `courseContentApiClient.js`: published course content with static Markdown fallback only when the API is unavailable.
 - `adminApiClient.js`: administrator content CRUD, status changes, and raw PDF upload requests.
-- `submissionApiClient.js`: authenticated submission creation, submission PDF upload, and anonymous like toggling.
+- `submissionApiClient.js`: student-ID-authenticated submission creation, submission PDF upload, and like toggling.
 - `accountDataApiClient.js`: private course lists, XLSX import preview, favorites, and notification read state.
 - `commentApiClient.js`: identified comment/reply create, edit, delete, and public listing calls.
 - `profileApiClient.js`: public profiles plus owner post, submission, avatar, and identity management.
@@ -63,12 +63,12 @@ npm.cmd run check:architecture
 ## Profiles
 
 `profileApiClient.js` owns public profile search/read calls and authenticated profile,
-avatar, CC98-binding, post-revision, submission edit/withdraw/resubmission/delete, and archive requests. Components
+avatar, post-revision, submission edit/withdraw/resubmission/delete, and archive requests. Components
 must not reproduce these endpoint or permission rules.
 
 ## Demo Accounts
 
-The non-guest identities in `src/data/config/demoUsers.js` are complete local
+The student and administrator identities in `src/data/config/demoUsers.js` are complete local
 sandboxes, not backend users. `demoAccountService.js` stores each identity's
 courses, favorites, posts, submissions, comments, notifications, and uploaded
 avatar independently under one versioned localStorage key. It also exposes an

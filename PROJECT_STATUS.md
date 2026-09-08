@@ -15,6 +15,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 - Quiz practice now uses a shared course shell, shared practice layout, shared question views, backend grading, answer locking, and safe answer-return rules.
 - Quiz handoff docs are in place under `src/components/quiz/`, `src/services/`, `src/data/`, `public/resource/quiz/`, `server/quiz/`, and `tests/`.
 - The Node backend now spans authentication, account data, profiles, content and moderation, activities, cross-source search, student-homepage directory APIs, and quizzes. The student-homepage domain is backend-only at present; no Vue page or dedicated frontend client completes that workflow yet.
+- The public account model now has exactly three product roles: guest, student-ID-verified student, and administrator. CC98 endpoints remain backend-only for compatibility and no longer independently grant persistent-write permissions.
 - Project management docs have been renamed to `docs/project-guides/`, and the preferred check commands are now `npm.cmd run check*`.
 
 ## Recently Completed
@@ -32,9 +33,9 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 - Added server-side administrator roles, content SQLite storage, idempotent Markdown import, publication states, and validated PDF uploads.
 - Course detail pages now prefer published backend content and fall back to the existing Markdown only when the backend is unavailable.
 - The administrator platform now includes submission moderation, searchable operation logs, and denser course/status/content filters.
-- Authenticated students can submit course content for review; approved submissions publish immediately through the shared content store.
-- Published posts support optional CC98 links, click-to-reveal GPA, and anonymous browser-scoped likes.
-- The account system now accepts only numeric student IDs for `@zju.edu.cn` registration/login, supports unique nicknames, random public profile IDs, avatar uploads, CC98 binding/rebinding, password recovery, masked email display, expiring sessions, and server-side verification-code limits.
+- Student-ID-verified students can submit course content for review; approved submissions publish immediately through the shared content store.
+- Published posts support optional CC98 source links, click-to-reveal GPA, and student-ID-authenticated likes.
+- The visible account system accepts only numeric student IDs for `@zju.edu.cn` registration/login and supports unique nicknames, random public profile IDs, avatar uploads, password recovery, masked email display, expiring sessions, and server-side verification-code limits. Legacy CC98 registration/login/binding remains server-side only.
 - Public personal pages expose only nickname, avatar, and published posts. Signed-in users can manage profile details, review their submission states, archive published posts, and submit revisions without removing the live version before approval.
 - Course-content cards and article author names link to owned public profiles; static imported content remains unowned and compatible.
 - ZJU email delivery uses backend-only SMTP environment variables; real mailbox credentials are intentionally absent from the repository.
@@ -44,11 +45,12 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 - The hidden `#notifications` route provides recent messages and read state; submission decisions, new content comments, and replies create notifications without email delivery.
 - Added 2025 and 2026 BIO course programs (parsed from the program PDFs via MinerU), extended the semester vocabulary to twelve periods with per-year short terms, and enabled both in the overview selector.
 - Renamed the project check system folder to `project-checks/` and purged the former folder name from folder names, file names, and file contents.
-- Added a demo identity switcher in the account popover so developers can preview guest, cc98-only, email-only, dual-auth, and admin views without registering real accounts.
-- Expanded the four non-guest demo identities into isolated browser-local sandboxes with realistic profiles, courses, favorites, posts, submissions, comments, notifications, avatar uploads, XLSX timetable import, reset controls, and cross-identity administrator review. Demo writes never reach the backend.
+- Reduced the demo identity switcher to the three product roles: guest, student-ID-verified student, and administrator.
+- The student and administrator demos remain isolated browser-local sandboxes with realistic profiles, courses, favorites, posts, submissions, comments, notifications, avatar uploads, XLSX timetable import, reset controls, and administrator review. Demo writes never reach the backend.
 - Replaced the activity placeholder with a source-backed activity directory using six academic-department programs and original images from the supplied recruitment article. Homepage recent activities now read the same published, administrator-ordered records, while popular resources remain unchanged.
 - Added a dedicated activity content table and administrator workspace for drafting, editing, categorizing, homepage recommendation, ordering, publishing, and archiving. The demo administrator exercises the same workflow entirely in browser-local state.
 - Hardened login with an in-memory brute-force guard (per-account lock and per-ip throttle), Secure session cookies behind HTTPS, forwarded-ip trust for rate limits, and a `/api/health` liveness endpoint.
+- Added student-ID administrator provisioning through `ADMIN_STUDENT_IDS`, centralized server enforcement for persistent writes, and deployment templates for the observed Apache/Supervisor container layout.
 - Added a public deployment checklist at `docs/deployment-checklist.md` covering code hardening, server setup, security, data, launch verification, and weekly ops.
 - Fixed the GitHub Actions workflow to run `npm run check` (the old script name did not exist) and applied `npm audit` fixes (zero vulnerabilities).
 - Required `npm.cmd run check:architecture` / `run check:routes` / `run check:content` / `run check:themes` as the local architecture and content-location gates.
@@ -66,9 +68,9 @@ npm.cmd run build
 npm.cmd run check
 ```
 
-On 2026-09-08, `npm.cmd test` passed all 368 tests, `npm.cmd run build` passed,
-and `npm.cmd run check` produced a passing report against the current working
-tree. The browser check was not rerun during this repository review.
+On 2026-09-08, the current identity-policy work passed all 367 tests,
+`npm.cmd run build`, `npm.cmd run check`, and `npm.cmd run check:architecture`.
+The browser check was not rerun during this work.
 
 The dependency audit last reported zero vulnerabilities after `npm audit fix`.
 
@@ -81,7 +83,7 @@ homepage recommendation management.
 
 - Production authentication hardening: HTTPS/proxy cookie policy, secret rotation, SMTP monitoring, backups, and stronger anti-abuse controls.
 - More course quiz migrations beyond the three current quiz courses.
-- Final deployment hardening under `/var/www/html/zjubio/`.
+- Final deployment activation under `/var/www/html/zjubio/`: the inspected container currently has no zjubio Node Supervisor program and no Apache `/api` proxy. Templates are ready under `deploy/`, but installation needs the SSH wrapper permissions and real SMTP/admin environment values.
 - Content version history, automated backups, and multi-level administrator permissions.
 - Vue integration for the backend student-homepage directory/application/admin workflow.
 - A deliberate product decision on whether the unmounted cross-source `SearchBar` should return or the endpoint should remain infrastructure-only; the homepage currently keeps its focused search experience.
