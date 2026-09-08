@@ -23,6 +23,7 @@ Shared business logic and API clients.
 - `demoAccountService.js`: versioned browser-local demo profiles, account data, mutations, uploads, and moderation.
 - `courseScheduleService.js`: browser-neutral timetable row normalization shared by demo XLSX import and the backend parser.
 - `homeSearchService.js`: normalized homepage search indexing and per-content-type filtering.
+- `searchApiClient.js`: backend cross-source search client for courses, published content, activities, and student homepages. Its former `SearchBar.vue` consumer is currently unmounted.
 - `activityApiClient.js`: published activity reads with static-catalog fallback only when the API is unavailable.
 - `overviewCatalogService.js`: overview filtering, category grouping, semester grouping, and unique course counts.
 - `courseContentApiClient.js`: published course content with static Markdown fallback only when the API is unavailable.

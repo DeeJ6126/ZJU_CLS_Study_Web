@@ -1,6 +1,6 @@
 ﻿# server
 
-Lightweight Node backend for the current auth prototype.
+Lightweight Node backend for the current application.
 
 ## Current Responsibilities
 
@@ -20,6 +20,8 @@ Lightweight Node backend for the current auth prototype.
 - Private course lists with XLSX timetable preview/import.
 - Account favorites, identified comments/replies, and in-site notifications.
 - Cross-device quiz progress, mistakes, vocabulary, and anonymous-session claiming.
+- Cross-source search over courses, published content, activities, and approved student homepages.
+- Student-homepage directory storage, authenticated applications, and administrator moderation APIs.
 
 ## Entry Point
 
@@ -62,16 +64,21 @@ hashes and hashed request IPs.
 
 ## Administrator setup
 
-Set the administrator CC98 allowlist before starting the server:
+Set both the administrator CC98 allowlist and a high-entropy registration token
+before starting the server:
 
 ```powershell
 $env:ADMIN_CC98_NAMES="cc98_bio_visitor"
+$env:ADMIN_INVITE_TOKEN="replace-with-a-long-random-secret"
 npm.cmd run server
 ```
 
-An allowlisted user receives the `admin` role when registering. Administrator
-registration requires a password of at least 10 characters. The management page
-is available at `#admin` and is intentionally absent from the student navigation.
+An allowlisted user receives the `admin` role only when the registration request
+also supplies the exact `ADMIN_INVITE_TOKEN`; otherwise the account is created as
+a student. The ordinary frontend registration form does not expose this token, so
+administrator creation is a controlled provisioning flow. Administrator passwords
+must be at least 10 characters. The management page is available at `#admin` and
+is intentionally absent from the student navigation.
 
 Optional persistent-path settings:
 
@@ -81,6 +88,7 @@ $env:QUIZ_DB_FILE="server/data/auth.sqlite"
 $env:CONTENT_DB_FILE="server/data/content.sqlite"
 $env:CONTENT_UPLOAD_DIR="server/data/content-uploads"
 $env:PROFILE_AVATAR_DIR="server/data/profile-avatars"
+$env:STUDENT_HOMEPAGE_DB_FILE="server/data/student-homepages.sqlite"
 ```
 
 Existing Markdown under `public/resource/courses/` is imported idempotently when
@@ -133,6 +141,15 @@ course codes, retains unmatched courses, and writes only after confirmation.
 Comments are stored in `content.sqlite`, require a verified account, allow one reply
 level, and use soft deletion. Notifications are stored in `auth.sqlite` for moderation
 decisions, comments on owned content, and replies, but not for likes or favorites.
+
+## Search and student homepages
+
+`GET /api/search` searches the course catalog, published course content, published
+activities, and approved student-homepage entries. The backend student-homepage
+domain uses its own SQLite file and provides public listing, authenticated
+application, and administrator CRUD/moderation endpoints. These endpoints are
+tested, but the Vue application does not yet expose a student-homepage directory
+or its administrator workflow.
 
 ## Deployment Note
 

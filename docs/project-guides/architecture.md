@@ -31,6 +31,8 @@
 - 权限判断：`src/services/authService.js`
 - 收藏逻辑：`src/services/favoriteService.js`
 - 课程总览字段：`src/services/courseOverviewService.js`
+- 共享 HTTP 行为：`src/services/apiClient.js`
+- 课程内容、账号、资料、评论、投稿、管理与题库请求：对应的 `*ApiClient.js`
 - CC98 前端原型验证码匹配：`src/services/cc98VerificationService.js`
 - 本地账号认证覆盖状态合并：`src/services/accountStateService.js`
 
@@ -41,7 +43,7 @@
 - 课程代码是课程唯一标识。
 - 课程目录来自 `public/resource/summary/introduction.csv`。
 - 课程详情页面共用同一框架，不为单门课复制组件。
-- 用户内容放 `public/`，通过代码读取。
+- 静态用户内容放 `public/`；已发布内容、投稿、评论、活动和账号私有数据由后端 SQLite/上传目录管理。前端只在 API 不可用时对明确支持的静态内容执行回退。
 
 ## 项目机械检查
 

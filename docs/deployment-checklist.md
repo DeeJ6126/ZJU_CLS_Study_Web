@@ -85,16 +85,16 @@
 - **为什么**：密钥不进仓库、不进代码。
 - **怎么做/验收**：
   - 按 `.env.example` 准备环境变量文件：
-    `ADMIN_CC98_NAMES`（管理员名单）、`SMTP_*`（学号邮箱客户端密码）、
-    各数据路径。
+    `ADMIN_CC98_NAMES`（管理员名单）、`ADMIN_INVITE_TOKEN`（受控管理员注册口令）、
+    `SMTP_*`（学号邮箱客户端密码）、各数据路径。
   - systemd `EnvironmentFile` 读取；确认无凭据出现在进程参数/日志。
 
 ### 1.5 数据目录落位与权限
 
 - **为什么**：SQLite 与上传文件需要固定位置和正确属主。
 - **怎么做/验收**：
-  - 按 `AUTH_DB_FILE` / `CONTENT_DB_FILE` / `CONTENT_UPLOAD_DIR` /
-    `PROFILE_AVATAR_DIR` 建目录。
+  - 按 `AUTH_DB_FILE` / `QUIZ_DB_FILE` / `CONTENT_DB_FILE` /
+    `STUDENT_HOMEPAGE_DB_FILE` / `CONTENT_UPLOAD_DIR` / `PROFILE_AVATAR_DIR` 建目录。
   - 确认运行用户对数据目录可读可写；首次启动自动完成迁移与导入。
 
 ### 1.6 首次启动验收

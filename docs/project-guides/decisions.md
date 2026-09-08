@@ -74,11 +74,16 @@ The standalone quiz projects are reference implementations and data sources. The
 
 Impact: future legacy migrations should preserve useful behavior while using current site components and services.
 
-### 11. Quiz local state is acceptable for this phase
+### 11. Quiz supports guest-local state and signed-in account sync
 
-Mistake books and vocabulary books can use localStorage for the current visitor-facing phase. Logged-in cloud sync is deferred.
+Guests can practice without login and keep scoped localStorage records. Signed-in
+accounts persist progress, mistakes, and vocabulary through the backend; the
+first successful account merge clears the corresponding local browser records.
+Demo identities remain isolated browser-local sandboxes and never acquire a real
+backend session.
 
-Impact: do not block quiz practice on login; login can later enhance persistence.
+Impact: do not block guest practice on login, do not mix local records between
+account scopes, and keep durable signed-in synchronization behind the quiz API.
 
 ### 12. Stable order is preferred for quiz sessions
 

@@ -5,7 +5,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 ## Current State
 
 - The project is a Vue 3 + Vite + plain CSS learning-resource platform for ZJU life-science students.
-- The app currently has a lightweight demo shell with top-level pages including `首页`, `概览`, `刷题`, and `关于`.
+- The app currently has top-level pages for `首页`, `概览`, `刷题`, `活动`, and `关于`, plus hash-routed course details, activity details, public/owner profiles, notifications, and a hidden administrator workspace.
 - The homepage now centers course search, supports `课程 / 资料 / 题库 / 活动 / 用户` search modes, and gives student-union activities more space than the compact popular-resource list.
 - The overview page now lists all catalog courses under `专业基础课程 / 专业课 / 通识课`, supports deeper professional-course groups, and can filter the normalized 2024, 2025, and 2026 curricula by category or twelve semester periods (each year's autumn-winter, spring-summer, and short term).
 - The quiz feature is now mostly complete for the current phase:
@@ -14,6 +14,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
   - `BIO2110F` microbiology final review
 - Quiz practice now uses a shared course shell, shared practice layout, shared question views, backend grading, answer locking, and safe answer-return rules.
 - Quiz handoff docs are in place under `src/components/quiz/`, `src/services/`, `src/data/`, `public/resource/quiz/`, `server/quiz/`, and `tests/`.
+- The Node backend now spans authentication, account data, profiles, content and moderation, activities, cross-source search, student-homepage directory APIs, and quizzes. The student-homepage domain is backend-only at present; no Vue page or dedicated frontend client completes that workflow yet.
 - Project management docs have been renamed to `docs/project-guides/`, and the preferred check commands are now `npm.cmd run check*`.
 
 ## Recently Completed
@@ -51,10 +52,13 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 - Added a public deployment checklist at `docs/deployment-checklist.md` covering code hardening, server setup, security, data, launch verification, and weekly ops.
 - Fixed the GitHub Actions workflow to run `npm run check` (the old script name did not exist) and applied `npm audit` fixes (zero vulnerabilities).
 - Required `npm.cmd run check:architecture` / `run check:routes` / `run check:content` / `run check:themes` as the local architecture and content-location gates.
+- Added a backend cross-source search endpoint for courses, published content, activities, and approved student homepages, plus a frontend search client. The current homepage still uses its focused local search index (and profile lookup for users); the former global `SearchBar` is no longer mounted.
+- Added backend storage, public/application APIs, administrator moderation, and search indexing for the student-homepage directory. Frontend directory and moderation surfaces remain to be implemented.
+- Consolidated the frontend API clients around `src/services/apiClient.js` and completed the 2026-09-05 critical/high-priority security, state-isolation, navigation, modal, and interaction fixes recorded in `docs/audits/2026-09-05-new-round-audit.md`.
 
 ## Known Good Verification
 
-Last known passing commands:
+Current known verification:
 
 ```bash
 npm.cmd test
@@ -62,9 +66,11 @@ npm.cmd run build
 npm.cmd run check
 ```
 
-On 2026-08-23, all 251 tests passed and the project checks pipeline
-(`npm.cmd run check`) produced a passing report. The dependency audit
-reported zero vulnerabilities after `npm audit fix`.
+On 2026-09-08, `npm.cmd test` passed all 368 tests, `npm.cmd run build` passed,
+and `npm.cmd run check` produced a passing report against the current working
+tree. The browser check was not rerun during this repository review.
+
+The dependency audit last reported zero vulnerabilities after `npm audit fix`.
 
 The browser check also passed six Chromium flows, including persistent demo
 account course changes/reset, administrator approval publishing into the
@@ -77,6 +83,8 @@ homepage recommendation management.
 - More course quiz migrations beyond the three current quiz courses.
 - Final deployment hardening under `/var/www/html/zjubio/`.
 - Content version history, automated backups, and multi-level administrator permissions.
+- Vue integration for the backend student-homepage directory/application/admin workflow.
+- A deliberate product decision on whether the unmounted cross-source `SearchBar` should return or the endpoint should remain infrastructure-only; the homepage currently keeps its focused search experience.
 - The overview UI is intentionally an initial layout; the 2023 curriculum is omitted because it used legacy numeric course codes with no BIO-encoded courses. Course detail layout is deferred for a later redesign.
 
 ## Recovery Order For Future AI

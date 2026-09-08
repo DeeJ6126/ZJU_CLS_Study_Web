@@ -7,7 +7,7 @@ This is the AI entry map for `E:\Study_Web`. Keep this file short. Use it to cho
 - Name: `life-science-study-platform`
 - Product: 生科智学 / 生命科学学子学习平台
 - Goal: a learning-resource platform for ZJU life-science students
-- Current direction: grow from a Vue prototype into a fuller application, then deploy under `/var/www/html/zjubio/`
+- Current direction: harden the current full application and deploy it under `/var/www/html/zjubio/`
 
 ## Stack
 
@@ -15,7 +15,7 @@ This is the AI entry map for `E:\Study_Web`. Keep this file short. Use it to cho
 - JavaScript ESM
 - Plain CSS, no UI framework
 - Node.js built-in tests: `node --test`
-- Lightweight Node backend in `server/` for current auth prototype
+- Lightweight Node backend in `server/` for auth, account data, profiles, content, activities, search, student homepages, and quizzes
 
 ## Read Next
 

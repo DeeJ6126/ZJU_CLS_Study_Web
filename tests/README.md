@@ -24,6 +24,9 @@ npm.cmd run check:themes
 - Markdown content parsing.
 - Auth state and permission rules.
 - CC98 registration/login backend flow.
+- Account/profile/content/activity HTTP flows and SQLite stores.
+- Cross-source search and student-homepage storage/application workflows.
+- Quiz imports, grading, answer safety, sessions, and account synchronization.
 - UI structure expectations that should not regress.
 
 For the quiz-specific test map, read `quiz-tests.md`.
