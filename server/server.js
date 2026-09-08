@@ -198,6 +198,8 @@ export function createAuthServer({
   emailSender = createSmtpEmailSender(),
   emailCodeGenerator,
   emailNow,
+  // Tests can inject a custom guard; the runtime default uses createLoginGuard().
+  loginGuard = createLoginGuard(),
   port = 5175,
 } = {}) {
   store.initialize();
@@ -238,7 +240,6 @@ export function createAuthServer({
   importStaticCourseContent(contentStore, { rootDirectory: staticCourseRoot });
   seedActivityCatalog(contentStore, activityCatalog.activities);
   const courseCatalog = loadServerCourseCatalog();
-  const loginGuard = createLoginGuard();
 
   const server = createServer(async (request, response) => {
     try {
@@ -391,12 +392,26 @@ export function createAuthServer({
           sendJson(response, 415, { message: '绑定请求格式无效。' });
           return;
         }
+        // 0.1: 当前密码验证也走 loginGuard，否则攻击者可以无限重试
+        // 暴力破解已登录账户的当前密码（用于 CC98 重绑/换绑场景）。
+        // bind: 前缀只隔离账号失败计数；IP 频率窗口仍跨登录/绑定全局共享。
+        const bindAccountKey = normalizeLoginKey(quizUserId, 'bind');
+        const bindGate = loginGuard.check(bindAccountKey, getClientIp(request));
+        if (!bindGate.ok) {
+          sendJson(response, bindGate.status, { message: bindGate.message });
+          return;
+        }
         const result = await bindOrRebindCc98(
           store,
           quizUserId,
           sessionId,
           await readJsonBody(request),
         );
+        if (result.ok) {
+          loginGuard.recordSuccess(bindAccountKey);
+        } else if (result.status === 401) {
+          loginGuard.recordFailure(bindAccountKey, getClientIp(request));
+        }
         sendJson(response, result.status, result.ok ? { user: result.user } : { message: result.message });
         return;
       }
