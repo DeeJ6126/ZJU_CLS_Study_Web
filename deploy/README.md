@@ -23,6 +23,9 @@
    files = /etc/supervisor/conf.d/*.ini
    ```
 
+   Supervisor 直接运行独立 Node.js 22，并通过 Node 的
+   `--env-file=/etc/zjubio/zjubio.env` 读取密钥，不经 shell 启动器。
+
 4. 创建 `/var/www/html/zjubio/log/` 并确保 `zjubio_run` 可写，然后执行 Supervisor
    reread/update，确认 `zjubio-node` 为 `RUNNING`。
 5. 将 `deploy/apache-zjubio.conf` 安装为现有
