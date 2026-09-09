@@ -11,4 +11,4 @@ set -a
 . "$env_file"
 set +a
 
-exec /usr/bin/node /var/www/html/zjubio/server/server.js
+exec /opt/zjubio/node/bin/node /var/www/html/zjubio/server/server.js

@@ -894,7 +894,12 @@ export function createAuthServer({
 }
 
 export function isDirectRun(moduleUrl, scriptPath) {
-  return Boolean(scriptPath && moduleUrl === pathToFileURL(scriptPath).href);
+  if (!scriptPath) {
+    return false;
+  }
+
+  const isWindowsPath = /^[A-Za-z]:[\\/]/.test(scriptPath);
+  return moduleUrl === pathToFileURL(scriptPath, { windows: isWindowsPath }).href;
 }
 
 if (isDirectRun(import.meta.url, process.argv[1])) {
