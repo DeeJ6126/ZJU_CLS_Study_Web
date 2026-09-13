@@ -9,8 +9,10 @@ const courses = parseCourseCsv(csv);
 const sections = buildResourceSections(courses);
 
 test('resource catalog parses course code and course name from introduction csv', () => {
-  assert.equal(courses[0].code, 'BIO0600G');
-  assert.equal(courses[0].name, '基因的突变和进化（A）');
+  // 按代码查，不依赖 CSV 行序：培养方案陆续补入了 AI/CBE/PHAR 等跨院系课程。
+  const course = getCourseByCode(courses, 'BIO0600G');
+  assert.equal(course.code, 'BIO0600G');
+  assert.equal(course.name, '基因的突变和进化（A）');
 });
 
 test('course cards link by course code without translated names', () => {

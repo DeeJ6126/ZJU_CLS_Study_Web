@@ -101,6 +101,77 @@
   font-weight: 800;
 }
 
+/* 按培养方案原文结构展开的大纲视图。 */
+.overview-outline {
+  display: grid;
+  gap: 4px;
+}
+
+.overview-outline__row.is-depth-0 { margin-top: 18px; }
+.overview-outline__row.is-depth-1 { padding-left: 18px; }
+.overview-outline__row.is-depth-2 { padding-left: 36px; }
+.overview-outline__row.is-depth-3 { padding-left: 54px; }
+
+.overview-outline__head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  padding: 8px 0;
+  color: #243b32;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.overview-outline__row.is-depth-0 > .overview-outline__head {
+  border-bottom: 1px solid #e3ebe6;
+  font-size: 17px;
+}
+
+.overview-outline__head em {
+  color: #68766f;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.overview-outline__note {
+  margin: 0 0 6px;
+  color: #7b6a43;
+  font-size: 12px;
+}
+
+.overview-outline .overview-course-grid {
+  margin-bottom: 12px;
+}
+
+/* 互斥模块页签（强基计划的专业必修二选一、转段方向等）。 */
+.overview-modules {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #e3ebe6;
+}
+
+.overview-modules button {
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-bottom: 2px solid transparent;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: transparent;
+  color: #65736c;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.overview-modules button.is-active {
+  border-bottom-color: #245e48;
+  background: #e7f0eb;
+  color: #245e48;
+}
+
 .overview-sections {
   display: grid;
   gap: 16px;
@@ -360,4 +431,28 @@ html[data-theme="dark"] .overview-course-grid > article > button {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+html[data-theme="dark"] .overview-outline__head {
+  color: #e8edf4;
+}
+html[data-theme="dark"] .overview-outline__row.is-depth-0 > .overview-outline__head {
+  border-bottom-color: #2a374a;
+}
+html[data-theme="dark"] .overview-outline__head em {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .overview-outline__note {
+  color: #d3bd8a;
+}
+html[data-theme="dark"] .overview-modules {
+  border-bottom-color: #2a374a;
+}
+html[data-theme="dark"] .overview-modules button {
+  color: #b3c4d6;
+}
+html[data-theme="dark"] .overview-modules button.is-active {
+  border-bottom-color: #8ad3bd;
+  background: #1d2a3b;
+  color: #8ad3bd;
 }

@@ -2,12 +2,17 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { loadResourceCatalog } from '../data/courses/resourceData.js';
 import {
+  ALL_PROGRAM_ID,
+  DEFAULT_MAJOR_ID,
   curriculumOptions,
-  curriculumPrograms,
+  findCurriculumProgram,
+  listProgramYears,
+  majorOptions,
 } from '../data/courses/programCatalog.js';
+import { publicAssetPath } from '../utils/publicPath.js';
 import {
   buildAllCourseSections,
-  buildProgramCategorySections,
+  buildProgramOutline,
   buildProgramSemesterSections,
 } from '../services/overviewCatalogService.js';
 import {
@@ -15,28 +20,38 @@ import {
   getHashQuery,
 } from '../services/demoNavigationService.js';
 
-const VALID_GROUPING_MODES = new Set(['category', 'semester']);
-const DEFAULT_PROGRAM_ID = 'all';
+const VALID_GROUPING_MODES = new Set(['outline', 'semester']);
+const DEFAULT_PROGRAM_ID = ALL_PROGRAM_ID;
 
-function programIdForGrade(grade) {
+const availableMajorIds = new Set(
+  majorOptions.filter((option) => option.available).map((option) => option.id),
+);
+
+function programIdForGrade(grade, majorId) {
   if (grade == null) return '';
   const year = String(grade);
-  return curriculumPrograms[year] ? year : '';
+  return findCurriculumProgram(majorId, year) ? year : '';
 }
 
 function readFiltersFromHash() {
   const params = getHashQuery(window.location.hash);
+  const majorId = params.get('major');
   const programId = params.get('program');
   const grouping = params.get('group');
+  const major = availableMajorIds.has(majorId) ? majorId : DEFAULT_MAJOR_ID;
   return {
-    programId: curriculumPrograms[programId] ? programId : '',
-    grouping: VALID_GROUPING_MODES.has(grouping) ? grouping : 'category',
+    majorId: major,
+    programId: findCurriculumProgram(major, programId) ? programId : '',
+    chosenModules: (params.get('module') ?? '').split(',').filter(Boolean),
+    grouping: VALID_GROUPING_MODES.has(grouping) ? grouping : 'outline',
   };
 }
 
 const initialFilters = readFiltersFromHash();
 const courses = ref([]);
+const selectedMajorId = ref(initialFilters.majorId);
 const selectedProgramId = ref(initialFilters.programId || DEFAULT_PROGRAM_ID);
+const chosenModules = ref(initialFilters.chosenModules);
 const groupingMode = ref(initialFilters.grouping);
 const isLoading = ref(true);
 const loadError = ref('');
@@ -51,16 +66,22 @@ const emit = defineEmits(['add-course', 'remove-course', 'navigate-course']);
 
 function applyDefaultFromGrade() {
   if (selectedProgramId.value !== DEFAULT_PROGRAM_ID) return;
-  const fallback = programIdForGrade(props.userGrade);
+  const fallback = programIdForGrade(props.userGrade, selectedMajorId.value);
   if (fallback) selectedProgramId.value = fallback;
 }
 
 function syncOverviewHash() {
   const params = {};
+  if (selectedMajorId.value !== DEFAULT_MAJOR_ID) {
+    params.major = selectedMajorId.value;
+  }
   if (selectedProgramId.value !== DEFAULT_PROGRAM_ID) {
     params.program = selectedProgramId.value;
   }
-  if (groupingMode.value !== 'category') {
+  if (chosenModules.value.length) {
+    params.module = chosenModules.value.join(',');
+  }
+  if (groupingMode.value !== 'outline') {
     params.group = groupingMode.value;
   }
   const nextHash = buildHashWithQuery('overview', params);
@@ -70,34 +91,78 @@ function syncOverviewHash() {
 }
 
 watch(
-  [selectedProgramId, groupingMode],
+  [selectedMajorId, selectedProgramId, chosenModules, groupingMode],
   () => { syncOverviewHash(); },
 );
+
+// 切换专业后原来的年级/模块可能在新专业下不存在，回退到「全部课程」而不是
+// 停在一个查不到方案的组合上。
+watch(selectedMajorId, (majorId) => {
+  if (selectedProgramId.value !== DEFAULT_PROGRAM_ID
+    && !findCurriculumProgram(majorId, selectedProgramId.value)) {
+    selectedProgramId.value = DEFAULT_PROGRAM_ID;
+  }
+  chosenModules.value = [];
+  applyDefaultFromGrade();
+});
 
 watch(
   () => props.userGrade,
   () => { applyDefaultFromGrade(); },
 );
 
-const selectedProgram = computed(() => curriculumPrograms[selectedProgramId.value] ?? null);
+const selectedProgram = computed(
+  () => findCurriculumProgram(selectedMajorId.value, selectedProgramId.value),
+);
 const isProgramSelected = computed(() => Boolean(selectedProgram.value));
+
+const programYears = computed(() => new Set(listProgramYears(selectedMajorId.value)));
+const yearOptions = computed(() => curriculumOptions.map((option) => ({
+  ...option,
+  available: option.id === ALL_PROGRAM_ID || programYears.value.has(option.id),
+})));
+
+// 同一份方案里互斥组不止一个（强基 2025 起还有转段方向），所以按「同组其他
+// 分支先剔除、再加入选中分支」维护这个列表。
+function chooseModule(row, optionTag) {
+  const siblings = new Set(row.options.map((option) => option.tag));
+  chosenModules.value = [
+    ...chosenModules.value.filter((tag) => !siblings.has(tag)),
+    optionTag,
+  ];
+}
+
+const programSourceUrl = computed(() => (
+  selectedProgram.value ? publicAssetPath(selectedProgram.value.sourceUrl) : ''
+));
 
 const sections = computed(() => {
   if (!selectedProgram.value) {
     return buildAllCourseSections(courses.value);
   }
   if (groupingMode.value === 'semester') {
-    return buildProgramSemesterSections(courses.value, selectedProgram.value);
+    return buildProgramSemesterSections(courses.value, selectedProgram.value, chosenModules.value);
   }
-  return buildProgramCategorySections(courses.value, selectedProgram.value);
+  return [];
 });
 
-const visibleCourseCount = computed(() => sections.value.reduce((total, section) => {
-  if (section.courses) {
-    return total + section.courses.length;
+// 「按培养方案结构」视图：原文章节树压平后的行列表。
+const outlineRows = computed(() => (
+  isProgramSelected.value && groupingMode.value === 'outline'
+    ? buildProgramOutline(courses.value, selectedProgram.value, chosenModules.value)
+    : []
+));
+
+const visibleCourseCount = computed(() => {
+  if (groupingMode.value === 'outline' && isProgramSelected.value) {
+    // 同一门课可能同时出现在多个小节（例如生物科学的三个实践方向），按课程
+    // 代码去重才是真实门数。
+    return new Set(outlineRows.value.flatMap((row) => row.courses.map((c) => c.code))).size;
   }
-  return total + section.courseCount;
-}, 0));
+  return sections.value.reduce((total, section) => (
+    section.courses ? total + section.courses.length : total + section.courseCount
+  ), 0);
+});
 
 function toggleSection(sectionId) {
   collapsedSections[sectionId] = !collapsedSections[sectionId];
@@ -156,10 +221,24 @@ onMounted(async () => {
 
     <div class="overview-controls" aria-label="课程目录筛选">
       <label>
+        <span>专业</span>
+        <select v-model="selectedMajorId">
+          <option
+            v-for="option in majorOptions"
+            :key="option.id"
+            :value="option.id"
+            :disabled="!option.available"
+          >
+            {{ option.label }}{{ option.available ? '' : '（待整理）' }}
+          </option>
+        </select>
+      </label>
+
+      <label>
         <span>培养方案</span>
         <select v-model="selectedProgramId">
           <option
-            v-for="option in curriculumOptions"
+            v-for="option in yearOptions"
             :key="option.id"
             :value="option.id"
             :disabled="!option.available"
@@ -174,10 +253,10 @@ onMounted(async () => {
         <div>
           <button
             type="button"
-            :class="{ 'is-active': groupingMode === 'category' }"
-            @click="groupingMode = 'category'"
+            :class="{ 'is-active': groupingMode === 'outline' }"
+            @click="groupingMode = 'outline'"
           >
-            按课程类别
+            按培养方案结构
           </button>
           <button
             type="button"
@@ -189,13 +268,59 @@ onMounted(async () => {
         </div>
       </div>
 
-      <a v-if="selectedProgram" :href="selectedProgram.sourceUrl" target="_blank" rel="noreferrer">
+      <!-- 必须过 publicAssetPath：站点部署在 /zjubio/ 或 GitHub Pages 的
+           /ZJU_CLS_Study_Web/ 子路径下时，裸的绝对路径会指向域名根目录。 -->
+      <a v-if="selectedProgram" :href="programSourceUrl" target="_blank" rel="noreferrer">
         查看培养方案原文
       </a>
     </div>
 
     <p v-if="isLoading" class="overview-empty">正在加载课程目录...</p>
     <p v-else-if="loadError" class="overview-empty">{{ loadError }}</p>
+
+    <!-- 按培养方案原文结构展开。各专业层级深浅不同，用 depth 控制缩进。 -->
+    <div v-else-if="groupingMode === 'outline' && isProgramSelected" class="overview-outline">
+      <section
+        v-for="row in outlineRows"
+        :key="row.id"
+        class="overview-outline__row"
+        :class="`is-depth-${row.depth}`"
+      >
+        <h2 v-if="!row.headingHidden" class="overview-outline__head">
+          <span>{{ row.tag }}</span>
+          <em>{{ row.credits }}</em>
+        </h2>
+        <p v-if="row.note" class="overview-outline__note">{{ row.note }}</p>
+
+        <!-- 二选一模块用页签切换 -->
+        <div v-if="row.options" class="overview-modules" role="tablist" :aria-label="row.tag">
+          <button
+            v-for="option in row.options"
+            :key="option.tag"
+            type="button"
+            role="tab"
+            :aria-selected="row.selected === option.tag"
+            :class="{ 'is-active': row.selected === option.tag }"
+            @click="chooseModule(row, option.tag)"
+          >
+            {{ option.tag }}
+          </button>
+        </div>
+
+        <div v-if="row.courses.length" class="overview-course-grid">
+          <article v-for="course in row.courses" :key="course.code">
+            <a :href="course.href" @click="handleCourseLinkClick($event, course)">
+              <strong>{{ course.name }}</strong>
+              <span>{{ course.code }}</span>
+              <small>{{ course.credits }} 学分 · {{ course.totalHours }} 学时</small>
+            </a>
+            <button v-if="canManageCourses" type="button" @click="toggleSavedCourse(course)">
+              {{ isSaved(course.code) ? '移出我的课程' : '加入我的课程' }}
+            </button>
+          </article>
+        </div>
+      </section>
+    </div>
 
     <div v-else class="overview-sections">
       <section v-for="section in sections" :key="section.id" class="overview-section">
