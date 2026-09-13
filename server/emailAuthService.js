@@ -8,7 +8,7 @@ import {
   publicUser,
   validateNickname,
   validatePassword,
-  verifyPassword,
+  verifyPasswordForPossibleUser,
 } from './authService.js';
 import { gradeFromStudentId } from './studentGrade.js';
 
@@ -183,7 +183,7 @@ export async function registerEmail(store, input, options = {}) {
 export async function loginEmail(store, input) {
   const email = studentEmail(input);
   const user = email ? store.findUserByEmail(email) : null;
-  if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
+  if (!(await verifyPasswordForPossibleUser(input.password, user))) {
     return { ok: false, status: 401, message: '邮箱或密码错误。' };
   }
   const sessionId = createSession(store, user.id);
@@ -226,8 +226,17 @@ export async function bindEmailIdentity(store, userId, input, options = {}) {
 export async function resetPasswordByEmail(store, input, options = {}) {
   const email = studentEmail(input);
   const user = email ? store.findUserByEmail(email) : null;
-  if (!user || !validatePassword(input.password)) {
-    return { ok: false, status: 400, message: '验证码无效或密码不符合要求。' };
+  // Password strength does not depend on whether the account exists, so
+  // reporting it precisely leaks nothing and keeps the error useful.
+  if (!validatePassword(input.password)) {
+    return { ok: false, status: 400, message: '新密码至少需要 8 位。' };
+  }
+  // Unknown address falls through to the same wording as a wrong code below.
+  // requestEmailCode already answers with a generic 202 for unregistered
+  // addresses so it does not confirm who has an account; a distinguishable
+  // response here would hand that answer back via the other half of the flow.
+  if (!user) {
+    return { ok: false, status: 400, message: '验证码无效或已过期。' };
   }
   const verified = await verifyEmailCode(store, { email, code: input.code, purpose: 'password-reset' }, options);
   if (!verified.ok) return verified;

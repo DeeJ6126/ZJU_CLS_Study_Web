@@ -245,11 +245,15 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
     searchUsersByNickname(query, limit = 8) {
       const normalized = normalizeNickname(query);
       if (!normalized) return [];
+      // Escape LIKE metacharacters. Interpolating the raw query let a caller
+      // pass `%` or `_` as the search term and match every nickname in the
+      // table, turning the public profile search into a user directory dump.
+      const pattern = `%${normalized.replace(/[\\%_]/g, '\\$&')}%`;
       return db.prepare(`
         select id, password_hash as passwordHash, role, nickname, public_id as publicId,
           avatar_stored_name as avatarStoredName, avatar_mime_type as avatarMimeType, grade
-        from users where nickname_normalized like ? order by nickname_normalized limit ?
-      `).all(`%${normalized}%`, Math.max(1, Math.min(20, Number(limit) || 8))).map(mapUser);
+        from users where nickname_normalized like ? escape '\\' order by nickname_normalized limit ?
+      `).all(pattern, Math.max(1, Math.min(20, Number(limit) || 8))).map(mapUser);
     },
 
     createUser({ cc98Name = '', email = '', nickname = '', passwordHash, role = 'student', grade = null }) {
@@ -581,7 +585,10 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
     findSession(id) {
       const session = db.prepare('select id, user_id as userId, expires_at as expiresAt from sessions where id = ?').get(id);
       if (!session) return undefined;
-      if (session.expiresAt && new Date(session.expiresAt) <= new Date()) {
+      // Rows created before the expires_at migration carry the '' default.
+      // Treating a blank value as "never expires" made those sessions
+      // immortal; expire them instead so every session has a bounded life.
+      if (!session.expiresAt || new Date(session.expiresAt) <= new Date()) {
         db.prepare('delete from sessions where id = ?').run(id);
         return undefined;
       }

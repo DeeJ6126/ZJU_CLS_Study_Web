@@ -4,7 +4,20 @@ import assert from 'node:assert/strict';
 import { createAuthStore } from '../server/authStore.js';
 import { createQuizStore } from '../server/quiz/quizStore.js';
 import { createContentStore } from '../server/content/contentStore.js';
+import { createStudentHomepageStore } from '../server/studentHomepage/studentHomepageStore.js';
 import { createAuthServer, getClientIp, isHttpsRequest } from '../server/server.js';
+
+// Stores these tests do not exercise directly. Without them createAuthServer
+// falls back to its production file paths (server/data/*.sqlite), so test
+// files running in parallel contend on the same on-disk database and fail
+// with "database is locked". Spread first so explicit stores still win.
+function isolatedStores() {
+  return {
+    contentStore: createContentStore({ filename: ':memory:' }),
+    studentHomepageStore: createStudentHomepageStore({ filename: ':memory:' }),
+  };
+}
+
 
 function listen(server) {
   return new Promise((resolve) => {
@@ -18,7 +31,7 @@ function createTestServer() {
   const store = createAuthStore({ filename: ':memory:' });
   const quizStore = createQuizStore({ filename: ':memory:' });
   const contentStore = createContentStore({ filename: ':memory:' });
-  const { server } = createAuthServer({ store, quizStore, contentStore });
+  const { server } = createAuthServer({ ...isolatedStores(), store, quizStore, contentStore });
   return { store, server };
 }
 
@@ -106,6 +119,7 @@ test('email code ip limit uses the forwarded client ip, not the proxy socket', a
   const quizStore = createQuizStore({ filename: ':memory:' });
   const contentStore = createContentStore({ filename: ':memory:' });
   const { server } = createAuthServer({
+    ...isolatedStores(),
     store,
     quizStore,
     contentStore,
@@ -134,12 +148,19 @@ test('email code ip limit uses the forwarded client ip, not the proxy socket', a
   }
 });
 
-test('getClientIp prefers the first forwarded entry and falls back to socket', () => {
+test('getClientIp takes the last forwarded entry and falls back to socket', () => {
   const socketOnly = { socket: { remoteAddress: '127.0.0.1' } };
   assert.equal(getClientIp(socketOnly), '127.0.0.1');
 
-  const forwarded = { headers: { 'x-forwarded-for': '198.51.100.9, 10.0.0.2' }, socket: { remoteAddress: '127.0.0.1' } };
+  // Apache appends the real peer address, so the trustworthy value is the
+  // last entry. A single-entry header is the common case.
+  const forwarded = { headers: { 'x-forwarded-for': '198.51.100.9' }, socket: { remoteAddress: '127.0.0.1' } };
   assert.equal(getClientIp(forwarded), '198.51.100.9');
+
+  // A client that pre-seeds its own X-Forwarded-For must not be able to pick
+  // the address we rate-limit on: the appended peer address still wins.
+  const spoofed = { headers: { 'x-forwarded-for': '203.0.113.1, 198.51.100.9' }, socket: { remoteAddress: '127.0.0.1' } };
+  assert.equal(getClientIp(spoofed), '198.51.100.9');
 
   const emptyForwarded = { headers: { 'x-forwarded-for': ' ' }, socket: { remoteAddress: '127.0.0.1' } };
   assert.equal(getClientIp(emptyForwarded), '127.0.0.1');

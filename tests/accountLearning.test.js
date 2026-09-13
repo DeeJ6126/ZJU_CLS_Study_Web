@@ -8,9 +8,15 @@ import {
 import { normalizeCourseScheduleRows as normalizeBrowserCourseRows } from '../src/services/courseScheduleService.js';
 import { loadServerCourseCatalog } from '../server/account/courseCatalogService.js';
 
+// Date.now() is not unique enough here: two users created inside the same
+// millisecond get the same address and the second insert trips the
+// user_identities unique index. Use a counter so every user is distinct.
+let nextStudentId = 3240000000;
+
 function createUser(store, nickname = '课程同学') {
+  nextStudentId += 1;
   return store.createUser({
-    email: `${Date.now()}@zju.edu.cn`,
+    email: `${nextStudentId}@zju.edu.cn`,
     nickname,
     passwordHash: 'hash',
   });

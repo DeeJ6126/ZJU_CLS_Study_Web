@@ -4,6 +4,19 @@ import { createAuthStore } from '../server/authStore.js';
 import { createAuthServer } from '../server/server.js';
 import { createQuizStore } from '../server/quiz/quizStore.js';
 import { createContentStore } from '../server/content/contentStore.js';
+import { createStudentHomepageStore } from '../server/studentHomepage/studentHomepageStore.js';
+
+// Stores these tests do not exercise directly. Without them createAuthServer
+// falls back to its production file paths (server/data/*.sqlite), so test
+// files running in parallel contend on the same on-disk database and fail
+// with "database is locked". Spread first so explicit stores still win.
+function isolatedStores() {
+  return {
+    contentStore: createContentStore({ filename: ':memory:' }),
+    studentHomepageStore: createStudentHomepageStore({ filename: ':memory:' }),
+  };
+}
+
 
 function listen(server) {
   return new Promise((resolve) => {
@@ -15,7 +28,7 @@ test('account APIs keep courses and favorites private and expose notification re
   const store = createAuthStore({ filename: ':memory:' });
   const quizStore = createQuizStore({ filename: ':memory:' });
   const contentStore = createContentStore({ filename: ':memory:' });
-  const { server } = createAuthServer({ store, quizStore, contentStore });
+  const { server } = createAuthServer({ ...isolatedStores(), store, quizStore, contentStore });
   const user = store.createUser({ email: '3240100000@zju.edu.cn', nickname: '同步同学', passwordHash: 'hash' });
   store.createSession({ id: 'account-session', userId: user.id });
   contentStore.createItem({
@@ -69,7 +82,7 @@ test('comment APIs expose public profile identity, create replies, and notify ow
   const store = createAuthStore({ filename: ':memory:' });
   const quizStore = createQuizStore({ filename: ':memory:' });
   const contentStore = createContentStore({ filename: ':memory:' });
-  const { server } = createAuthServer({ store, quizStore, contentStore });
+  const { server } = createAuthServer({ ...isolatedStores(), store, quizStore, contentStore });
   const owner = store.createUser({ email: '3240100001@zju.edu.cn', nickname: '作者', passwordHash: 'hash' });
   const commenter = store.createUser({ email: '3240100002@zju.edu.cn', nickname: '评论者', passwordHash: 'hash' });
   store.createSession({ id: 'owner-session', userId: owner.id });
@@ -137,7 +150,7 @@ test('quiz account APIs claim anonymous sessions and synchronize vocabulary', as
   const store = createAuthStore({ filename: ':memory:' });
   const quizStore = createQuizStore({ filename: ':memory:' });
   const contentStore = createContentStore({ filename: ':memory:' });
-  const { server } = createAuthServer({ store, quizStore, contentStore });
+  const { server } = createAuthServer({ ...isolatedStores(), store, quizStore, contentStore });
   const user = store.createUser({ email: '3240100003@zju.edu.cn', nickname: '刷题同学', passwordHash: 'hash' });
   store.createSession({ id: 'quiz-sync-session', userId: user.id });
   const cookie = 'study_session=quiz-sync-session';

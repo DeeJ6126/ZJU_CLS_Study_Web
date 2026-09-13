@@ -8,6 +8,19 @@ import { createAuthStore } from '../server/authStore.js';
 import { createAuthServer, isDirectRun } from '../server/server.js';
 import { createQuizStore } from '../server/quiz/quizStore.js';
 import { createContentStore } from '../server/content/contentStore.js';
+import { createStudentHomepageStore } from '../server/studentHomepage/studentHomepageStore.js';
+
+// Stores these tests do not exercise directly. Without them createAuthServer
+// falls back to its production file paths (server/data/*.sqlite), so test
+// files running in parallel contend on the same on-disk database and fail
+// with "database is locked". Spread first so explicit stores still win.
+function isolatedStores() {
+  return {
+    contentStore: createContentStore({ filename: ':memory:' }),
+    studentHomepageStore: createStudentHomepageStore({ filename: ':memory:' }),
+  };
+}
+
 
 function listen(server) {
   return new Promise((resolve) => {
@@ -20,7 +33,7 @@ function listen(server) {
 test('auth http server registers, logs in, returns current user, and logs out', async () => {
   const store = createAuthStore({ filename: ':memory:' });
   const quizStore = createQuizStore({ filename: ':memory:' });
-  const { server } = createAuthServer({ store, quizStore });
+  const { server } = createAuthServer({ ...isolatedStores(), store, quizStore });
   const port = await listen(server);
   const baseUrl = `http://127.0.0.1:${port}`;
 
@@ -67,6 +80,7 @@ test('quiz http API lets guests practice while student-ID accounts store progres
   const store = createAuthStore({ filename: ':memory:' });
   const quizStore = createQuizStore({ filename: ':memory:' });
   const { server } = createAuthServer({
+    ...isolatedStores(),
     store,
     quizStore,
     emailSender: async () => {},
@@ -286,7 +300,7 @@ test('quiz http API lets guests practice while student-ID accounts store progres
 test('quiz http API exposes collection and category metadata without answers', async () => {
   const store = createAuthStore({ filename: ':memory:' });
   const quizStore = createQuizStore({ filename: ':memory:' });
-  const { server } = createAuthServer({ store, quizStore });
+  const { server } = createAuthServer({ ...isolatedStores(), store, quizStore });
   const port = await listen(server);
   const baseUrl = `http://127.0.0.1:${port}`;
 
@@ -324,6 +338,7 @@ test('email auth HTTP API sends codes, registers, logs in, binds, and resets pas
   let nextCode = '123456';
   let now = new Date('2026-07-30T12:00:00.000Z');
   const { server } = createAuthServer({
+    ...isolatedStores(),
     store,
     quizStore,
     emailSender: async (message) => sent.push(message),
@@ -392,6 +407,7 @@ test('student-ID submissions, moderation, and authenticated likes work through H
   const quizStore = createQuizStore({ filename: ':memory:' });
   const contentStore = createContentStore({ filename: ':memory:' });
   const { server } = createAuthServer({
+    ...isolatedStores(),
     store,
     quizStore,
     contentStore,
@@ -510,7 +526,7 @@ test('content admin API protects writes and publishes content to the public cour
   const quizStore = createQuizStore({ filename: ':memory:' });
   const contentStore = createContentStore({ filename: ':memory:' });
   const uploadDirectory = mkdtempSync(join(tmpdir(), 'zjubio-http-content-'));
-  const { server } = createAuthServer({ store, quizStore, contentStore, uploadDirectory,
+  const { server } = createAuthServer({ ...isolatedStores(), store, quizStore, contentStore, uploadDirectory,
     adminCc98Names: new Set(['cc98_bio_visitor']),
     adminInviteToken: 'shared-admin-token',
   });
@@ -571,7 +587,7 @@ test('content admin API validates and serves uploaded PDF files', async () => {
   const quizStore = createQuizStore({ filename: ':memory:' });
   const contentStore = createContentStore({ filename: ':memory:' });
   const uploadDirectory = mkdtempSync(join(tmpdir(), 'zjubio-http-files-'));
-  const { server } = createAuthServer({ store, quizStore, contentStore, uploadDirectory,
+  const { server } = createAuthServer({ ...isolatedStores(), store, quizStore, contentStore, uploadDirectory,
     adminCc98Names: new Set(['cc98_bio_visitor']),
     adminInviteToken: 'shared-admin-token',
   });
@@ -659,6 +675,7 @@ test('activity HTTP API exposes only administrator-managed push-article entries'
   const quizStore = createQuizStore({ filename: ':memory:' });
   const contentStore = createContentStore({ filename: ':memory:' });
   const { server } = createAuthServer({
+    ...isolatedStores(),
     store, quizStore, contentStore,
     adminCc98Names: new Set(['cc98_bio_visitor']),
     adminInviteToken: 'shared-admin-token',

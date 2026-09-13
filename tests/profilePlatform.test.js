@@ -4,12 +4,25 @@ import assert from 'node:assert/strict';
 import { createAuthStore } from '../server/authStore.js';
 import { hashPassword } from '../server/authService.js';
 import { createContentStore } from '../server/content/contentStore.js';
+import { createStudentHomepageStore } from '../server/studentHomepage/studentHomepageStore.js';
 import {
   approveSubmission,
   createRevisionSubmission,
 } from '../server/content/submissionService.js';
 import { createAuthServer } from '../server/server.js';
 import { createQuizStore } from '../server/quiz/quizStore.js';
+
+// Stores these tests do not exercise directly. Without them createAuthServer
+// falls back to its production file paths (server/data/*.sqlite), so test
+// files running in parallel contend on the same on-disk database and fail
+// with "database is locked". Spread first so explicit stores still win.
+function isolatedStores() {
+  return {
+    contentStore: createContentStore({ filename: ':memory:' }),
+    studentHomepageStore: createStudentHomepageStore({ filename: ':memory:' }),
+  };
+}
+
 
 function listen(server) {
   return new Promise((resolve) => {
@@ -143,6 +156,7 @@ test('profile HTTP API keeps email private and lets only the owner archive a pos
   });
   authStore.createSession({ id: 'profile-session', userId: user.id });
   const { server } = createAuthServer({
+    ...isolatedStores(),
     store: authStore,
     contentStore,
     quizStore,
@@ -186,6 +200,7 @@ test('logged-in users can update their own grade through the profile API', async
   });
   authStore.createSession({ id: 'grade-session', userId: user.id });
   const { server } = createAuthServer({
+    ...isolatedStores(),
     store: authStore, contentStore, quizStore, emailSender: async () => {},
   });
   const port = await listen(server);
@@ -227,6 +242,7 @@ test('the grade endpoint rejects anonymous requests', async () => {
   authStore.initialize();
   contentStore.initialize();
   const { server } = createAuthServer({
+    ...isolatedStores(),
     store: authStore, contentStore, quizStore, emailSender: async () => {},
   });
   const port = await listen(server);
@@ -261,7 +277,7 @@ test('owners can edit and withdraw pending submissions and delete rejected submi
     submitterId: user.id, submitterName: user.nickname,
   });
   contentStore.setSubmissionStatus(rejected.id, 'rejected', { id: 1, cc98Nickname: '管理员' });
-  const { server } = createAuthServer({ store: authStore, contentStore, quizStore, emailSender: async () => {} });
+  const { server } = createAuthServer({ ...isolatedStores(), store: authStore, contentStore, quizStore, emailSender: async () => {} });
   const port = await listen(server);
   const baseUrl = `http://127.0.0.1:${port}`;
   const headers = { cookie: 'study_session=submission-owner', 'content-type': 'application/json' };

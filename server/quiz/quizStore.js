@@ -232,7 +232,23 @@ export function createQuizStore({ filename = 'server/data/auth.sqlite' } = {}) {
       `);
     },
 
+    // Runs on every boot for every configured bank (~2000 questions total).
+    // Outside a transaction each statement auto-commits and fsyncs on its own,
+    // which made startup take minutes on ordinary disks before the server ever
+    // began listening. One transaction turns that into a single flush.
     replaceCollection(collection, categories, questions, importRun) {
+      db.exec('begin immediate');
+      try {
+        const result = this.replaceCollectionWithinTransaction(collection, categories, questions, importRun);
+        db.exec('commit');
+        return result;
+      } catch (error) {
+        db.exec('rollback');
+        throw error;
+      }
+    },
+
+    replaceCollectionWithinTransaction(collection, categories, questions, importRun) {
       const now = new Date().toISOString();
       const existing = this.findCollectionBySlug(collection.slug);
 

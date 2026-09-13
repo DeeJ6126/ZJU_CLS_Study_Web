@@ -65,26 +65,31 @@ function applyReplacements(input) {
     return `<blockquote class="ubb-quote">${inner}</blockquote>`;
   });
 
+  // NOTE: `text` here has already been through escapeHtml() in ubbToHtml(), so
+  // every value captured below is escaped. Escaping it a second time turns a
+  // URL's `&` into `&amp;amp;`, which the browser then resolves back to a
+  // literal `&amp;` — silently corrupting every link and image whose URL has
+  // a query string. Use the captured values as-is.
+
   // [url=href]text[/url] — paired form.
   text = text.replace(/\[url=([^\]\n]+)\]([\s\S]*?)\[\/url\]/g, (_, href, content) => {
     const safeHref = sanitizeUrl(href);
     if (!safeHref) return content;
-    return `<a class="ubb-link" href="${escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer">${content}</a>`;
+    return `<a class="ubb-link" href="${safeHref}" target="_blank" rel="noopener noreferrer">${content}</a>`;
   });
 
   // [url]href[/url] — single-value form (link text is the URL itself).
   text = text.replace(/\[url\]([^\[\n]+?)\[\/url\]/g, (_, href) => {
     const safeHref = sanitizeUrl(href.trim());
-    if (!safeHref) return escapeHtml(href);
-    const label = escapeHtml(safeHref);
-    return `<a class="ubb-link" href="${escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+    if (!safeHref) return href;
+    return `<a class="ubb-link" href="${safeHref}" target="_blank" rel="noopener noreferrer">${safeHref}</a>`;
   });
 
   // [img]src[/img]
   text = text.replace(/\[img\]([^\[\n]+?)\[\/img\]/g, (_, src) => {
     const safeSrc = sanitizeUrl(src.trim());
     if (!safeSrc) return '';
-    return `<img class="ubb-image" src="${escapeHtml(safeSrc)}" alt="" loading="lazy" />`;
+    return `<img class="ubb-image" src="${safeSrc}" alt="" loading="lazy" />`;
   });
 
   // [size=N]text[/size]

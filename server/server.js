@@ -107,7 +107,15 @@ async function readJsonBody(request) {
     chunks.push(chunk);
   }
   const text = Buffer.concat(chunks).toString('utf8');
-  return text ? JSON.parse(text) : {};
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    // A body the client got wrong is a 400, not a 500. Letting the SyntaxError
+    // escape also buried every malformed request in the uncaught-error log,
+    // which is where genuine server faults are supposed to stand out.
+    throw new HttpError(400, '请求体不是有效的 JSON。');
+  }
 }
 
 async function readBinaryBody(request, limit) {
@@ -132,13 +140,20 @@ function sendJson(response, status, body, headers = {}) {
 }
 
 // Client address for rate limiting. The server listens on 127.0.0.1 behind a
-// reverse proxy, so the socket address is always local; read the first entry
-// of X-Forwarded-For, which the proxy (Apache) injects and overwrites.
+// reverse proxy, so the socket address is always local.
+//
+// mod_proxy *appends* the peer address to any X-Forwarded-For the client sent
+// (see deploy/apache-zjubio.conf), it does not overwrite it. So the first
+// entry is whatever the client chose to put there and is fully spoofable —
+// trusting it lets an attacker defeat every per-IP limit by rotating a header.
+// The last entry is the one our own proxy appended, so that is the only value
+// we can rely on.
 export function getClientIp(request) {
   const forwarded = request.headers?.['x-forwarded-for'];
   if (forwarded) {
-    const first = String(forwarded).split(',')[0].trim();
-    if (first) return first;
+    const entries = String(forwarded).split(',').map((part) => part.trim()).filter(Boolean);
+    const last = entries[entries.length - 1];
+    if (last) return last;
   }
   return request.socket?.remoteAddress ?? '';
 }
@@ -251,11 +266,17 @@ export function createAuthServer({
   const courseCatalog = loadServerCourseCatalog();
 
   const server = createServer(async (request, response) => {
+    // Declared outside the try block so the catch handler can still read them
+    // for error context. A `const` inside `try` is not in scope in `catch`,
+    // and referencing it there throws a ReferenceError that escapes the
+    // handler entirely — taking the whole process down with it.
+    let url = null;
+    let quizUserId = null;
     try {
-      const url = new URL(request.url, `http://${request.headers.host}`);
+      url = new URL(request.url, `http://${request.headers.host}`);
       const cookies = parseCookies(request.headers.cookie);
       const sessionId = cookies[sessionCookieName] ?? '';
-      const quizUserId = getAuthenticatedUserId(store, sessionId);
+      quizUserId = getAuthenticatedUserId(store, sessionId);
       const currentUser = getCurrentUser(store, sessionId);
       const quizAccountUserId = canLeaveSiteTrace(currentUser) ? quizUserId : null;
 

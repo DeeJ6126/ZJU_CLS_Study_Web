@@ -155,6 +155,31 @@ export async function verifyPassword(password, passwordHash) {
   return expected.length === candidate.length && timingSafeEqual(expected, candidate);
 }
 
+// Shape-valid hash that no password can match: 16-byte salt, 64-byte key.
+const absentUserPasswordHash = `${'0'.repeat(32)}:${'0'.repeat(128)}`;
+
+/**
+ * Verify a password against a user row that may not exist.
+ *
+ * Returning early when the lookup misses leaks account existence through
+ * response timing — a hit pays for one scrypt derivation, a miss pays for
+ * none, and scrypt is slow enough for that gap to be measurable remotely.
+ * Burning an equivalent derivation makes both paths cost the same. (The
+ * database lookup itself still differs slightly, but that is orders of
+ * magnitude below the scrypt cost that used to dominate.)
+ *
+ * @param {string} password
+ * @param {Object|null|undefined} user Row from authStore, or null when absent.
+ * @returns {Promise<boolean>}
+ */
+export async function verifyPasswordForPossibleUser(password, user) {
+  if (!user?.passwordHash) {
+    await verifyPassword(password, absentUserPasswordHash);
+    return false;
+  }
+  return verifyPassword(password, user.passwordHash);
+}
+
 function validatePassword(password) {
   return String(password ?? '').length >= 8;
 }
@@ -211,7 +236,13 @@ export async function registerCc98(
     && adminInviteToken === expectedAdminInviteToken;
   const passwordIsValid = isAdmin ? String(password ?? '').length >= 10 : validatePassword(password);
   if (!normalizedName || !passwordIsValid) {
-    if (nameMatchesAdminAllowlist) {
+    // Gate the admin-specific hint on `isAdmin`, not on allowlist membership
+    // alone. Keying it off the allowlist turned this branch into an oracle:
+    // anyone could probe a CC98 name with a short password and learn from the
+    // wording whether that name is provisioned as an administrator — exactly
+    // what the invite-token design above is trying not to reveal. A caller who
+    // already proved knowledge of the token learns nothing new from it.
+    if (isAdmin) {
       return { ok: false, status: 400, message: '管理员密码至少需要 10 位。' };
     }
     return { ok: false, status: 400, message: '请填写有效验证码和至少 8 位密码。' };
@@ -250,7 +281,7 @@ export async function registerCc98(
  */
 export async function loginCc98(store, { cc98Name, password }) {
   const user = store.findUserByCc98Name(normalizeText(cc98Name));
-  if (!user || !(await verifyPassword(password, user.passwordHash))) {
+  if (!(await verifyPasswordForPossibleUser(password, user))) {
     return { ok: false, status: 401, message: 'CC98 名字或密码错误。' };
   }
 
