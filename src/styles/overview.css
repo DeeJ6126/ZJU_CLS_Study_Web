@@ -101,43 +101,68 @@
   font-weight: 800;
 }
 
-/* 按培养方案原文结构展开的大纲视图。 */
+/* 按培养方案原文结构展开的大纲视图。
+   顶层小节沿用 .overview-section 那套装饰（3px 绿色顶栏 + 浅色标题条 +
+   --font-heading 衬线标题），让两种视图在视觉上是同一套语言；下级小节
+   保留衬线字体但逐级缩小，靠缩进表达层级。 */
 .overview-outline {
   display: grid;
   gap: 4px;
 }
 
-.overview-outline__row.is-depth-0 { margin-top: 18px; }
-.overview-outline__row.is-depth-1 { padding-left: 18px; }
-.overview-outline__row.is-depth-2 { padding-left: 36px; }
-.overview-outline__row.is-depth-3 { padding-left: 54px; }
+.overview-outline__row.is-depth-0 { margin-top: 22px; }
+.overview-outline__row.is-depth-1 { padding-left: 16px; }
+.overview-outline__row.is-depth-2 { padding-left: 32px; }
+.overview-outline__row.is-depth-3 { padding-left: 48px; }
 
 .overview-outline__head {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 18px;
   margin: 0;
-  padding: 8px 0;
-  color: #243b32;
-  font-size: 15px;
-  font-weight: 800;
-}
-
-.overview-outline__row.is-depth-0 > .overview-outline__head {
-  border-bottom: 1px solid #e3ebe6;
+  padding: 9px 0 7px;
+  color: #1d382e;
+  font-family: var(--font-heading);
+  font-weight: 600;
   font-size: 17px;
 }
 
+.overview-outline__row.is-depth-2 > .overview-outline__head,
+.overview-outline__row.is-depth-3 > .overview-outline__head {
+  font-size: 15px;
+}
+
+/* 顶层小节：与 .overview-section 一致的绿色顶栏 + 标题条。 */
+.overview-outline__row.is-depth-0 {
+  border-top: 3px solid #245e48;
+  background: #ffffff;
+}
+
+.overview-outline__row.is-depth-0 > .overview-outline__head {
+  min-height: 66px;
+  align-items: center;
+  margin-bottom: 14px;
+  padding: 12px 16px;
+  border: 1px solid #dce4df;
+  border-top: 0;
+  background: #f8faf9;
+  font-size: 22px;
+}
+
 .overview-outline__head em {
-  color: #68766f;
+  flex: none;
+  color: #74817b;
+  font-family: var(--font-body);
   font-size: 12px;
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .overview-outline__note {
   margin: 0 0 6px;
   color: #7b6a43;
+  font-family: var(--font-body);
   font-size: 12px;
 }
 
@@ -162,8 +187,11 @@
   background: transparent;
   color: #65736c;
   cursor: pointer;
+  /* font-family 必须写在 font 简写之后，否则会被 font: inherit 重置。 */
   font: inherit;
-  font-weight: 800;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .overview-modules button.is-active {
@@ -436,8 +464,13 @@ html[data-theme="dark"] .overview-course-grid > article > button {
 html[data-theme="dark"] .overview-outline__head {
   color: #e8edf4;
 }
+html[data-theme="dark"] .overview-outline__row.is-depth-0 {
+  border-top-color: #8ad3bd;
+  background: #15202f;
+}
 html[data-theme="dark"] .overview-outline__row.is-depth-0 > .overview-outline__head {
-  border-bottom-color: #2a374a;
+  border-color: #2a374a;
+  background: #1d2a3b;
 }
 html[data-theme="dark"] .overview-outline__head em {
   color: #8a98ad;
