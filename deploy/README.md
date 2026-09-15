@@ -15,8 +15,7 @@
    `ADMIN_STUDENT_IDS`、`SMTP_USER`、`SMTP_PASSWORD`；权限设为仅服务管理员和
    `zjubio_run` 用户可读。不要把真实密钥提交到 Git。
 3. 将 `deploy/supervisor-zjubio.ini` 安装为
-   `/etc/supervisor/conf.d/zjubio.ini`。当前 Supervisor 主配置尚无 include，需在
-   `/etc/supervisor/conf.d/supervisord.conf` 末尾一次性加入：
+   `/etc/supervisor/conf.d/zjubio.ini`。Supervisor 主配置必须包含：
 
    ```ini
    [include]
@@ -24,10 +23,15 @@
    ```
 
    Supervisor 直接运行独立 Node.js 22，并通过 Node 的
-   `--env-file=/etc/zjubio/zjubio.env` 读取密钥，不经 shell 启动器。
+   `--env-file=/etc/zjubio/zjubio.env` 读取密钥，不经 shell 启动器。模板同时托管
+   `zjubio-node` 和 `zjubio-backup`；两者日志均有大小与历史文件上限。
 
-4. 创建 `/var/www/html/zjubio/log/` 并确保 `zjubio_run` 可写，然后执行 Supervisor
-   reread/update，确认 `zjubio-node` 为 `RUNNING`。
+4. 创建 `/var/www/html/zjubio/log/` 并确保 `zjubio_run` 可写，再创建
+   `/data/zjubio/backups/` 并确保同一用户可写。执行 Supervisor reread/update，确认
+   `zjubio-node` 与 `zjubio-backup` 都为 `RUNNING`。备份进程默认每天 03:20 生成
+   SQLite 一致性快照和上传/头像目录副本，并保留 14 天；可通过
+   `ZJUBIO_BACKUP_HOUR`、`ZJUBIO_BACKUP_MINUTE`、
+   `ZJUBIO_BACKUP_RETENTION_DAYS` 调整。
 5. 将 `deploy/apache-zjubio.conf` 安装为现有
    `/etc/apache2/sites-available/zjubio.conf`。必须先执行 `apache2ctl configtest`
    并看到 `Syntax OK`，再 graceful reload。
@@ -38,3 +42,11 @@
 
 CC98 后端接口为兼容历史账号而保留，但前端没有入口；新的管理员账号由
 `ADMIN_STUDENT_IDS` 白名单和对应浙大邮箱验证码共同确认。
+
+## 当前上线边界（2026-09-15）
+
+容器内 Node、Supervisor、Apache `/api/` 反代、SMTP 发信和首份数据库快照均已
+验证。公网网关仍需把根路径 `/api/` 转发到与 `/zjubio/` 相同的容器并保留原始
+路径；网关还应覆盖客户端传入的 `X-Forwarded-For`，写入真实客户端地址，并设置
+`X-Forwarded-Proto: https`。完成后再从校外网络执行 `docs/deployment-checklist.md`
+中的发布当天检查。

@@ -57,6 +57,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 - Added a backend cross-source search endpoint for courses, published content, activities, and approved student homepages, plus a frontend search client. The current homepage still uses its focused local search index (and profile lookup for users); the former global `SearchBar` is no longer mounted.
 - Added backend storage, public/application APIs, administrator moderation, and search indexing for the student-homepage directory. Frontend directory and moderation surfaces remain to be implemented.
 - Consolidated the frontend API clients around `src/services/apiClient.js` and completed the 2026-09-05 critical/high-priority security, state-isolation, navigation, modal, and interaction fixes recorded in `docs/audits/2026-09-05-new-round-audit.md`.
+- Deployed the application at commit `1aaf10d` with the isolated Node.js 22 runtime, Supervisor-managed backend, container Apache `/api/` proxy, bounded Node logs, zero-vulnerability production dependency lock, verified ZJU SMTP delivery, and a validated SQLite/upload snapshot under `/data/zjubio/backups/`.
 
 ## Known Good Verification
 
@@ -68,9 +69,10 @@ npm.cmd run build
 npm.cmd run check
 ```
 
-On 2026-09-08, the current identity-policy work passed all 367 tests,
-`npm.cmd run build`, `npm.cmd run check`, and `npm.cmd run check:architecture`.
-The browser check was not rerun during this work.
+On 2026-09-15, the production-readiness work passed all 380 tests,
+`npm.cmd run build`, and `npm.cmd run check` locally. The deployed server passed
+the same application suite before the backup scheduler was added; the final
+scheduler tests and full suite were then rerun before deployment.
 
 The dependency audit last reported zero vulnerabilities after `npm audit fix`.
 
@@ -81,10 +83,9 @@ homepage recommendation management.
 
 ## Deferred Or Not Yet Production-Ready
 
-- Production authentication hardening: HTTPS/proxy cookie policy, secret rotation, SMTP monitoring, backups, and stronger anti-abuse controls.
+- Public launch still depends on the outer gateway routing root `/api/` to the same container as `/zjubio/`, preserving the path and sanitizing forwarded client/protocol headers. After that change, run the external launch gate and create the first administrator account with student ID `3240105782`.
 - More course quiz migrations beyond the three current quiz courses.
-- Final deployment activation under `/var/www/html/zjubio/`: the inspected container currently has no zjubio Node Supervisor program and no Apache `/api` proxy. Templates are ready under `deploy/`, but installation needs the SSH wrapper permissions and real SMTP/admin environment values.
-- Content version history, automated backups, and multi-level administrator permissions.
+- Content version history and multi-level administrator permissions.
 - Vue integration for the backend student-homepage directory/application/admin workflow.
 - A deliberate product decision on whether the unmounted cross-source `SearchBar` should return or the endpoint should remain infrastructure-only; the homepage currently keeps its focused search experience.
 - The overview UI is intentionally an initial layout; the 2023 curriculum is omitted because it used legacy numeric course codes with no BIO-encoded courses. Course detail layout is deferred for a later redesign.

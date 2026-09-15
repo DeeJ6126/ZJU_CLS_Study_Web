@@ -8,7 +8,7 @@
 
 - 域名：`bis.zju.edu.cn`（浙大官方域名，HTTPS 证书/备案由学校承担）。
 - 服务器：Apache/2.4.41 (Ubuntu)，`/var/www/html/zjubio/` 提供静态前端。
-- 后端：Node `server/server.js`（仅监听 127.0.0.1:5175）。2026-09-08 实查未运行，Supervisor 中也尚无 zjubio program。
+- 后端：独立 Node.js 22 的 `server/server.js`，仅监听 `127.0.0.1:5175`，由 Supervisor 的 `zjubio-node` 守护。
 - 数据：SQLite 三库（auth / quiz / content）+ PDF 上传 + 头像上传。
 - 注册设计：可见前端仅接受数字学号 `@zju.edu.cn` 邮箱验证；CC98 接口只为后端兼容保留，不提供前端入口。
 - 权限设计：游客只读与匿名刷题；点赞、收藏、评论、投稿、资料修改和账号同步要求学号认证；管理员另有服务端管理权限。
@@ -25,9 +25,9 @@
 
 - **已完成**：会话 cookie 根据 `X-Forwarded-Proto` 增加 `Secure`，已测试 HTTPS 与直连 HTTP 两种情况。
 
-### 0.3 X-Forwarded-For 信任 ✅
+### 0.3 X-Forwarded-For 信任（待公网链路最终确认）
 
-- **已完成**：验证码与登录限流使用 `X-Forwarded-For` 首个地址，缺失时回退 socket 地址；Node 服务部署时只监听 `127.0.0.1`。
+- **当前状态**：Node 只接受容器 Apache 的本地连接，并保守使用转发链最后一项。公网网关启用 `/api/` 时必须覆盖客户端自带的 `X-Forwarded-For` 为真实客户端地址，并设置 `X-Forwarded-Proto: https`；随后按真实链路决定可信跳数，避免所有用户被误判为同一网关 IP。
 
 ### 0.4 健康检查端点 ✅
 
@@ -49,8 +49,8 @@
 - **怎么做/验收**：
   - 使用 `deploy/supervisor-zjubio.ini`；当前容器的 Supervisor 主配置是
     `/etc/supervisor/conf.d/supervisord.conf`，需先增加一次 `*.ini` include。
-  - 通过 `scripts/run-production-server.sh` 读取 `/etc/zjubio/zjubio.env`，避免把密钥写进 Supervisor 配置。
-  - reread/update 后确认 `zjubio-node` 为 `RUNNING`；重启容器后服务自动恢复。
+  - Supervisor 直接使用 `/opt/zjubio/node/bin/node --env-file=/etc/zjubio/zjubio.env`，避免把密钥写进配置或 shell。
+  - reread/update 后确认 `zjubio-node` 与 `zjubio-backup` 均为 `RUNNING`；重启容器后自动恢复。
 
 ### 1.3 Apache 反代 `/api`
 
@@ -91,8 +91,8 @@
 
 - **为什么**：账号/刷题进度/内容/投稿数据丢失不可重建。
 - **怎么做/验收**：
-  - cron 每日 `sqlite3 .backup` 三个库 + rsync 上传/头像目录到异机或网盘。
-  - 至少演练一次：从备份恢复到空库并确认数据完整。
+  - Supervisor 托管 `scripts/backup-scheduler.mjs`，每天 03:20 使用 Node SQLite `VACUUM INTO` 备份三类数据库，并复制上传/头像目录到 `/data/zjubio/backups/`，默认保留 14 天。
+  - 2026-09-15 已生成首份真实快照，三个数据库均通过 `PRAGMA integrity_check=ok`；仍需在积累真实内容后演练一次恢复。
 
 ### 2.2 安全响应头
 
@@ -106,8 +106,7 @@
 ### 2.3 服务端日志 + 轮转
 
 - **为什么**：排障与异常发现依赖日志。
-- **怎么做/验收**：Node 输出进 journald（systemd 自带）；
-  Apache error.log 确认轮转开启；上线后看一周日志无异常堆栈。
+- **怎么做/验收**：Node 与备份任务输出到 `/var/www/html/zjubio/log/`，由 Supervisor 按 10 MB/5 份（备份日志 5 MB/5 份）轮转；Apache 日志沿用系统轮转。上线后看一周日志无新增异常堆栈。
 
 ### 2.4 SMTP 发信监控
 
@@ -134,7 +133,7 @@
 ## 阶段 4 · 持续运维（每周约 10 分钟）
 
 - [ ] 备份目录大小正常、昨日备份存在
-- [ ] `journalctl -u zjubio` 无新增异常堆栈
+- [ ] `/var/www/html/zjubio/log/node.err` 与 `backup.err` 无新增异常堆栈
 - [ ] 验证码发信成功率正常
 - [ ] 投稿审核队列处理完毕
 - [ ] `npm audit` 无新增高危（或每月一次）
@@ -144,3 +143,4 @@
 ## 更新记录
 
 - 2026-08-16 初稿：基于公网开放场景（bis.zju.edu.cn）整理。
+- 2026-09-15：同步真实 Node 22、Supervisor、Apache、SMTP、日志轮转与 `/data` 备份状态；明确剩余公网 `/api/` 路由及可信代理验收。
