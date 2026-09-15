@@ -62,6 +62,8 @@ test('admin page uses the shared header, green sidebar, dense table, and explici
   assert.match(component, /admin-content-table/);
   assert.match(component, /管理员登录/);
   assert.match(component, /首次注册/);
+  assert.match(component, /type="password" required minlength="8"/);
+  assert.doesNotMatch(component, /minlength="10"/);
   assert.match(component, /保存草稿/);
   assert.match(component, /发布|下架/);
   assert.match(component, /管理服务暂时无法连接/);

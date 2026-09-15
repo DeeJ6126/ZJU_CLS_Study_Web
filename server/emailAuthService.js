@@ -146,14 +146,12 @@ export async function registerEmail(store, input, options = {}) {
   const studentId = email ? email.split('@')[0] : '';
   const nickname = String(input.nickname ?? '').trim();
   const isAdmin = Boolean(studentId && options.adminStudentIds?.has(studentId));
-  const passwordValid = isAdmin
-    ? String(input.password ?? '').length >= 10
-    : validatePassword(input.password);
+  const passwordValid = validatePassword(input.password);
   if (!email || !passwordValid || !validateNickname(nickname)) {
     return {
       ok: false,
       status: 400,
-      message: `请填写纯数字学号、有效昵称和至少 ${isAdmin ? 10 : 8} 位密码。`,
+      message: '请填写纯数字学号、有效昵称和至少 8 位密码。',
     };
   }
   if (store.findUserByEmail(email)) {

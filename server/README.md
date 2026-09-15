@@ -73,7 +73,7 @@ npm.cmd run server
 
 An allowlisted student ID receives the `admin` role only after the corresponding
 `@zju.edu.cn` mailbox passes the normal registration-code check. Administrator
-passwords must be at least 10 characters. Existing allowlisted email accounts are
+passwords use the same minimum of 8 characters as student accounts. Existing allowlisted email accounts are
 promoted on server startup. The management page is available at `#admin` and is
 intentionally absent from student navigation. `ADMIN_CC98_NAMES` and
 `ADMIN_INVITE_TOKEN` remain available only for legacy backend provisioning.

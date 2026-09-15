@@ -173,7 +173,7 @@ test('admin allowlist upgrades to admin when the correct invite token is provide
   ]);
   const registered = await registerCc98(store, {
     code: 'admin-with-invite',
-    password: 'admin-pass-123',
+    password: 'adm1n888',
     adminInviteToken: 'shared-admin-token',
   }, {
     adminCc98Names: new Set(['cc98_bio_visitor']),
@@ -183,7 +183,7 @@ test('admin allowlist upgrades to admin when the correct invite token is provide
 
   const login = await loginCc98(store, {
     cc98Name: 'cc98_bio_visitor',
-    password: 'admin-pass-123',
+    password: 'adm1n888',
   });
   assert.equal(login.user.role, 'admin');
 });

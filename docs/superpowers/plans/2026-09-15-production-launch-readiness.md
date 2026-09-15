@@ -126,7 +126,7 @@
 
 - [ ] **Step 2: Complete the administrator account flow**
 
-  Register student `3240105782` with a password of at least 10 characters, log
+  Register student `3240105782` with a password of at least 8 characters, log
   in, and confirm `/api/auth/me` returns role `admin`.
 
 - [ ] **Step 3: Exercise one reversible management workflow**

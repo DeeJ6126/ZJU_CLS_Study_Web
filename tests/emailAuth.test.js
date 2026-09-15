@@ -128,12 +128,12 @@ test('administrator student-ID allowlist grants admin only after mailbox verific
   const options = { ...mail.options, adminStudentIds: new Set(['3220100000']) };
 
   const shortPassword = await registerEmail(store, {
-    studentId: '3220100000', nickname: '管理同学', code: '123456', password: '12345678',
+    studentId: '3220100000', nickname: '管理同学', code: '123456', password: '1234567',
   }, options);
   assert.equal(shortPassword.status, 400);
 
   const registered = await registerEmail(store, {
-    studentId: '3220100000', nickname: '管理同学', code: '123456', password: 'admin-pass-123',
+    studentId: '3220100000', nickname: '管理同学', code: '123456', password: '12345678',
   }, options);
   assert.equal(registered.ok, true);
   assert.equal(registered.user.role, 'admin');

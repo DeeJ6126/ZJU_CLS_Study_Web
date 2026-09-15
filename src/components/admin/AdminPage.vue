@@ -594,7 +594,7 @@ onMounted(initialize);
           </label>
           <label>
             <span>密码</span>
-            <input v-model="credentials.password" type="password" required :minlength="authMode === 'register' ? 10 : 8" :autocomplete="authMode === 'register' ? 'new-password' : 'current-password'">
+            <input v-model="credentials.password" type="password" required minlength="8" :autocomplete="authMode === 'register' ? 'new-password' : 'current-password'">
           </label>
           <p v-if="authNotice" class="admin-notice" role="status">{{ authNotice }}</p>
           <button class="admin-primary-action" type="submit" :disabled="authBusy">

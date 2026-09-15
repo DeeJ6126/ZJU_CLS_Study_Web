@@ -207,8 +207,8 @@ export function createSession(store, userId) {
  * Admin role is granted only when BOTH conditions hold: the CC98 name is
  * on the allowlist AND the caller knows the shared admin invite token.
  * The token check prevents an attacker who obtained an unused admin seed
- * code from creating an admin account by guessing a 10+ character
- * password. The role downgrades silently to 'student' if either check
+ * code from creating an admin account without the shared token. The role
+ * downgrades silently to 'student' if either check
  * fails — that is by design: we don't want to leak whether a given
  * CC98 name is on the allowlist.
  *
@@ -234,17 +234,8 @@ export async function registerCc98(
   const isAdmin = nameMatchesAdminAllowlist
     && expectedAdminInviteToken.length > 0
     && adminInviteToken === expectedAdminInviteToken;
-  const passwordIsValid = isAdmin ? String(password ?? '').length >= 10 : validatePassword(password);
+  const passwordIsValid = validatePassword(password);
   if (!normalizedName || !passwordIsValid) {
-    // Gate the admin-specific hint on `isAdmin`, not on allowlist membership
-    // alone. Keying it off the allowlist turned this branch into an oracle:
-    // anyone could probe a CC98 name with a short password and learn from the
-    // wording whether that name is provisioned as an administrator — exactly
-    // what the invite-token design above is trying not to reveal. A caller who
-    // already proved knowledge of the token learns nothing new from it.
-    if (isAdmin) {
-      return { ok: false, status: 400, message: '管理员密码至少需要 10 位。' };
-    }
     return { ok: false, status: 400, message: '请填写有效验证码和至少 8 位密码。' };
   }
 
