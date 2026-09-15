@@ -18,7 +18,7 @@ export function createActivityApiClient(fetchImpl = fetch) {
   return {
     async fetchActivities() {
       try {
-        const response = await fetchImpl('api/activities', {
+        const response = await fetchImpl('/api/activities', {
           credentials: 'include',
         });
         if (!response.ok) return readFallback();

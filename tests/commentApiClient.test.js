@@ -13,6 +13,6 @@ test('comment client lists, creates, edits, and deletes identified comments', as
   await client.update('comment-1', '修改');
   await client.remove('comment-1');
   assert.deepEqual(requests.map((request) => request.options.method ?? 'GET'), ['GET', 'POST', 'PATCH', 'DELETE']);
-  assert.equal(requests[0].path, 'api/content/items/content-1/comments');
-  assert.equal(requests[2].path, 'api/comments/comment-1');
+  assert.equal(requests[0].path, '/api/content/items/content-1/comments');
+  assert.equal(requests[2].path, '/api/comments/comment-1');
 });

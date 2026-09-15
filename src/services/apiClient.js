@@ -38,11 +38,16 @@ function isBinaryBody(body) {
 }
 
 function joinUrl(basePath, path) {
-  const base = String(basePath ?? '').replace(/\/$/, '');
+  const rawBase = String(basePath ?? '');
+  const base = rawBase.replace(/\/$/, '');
   const tail = String(path ?? '');
   const isAbsolute = tail.startsWith('/');
   const tailClean = isAbsolute ? tail : tail.replace(/^\//, '');
-  if (!base) return tailClean;
+  if (!base) {
+    return isAbsolute || rawBase.startsWith('/')
+      ? `/${tailClean.replace(/^\/+/, '')}`
+      : tailClean;
+  }
   if (isAbsolute) return `${base}${tailClean}`;
   return `${base}/${tailClean}`;
 }

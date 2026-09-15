@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createAccountDataApiClient } from '../src/services/accountDataApiClient.js';
 
-test('account data client manages courses, favorites, and notifications with relative deployment paths', async () => {
+test('account data client manages courses, favorites, and notifications with root API paths', async () => {
   const requests = [];
   const client = createAccountDataApiClient(async (path, options = {}) => {
     requests.push({ path, options });
@@ -20,10 +20,10 @@ test('account data client manages courses, favorites, and notifications with rel
   await client.markNotificationRead('notice-1');
   await client.markAllNotificationsRead();
 
-  assert.ok(requests.every((request) => request.path.startsWith('api/')));
+  assert.ok(requests.every((request) => request.path.startsWith('/api/')));
   assert.equal(requests[1].options.headers['x-course-schedule-upload'], 'xlsx');
   assert.equal(requests[1].options.headers['x-file-name'], encodeURIComponent('课表.xlsx'));
   assert.equal(requests[2].options.method, 'PUT');
   assert.equal(requests[6].options.method, 'PUT');
-  assert.equal(requests[10].path, 'api/account/notifications/read-all');
+  assert.equal(requests[10].path, '/api/account/notifications/read-all');
 });

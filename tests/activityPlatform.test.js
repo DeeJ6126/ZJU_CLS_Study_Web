@@ -71,10 +71,11 @@ test('public activity client keeps successful empty API responses and falls back
   });
   assert.deepEqual((await emptyClient.fetchActivities()).activities, []);
   assert.equal(calls.length, 1);
+  assert.equal(calls[0], '/api/activities');
 
   const fallbackClient = createActivityApiClient(async (path) => {
     calls.push(path);
-    if (path.startsWith('api/activities')) throw new Error('offline');
+    if (path.startsWith('/api/activities')) throw new Error('offline');
     return { ok: true, async json() { return catalog; } };
   });
   const fallback = await fallbackClient.fetchActivities();
