@@ -64,6 +64,8 @@ test('course schedule validation rejects oversized and forged uploads', () => {
 test('server course catalog uses the shared course-code data source', () => {
   const catalog = loadServerCourseCatalog();
   assert.equal(catalog.byCode.get('BIO2110F').name, '微生物学（甲）');
+  assert.equal(catalog.byCode.get('CAB2001F').name, '生物统计学与试验设计（甲）');
+  assert.equal(catalog.codes.has('MATH2432F'), false);
   assert.equal(catalog.codes.has('SIS0506G'), false);
 });
 

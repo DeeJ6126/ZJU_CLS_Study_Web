@@ -1,4 +1,4 @@
-import { buildResourceSections, getCourseByCode, parseCourseCsv } from './resourceCatalog.js';
+import { buildResourceSections, filterSiteCourses, getCourseByCode, parseCourseCsv } from './resourceCatalog.js';
 import { publicAssetPath } from '../../utils/publicPath.js';
 export { programOptions, resourceProgramMeta } from './resourceCatalog.js';
 
@@ -17,7 +17,7 @@ export async function loadResourceCatalog() {
   }
 
   const csvText = await response.text();
-  const courses = parseCourseCsv(csvText);
+  const courses = filterSiteCourses(parseCourseCsv(csvText));
   const sections = buildResourceSections(courses);
   catalogCache = { courses, sections };
   return catalogCache;

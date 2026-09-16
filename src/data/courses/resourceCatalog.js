@@ -191,6 +191,10 @@ export function parseCourseCsv(csvText) {
   return lines.slice(1).map((line, index) => normalizeCourse(parseCsvLine(line), index, headerIndex));
 }
 
+export function filterSiteCourses(courses) {
+  return courses.filter((course) => course.code?.startsWith('BIO') || course.code === 'CAB2001F');
+}
+
 export function getCourseByCode(courses, courseCode) {
   return courses.find((course) => course.code === courseCode) ?? null;
 }
