@@ -102,6 +102,7 @@ test('session cookie gains Secure behind a https proxy and omits it otherwise', 
     });
     assert.equal(plain.status, 200);
     assert.doesNotMatch(plain.headers.get('set-cookie'), /; Secure/);
+    assert.match(plain.headers.get('set-cookie'), /; Path=\/zjubio\//);
 
     const secure = await postJson(baseUrl, '/api/auth/login/cc98', {
       cc98Name: 'cc98_bio_visitor',
@@ -109,6 +110,7 @@ test('session cookie gains Secure behind a https proxy and omits it otherwise', 
     }, { 'x-forwarded-proto': 'https' });
     assert.equal(secure.status, 200);
     assert.match(secure.headers.get('set-cookie'), /; Secure/);
+    assert.match(secure.headers.get('set-cookie'), /; Path=\/zjubio\//);
   } finally {
     server.close();
   }

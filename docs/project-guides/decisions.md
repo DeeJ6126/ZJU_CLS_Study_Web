@@ -168,4 +168,6 @@ project must not require or claim the shared host's root `/api/` namespace.
 
 Impact: frontend requests go through `src/services/apiClient.js`, backend URLs
 returned to browsers use `/zjubio/api/...`, and deployment health checks test
-both Node `/api/health` and Apache `/zjubio/api/health`.
+both Node `/api/health` and Apache `/zjubio/api/health`. Authentication cookies
+use `Path=/zjubio/` so they are not sent to unrelated projects on the shared
+host.

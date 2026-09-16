@@ -70,6 +70,7 @@ import { loadServerCourseCatalog } from './account/courseCatalogService.js';
 import { createLoginGuard, normalizeLoginKey } from './loginGuard.js';
 
 const sessionCookieName = 'study_session';
+const sessionCookiePath = '/zjubio/';
 
 function parseCookies(header = '') {
   return Object.fromEntries(
@@ -169,12 +170,12 @@ export function isHttpsRequest(request) {
 
 function setSessionCookie(sessionId, request) {
   const secure = isHttpsRequest(request) ? '; Secure' : '';
-  return `${sessionCookieName}=${encodeURIComponent(sessionId)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800${secure}`;
+  return `${sessionCookieName}=${encodeURIComponent(sessionId)}; Path=${sessionCookiePath}; HttpOnly; SameSite=Lax; Max-Age=604800${secure}`;
 }
 
 function clearSessionCookie(request) {
   const secure = isHttpsRequest(request) ? '; Secure' : '';
-  return `${sessionCookieName}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`;
+  return `${sessionCookieName}=; Path=${sessionCookiePath}; HttpOnly; SameSite=Lax; Max-Age=0${secure}`;
 }
 
 function getAuthenticatedUserId(store, sessionId) {
