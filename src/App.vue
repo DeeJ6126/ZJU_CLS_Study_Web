@@ -731,10 +731,12 @@ function toggleCategorySourceId(sourceId) {
   selectedCategorySourceIds.value = [...selected];
   if (isBotanyCollection.value) {
     selectedCategorySourceIds.value = writeBotanySelection(
+      quizScope.value,
       normalizeBotanyCategorySelection(selectedCategorySourceIds.value, categories.value),
     );
   } else if (isMicrobiologyCollection.value) {
     selectedCategorySourceIds.value = writeMicrobiologySelection(
+      quizScope.value,
       normalizeMicrobiologyCategorySelection(selectedCategorySourceIds.value, categories.value),
     );
   }

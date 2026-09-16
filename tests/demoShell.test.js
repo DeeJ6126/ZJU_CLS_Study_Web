@@ -148,6 +148,19 @@ test('botany slice course opens a full-width six-page subapp without family/abou
   assert.doesNotMatch(app, /重新乱序开始/);
 });
 
+test('botany and microbiology single-category toggles persist in the active quiz scope', async () => {
+  const app = await readFile(new URL('../src/App.vue', import.meta.url), 'utf8');
+
+  assert.match(
+    app,
+    /writeBotanySelection\(\s*quizScope\.value,\s*normalizeBotanyCategorySelection\(selectedCategorySourceIds\.value, categories\.value\)/,
+  );
+  assert.match(
+    app,
+    /writeMicrobiologySelection\(\s*quizScope\.value,\s*normalizeMicrobiologyCategorySelection\(selectedCategorySourceIds\.value, categories\.value\)/,
+  );
+});
+
 test('microbiology course opens a full-width seven-page subapp without about page', async () => {
   const app = await readFile(new URL('../src/App.vue', import.meta.url), 'utf8');
   const css = await readFile(new URL('../src/styles/demo.css', import.meta.url), 'utf8');
