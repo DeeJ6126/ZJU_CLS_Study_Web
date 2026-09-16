@@ -4,7 +4,7 @@ This file is the quick map for quiz-related frontend services in `src/services/`
 
 ## Shared Services
 
-- `quizApiClient.js`: browser API client for quiz backend routes. Quiz API paths use absolute `/api/...` paths.
+- `quizApiClient.js`: browser API client for quiz backend routes. Source paths use the Node service's `/api/...` route names; the shared client exposes them publicly below `/zjubio/api/...`.
 - `quizInteractionService.js`: pending answer state, keyboard behavior, submit payloads, and next-question targets.
 - `quizRangeService.js`: converts backend categories into selectable practice ranges and stable question tiles.
 - `quizAnswerViewService.js`: option state classes, answer markdown source selection, translation focus, and vocabulary feedback.

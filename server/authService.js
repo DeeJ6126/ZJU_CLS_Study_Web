@@ -1,5 +1,6 @@
 import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
+import { publicApiPath } from './publicApiPath.js';
 
 const scrypt = promisify(scryptCallback);
 
@@ -105,7 +106,7 @@ export function publicUser(user) {
     cc98Nickname: user.cc98Name || '未绑定',
     email: maskEmail(user.email),
     avatarUrl: user.avatarStoredName
-      ? `/api/profile-avatars/${encodeURIComponent(user.avatarStoredName)}`
+      ? publicApiPath(`/api/profile-avatars/${encodeURIComponent(user.avatarStoredName)}`)
       : '',
     avatarInitials: user.nickname.slice(0, 1).toUpperCase() || 'S',
     avatarColor: '#2d4a2b',

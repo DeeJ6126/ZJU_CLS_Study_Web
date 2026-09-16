@@ -1,3 +1,5 @@
+import { publicApiPath } from '../publicApiPath.js';
+
 const contentTypes = new Set(['experience', 'material', 'paper']);
 
 function clean(value) {
@@ -86,7 +88,9 @@ export function toPublicContentItem(item, likeState = {}, owner = null) {
       fileName: item.file.fileName,
       mimeType: item.file.mimeType,
       size: item.file.size,
-      url: item.file.url,
+      url: String(item.file.url ?? '').startsWith('/api/')
+        ? publicApiPath(item.file.url)
+        : item.file.url,
     } : null,
     likeCount: likeState.likeCount ?? 0,
     viewerLiked: Boolean(likeState.liked),

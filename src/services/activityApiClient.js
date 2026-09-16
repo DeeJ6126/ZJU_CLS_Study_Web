@@ -1,3 +1,5 @@
+import { publicApiPath } from './apiClient.js';
+
 const fallbackCatalogPath = 'content/activities/catalog.json';
 
 export function createActivityApiClient(fetchImpl = fetch) {
@@ -18,7 +20,7 @@ export function createActivityApiClient(fetchImpl = fetch) {
   return {
     async fetchActivities() {
       try {
-        const response = await fetchImpl('/api/activities', {
+        const response = await fetchImpl(publicApiPath('/api/activities'), {
           credentials: 'include',
         });
         if (!response.ok) return readFallback();

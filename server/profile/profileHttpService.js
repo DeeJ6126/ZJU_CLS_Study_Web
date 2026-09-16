@@ -7,6 +7,7 @@ import {
 } from '../content/submissionService.js';
 import { removeStoredFile } from '../content/contentFileService.js';
 import { ALLOWED_GRADES } from '../studentGrade.js';
+import { publicApiPath } from '../publicApiPath.js';
 
 function publicProfile(user) {
   if (!user) return null;
@@ -14,7 +15,7 @@ function publicProfile(user) {
     publicId: user.publicId,
     nickname: user.nickname,
     avatarUrl: user.avatarStoredName
-      ? `/api/profile-avatars/${encodeURIComponent(user.avatarStoredName)}`
+      ? publicApiPath(`/api/profile-avatars/${encodeURIComponent(user.avatarStoredName)}`)
       : '',
   };
 }

@@ -16,6 +16,16 @@
 //     string reflects the domain ("管理服务", "评论服务", etc.).
 
 const DEFAULT_NETWORK_ERROR_MESSAGE = '认证服务暂时无法连接。';
+export const PUBLIC_API_PREFIX = '/zjubio/api';
+
+export function publicApiPath(path) {
+  const raw = String(path ?? '');
+  if (raw === PUBLIC_API_PREFIX || raw.startsWith(`${PUBLIC_API_PREFIX}/`)) return raw;
+  if (raw === 'api' || raw === '/api') return PUBLIC_API_PREFIX;
+  if (raw.startsWith('api/')) return `${PUBLIC_API_PREFIX}/${raw.slice(4)}`;
+  if (raw.startsWith('/api/')) return `${PUBLIC_API_PREFIX}/${raw.slice(5)}`;
+  return null;
+}
 
 async function safeJson(response) {
   try {
@@ -38,6 +48,8 @@ function isBinaryBody(body) {
 }
 
 function joinUrl(basePath, path) {
+  const apiPath = publicApiPath(path);
+  if (apiPath) return apiPath;
   const rawBase = String(basePath ?? '');
   const base = rawBase.replace(/\/$/, '');
   const tail = String(path ?? '');

@@ -21,13 +21,13 @@ test('auth API client exposes email code, registration, login, binding, and rese
   await client.logout();
 
   assert.deepEqual(requests.map(({ path }) => path), [
-    '/api/auth/me',
-    '/api/auth/email/code',
-    '/api/auth/register/email',
-    '/api/auth/login/email',
-    '/api/auth/bind/email',
-    '/api/auth/password/reset/email',
-    '/api/auth/logout',
+    '/zjubio/api/auth/me',
+    '/zjubio/api/auth/email/code',
+    '/zjubio/api/auth/register/email',
+    '/zjubio/api/auth/login/email',
+    '/zjubio/api/auth/bind/email',
+    '/zjubio/api/auth/password/reset/email',
+    '/zjubio/api/auth/logout',
   ]);
   assert.equal(requests.every(({ options }) => options.credentials === 'include'), true);
 });

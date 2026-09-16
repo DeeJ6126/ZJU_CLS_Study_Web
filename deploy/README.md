@@ -35,7 +35,7 @@
 5. 将 `deploy/apache-zjubio.conf` 安装为现有
    `/etc/apache2/sites-available/zjubio.conf`。必须先执行 `apache2ctl configtest`
    并看到 `Syntax OK`，再 graceful reload。
-6. 依次验证容器内：`/api/health` 返回 200、`/zjubio/` 返回构建后的页面、
+6. 依次验证容器内：Node 直连 `/api/health` 与 Apache `/zjubio/api/health` 均返回 200、`/zjubio/` 返回构建后的页面、
    `#admin` 可通过管理员学号登录并读取管理接口。
 7. 最后从公网验证 `https://bis.zju.edu.cn/zjubio/`。若容器内全部正常但公网
    404，应由宿主机/公网网关为 `/zjubio/` 增加 path route，不要继续改容器应用。
@@ -45,8 +45,9 @@ CC98 后端接口为兼容历史账号而保留，但前端没有入口；新的
 
 ## 当前上线边界（2026-09-15）
 
-容器内 Node、Supervisor、Apache `/api/` 反代、SMTP 发信和首份数据库快照均已
-验证。公网网关仍需把根路径 `/api/` 转发到与 `/zjubio/` 相同的容器并保留原始
-路径；网关还应覆盖客户端传入的 `X-Forwarded-For`，写入真实客户端地址，并设置
+容器内 Node、Supervisor、SMTP 发信和首份数据库快照均已验证。项目 API 的公网
+路径固定为 `/zjubio/api/...`，容器 Apache 将其改写到 Node 的内部 `/api/...`；项目
+不占用共享域名根路径 `/api/`。公网网关只需像现有页面一样把 `/zjubio/` 转发到
+该容器并保留原始路径；网关还应覆盖客户端传入的 `X-Forwarded-For`，写入真实客户端地址，并设置
 `X-Forwarded-Proto: https`。完成后再从校外网络执行 `docs/deployment-checklist.md`
 中的发布当天检查。

@@ -8,7 +8,10 @@ export default defineConfig({
   base: process.env.GITHUB_PAGES === 'true' ? githubPagesBase : './',
   server: {
     proxy: {
-      '/api': process.env.VITE_API_TARGET ?? 'http://127.0.0.1:5175',
+      '/zjubio/api': {
+        target: process.env.VITE_API_TARGET ?? 'http://127.0.0.1:5175',
+        rewrite: (path) => path.replace(/^\/zjubio\/api/, '/api'),
+      },
     },
   },
 });

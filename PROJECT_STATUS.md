@@ -49,7 +49,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 - The student and administrator demos remain isolated browser-local sandboxes with realistic profiles, courses, favorites, posts, submissions, comments, notifications, avatar uploads, XLSX timetable import, reset controls, and administrator review. Demo writes never reach the backend.
 - Replaced the activity placeholder with a source-backed activity directory using six academic-department programs and original images from the supplied recruitment article. Homepage recent activities now read the same published, administrator-ordered records, while popular resources remain unchanged.
 - Added a dedicated activity content table and administrator workspace for drafting, editing, categorizing, homepage recommendation, ordering, publishing, and archiving. The demo administrator exercises the same workflow entirely in browser-local state.
-- Hardened login with an in-memory brute-force guard (per-account lock and per-ip throttle), Secure session cookies behind HTTPS, forwarded-ip trust for rate limits, and a `/api/health` liveness endpoint.
+- Hardened login with an in-memory brute-force guard (per-account lock and per-ip throttle), Secure session cookies behind HTTPS, forwarded-ip trust for rate limits, and an internal `/api/health` liveness endpoint exposed publicly as `/zjubio/api/health`.
 - Added student-ID administrator provisioning through `ADMIN_STUDENT_IDS`, centralized server enforcement for persistent writes, and deployment templates for the observed Apache/Supervisor container layout.
 - Added a public deployment checklist at `docs/deployment-checklist.md` covering code hardening, server setup, security, data, launch verification, and weekly ops.
 - Fixed the GitHub Actions workflow to run `npm run check` (the old script name did not exist) and applied `npm audit` fixes (zero vulnerabilities).
@@ -57,7 +57,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 - Added a backend cross-source search endpoint for courses, published content, activities, and approved student homepages, plus a frontend search client. The current homepage still uses its focused local search index (and profile lookup for users); the former global `SearchBar` is no longer mounted.
 - Added backend storage, public/application APIs, administrator moderation, and search indexing for the student-homepage directory. Frontend directory and moderation surfaces remain to be implemented.
 - Consolidated the frontend API clients around `src/services/apiClient.js` and completed the 2026-09-05 critical/high-priority security, state-isolation, navigation, modal, and interaction fixes recorded in `docs/audits/2026-09-05-new-round-audit.md`.
-- Deployed the application at commit `1aaf10d` with the isolated Node.js 22 runtime, Supervisor-managed backend, container Apache `/api/` proxy, bounded Node logs, zero-vulnerability production dependency lock, verified ZJU SMTP delivery, and a validated SQLite/upload snapshot under `/data/zjubio/backups/`.
+- Deployed the application with the isolated Node.js 22 runtime, Supervisor-managed backend, container Apache API proxy, bounded Node logs, zero-vulnerability production dependency lock, verified ZJU SMTP delivery, and a validated SQLite/upload snapshot under `/data/zjubio/backups/`.
 
 ## Known Good Verification
 
@@ -83,7 +83,7 @@ homepage recommendation management.
 
 ## Deferred Or Not Yet Production-Ready
 
-- Public launch still depends on the outer gateway routing root `/api/` to the same container as `/zjubio/`, preserving the path and sanitizing forwarded client/protocol headers. After that change, run the external launch gate and create the first administrator account with student ID `3240105782`.
+- Public browser and API traffic share the `/zjubio/` namespace. Apache maps public `/zjubio/api/...` requests to the Node service's internal `/api/...` routes, so this project does not claim the shared host's root `/api/`. Run the external launch gate and create the first administrator account with student ID `3240105782` after deploying this mapping.
 - More course quiz migrations beyond the three current quiz courses.
 - Content version history and multi-level administrator permissions.
 - Vue integration for the backend student-homepage directory/application/admin workflow.

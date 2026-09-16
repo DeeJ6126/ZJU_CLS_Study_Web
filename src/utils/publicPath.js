@@ -5,6 +5,10 @@ export function normalizePublicPath(path, base = '/') {
     return path;
   }
 
+  if (String(path) === '/zjubio/api' || String(path).startsWith('/zjubio/api/')) {
+    return path;
+  }
+
   const cleanPath = String(path).replace(/^\/+/, '');
 
   if (!base || base === './') {

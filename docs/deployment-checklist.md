@@ -27,11 +27,11 @@
 
 ### 0.3 X-Forwarded-For 信任（待公网链路最终确认）
 
-- **当前状态**：Node 只接受容器 Apache 的本地连接，并保守使用转发链最后一项。公网网关启用 `/api/` 时必须覆盖客户端自带的 `X-Forwarded-For` 为真实客户端地址，并设置 `X-Forwarded-Proto: https`；随后按真实链路决定可信跳数，避免所有用户被误判为同一网关 IP。
+- **当前状态**：Node 只接受容器 Apache 的本地连接，并保守使用转发链最后一项。公网网关转发 `/zjubio/` 时必须覆盖客户端自带的 `X-Forwarded-For` 为真实客户端地址，并设置 `X-Forwarded-Proto: https`；随后按真实链路决定可信跳数，避免所有用户被误判为同一网关 IP。
 
 ### 0.4 健康检查端点 ✅
 
-- **已完成**：`GET /api/health` 无需登录即返回 `{ "ok": true }`，HTTP 测试已覆盖。
+- **已完成**：Node 内部 `GET /api/health` 无需登录即返回 `{ "ok": true }`；公网入口为 `GET /zjubio/api/health`，HTTP 测试已覆盖。
 
 ---
 
@@ -52,14 +52,14 @@
   - Supervisor 直接使用 `/opt/zjubio/node/bin/node --env-file=/etc/zjubio/zjubio.env`，避免把密钥写进配置或 shell。
   - reread/update 后确认 `zjubio-node` 与 `zjubio-backup` 均为 `RUNNING`；重启容器后自动恢复。
 
-### 1.3 Apache 反代 `/api`
+### 1.3 Apache 反代 `/zjubio/api`
 
 - **为什么**：前端与后端同源，避免 CORS；保留 HTTPS 一跳。
 - **怎么做/验收**：
   - 使用 `deploy/apache-zjubio.conf`，将 `/zjubio/` 明确映射到 `dist/`，
-    并把 `/api/` 反代到 `http://127.0.0.1:5175/api/`。
+    并把 `/zjubio/api/` 反代到 `http://127.0.0.1:5175/api/`。
   - `apache2ctl configtest` 必须返回 `Syntax OK`，再 graceful reload；
-    `curl /api/health` 返回 200。
+    `curl /zjubio/api/health` 返回 200。
 
 ### 1.4 环境变量注入
 
@@ -143,4 +143,4 @@
 ## 更新记录
 
 - 2026-08-16 初稿：基于公网开放场景（bis.zju.edu.cn）整理。
-- 2026-09-15：同步真实 Node 22、Supervisor、Apache、SMTP、日志轮转与 `/data` 备份状态；明确剩余公网 `/api/` 路由及可信代理验收。
+- 2026-09-16：公网 API 收敛到 `/zjubio/api/`，不再要求共享域名提供根 `/api/`；仍需验收可信代理头。

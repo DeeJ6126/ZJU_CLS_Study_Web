@@ -1,5 +1,6 @@
 import { validateContentInput } from './contentService.js';
 import { canLeaveSiteTrace } from '../authService.js';
+import { publicApiPath } from '../publicApiPath.js';
 
 const GRADE_TABLE = [
   { min: 95, max: 100, score: 5.0 },
@@ -206,7 +207,7 @@ export function approveSubmission(store, id, actor) {
     } : null,
     });
   let publishedItem = submission.file
-    ? store.attachFile(item.id, { ...submission.file, url: `/api/content/files/${encodeURIComponent(item.id)}` }, actor?.id)
+    ? store.attachFile(item.id, { ...submission.file, url: publicApiPath(`/api/content/files/${encodeURIComponent(item.id)}`) }, actor?.id)
     : item;
   if (revisionTarget?.status === 'archived') {
     publishedItem = store.setStatus(item.id, 'published', actor?.id);

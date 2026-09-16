@@ -41,13 +41,16 @@ Permission decisions stay in `authService.js`. Components should not reimplement
 
 ## API Path Note
 
-`authApiClient.js` uses relative paths such as:
+Callers may use internal-looking paths such as:
 
 ```js
-api/auth/me
+/api/auth/me
 ```
 
-This is intentional for deployment under `/zjubio/`. Do not change back to `/api/...` unless the server proxy is changed at the same time.
+`apiClient.js` normalizes these to the public `/zjubio/api/...` namespace. The
+container Apache proxy then maps that public prefix to the Node service's
+loopback-only `/api/...` routes. Do not bypass the shared client with a root
+`/api/...` browser request because `bis.zju.edu.cn` hosts multiple projects.
 
 ## Security Note
 

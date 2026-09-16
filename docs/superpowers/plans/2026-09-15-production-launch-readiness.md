@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Prepare 生科智学 so that enabling the outer-gateway `/api/` route is the only remaining infrastructure action before production use.
+**Goal:** Prepare 生科智学 for production entirely below the public `/zjubio/` namespace.
 
-**Architecture:** Keep the Vue build under `/zjubio/`, proxy root `/api/` to the loopback-only Node service, and keep SQLite plus uploads private on the container. Add repeatable backup and operational checks without changing CellAnalyst or unrelated services.
+**Architecture:** Keep the Vue build under `/zjubio/`, proxy public `/zjubio/api/` to the loopback-only Node service's `/api/` routes, and keep SQLite plus uploads private on the container. Add repeatable backup and operational checks without changing CellAnalyst or unrelated services.
 
 **Tech Stack:** Vue 3, Vite, Node.js 22, Node built-in SQLite, Apache 2.4, Supervisor, cron, SMTP.
 
@@ -25,7 +25,7 @@
 - [x] **Step 2: Verify process and loopback health**
 
   Run Supervisor status plus `curl http://127.0.0.1:5175/api/health` and
-  `curl http://127.0.0.1/api/health`.
+  `curl http://127.0.0.1/zjubio/api/health`.
   Expected: `RUNNING` and two `{"ok":true}` responses.
 
 - [x] **Step 3: Verify the current production build**
@@ -144,8 +144,8 @@
 
 - [ ] **Step 1: Give the gateway owner the exact contract**
 
-  Route public `/api/` to the same container HTTP upstream used by `/zjubio/`,
-  preserve the `/api/` path, replace any client-supplied `X-Forwarded-For` with
+  Route public `/zjubio/` to the application container and preserve the path;
+  container Apache maps `/zjubio/api/` to Node `/api/`. Replace any client-supplied `X-Forwarded-For` with
   the gateway-observed client address, and set `X-Forwarded-Proto: https`.
 
 - [ ] **Step 2: Observe the resulting header chain**
@@ -156,7 +156,7 @@
 
 - [ ] **Step 3: Run the public launch gate**
 
-  Verify `/api/health`, registration email, login/logout, quiz persistence,
+  Verify `/zjubio/api/health`, registration email, login/logout, quiz persistence,
   submission, administrator approval, comments/likes, PDFs/images, security
   headers, mobile access, and automatic Supervisor recovery.
 

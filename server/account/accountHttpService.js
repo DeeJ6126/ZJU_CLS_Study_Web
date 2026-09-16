@@ -1,5 +1,6 @@
 import { maxCourseScheduleBytes, parseCourseScheduleWorkbook } from './courseScheduleService.js';
 import { canLeaveSiteTrace } from '../authService.js';
+import { publicApiPath } from '../publicApiPath.js';
 
 function isJson(request) {
   return String(request.headers['content-type'] ?? '').toLowerCase().startsWith('application/json');
@@ -55,7 +56,7 @@ function notificationView(authStore, contentStore, notification) {
       publicId: actor.publicId,
       nickname: actor.nickname,
       avatarUrl: actor.avatarStoredName
-        ? `/api/profile-avatars/${encodeURIComponent(actor.avatarStoredName)}`
+        ? publicApiPath(`/api/profile-avatars/${encodeURIComponent(actor.avatarStoredName)}`)
         : '',
     } : null,
     target: item ? {

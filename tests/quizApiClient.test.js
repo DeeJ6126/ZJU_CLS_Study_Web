@@ -70,7 +70,7 @@ test('quiz api client always uses absolute api paths', async () => {
     captureRequest(() => removeQuizVocabulary('molecular-biology-review', 'dna')),
   ]);
 
-  assert.ok(requests.every((request) => request.path.startsWith('/api/quiz/')));
+  assert.ok(requests.every((request) => request.path.startsWith('/zjubio/api/quiz/')));
 });
 
 test('quiz api client omits real session cookies while demo mode is active', async () => {

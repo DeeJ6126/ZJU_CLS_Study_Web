@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { canLeaveSiteTrace } from '../authService.js';
+import { publicApiPath } from '../publicApiPath.js';
 
 import {
   archiveContentItem,
@@ -88,7 +89,7 @@ function publicOwner(user) {
     publicId: user.publicId,
     nickname: user.nickname,
     avatarUrl: user.avatarStoredName
-      ? `/api/profile-avatars/${encodeURIComponent(user.avatarStoredName)}`
+      ? publicApiPath(`/api/profile-avatars/${encodeURIComponent(user.avatarStoredName)}`)
       : '',
   };
 }
@@ -416,7 +417,7 @@ export async function handleContentHttpRequest({
     }
     const next = contentStore.attachFile(id, {
       ...saved.file,
-      url: `/api/content/files/${encodeURIComponent(id)}`,
+      url: publicApiPath(`/api/content/files/${encodeURIComponent(id)}`),
     }, userId);
     logAdminAction(contentStore, 'content.file.upload', next, actor, saved.file.fileName);
     sendJson(response, 201, { item: next });

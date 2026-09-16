@@ -1,8 +1,10 @@
-// API client for the cross-source /api/search endpoint. Falls back to a
+// API client for the cross-source search endpoint. Falls back to a
 // fetched-from-public-asset static list when the backend is unavailable
 // (e.g. the user is browsing the static export without the dev server).
 
-const SEARCH_ENDPOINT = '/api/search';
+import { publicApiPath } from './apiClient.js';
+
+const SEARCH_ENDPOINT = publicApiPath('/api/search');
 
 export const emptySearchResult = Object.freeze({
   query: '',

@@ -113,8 +113,8 @@ The server seeds SQLite on startup. Existing code rows are not overwritten by no
 
 CC98 and email identities share one user account. Existing CC98 users must log in
 before binding an email; the service never auto-merges separately registered
-accounts. Student passwords require at least 8 characters, while allowlisted
-administrator accounts require at least 10. Sessions expire after seven days.
+accounts. All passwords require at least 8 characters, including allowlisted
+administrator accounts. Sessions expire after seven days.
 
 Each account receives a random immutable public profile ID. Email registrants choose
 a case-insensitively unique 2–20 character nickname. After CC98 binding, the nickname

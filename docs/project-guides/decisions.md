@@ -159,3 +159,13 @@ CC98 endpoints remain backend-only and do not independently grant write rights.
 Impact: new write endpoints must call the shared server authorization helper,
 frontend permission copy must refer to student-ID verification, and new
 administrators are provisioned through `ADMIN_STUDENT_IDS` plus mailbox proof.
+
+### 20. The public API stays below `/zjubio/`
+
+Browsers use `/zjubio/api/...` on `bis.zju.edu.cn`. Container Apache rewrites
+that prefix to the loopback Node service's existing `/api/...` routes. The
+project must not require or claim the shared host's root `/api/` namespace.
+
+Impact: frontend requests go through `src/services/apiClient.js`, backend URLs
+returned to browsers use `/zjubio/api/...`, and deployment health checks test
+both Node `/api/health` and Apache `/zjubio/api/health`.

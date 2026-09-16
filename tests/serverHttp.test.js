@@ -635,7 +635,8 @@ test('content admin API validates and serves uploaded PDF files', async () => {
     assert.equal(upload.status, 201);
     assert.equal(uploadedItem.file.fileName, 'midterm.pdf');
 
-    assert.equal((await fetch(`${baseUrl}${uploadedItem.file.url}`)).status, 404);
+    const internalFileUrl = uploadedItem.file.url.replace(/^\/zjubio\/api/, '/api');
+    assert.equal((await fetch(`${baseUrl}${internalFileUrl}`)).status, 404);
     const publish = await fetch(`${baseUrl}/api/admin/content/${item.id}/publish`, {
       method: 'POST', headers: { 'content-type': 'application/json', cookie }, body: '{}',
     });
@@ -646,7 +647,7 @@ test('content admin API validates and serves uploaded PDF files', async () => {
     assert.equal(Object.hasOwn(publicPaper, 'sourcePath'), false);
     assert.equal(Object.hasOwn(publicPaper.file, 'storedName'), false);
 
-    const fileResponse = await fetch(`${baseUrl}${uploadedItem.file.url}`);
+    const fileResponse = await fetch(`${baseUrl}${internalFileUrl}`);
     assert.equal(fileResponse.status, 200);
     assert.equal(fileResponse.headers.get('content-type'), 'application/pdf');
     assert.equal(fileResponse.headers.get('x-content-type-options'), 'nosniff');
