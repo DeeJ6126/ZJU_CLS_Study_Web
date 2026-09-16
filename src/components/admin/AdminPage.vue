@@ -13,6 +13,7 @@ import { isAdministrator } from '../../services/authService.js';
 import { loadResourceCatalog } from '../../data/courses/resourceData.js';
 import { activityImageOptions, activityPrograms, activityProgramLabel } from '../../data/activityConfig.js';
 import { publicAssetPath } from '../../utils/publicPath.js';
+import AdminCourseCombobox from './AdminCourseCombobox.vue';
 
 const props = defineProps({
   initialUser: { type: Object, default: null },
@@ -48,7 +49,7 @@ const authBusy = ref(false);
 const authNotice = ref('');
 const credentials = reactive({ code: '', studentId: '', nickname: '', password: '' });
 const courses = ref([]);
-const selectedCourseCode = ref('BIO2110F');
+const selectedCourseCode = ref('');
 const selectedType = ref('experience');
 const selectedStatus = ref('');
 const selectedView = ref('content');
@@ -56,6 +57,7 @@ const contentQuery = ref('');
 const items = ref([]);
 const submissions = ref([]);
 const pendingCount = ref(0);
+const pendingCourseCounts = ref({});
 const submissionStatus = ref('pending');
 const submissionQuery = ref('');
 const submissionEditorOpen = ref(false);
@@ -84,6 +86,7 @@ const activityForm = reactive(emptyActivityForm());
 const isAdmin = computed(() => isAdministrator(currentUser.value));
 const editingItem = computed(() => items.value.find((item) => item.id === editingId.value) ?? null);
 const selectedTypeLabel = computed(() => contentTypes.find((type) => type.id === selectedType.value)?.label ?? '内容');
+const pendingCourseCodes = computed(() => Object.keys(pendingCourseCounts.value));
 const filteredItems = computed(() => {
   const query = contentQuery.value.trim().toLowerCase();
   if (!query) return items.value;
@@ -118,7 +121,7 @@ function activityImage(path) {
 
 function emptyForm() {
   return {
-    courseCode: 'BIO2110F',
+    courseCode: '',
     type: 'experience',
     title: '',
     summary: '',
@@ -148,9 +151,6 @@ async function loadCourses() {
   try {
     const catalog = await loadResourceCatalog();
     courses.value = catalog.courses;
-    if (!catalog.courses.some((course) => course.code === selectedCourseCode.value)) {
-      selectedCourseCode.value = catalog.courses[0]?.code ?? '';
-    }
   } catch {
     notice.value = '课程目录加载失败。';
   }
@@ -158,6 +158,7 @@ async function loadCourses() {
 
 async function refreshItems() {
   if (!isAdmin.value || !selectedCourseCode.value) {
+    items.value = [];
     return;
   }
   listBusy.value = true;
@@ -185,6 +186,7 @@ async function refreshSubmissions() {
   if (result.ok) {
     submissions.value = result.submissions ?? [];
     pendingCount.value = result.pendingCount ?? 0;
+    pendingCourseCounts.value = result.pendingCourseCounts ?? {};
   }
   else notice.value = result.message;
   listBusy.value = false;
@@ -290,9 +292,6 @@ function changeView(view, type = '') {
   submissionEditorOpen.value = false;
   activityEditorOpen.value = false;
   if (type) selectedType.value = type;
-  if (view === 'content' && !selectedCourseCode.value) {
-    selectedCourseCode.value = courses.value[0]?.code ?? 'BIO2110F';
-  }
   notice.value = '';
   if (view === 'content') refreshItems();
   if (view === 'submissions') refreshSubmissions();
@@ -410,6 +409,10 @@ function selectPdf(event) {
 }
 
 async function saveDraft() {
+  if (!form.courseCode) {
+    notice.value = '请先从搜索结果中选择课程。';
+    return;
+  }
   actionBusy.value = true;
   notice.value = editingId.value ? '正在保存修改...' : '正在保存草稿...';
   let result = editingId.value
@@ -628,11 +631,14 @@ onMounted(initialize);
           <form class="admin-editor__form" @input="dirty = true" @submit.prevent="saveDraft">
             <label>
               <span>课程</span>
-              <select v-model="form.courseCode" required :disabled="Boolean(editingId)">
-                <option v-for="course in courses" :key="course.code" :value="course.code">
-                  {{ course.code }} · {{ course.name }}
-                </option>
-              </select>
+              <AdminCourseCombobox
+                v-model="form.courseCode"
+                :courses="courses"
+                :pending-course-codes="pendingCourseCodes"
+                :disabled="Boolean(editingId)"
+                required
+                @change="dirty = true"
+              />
             </label>
             <label>
               <span>内容类型</span>
@@ -714,11 +720,12 @@ onMounted(initialize);
           <div class="admin-list__filters">
             <label>
               <span>课程</span>
-              <select v-model="selectedCourseCode" @change="changeFilters">
-                <option v-for="course in courses" :key="course.code" :value="course.code">
-                  {{ course.code }} · {{ course.name }}
-                </option>
-              </select>
+              <AdminCourseCombobox
+                v-model="selectedCourseCode"
+                :courses="courses"
+                :pending-course-codes="pendingCourseCodes"
+                @change="changeFilters"
+              />
             </label>
             <label>
               <span>状态</span>
@@ -732,7 +739,8 @@ onMounted(initialize);
             </label>
           </div>
 
-          <p v-if="listBusy" class="admin-list__empty">正在读取内容...</p>
+          <p v-if="!selectedCourseCode" class="admin-list__empty">请先输入课程代码或名称并选择课程。</p>
+          <p v-else-if="listBusy" class="admin-list__empty">正在读取内容...</p>
           <p v-else-if="!filteredItems.length" class="admin-list__empty">当前筛选条件下暂无内容。</p>
           <div v-else class="admin-content-table" role="table" aria-label="课程内容">
             <div class="admin-content-table__head" role="row">
@@ -830,10 +838,13 @@ onMounted(initialize);
           <div class="admin-list__filters admin-list__filters--wide">
             <label>
               <span>课程</span>
-              <select v-model="selectedCourseCode" @change="refreshSubmissions">
-                <option value="">全部课程</option>
-                <option v-for="course in courses" :key="course.code" :value="course.code">{{ course.code }} · {{ course.name }}</option>
-              </select>
+              <AdminCourseCombobox
+                v-model="selectedCourseCode"
+                :courses="courses"
+                :pending-course-codes="pendingCourseCodes"
+                allow-all
+                @change="refreshSubmissions"
+              />
             </label>
             <label>
               <span>审核状态</span>
@@ -891,7 +902,16 @@ onMounted(initialize);
 
         <section v-else class="admin-list" aria-label="操作日志">
           <div class="admin-list__filters admin-list__filters--wide">
-            <label><span>课程</span><select v-model="selectedCourseCode" @change="refreshAuditLogs"><option value="">全部课程</option><option v-for="course in courses" :key="course.code" :value="course.code">{{ course.code }} · {{ course.name }}</option></select></label>
+            <label>
+              <span>课程</span>
+              <AdminCourseCombobox
+                v-model="selectedCourseCode"
+                :courses="courses"
+                :pending-course-codes="pendingCourseCodes"
+                allow-all
+                @change="refreshAuditLogs"
+              />
+            </label>
             <label><span>操作类型</span><select v-model="auditAction" @change="refreshAuditLogs"><option value="">全部操作</option><option v-for="(label, action) in auditActionLabels" :key="action" :value="action">{{ label }}</option></select></label>
             <label><span>日志搜索</span><input v-model.trim="auditQuery" type="search" placeholder="内容标题、管理员或说明" @change="refreshAuditLogs"></label>
           </div>

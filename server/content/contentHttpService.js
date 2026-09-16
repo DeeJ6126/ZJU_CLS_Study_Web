@@ -319,6 +319,13 @@ export async function handleContentHttpRequest({
   }
 
   if (request.method === 'GET' && url.pathname === '/api/admin/submissions') {
+    const pendingSubmissions = contentStore.listSubmissions({ status: 'pending' });
+    const pendingCourseCounts = pendingSubmissions.reduce((counts, submission) => {
+      if (submission.courseCode) {
+        counts[submission.courseCode] = (counts[submission.courseCode] ?? 0) + 1;
+      }
+      return counts;
+    }, {});
     sendJson(response, 200, {
       submissions: contentStore.listSubmissions({
         courseCode: url.searchParams.get('courseCode') ?? '',
@@ -326,7 +333,8 @@ export async function handleContentHttpRequest({
         status: url.searchParams.get('status') ?? '',
         query: url.searchParams.get('query') ?? '',
       }),
-      pendingCount: contentStore.listSubmissions({ status: 'pending' }).length,
+      pendingCount: pendingSubmissions.length,
+      pendingCourseCounts,
     });
     return true;
   }

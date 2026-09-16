@@ -54,6 +54,7 @@ test('admin API client reports an unavailable backend without throwing', async (
 test('admin page uses the shared header, green sidebar, dense table, and explicit editor states', () => {
   const app = readFileSync('src/App.vue', 'utf8');
   const component = readFileSync('src/components/admin/AdminPage.vue', 'utf8');
+  const courseCombobox = readFileSync('src/components/admin/AdminCourseCombobox.vue', 'utf8');
   const css = readFileSync('src/styles/admin.css', 'utf8');
 
   assert.match(app, /AdminPage/);
@@ -81,6 +82,10 @@ test('admin page uses the shared header, green sidebar, dense table, and explici
   assert.match(component, /activityImageOptions/);
   assert.doesNotMatch(component, /推荐到首页“近期活动”/);
   assert.match(component, /activeApiClient\.value\.fetchActivities/);
+  assert.match(component, /AdminCourseCombobox/);
+  assert.doesNotMatch(component, /selectedCourseCode = ref\('BIO2110F'\)/);
+  assert.match(courseCombobox, /输入课程代码或名称/);
+  assert.match(courseCombobox, /admin-course-combobox__pending/);
   assert.match(css, /grid-template-columns:\s*188px\s+minmax\(0,\s*1fr\)/);
   assert.match(css, /var\(--demo-primary\)/);
   assert.match(css, /@media\s*\(max-width:\s*860px\)/);

@@ -477,6 +477,8 @@ test('student-ID submissions, moderation, and authenticated likes work through H
     const pendingBody = await pending.json();
     assert.equal(pending.status, 200);
     assert.equal(pendingBody.submissions.length, 1);
+    assert.equal(pendingBody.pendingCount, 1);
+    assert.deepEqual(pendingBody.pendingCourseCounts, { BIO2110F: 1 });
 
     const approved = await fetch(`${baseUrl}/api/admin/submissions/${submittedBody.submission.id}/approve`, {
       method: 'POST', headers: { 'content-type': 'application/json', cookie: adminCookie }, body: '{}',

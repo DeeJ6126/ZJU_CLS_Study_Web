@@ -149,6 +149,7 @@ test('demo administrator can approve and reject submissions across identities', 
   const initial = await admin.fetchSubmissions({ status: 'pending' });
   const pending = initial.submissions.find((item) => item.id === 'demo-sub-student-1');
   assert.ok(pending);
+  assert.equal(initial.pendingCourseCounts[pending.courseCode] > 0, true);
   assert.equal((await admin.approveSubmission(pending.id)).ok, true);
   assert.ok(service.getPrivateProfile('student').posts.some((item) => item.title === pending.title));
   assert.ok(service.getPrivateProfile('student').notifications.some((item) => /已通过/.test(item.title)));
