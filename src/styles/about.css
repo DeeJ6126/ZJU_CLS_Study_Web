@@ -1,0 +1,261 @@
+.about-page {
+  width: 100%;
+  min-width: 0;
+  min-height: calc(100vh - 68px);
+  display: grid;
+  grid-template-columns: 188px minmax(0, 1fr);
+  color: var(--color-ink);
+}
+
+.about-page__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 26px 14px;
+  border-right: 1px solid var(--color-line);
+  background: var(--color-surface);
+}
+
+.about-page__nav-title {
+  margin: 0 6px 8px;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.about-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.about-nav__item {
+  display: grid;
+  gap: 3px;
+  padding: 9px 12px;
+  border-left: 3px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-muted);
+  text-decoration: none;
+}
+
+.about-nav__item:hover {
+  background: var(--color-soft);
+  color: var(--color-ink);
+}
+
+.about-nav__item.is-active {
+  border-left-color: var(--demo-primary);
+  background: var(--color-soft);
+  color: var(--color-ink);
+}
+
+.about-nav__label {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.about-nav__kicker {
+  color: var(--color-muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.about-page__main {
+  min-width: 0;
+  padding: clamp(28px, 4vw, 58px) clamp(20px, 5vw, 76px) 96px;
+}
+
+.about-page__head {
+  display: grid;
+  gap: 10px;
+  padding-bottom: 26px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.about-page__head > p {
+  margin: 0;
+  color: var(--demo-primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.about-page__head h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 4.6vw, 4.2rem);
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.about-page__status {
+  margin: 40px 0 0;
+  color: var(--color-muted);
+  font-size: 1rem;
+}
+
+.about-page__body {
+  max-width: 76ch;
+  margin-top: 36px;
+  font-size: 1.02rem;
+  line-height: 1.9;
+}
+
+.about-page__body > * + * {
+  margin-top: 22px;
+}
+
+.about-page__body .about-lead > p {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: clamp(1.15rem, 1.8vw, 1.42rem);
+  line-height: 1.75;
+}
+
+.about-page__body h2 {
+  margin-top: 46px;
+  padding-left: 14px;
+  border-left: 3px solid var(--demo-primary);
+  font-size: clamp(1.3rem, 2.2vw, 1.7rem);
+  line-height: 1.35;
+}
+
+.about-page__body h3 {
+  margin-top: 32px;
+  font-size: 1.12rem;
+  line-height: 1.5;
+}
+
+.about-page__body p {
+  margin: 0;
+  color: var(--color-ink);
+}
+
+.about-page__body ul,
+.about-page__body ol {
+  margin: 0;
+  padding-left: 1.4em;
+}
+
+.about-page__body li + li {
+  margin-top: 8px;
+}
+
+.about-page__body strong {
+  color: var(--color-ink);
+  font-weight: 700;
+}
+
+/* 正文里的站内地址（#resources/#BIO2110F 这类）用等宽字体方便辨认。 */
+.about-page__body code {
+  padding: 2px 6px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-soft);
+  color: var(--color-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  word-break: break-all;
+}
+
+.about-page__body a {
+  color: var(--demo-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.about-page__body a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.about-page__body blockquote {
+  margin: 28px 0;
+  padding: 14px 20px;
+  border-left: 3px solid var(--color-line);
+  background: var(--color-soft);
+  color: var(--color-muted);
+}
+
+.about-page__body img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+
+.about-page__body hr {
+  height: 1px;
+  margin: 40px 0;
+  border: 0;
+  background: var(--color-line);
+}
+
+.about-page__body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.96rem;
+}
+
+.about-page__body th,
+.about-page__body td {
+  padding: 10px 12px;
+  border: 1px solid var(--color-line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.about-page__body th {
+  background: var(--color-soft);
+  font-weight: 700;
+}
+
+/* 窄屏：左边栏折叠成正文上方的横向标签，与课程详情页的断点保持一致。 */
+@media (max-width: 860px) {
+  .about-page {
+    grid-template-columns: 1fr;
+  }
+
+  .about-page__nav {
+    padding: 18px 20px 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-line);
+    background: transparent;
+  }
+
+  .about-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .about-nav__item {
+    padding: 8px 12px;
+    border-left: 0;
+    border-bottom: 3px solid transparent;
+  }
+
+  .about-nav__item.is-active {
+    border-left-color: transparent;
+    border-bottom-color: var(--demo-primary);
+  }
+
+  .about-page__main {
+    padding: 24px 20px 72px;
+  }
+
+  .about-page__body {
+    margin-top: 26px;
+    font-size: 1rem;
+    line-height: 1.85;
+  }
+
+  /* 站点地图这类三列表格在窄屏放不下，允许横向滚动而不是挤压换行。 */
+  .about-page__body table {
+    display: block;
+    overflow-x: auto;
+  }
+}

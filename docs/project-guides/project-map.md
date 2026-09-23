@@ -29,6 +29,7 @@
 - `ResourcePage.vue`：资源中心课程分组和卡片。
 - `HomePage.vue`：首页聚焦搜索、近期活动和热门资料。
 - `ActivityPage.vue` / `ActivityDetailPage.vue`：活动目录与详情。
+- `AboutPage.vue`：取回并清洗 `public/content/about/` 下的栏目片段，与左侧栏目边栏一起渲染；栏目定义在 `src/data/config/aboutSections.js`，当前选中项记在 `#about?section=` 里。
 - `CourseDetailPage.vue`：通用课程详情框架。
 - `ContributionBox.vue`：投稿按钮和居中弹窗。
 - `components/account/`：账号面板、认证状态、信箱与通知。
@@ -55,6 +56,7 @@
 - `public/resource/courses/`：课程资料目录。
 - `public/resource/quiz/`：三门已迁移题库的静态源数据与二进制资源。
 - `public/content/activities/catalog.json`：活动后端的初始种子和静态回退。
+- `public/content/about/`：`关于` 页各栏目的正文片段（`about-us.html`、`about-site.html`）；改文案只动这些文件，不要写进 Vue 组件。新增栏目要在 `src/data/config/aboutSections.js` 同步登记。
 - `public/lab/`：实验室开放日预留。
 - `public/navigator/`：学业领航预留。
 - `public/peer/`：朋辈辅学预留。

@@ -13,6 +13,9 @@ server/data/content-uploads/
 server/data/profile-avatars/
 .codex-*.log
 
+# macOS 目录索引文件
+.DS_Store
+
 # 临时重定向残留文件（早期 Out-File / > 误用留下的 UTF-16 BOM 空文件）
 /100
 /160

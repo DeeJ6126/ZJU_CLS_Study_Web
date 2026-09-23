@@ -10,6 +10,7 @@ import TrueFalseQuestionView from './components/quiz/TrueFalseQuestionView.vue';
 import HomePage from './components/HomePage.vue';
 import ActivityPage from './components/ActivityPage.vue';
 import ActivityDetailPage from './components/ActivityDetailPage.vue';
+import AboutPage from './components/AboutPage.vue';
 import OverviewPage from './components/OverviewPage.vue';
 import CourseDetailPage from './components/CourseDetailPage.vue';
 import AdminPage from './components/admin/AdminPage.vue';
@@ -2687,10 +2688,7 @@ onBeforeUnmount(() => {
         :activity-client="demoIdentityId ? demoActivityPublicClient : null"
       />
 
-      <section v-else-if="activePage === 'about'" class="demo-placeholder" aria-labelledby="about-title">
-        <p>关于</p>
-        <h1 id="about-title">生科智学会先把刷题和资源入口做稳。</h1>
-      </section>
+      <AboutPage v-else-if="activePage === 'about'" />
 
       <section v-else class="quiz-demo" aria-label="刷题">
         <template v-if="quizView === 'catalog'">
