@@ -42,3 +42,21 @@ test('student homepage store update returns null for unknown id', () => {
   assert.equal(store.updateHomepage('missing', { name: 'x' }), null);
   assert.equal(store.deleteHomepage('missing'), null);
 });
+test('student homepage store preserves avatars and does not reseed removed placeholders', () => {
+  const store = makeStore();
+  store.initialize();
+  store.seedHomepages([{ id: 'placeholder', name: '待收录', href: '', sortOrder: 0 }]);
+  assert.equal(store.listHomepages().length, 1);
+  store.deleteHomepage('placeholder');
+  store.seedHomepages([{ id: 'placeholder', name: '待收录', href: '', sortOrder: 0 }]);
+  assert.equal(store.listHomepages().length, 0);
+
+  const application = store.createApplication({
+    name: 'Dee', href: 'https://deej6126.github.io/', avatarUrl: '/zjubio/resource/homepages/dee.png',
+  });
+  assert.equal(application.avatarUrl, '/zjubio/resource/homepages/dee.png');
+  const homepage = store.createHomepage({
+    name: application.name, href: application.href, avatarUrl: application.avatarUrl,
+  });
+  assert.equal(homepage.avatarUrl, application.avatarUrl);
+});

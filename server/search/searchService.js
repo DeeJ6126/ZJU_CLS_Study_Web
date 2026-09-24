@@ -112,7 +112,7 @@ export function searchAll({
       href: routeForActivity(item),
     }));
 
-  const homepageItems = studentHomepageStore?.listHomepages?.() ?? [];
+  const homepageItems = (studentHomepageStore?.listHomepages?.({ status: 'approved' }) ?? []).filter((item) => item.href);
   const homepageMatches = filterByQuery(homepageItems, ['name', 'href'], tokens)
     .slice(0, safeLimit)
     .map((item) => ({

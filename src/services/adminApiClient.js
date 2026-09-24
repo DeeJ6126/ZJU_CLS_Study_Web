@@ -56,6 +56,24 @@ export function createAdminApiClient(fetchImpl = fetch) {
     rejectSubmission(id, note = '') {
       return request(`api/admin/submissions/${encodeURIComponent(id)}/reject`, { method: 'POST', body: { note } });
     },
+    fetchHomepages() {
+      return request('api/admin/student-homepages');
+    },
+    createHomepage(input) {
+      return request('api/admin/student-homepages', { method: 'POST', body: input });
+    },
+    updateHomepage(id, input) {
+      return request(`api/admin/student-homepages/${encodeURIComponent(id)}`, { method: 'PATCH', body: input });
+    },
+    deleteHomepage(id) {
+      return request(`api/admin/student-homepages/${encodeURIComponent(id)}`, { method: 'DELETE', body: {} });
+    },
+    fetchHomepageApplications(filters = {}) {
+      return request(`api/admin/student-homepages/applications${queryString(filters)}`);
+    },
+    decideHomepageApplication(id, decision) {
+      return request(`api/admin/student-homepages/applications/${encodeURIComponent(id)}/${decision}`, { method: 'POST', body: {} });
+    },
     fetchAuditLogs(filters = {}) {
       return request(`api/admin/audit-logs${queryString(filters)}`);
     },

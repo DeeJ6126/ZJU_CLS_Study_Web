@@ -198,6 +198,7 @@ const activeDemoAccountId = computed(() => (
 const isDemoAccount = computed(() => Boolean(activeDemoAccountId.value));
 const demoAdminApiClient = demoAccountService.createAdminClient();
 const demoActivityPublicClient = demoAccountService.createPublicActivityClient();
+const demoHomepagePublicClient = demoAccountService.createPublicHomepageClient(() => demoIdentityId.value);
 
 async function selectDemoIdentity(identityId) {
   demoIdentityId.value = identityId ?? '';
@@ -2687,6 +2688,8 @@ onBeforeUnmount(() => {
       <HomePage
         v-if="activePage === 'home'"
         :activity-client="demoIdentityId ? demoActivityPublicClient : null"
+        :homepage-client="demoIdentityId ? demoHomepagePublicClient : null"
+        :can-submit="userCanSubmit"
       />
 
       <template v-else-if="activePage === 'overview'">

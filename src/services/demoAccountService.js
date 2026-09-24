@@ -522,8 +522,79 @@ export function createDemoAccountService({
     return persist({ ok: true, submission: clone(found.item) });
   }
 
+  function ensureHomepages() {
+    if (!Array.isArray(read().homepages)) {
+      read().homepages = [
+        { id: 'homepage-dee', name: 'Dee', href: 'https://deej6126.github.io/', avatarUrl: '/zjubio/resource/homepages/dee.png', sortOrder: 0, status: 'approved' },
+        { id: 'homepage-placeholder-1', name: '待收录 · 01', href: '', avatarUrl: '', sortOrder: 1, status: 'approved' },
+        { id: 'homepage-placeholder-2', name: '待收录 · 02', href: '', avatarUrl: '', sortOrder: 2, status: 'approved' },
+      ];
+      read().homepageApplications = [];
+      save();
+    }
+    read().homepageApplications ??= [];
+    return read().homepages;
+  }
+
+  function createPublicHomepageClient(identityId) {
+    return {
+      fetchHomepages: async () => ({ ok: true, homepages: clone(ensureHomepages().filter((item) => item.status === 'approved').sort((a, b) => a.sortOrder - b.sortOrder)) }),
+      submitApplication: async (input) => {
+        const identity = identityId();
+        const owner = account(identity);
+        if (!owner || identity === 'guest') return { ok: false, message: '请先登录并完成学号认证。' };
+        const application = {
+          id: nextId('homepage-application'), name: String(input.name ?? '').trim(),
+          href: String(input.href ?? '').trim(), avatarUrl: input.avatarUrl ?? '',
+          status: 'pending', applicantId: identity, applicantNickname: owner.user.nickname,
+          createdAt: now(),
+        };
+        if (!application.name || !application.href || !application.avatarUrl) return { ok: false, message: '请填写名称、头像和链接。' };
+        ensureHomepages();
+        read().homepageApplications.unshift(application);
+        return persist({ ok: true, application: clone(application) });
+      },
+    };
+  }
+
   function createAdminClient() {
     return {
+      fetchHomepages: async () => ({ ok: true, homepages: clone(ensureHomepages().sort((a, b) => a.sortOrder - b.sortOrder)) }),
+      createHomepage: async (input) => {
+        const item = { id: nextId('homepage'), ...clone(input) };
+        ensureHomepages().push(item);
+        return persist({ ok: true, homepage: clone(item) });
+      },
+      updateHomepage: async (id, input) => {
+        const item = ensureHomepages().find((entry) => entry.id === id);
+        if (!item) return { ok: false, message: '同学主页不存在。' };
+        Object.assign(item, clone(input));
+        return persist({ ok: true, homepage: clone(item) });
+      },
+      deleteHomepage: async (id) => {
+        const list = ensureHomepages();
+        const index = list.findIndex((entry) => entry.id === id);
+        if (index < 0) return { ok: false, message: '同学主页不存在。' };
+        const [homepage] = list.splice(index, 1);
+        return persist({ ok: true, homepage: clone(homepage) });
+      },
+      fetchHomepageApplications: async () => {
+        ensureHomepages();
+        return { ok: true, applications: clone(read().homepageApplications) };
+      },
+      decideHomepageApplication: async (id, decision) => {
+        ensureHomepages();
+        const application = read().homepageApplications.find((entry) => entry.id === id);
+        if (!application || application.status !== 'pending') return { ok: false, message: '投稿不存在或已审核。' };
+        application.status = decision === 'approve' ? 'approved' : 'rejected';
+        if (application.status === 'approved') {
+          read().homepages.push({
+            id: nextId('homepage'), name: application.name, href: application.href,
+            avatarUrl: application.avatarUrl, sortOrder: read().homepages.length, status: 'approved',
+          });
+        }
+        return persist({ ok: true, application: clone(application) });
+      },
       fetchContent: async (filters = {}) => ({ ok: true, items: clone(read().adminContent.filter((item) => (!filters.courseCode || item.courseCode === filters.courseCode) && (!filters.type || item.type === filters.type) && (!filters.status || item.status === filters.status))) }),
       createContent: async (input) => { const item = { id: nextId('admin-content'), status: 'draft', ...clone(input) }; read().adminContent.unshift(item); return persist({ ok: true, item: clone(item) }); },
       updateContent: async (id, input) => { const item = read().adminContent.find((entry) => entry.id === id); if (!item) return { ok: false, message: '内容不存在。' }; Object.assign(item, clone(input)); return persist({ ok: true, item: clone(item) }); },
@@ -690,6 +761,7 @@ export function createDemoAccountService({
     markAllNotificationsRead,
     createAdminClient,
     createPublicActivityClient,
+    createPublicHomepageClient,
     getPublishedCourseContent,
     resetAccount,
     getAllAccounts,

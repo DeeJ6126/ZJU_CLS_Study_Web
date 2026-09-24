@@ -9,6 +9,7 @@ function mapHomepage(row) {
     id: row.id,
     name: row.name,
     href: row.href,
+    avatarUrl: row.avatarUrl ?? '',
     sortOrder: row.sortOrder,
     status: row.status,
     createdBy: row.createdBy,
@@ -24,6 +25,7 @@ function mapApplication(row) {
     id: row.id,
     name: row.name,
     href: row.href,
+    avatarUrl: row.avatarUrl ?? '',
     intro: row.intro ?? '',
     contact: row.contact ?? '',
     applicantId: row.applicantId,
@@ -48,6 +50,7 @@ export function createStudentHomepageStore({ filename = 'server/data/student-hom
           id text primary key,
           name text not null,
           href text not null,
+          avatar_url text not null default '',
           sort_order integer not null default 0,
           status text not null default 'approved',
           created_by integer,
@@ -61,6 +64,7 @@ export function createStudentHomepageStore({ filename = 'server/data/student-hom
           id text primary key,
           name text not null,
           href text not null,
+          avatar_url text not null default '',
           applicant_id integer,
           applicant_nickname text not null default '',
           intro text not null default '',
@@ -74,12 +78,19 @@ export function createStudentHomepageStore({ filename = 'server/data/student-hom
         );
         create index if not exists student_homepage_applications_status_idx
           on student_homepage_applications(status, created_at desc);
+        create table if not exists student_homepage_metadata (key text primary key);
       `);
       const homepageColumns = db.prepare('pragma table_info(student_homepages)').all();
       if (!homepageColumns.some((column) => column.name === 'status')) {
         db.exec("alter table student_homepages add column status text not null default 'approved'");
       }
+      if (!homepageColumns.some((column) => column.name === 'avatar_url')) {
+        db.exec("alter table student_homepages add column avatar_url text not null default ''");
+      }
       const applicationColumns = db.prepare('pragma table_info(student_homepage_applications)').all();
+      if (!applicationColumns.some((column) => column.name === 'avatar_url')) {
+        db.exec("alter table student_homepage_applications add column avatar_url text not null default ''");
+      }
       if (!applicationColumns.some((column) => column.name === 'intro')) {
         db.exec("alter table student_homepage_applications add column intro text not null default ''");
       }
@@ -89,9 +100,20 @@ export function createStudentHomepageStore({ filename = 'server/data/student-hom
     },
 
     seedHomepages(entries) {
+      const seedKey = 'initial_directory_v2';
+      if (db.prepare('select key from student_homepage_metadata where key = ?').get(seedKey)) return;
+
+      const oldDemos = [
+        ['demo-homepage-1', 'https://example.com/~zhangmy'],
+        ['demo-homepage-2', 'https://example.com/~liyutong'],
+        ['demo-homepage-3', 'https://example.com/~wangsy'],
+        ['demo-homepage-4', 'https://example.com/~chenjn'],
+      ];
+      const removeDemo = db.prepare('delete from student_homepages where id = ? and href = ?');
+      for (const [id, href] of oldDemos) removeDemo.run(id, href);
       const insert = db.prepare(`
-        insert into student_homepages (id, name, href, sort_order, created_by, updated_by, created_at, updated_at)
-        values (?, ?, ?, ?, null, null, ?, ?)
+        insert into student_homepages (id, name, href, avatar_url, sort_order, created_by, updated_by, created_at, updated_at)
+        values (?, ?, ?, ?, ?, null, null, ?, ?)
         on conflict(id) do nothing
       `);
       const now = new Date().toISOString();
@@ -100,11 +122,13 @@ export function createStudentHomepageStore({ filename = 'server/data/student-hom
           entry.id ?? randomUUID(),
           entry.name,
           entry.href,
+          entry.avatarUrl ?? '',
           Number(entry.sortOrder ?? 0),
           now,
           now,
         );
       }
+      db.prepare('insert into student_homepage_metadata (key) values (?)').run(seedKey);
     },
 
     listHomepages({ status = '' } = {}) {
@@ -116,7 +140,7 @@ export function createStudentHomepageStore({ filename = 'server/data/student-hom
       }
       const where = clauses.length ? `where ${clauses.join(' and ')}` : '';
       return db.prepare(`
-        select id, name, href, sort_order as sortOrder, status, created_by as createdBy,
+        select id, name, href, avatar_url as avatarUrl, sort_order as sortOrder, status, created_by as createdBy,
           updated_by as updatedBy, created_at as createdAt, updated_at as updatedAt
         from student_homepages
         ${where}
@@ -126,37 +150,38 @@ export function createStudentHomepageStore({ filename = 'server/data/student-hom
 
     findHomepageById(id) {
       return mapHomepage(db.prepare(`
-        select id, name, href, sort_order as sortOrder, status, created_by as createdBy,
+        select id, name, href, avatar_url as avatarUrl, sort_order as sortOrder, status, created_by as createdBy,
           updated_by as updatedBy, created_at as createdAt, updated_at as updatedAt
         from student_homepages where id = ?
       `).get(id));
     },
 
-    createHomepage({ name, href, sortOrder = 0, status = 'approved' }) {
+    createHomepage({ name, href, avatarUrl = '', sortOrder = 0, status = 'approved' }) {
       const now = new Date().toISOString();
       const id = randomUUID();
       const safeStatus = status === 'pending' ? 'pending' : 'approved';
       db.prepare(`
-        insert into student_homepages (id, name, href, sort_order, status, created_at, updated_at)
-        values (?, ?, ?, ?, ?, ?, ?)
-      `).run(id, name, href, Number(sortOrder) || 0, safeStatus, now, now);
+        insert into student_homepages (id, name, href, avatar_url, sort_order, status, created_at, updated_at)
+        values (?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(id, name, href, avatarUrl, Number(sortOrder) || 0, safeStatus, now, now);
       return this.findHomepageById(id);
     },
 
-    updateHomepage(id, { name, href, sortOrder, status }) {
+    updateHomepage(id, { name, href, avatarUrl, sortOrder, status }) {
       const existing = this.findHomepageById(id);
       if (!existing) return null;
       const next = {
         name: name ?? existing.name,
         href: href ?? existing.href,
+        avatarUrl: avatarUrl ?? existing.avatarUrl,
         sortOrder: sortOrder == null ? existing.sortOrder : Number(sortOrder) || 0,
         status: status == null ? existing.status : (status === 'pending' ? 'pending' : 'approved'),
       };
       db.prepare(`
         update student_homepages
-        set name = ?, href = ?, sort_order = ?, status = ?, updated_at = ?
+        set name = ?, href = ?, avatar_url = ?, sort_order = ?, status = ?, updated_at = ?
         where id = ?
-      `).run(next.name, next.href, next.sortOrder, next.status, new Date().toISOString(), id);
+      `).run(next.name, next.href, next.avatarUrl, next.sortOrder, next.status, new Date().toISOString(), id);
       return this.findHomepageById(id);
     },
 
@@ -167,16 +192,16 @@ export function createStudentHomepageStore({ filename = 'server/data/student-hom
       return existing;
     },
 
-    createApplication({ name, href, intro = '', contact = '', applicantId = null, applicantNickname = '', note = '' }) {
+    createApplication({ name, href, avatarUrl = '', intro = '', contact = '', applicantId = null, applicantNickname = '', note = '' }) {
       const now = new Date().toISOString();
       const id = randomUUID();
       db.prepare(`
         insert into student_homepage_applications (
-          id, name, href, applicant_id, applicant_nickname, intro, contact, note,
+          id, name, href, avatar_url, applicant_id, applicant_nickname, intro, contact, note,
           status, created_at
-        ) values (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
       `).run(
-        id, name, href,
+        id, name, href, avatarUrl,
         applicantId == null ? null : Number(applicantId),
         applicantNickname, String(intro ?? '').trim(), String(contact ?? '').trim(), note,
         now,
@@ -186,7 +211,7 @@ export function createStudentHomepageStore({ filename = 'server/data/student-hom
 
     findApplicationById(id) {
       return mapApplication(db.prepare(`
-        select id, name, href, intro, contact,
+        select id, name, href, avatar_url as avatarUrl, intro, contact,
           applicant_id as applicantId,
           applicant_nickname as applicantNickname, note, status,
           created_at as createdAt, decided_by as decidedBy,
@@ -199,7 +224,7 @@ export function createStudentHomepageStore({ filename = 'server/data/student-hom
       const filter = status ? 'where status = ?' : '';
       const params = status ? [status] : [];
       return db.prepare(`
-        select id, name, href, intro, contact,
+        select id, name, href, avatar_url as avatarUrl, intro, contact,
           applicant_id as applicantId,
           applicant_nickname as applicantNickname, note, status,
           created_at as createdAt, decided_by as decidedBy,

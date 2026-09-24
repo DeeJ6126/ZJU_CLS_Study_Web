@@ -13,6 +13,7 @@ import { isAdministrator } from '../../services/authService.js';
 import { loadResourceCatalog } from '../../data/courses/resourceData.js';
 import { activityImageOptions, activityPrograms, activityProgramLabel } from '../../data/activityConfig.js';
 import { publicAssetPath } from '../../utils/publicPath.js';
+import { imageFileToAvatarDataUrl } from '../../services/studentHomepageApiClient.js';
 import AdminCourseCombobox from './AdminCourseCombobox.vue';
 
 const props = defineProps({
@@ -41,6 +42,8 @@ const auditActionLabels = {
   'submission.update': '编辑投稿', 'submission.approve': '通过投稿', 'submission.reject': '拒绝投稿',
   'activity.create': '新建活动', 'activity.update': '编辑活动',
   'activity.publish': '发布活动', 'activity.archive': '下架活动',
+  'student_homepage.create': '新增同学主页', 'student_homepage.update': '编辑同学主页', 'student_homepage.delete': '移除同学主页',
+  'student_homepage_application.create': '投稿同学主页', 'student_homepage_application.approve': '通过主页投稿', 'student_homepage_application.reject': '拒绝主页投稿',
 };
 
 const currentUser = ref(null);
@@ -76,6 +79,11 @@ const dirty = ref(false);
 const pendingFile = ref(null);
 const fileInput = ref(null);
 const form = reactive(emptyForm());
+const homepages = ref([]);
+const homepageApplications = ref([]);
+const homepageEditorOpen = ref(false);
+const editingHomepageId = ref('');
+const homepageForm = reactive({ name: '', href: '', avatarUrl: '', sortOrder: 0, status: 'approved' });
 const activities = ref([]);
 const activityProgramId = ref(activityPrograms[0].id);
 const activityQuery = ref('');
@@ -95,6 +103,7 @@ const filteredItems = computed(() => {
 });
 const pageTitle = computed(() => {
   if (selectedView.value === 'activities') return '活动管理';
+  if (selectedView.value === 'homepages') return '同学主页';
   if (selectedView.value === 'submissions') return '投稿审核';
   if (selectedView.value === 'logs') return '操作日志';
   return selectedTypeLabel.value;
@@ -205,6 +214,69 @@ async function refreshAuditLogs() {
   listBusy.value = false;
 }
 
+async function refreshHomepages() {
+  if (!isAdmin.value) return;
+  const [directory, applications] = await Promise.all([
+    activeApiClient.value.fetchHomepages(),
+    activeApiClient.value.fetchHomepageApplications(),
+  ]);
+  if (directory.ok) homepages.value = directory.homepages ?? [];
+  else notice.value = directory.message;
+  if (applications.ok) homepageApplications.value = applications.applications ?? [];
+  else notice.value = applications.message;
+}
+
+function startHomepage(item = null) {
+  editingHomepageId.value = item?.id ?? '';
+  Object.assign(homepageForm, {
+    name: item?.name ?? '', href: item?.href ?? '',
+    avatarUrl: item?.avatarUrl ?? '', sortOrder: item?.sortOrder ?? homepages.value.length,
+    status: item?.status ?? 'approved',
+  });
+  homepageEditorOpen.value = true;
+  notice.value = '';
+}
+
+async function selectAdminHomepageAvatar(event) {
+  try {
+    homepageForm.avatarUrl = await imageFileToAvatarDataUrl(event.target.files?.[0]);
+    notice.value = '';
+  } catch (error) {
+    notice.value = error.message;
+  }
+}
+
+async function saveHomepage() {
+  actionBusy.value = true;
+  const result = editingHomepageId.value
+    ? await activeApiClient.value.updateHomepage(editingHomepageId.value, { ...homepageForm })
+    : await activeApiClient.value.createHomepage({ ...homepageForm });
+  notice.value = mutationNotice(result, '同学主页已保存。');
+  if (result.ok) {
+    homepageEditorOpen.value = false;
+    await refreshHomepages();
+  }
+  actionBusy.value = false;
+}
+
+async function removeHomepage(item) {
+  if (!window.confirm(`确定移除“${item.name}”吗？`)) return;
+  actionBusy.value = true;
+  const result = await activeApiClient.value.deleteHomepage(item.id);
+  notice.value = mutationNotice(result, '同学主页已移除。');
+  await refreshHomepages();
+  actionBusy.value = false;
+}
+
+async function decideHomepageApplication(item, decision) {
+  if (!window.confirm(`${decision === 'approve' ? '通过' : '拒绝'}“${item.name}”的主页投稿吗？`)) return;
+  actionBusy.value = true;
+  const result = await activeApiClient.value.decideHomepageApplication(item.id, decision);
+  notice.value = mutationNotice(result, decision === 'approve' ? '投稿已通过。' : '投稿已拒绝。');
+  await refreshHomepages();
+  actionBusy.value = false;
+}
+
 async function refreshActivities() {
   if (!isAdmin.value) return;
   listBusy.value = true;
@@ -221,7 +293,7 @@ async function initialize() {
   await loadCourses();
   if (props.initialUser) {
     currentUser.value = props.initialUser;
-    await Promise.all([refreshItems(), refreshSubmissions(), refreshActivities()]);
+    await Promise.all([refreshItems(), refreshSubmissions(), refreshActivities(), refreshHomepages()]);
     return;
   }
   try {
@@ -264,7 +336,7 @@ async function submitAuth() {
       } else {
         credentials.password = '';
         await refreshItems();
-        await Promise.all([refreshSubmissions(), refreshActivities()]);
+        await Promise.all([refreshSubmissions(), refreshActivities(), refreshHomepages()]);
       }
     }
   } catch {
@@ -291,11 +363,13 @@ function changeView(view, type = '') {
   editorOpen.value = false;
   submissionEditorOpen.value = false;
   activityEditorOpen.value = false;
+  homepageEditorOpen.value = false;
   if (type) selectedType.value = type;
   notice.value = '';
   if (view === 'content') refreshItems();
   if (view === 'submissions') refreshSubmissions();
   if (view === 'activities') refreshActivities();
+  if (view === 'homepages') refreshHomepages();
   if (view === 'logs') refreshAuditLogs();
 }
 
@@ -557,6 +631,7 @@ onMounted(initialize);
         <button type="button" :class="{ 'is-active': selectedView === 'activities' }" @click="changeView('activities')">
           活动管理
         </button>
+        <button type="button" :class="{ 'is-active': selectedView === 'homepages' }" @click="changeView('homepages')">同学主页</button>
         <button type="button" :class="{ 'is-active': selectedView === 'submissions' }" @click="changeView('submissions')">
           投稿审核 <span v-if="pendingCount" class="admin-nav-count">{{ pendingCount }}</span>
         </button>
@@ -615,6 +690,7 @@ onMounted(initialize);
           </div>
           <button v-if="selectedView === 'content' && !editorOpen" class="admin-primary-action" type="button" @click="startNew">新增内容</button>
           <button v-if="selectedView === 'activities' && !activityEditorOpen" class="admin-primary-action" type="button" @click="startActivity()">新增推文</button>
+          <button v-if="selectedView === 'homepages' && !homepageEditorOpen" class="admin-primary-action" type="button" @click="startHomepage()">新增主页</button>
         </header>
 
         <p v-if="notice" class="admin-notice" role="status">{{ notice }}</p>
@@ -831,6 +907,40 @@ onMounted(initialize);
                 <button type="button" @click="archiveManagedActivity(activity)">移除</button>
               </div>
             </article>
+          </div>
+        </section>
+
+        <section v-else-if="selectedView === 'homepages'" class="admin-list" aria-label="同学主页管理">
+          <section v-if="homepageEditorOpen" class="admin-editor">
+            <header class="admin-editor__head"><div><span>同学主页</span><strong>{{ editingHomepageId ? '编辑主页' : '新增主页' }}</strong></div><button type="button" @click="homepageEditorOpen = false">关闭</button></header>
+            <form class="admin-editor__form" @submit.prevent="saveHomepage">
+              <label><span>名称</span><input v-model.trim="homepageForm.name" required maxlength="40"></label>
+              <label><span>排序</span><input v-model.number="homepageForm.sortOrder" type="number"></label>
+              <label class="admin-editor__wide"><span>主页链接</span><input v-model.trim="homepageForm.href" type="url" placeholder="https://（占位条目可留空）"></label>
+              <label class="admin-editor__wide"><span>头像</span><input type="file" accept="image/png,image/jpeg,image/webp" @change="selectAdminHomepageAvatar"></label>
+              <img v-if="homepageForm.avatarUrl" class="admin-homepage-avatar" :src="homepageForm.avatarUrl.startsWith('data:') || homepageForm.avatarUrl.startsWith('/zjubio/') ? homepageForm.avatarUrl : publicAssetPath(homepageForm.avatarUrl)" alt="头像预览">
+              <label><span>状态</span><select v-model="homepageForm.status"><option value="approved">显示</option><option value="pending">隐藏</option></select></label>
+              <footer class="admin-editor__actions"><button type="button" @click="homepageEditorOpen = false">取消</button><button class="admin-primary-action" type="submit" :disabled="actionBusy">保存</button></footer>
+            </form>
+          </section>
+          <h2>主页目录</h2>
+          <p v-if="!homepages.length" class="admin-list__empty">暂无主页。</p>
+          <div v-for="item in homepages" :key="item.id" class="admin-homepage-row">
+            <img v-if="item.avatarUrl" :src="item.avatarUrl.startsWith('data:') || item.avatarUrl.startsWith('/zjubio/') ? item.avatarUrl : publicAssetPath(item.avatarUrl)" alt="">
+            <span v-else class="admin-homepage-avatar"></span>
+            <div><strong>{{ item.name }}</strong><a v-if="item.href" :href="item.href" target="_blank" rel="noopener noreferrer">{{ item.href }}</a><small v-else>占位条目</small></div>
+            <span>{{ item.status === 'approved' ? '显示' : '隐藏' }}</span>
+            <button type="button" @click="startHomepage(item)">编辑</button>
+            <button type="button" :disabled="actionBusy" @click="removeHomepage(item)">移除</button>
+          </div>
+          <h2>投稿审核</h2>
+          <p v-if="!homepageApplications.filter(item => item.status === 'pending').length" class="admin-list__empty">暂无待审核投稿。</p>
+          <div v-for="item in homepageApplications.filter(entry => entry.status === 'pending')" :key="item.id" class="admin-homepage-row">
+            <img v-if="item.avatarUrl" :src="item.avatarUrl" alt="">
+            <span v-else class="admin-homepage-avatar"></span>
+            <div><strong>{{ item.name }}</strong><a :href="item.href" target="_blank" rel="noopener noreferrer">{{ item.href }}</a><small>投稿人：{{ item.applicantNickname }}</small></div>
+            <button type="button" :disabled="actionBusy" @click="decideHomepageApplication(item, 'approve')">通过</button>
+            <button type="button" :disabled="actionBusy" @click="decideHomepageApplication(item, 'reject')">拒绝</button>
           </div>
         </section>
 

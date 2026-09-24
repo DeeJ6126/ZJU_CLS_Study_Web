@@ -235,29 +235,14 @@ export function createAuthServer({
   studentHomepageStore.initialize();
   studentHomepageStore.seedHomepages([
     {
-      id: 'demo-homepage-1',
-      name: '张明远',
-      href: 'https://example.com/~zhangmy',
+      id: 'homepage-dee',
+      name: 'Dee',
+      href: 'https://deej6126.github.io/',
+      avatarUrl: '/zjubio/resource/homepages/dee.png',
       sortOrder: 0,
     },
-    {
-      id: 'demo-homepage-2',
-      name: '李雨桐',
-      href: 'https://example.com/~liyutong',
-      sortOrder: 1,
-    },
-    {
-      id: 'demo-homepage-3',
-      name: '王思源',
-      href: 'https://example.com/~wangsy',
-      sortOrder: 2,
-    },
-    {
-      id: 'demo-homepage-4',
-      name: '陈嘉宁',
-      href: 'https://example.com/~chenjn',
-      sortOrder: 3,
-    },
+    { id: 'homepage-placeholder-1', name: '待收录 · 01', href: '', sortOrder: 1 },
+    { id: 'homepage-placeholder-2', name: '待收录 · 02', href: '', sortOrder: 2 },
   ]);
   quizStore.initialize();
   importConfiguredQuizCollections(quizStore);

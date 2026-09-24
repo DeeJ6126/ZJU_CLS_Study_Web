@@ -25,7 +25,7 @@ test('demo shell exposes the requested top-level pages and sparse home search', 
     assert.match(homeData, new RegExp(label));
   }
   assert.match(home, /近期活动/);
-  assert.match(home, /热门资料/);
+  assert.match(home, /同学主页/);
   assert.match(app, /activePage === 'activities'/);
   assert.match(app, /<ActivityPage[\s\S]*v-else-if="activePage === 'activities'"/);
   assert.match(homeCss, /\.home-search-stage__copy,[\s\S]*?margin-inline:\s*auto/);

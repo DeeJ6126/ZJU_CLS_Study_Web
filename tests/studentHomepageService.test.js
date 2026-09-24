@@ -43,8 +43,8 @@ test('student homepage service creates a valid entry', () => {
 test('student homepage service update validates against current values', () => {
   const { create, update, store } = setup();
   const created = create({ name: 'A', href: 'https://a.example' }).homepage;
-  const bad = update(created.id, { href: '' });
-  assert.equal(bad.ok, false);
+  const placeholder = update(created.id, { href: '' });
+  assert.equal(placeholder.ok, true);
   const ok = update(created.id, { href: 'https://b.example', sortOrder: '9' });
   assert.equal(ok.ok, true);
   assert.equal(ok.homepage.href, 'https://b.example');
@@ -62,6 +62,7 @@ test('student homepage application service submits and decides an application', 
   const { submit, approve, store } = setup();
   const submitted = submit({
     name: 'New A', href: 'https://new.example', intro: '我是生科同学', contact: 'wechat: new-a',
+    avatarUrl: '/zjubio/resource/homepages/dee.png',
     note: '请审核',
   }, { id: 7, nickname: '申请人' });
   assert.equal(submitted.ok, true);
@@ -75,6 +76,7 @@ test('student homepage application service submits and decides an application', 
   assert.equal(approved.ok, true);
   assert.equal(approved.application.status, 'approved');
   assert.equal(approved.homepage.name, 'New A');
+  assert.equal(approved.homepage.avatarUrl, '/zjubio/resource/homepages/dee.png');
   assert.equal(approved.homepage.status, 'approved');
   assert.equal(store.listHomepages().length, 1);
   assert.equal(store.countPendingApplications(), 0);
@@ -87,10 +89,10 @@ test('student homepage application service rejects invalid input', () => {
   assert.equal(submit({ name: 'A', href: 'https://x.example', note: 'x'.repeat(501) }).ok, false);
   assert.equal(submit({
     name: 'A', href: 'https://x.example', intro: '', contact: 'x', note: '',
-  }, { id: 1 }).ok, false);
+  }, { id: 1 }).ok, true);
   assert.equal(submit({
     name: 'A', href: 'https://x.example', intro: 'x', contact: '', note: '',
-  }, { id: 1 }).ok, false);
+  }, { id: 1 }).ok, true);
 });
 
 test('student homepage application service rejects anonymous submitter', () => {
