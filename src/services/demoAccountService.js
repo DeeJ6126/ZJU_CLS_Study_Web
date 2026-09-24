@@ -129,6 +129,7 @@ export function createDemoAccountService({
       submissions: clone(value.submissions),
       comments,
       courses: clone(value.courses),
+      courseFavorites: clone(value.courseFavorites ?? []),
       favorites: clone(value.favorites),
       notifications: clone(value.notifications),
       unreadCount: value.notifications.filter((item) => !item.readAt).length,
@@ -275,6 +276,29 @@ export function createDemoAccountService({
     return persist({ ok: true, courses: clone(result.value.courses) });
   }
 
+  function listCourseFavoriteCodes(identityId) {
+    const result = requireAccount(identityId);
+    return result.ok ? clone(result.value.courseFavorites ?? []) : [];
+  }
+
+  function addCourseFavorite(identityId, courseCode) {
+    const result = requireAccount(identityId);
+    if (!result.ok) return result;
+    const code = String(courseCode ?? '').trim().toUpperCase();
+    if (!code) return { ok: false, message: '课程信息无效。' };
+    result.value.courseFavorites ??= [];
+    if (!result.value.courseFavorites.includes(code)) result.value.courseFavorites.push(code);
+    return persist({ ok: true, courseFavorites: clone(result.value.courseFavorites) });
+  }
+
+  function removeCourseFavorite(identityId, courseCode) {
+    const result = requireAccount(identityId);
+    if (!result.ok) return result;
+    const code = String(courseCode ?? '').trim().toUpperCase();
+    result.value.courseFavorites = (result.value.courseFavorites ?? []).filter((item) => item !== code);
+    return persist({ ok: true, courseFavorites: clone(result.value.courseFavorites) });
+  }
+
   function addFavorite(identityId, item) {
     const result = requireAccount(identityId);
     if (!result.ok) return result;
@@ -316,7 +340,10 @@ export function createDemoAccountService({
   function createSubmission(identityId, input) {
     const result = requireAccount(identityId);
     if (!result.ok) return result;
-    if (!String(input?.title ?? '').trim() || !String(input?.body ?? '').trim()) return { ok: false, message: '请填写标题和正文。' };
+    const isPaper = input?.type === 'paper';
+    if (!String(input?.title ?? '').trim() || (!isPaper && !String(input?.body ?? '').trim())) return { ok: false, message: isPaper ? '请填写年份并上传 PDF。' : '请填写标题和正文。' };
+    if (isPaper && !String(input?.year ?? '').trim()) return { ok: false, message: '请填写年份。' };
+    if (isPaper && !input?.file) return { ok: false, message: '请上传 PDF 文件。' };
     const normalized = clone(input);
     if ((normalized.gradePercentage ?? '') !== '' && !normalized.gpa) {
       const num = Number(normalized.gradePercentage);
@@ -643,6 +670,9 @@ export function createDemoAccountService({
     removeCourse,
     addFavorite,
     removeFavorite,
+    listCourseFavoriteCodes,
+    addCourseFavorite,
+    removeCourseFavorite,
     getLikedContentIds,
     toggleLike,
     createSubmission,

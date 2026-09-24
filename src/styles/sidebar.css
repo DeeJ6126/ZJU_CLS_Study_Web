@@ -224,7 +224,7 @@
   width: 14px;
   height: 2px;
   display: block;
-  border-radius: 999px;
+  border-radius: 2px;
   background: var(--color-sidebar-muted);
 }
 

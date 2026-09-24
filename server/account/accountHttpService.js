@@ -81,8 +81,19 @@ export async function handleAccountHttpRequest({
   readBinaryBody,
   catalogCodes = new Set(),
 }) {
+  if (request.method === 'GET' && url.pathname.startsWith('/api/course-favorite-counts/')) {
+    const courseCode = decodeURIComponent(url.pathname.slice('/api/course-favorite-counts/'.length)).trim().toUpperCase();
+    if (!/^[A-Z0-9-]{3,24}$/.test(courseCode)) {
+      sendJson(response, 400, { message: '课程编号无效。' });
+      return true;
+    }
+    sendJson(response, 200, { courseCode, count: authStore.countCourseFavoriteUsers(courseCode) });
+    return true;
+  }
+
   if (!url.pathname.startsWith('/api/account/courses')
     && !url.pathname.startsWith('/api/account/favorites')
+    && !url.pathname.startsWith('/api/account/course-favorites')
     && !url.pathname.startsWith('/api/account/notifications')) return false;
   if (!requireAccount(sendJson, response, userId, user)) return true;
 
@@ -149,6 +160,27 @@ export async function handleAccountHttpRequest({
 
   if (request.method === 'GET' && url.pathname === '/api/account/favorites') {
     sendJson(response, 200, { favorites: favoriteItems(authStore, contentStore, userId) });
+    return true;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/account/course-favorites') {
+    sendJson(response, 200, { courseCodes: authStore.listCourseFavoriteCodes(userId) });
+    return true;
+  }
+  const courseFavoriteMatch = url.pathname.match(/^\/api\/account\/course-favorites\/([^/]+)$/);
+  if (request.method === 'PUT' && courseFavoriteMatch) {
+    const courseCode = decodeURIComponent(courseFavoriteMatch[1]).trim().toUpperCase();
+    if (!/^[A-Z0-9-]{3,24}$/.test(courseCode)) {
+      sendJson(response, 400, { message: '课程编号无效。' });
+      return true;
+    }
+    authStore.addCourseFavorite(userId, courseCode);
+    sendJson(response, 200, { courseCodes: authStore.listCourseFavoriteCodes(userId) });
+    return true;
+  }
+  if (request.method === 'DELETE' && courseFavoriteMatch) {
+    authStore.removeCourseFavorite(userId, decodeURIComponent(courseFavoriteMatch[1]));
+    sendJson(response, 200, { courseCodes: authStore.listCourseFavoriteCodes(userId) });
     return true;
   }
   const favoriteMatch = url.pathname.match(/^\/api\/account\/favorites\/([^/]+)$/);

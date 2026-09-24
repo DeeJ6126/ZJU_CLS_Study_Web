@@ -136,7 +136,7 @@
   align-items: center;
   padding: 0 10px;
   border: 1px solid var(--detail-border);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: var(--detail-chip-bg);
   color: var(--detail-chip-text);
   font-size: 12px;
@@ -529,7 +529,7 @@ html[data-theme="dark"] .cc98-icon {
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   font-size: 0.85rem;
   font-weight: 600;
   background: var(--detail-grade-bg, #e8f0e8);
@@ -677,7 +677,8 @@ html[data-theme="dark"] .article-body--ubb .ubb-code {
 .favorite-button,
 .comment-form button,
 .contribution-trigger,
-.contribution-form button {
+.contribution-form__actions button,
+.contribution-form__ubb-prompt button {
   width: fit-content;
   min-height: 40px;
   display: inline-flex;
@@ -873,6 +874,16 @@ html[data-theme="dark"] .article-body--ubb .ubb-code {
   grid-column: 1 / -1;
 }
 
+.contribution-form__optional-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.contribution-form__optional-row--with-grade {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+}
+
 .contribution-box__notice {
   margin: 0;
   color: var(--detail-accent);
@@ -883,6 +894,56 @@ html[data-theme="dark"] .article-body--ubb .ubb-code {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.contribution-form__file-label {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--color-muted, #4b5565);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.contribution-form__file-input {
+  position: absolute;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.contribution-form__dropzone {
+  width: 100%;
+  min-height: 104px;
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  padding: 18px;
+  border: 1px dashed var(--detail-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--detail-list-bg);
+  color: var(--detail-link);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.contribution-form__dropzone small {
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.contribution-form__dropzone:hover,
+.contribution-form__dropzone.is-dragging {
+  border-color: var(--detail-link);
+  background: color-mix(in srgb, var(--detail-link) 8%, var(--detail-list-bg));
+}
+
+.contribution-form__dropzone:disabled {
+  cursor: progress;
+  opacity: 0.7;
 }
 
 .contribution-form__format {
@@ -907,15 +968,15 @@ html[data-theme="dark"] .article-body--ubb .ubb-code {
   display: inline-flex;
   gap: 4px;
   border: 1px solid var(--detail-border);
-  border-radius: 999px;
-  padding: 2px;
+  border-radius: 4px;
+  padding: 3px;
   background: var(--detail-list-bg);
 }
 
 .contribution-form__format-tabs button {
   border: 0;
-  border-radius: 999px;
-  padding: 4px 12px;
+  border-radius: 3px;
+  padding: 6px 12px;
   background: transparent;
   color: var(--detail-link);
   font: inherit;
@@ -925,8 +986,8 @@ html[data-theme="dark"] .article-body--ubb .ubb-code {
 }
 
 .contribution-form__format-tabs button.is-active {
-  background: var(--detail-action-bg);
-  color: var(--detail-action-text);
+  background: color-mix(in srgb, var(--detail-link) 12%, transparent);
+  color: var(--detail-link);
 }
 
 html[data-theme="dark"] .contribution-form__format-tabs {
@@ -935,7 +996,7 @@ html[data-theme="dark"] .contribution-form__format-tabs {
 }
 
 html[data-theme="dark"] .contribution-form__format-tabs button.is-active {
-  background: #243a52;
+  background: color-mix(in srgb, #97d3bc 16%, transparent);
   color: #97d3bc;
 }
 
@@ -955,7 +1016,7 @@ html[data-theme="dark"] .contribution-form__format-tabs button.is-active {
   padding: 0 8px;
   border: 1px solid transparent;
   border-radius: 4px;
-  background: transparent;
+  background: transparent !important;
   color: var(--detail-link);
   font: inherit;
   font-size: 13px;
@@ -965,17 +1026,17 @@ html[data-theme="dark"] .contribution-form__format-tabs button.is-active {
 
 .contribution-form__ubb-button:hover {
   border-color: var(--detail-border-strong);
-  background: var(--detail-action-bg);
-  color: var(--detail-action-text);
+  background: color-mix(in srgb, var(--detail-link) 10%, transparent) !important;
+  color: var(--detail-link);
 }
 
 html[data-theme="dark"] .contribution-form__ubb-toolbar {
-  background: #15202f;
+  background: var(--detail-list-bg);
   border-color: #2a374a;
 }
 
 html[data-theme="dark"] .contribution-form__ubb-button:hover {
-  background: #243a52;
+  background: color-mix(in srgb, #97d3bc 16%, transparent) !important;
   color: #97d3bc;
 }
 
@@ -1087,7 +1148,7 @@ html[data-theme="dark"] .contribution-form__ubb-button:hover {
   align-items: center;
   justify-content: center;
   border: 1px solid var(--detail-border);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: var(--detail-chip-bg);
   color: var(--detail-chip-text);
   font-weight: 900;
@@ -1345,7 +1406,9 @@ html[data-theme="dark"] .contribution-form__ubb-button:hover {
 
   .article-detail-card__head,
   .subpage-header--compact,
-  .contribution-form {
+  .contribution-form,
+  .contribution-form__optional-row,
+  .contribution-form__optional-row--with-grade {
     grid-template-columns: 1fr;
   }
 

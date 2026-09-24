@@ -1,4 +1,5 @@
 import { buildCourseRoute } from '../data/courses/resourcePaths.js';
+import { getCourseDetail } from '../data/courses/courseDetails.js';
 import { bodyToParagraphs, parseMarkdownDocument } from '../utils/markdownContent.js';
 import { publicAssetPath } from '../utils/publicPath.js';
 import { createRawClient } from './apiClient.js';
@@ -76,4 +77,26 @@ export async function loadCourseContent(course, { fetchImpl = fetch } = {}) {
     }
     return collections;
   }
+}
+
+export async function loadCourseAvailability(courses, { fetchImpl = fetch } = {}) {
+  const available = new Set();
+  const queue = [...courses];
+  const worker = async () => {
+    while (queue.length) {
+      const course = queue.shift();
+      if (!course) return;
+      try {
+        const collections = await loadCourseContent(getCourseDetail(course), { fetchImpl });
+        if (['experiences', 'materials', 'papers'].some((tabId) => collections[tabId]?.length)) {
+          available.add(course.code);
+        }
+      } catch {
+        // An unavailable course endpoint does not count as published content.
+      }
+    }
+  };
+  const workers = Array.from({ length: Math.min(8, queue.length || 1) }, () => worker());
+  await Promise.all(workers);
+  return available;
 }

@@ -77,6 +77,12 @@ function validateSubmission(input, current = null) {
   if (!validation.value.body && validation.value.type === 'experience') {
     return { ok: false, status: 400, message: '学习心得需要填写正文。' };
   }
+  if (validation.value.type === 'paper' && !validation.value.year) {
+    return { ok: false, status: 400, message: '历年试卷需要填写年份。' };
+  }
+  if (!current && validation.value.type === 'paper' && validation.value.body) {
+    return { ok: false, status: 400, message: '历年试卷不能填写正文，请上传 PDF。' };
+  }
   return { ok: true, value: { ...validation.value, imageName: String(value.imageName ?? '').trim().slice(0, 160) } };
 }
 

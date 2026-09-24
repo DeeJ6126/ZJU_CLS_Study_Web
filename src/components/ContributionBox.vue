@@ -21,29 +21,38 @@ const isOpen = ref(false);
 const notice = ref('');
 const form = reactive({
   title: '',
+  year: '',
+  teacher: '',
   subtitle: '',
   cc98Name: '',
   cc98Link: '',
   body: '',
-  materialLink: '',
   gradePercentage: '',
   bodyFormat: 'markdown',
 });
-const pdfFile = ref(null);
 const bodyTextarea = ref(null);
+const pdfInput = ref(null);
+const pdfFile = ref(null);
+const isDraggingPdf = ref(false);
+const isSubmittingPaper = ref(false);
+const pendingPaperSubmissionId = ref('');
 
+const isPaper = computed(() => props.tabLabel === '历年试卷');
 const isUbb = computed(() => form.bodyFormat === 'ubb');
 
 function resetForm() {
   form.title = '';
+  form.year = '';
+  form.teacher = '';
   form.subtitle = '';
   form.cc98Name = '';
   form.cc98Link = '';
   form.body = '';
-  form.materialLink = '';
   form.gradePercentage = '';
   form.bodyFormat = 'markdown';
   pdfFile.value = null;
+  pendingPaperSubmissionId.value = '';
+  if (pdfInput.value) pdfInput.value.value = '';
 }
 
 function openModal() {
@@ -52,6 +61,7 @@ function openModal() {
 }
 
 function closeModal() {
+  if (isSubmittingPaper.value) return;
   isOpen.value = false;
   notice.value = '';
 }
@@ -106,9 +116,6 @@ onBeforeUnmount(() => {
   document.removeEventListener('keydown', onKeydown);
 });
 
-function handlePdfChange(event) {
-  pdfFile.value = event.target.files?.[0] ?? null;
-}
 
 function switchFormat(format) {
   form.bodyFormat = format;
@@ -145,14 +152,7 @@ function confirmPrompt() {
 
 function applyPromptedUbbTag(action, value) {
   if (action.label === '🔗') wrapSelection(`[url=${value}]`, '[/url]');
-  else if (action.label === '🖼') {
-    form.body = `${form.body}[img]${value}[/img]`;
-  } else if (action.label === '🎨') wrapSelection(`[color=${value}]`, '[/color]');
-  else if (action.label === '☺') {
-    form.body = `${form.body}[smiley]${value}[/smiley]`;
-  }
 }
-
 function wrapSelection(openTag, closeTag) {
   const textarea = bodyTextarea.value;
   if (!textarea) return;
@@ -175,12 +175,9 @@ const ubbToolbar = [
   { label: 'U', title: '下划线', wrap: ['[u]', '[/u]'] },
   { label: 'S', title: '删除线', wrap: ['[s]', '[/s]'] },
   { label: '🔗', title: '链接', wrap: ['[url=]', '[/url]'], prompt: '请输入链接地址' },
-  { label: '🖼', title: '图片', wrap: ['[img]', '[/img]'], prompt: '请输入图片地址' },
   { label: '"', title: '引用', wrap: ['[quote]', '[/quote]'] },
   { label: '< >', title: '代码', wrap: ['[code]', '[/code]'] },
   { label: 'T1', title: '字号', wrap: ['[size=3]', '[/size]'] },
-  { label: '🎨', title: '颜色', wrap: ['[color=#333]', '[/color]'], prompt: '请输入颜色（#hex 或 red）' },
-  { label: '☺', title: '表情', wrap: ['[smiley]', '[/smiley]'], prompt: '表情代号' },
 ];
 
 function applyUbbTag(action) {
@@ -200,9 +197,74 @@ function applyUbbTag(action) {
   wrapSelection(openTag, closeTag);
 }
 
-function submitContribution() {
+function selectPdf(file) {
+  if (!file) return;
+  if (!/\.pdf$/i.test(file.name) || (file.type && file.type !== 'application/pdf')) {
+    notice.value = '只能上传 PDF 文件。';
+    return;
+  }
+  if (file.size > 25 * 1024 * 1024) {
+    notice.value = 'PDF 文件不能超过 25 MB。';
+    return;
+  }
+  pdfFile.value = file;
+  notice.value = '';
+}
+
+function onPdfInput(event) {
+  selectPdf(event.target.files?.[0]);
+}
+
+function onPdfDrop(event) {
+  isDraggingPdf.value = false;
+  selectPdf(event.dataTransfer?.files?.[0]);
+}
+
+function completePaperSubmission(result) {
+  isSubmittingPaper.value = false;
+  if (!result?.ok) {
+    if (result?.submissionId) pendingPaperSubmissionId.value = result.submissionId;
+    notice.value = result?.message || '投稿失败，请重试。';
+    return;
+  }
+  notice.value = '';
+  resetForm();
+  isOpen.value = false;
+}
+
+async function submitContribution() {
   if (!props.canSubmit) {
     notice.value = '需要完成学号认证后才可以投稿。';
+    return;
+  }
+
+  if (isPaper.value) {
+    const year = form.year.trim();
+    if (!year) {
+      notice.value = '请填写年份。';
+      return;
+    }
+    if (!pdfFile.value) {
+      notice.value = '请选择 PDF 文件。';
+      return;
+    }
+    if (await pdfFile.value.slice(0, 5).text() !== '%PDF-') {
+      notice.value = '文件内容不是有效的 PDF。';
+      return;
+    }
+    isSubmittingPaper.value = true;
+    notice.value = '';
+    emit('submit-contribution', {
+      title: `${year} 历年试卷`,
+      year,
+      teacher: form.teacher.trim(),
+      cc98Name: form.cc98Name.trim(),
+      cc98Link: form.cc98Link.trim(),
+      body: '',
+      pdfFile: pdfFile.value,
+      submissionId: pendingPaperSubmissionId.value,
+      onComplete: completePaperSubmission,
+    });
     return;
   }
 
@@ -224,9 +286,7 @@ function submitContribution() {
     cc98Link: form.cc98Link.trim(),
     body: form.body.trim(),
     bodyFormat: form.bodyFormat,
-    materialLink: form.materialLink.trim(),
     gradePercentage: percentage,
-    pdfFile: pdfFile.value,
   });
   notice.value = '投稿已发送审核。';
   resetForm();
@@ -252,32 +312,47 @@ function submitContribution() {
           </header>
 
           <form class="contribution-form" @submit.prevent="submitContribution">
-            <label>
+            <label v-if="isPaper" class="contribution-form__wide">
+              <span>年份</span>
+              <input v-model.trim="form.year" type="text" maxlength="20" placeholder="如 2025-2026" required autocomplete="off" />
+            </label>
+
+            <label v-else class="contribution-form__wide">
               <span>标题</span>
               <input v-model="form.title" type="text" autocomplete="off" />
             </label>
 
-            <label>
-              <span>副标题（选填）</span>
-              <input v-model="form.subtitle" type="text" autocomplete="off" />
-            </label>
+            <div
+              class="contribution-form__optional-row contribution-form__wide"
+              :class="{ 'contribution-form__optional-row--with-grade': tabLabel === '学习心得' }"
+            >
+              <label v-if="!isPaper">
+                <span>副标题（选填）</span>
+                <input v-model="form.subtitle" type="text" autocomplete="off" />
+              </label>
 
-            <label>
-              <span>cc98名字（选填）</span>
-              <input v-model="form.cc98Name" type="text" autocomplete="off" />
-            </label>
+              <label v-if="isPaper">
+                <span>老师（选填）</span>
+                <input v-model.trim="form.teacher" type="text" maxlength="40" autocomplete="off" />
+              </label>
 
-            <label>
-              <span>cc98链接（选填）</span>
-              <input v-model="form.cc98Link" type="url" autocomplete="off" />
-            </label>
+              <label>
+                <span>cc98名字（选填）</span>
+                <input v-model="form.cc98Name" type="text" autocomplete="off" />
+              </label>
 
-            <label v-if="tabLabel === '学习心得'">
-              <span>成绩百分制（选填，0-100）</span>
-              <input v-model="form.gradePercentage" type="number" min="0" max="100" step="1" placeholder="如 95" />
-            </label>
+              <label>
+                <span>cc98链接（选填）</span>
+                <input v-model="form.cc98Link" type="url" autocomplete="off" />
+              </label>
 
-            <div v-if="tabLabel === '学习心得'" class="contribution-form__wide contribution-form__format">
+              <label v-if="tabLabel === '学习心得'">
+                <span>成绩百分制（选填，0-100）</span>
+                <input v-model="form.gradePercentage" type="number" min="0" max="100" step="1" placeholder="如 95" />
+              </label>
+            </div>
+
+            <div v-if="!isPaper" class="contribution-form__wide contribution-form__format">
               <div class="contribution-form__format-head">
                 <span>内容格式</span>
                 <div class="contribution-form__format-tabs" role="tablist">
@@ -322,40 +397,42 @@ function submitContribution() {
               <textarea
                 ref="bodyTextarea"
                 v-model="form.body"
-                :placeholder="isUbb ? '支持 [b] 加粗 [i] 斜体 [u] 下划线 [s] 删除线 [url=...] 链接 [img] 图片 [quote] 引用 [code] 代码 [size=3] 字号 [color=#xxx] 颜色 [smiley] 表情 [align=left|center|right] 对齐' : '支持 Markdown 格式：**加粗** *斜体* [链接](url) > 引用 等'"
+                :placeholder="isUbb ? '支持 [b] 加粗 [i] 斜体 [u] 下划线 [s] 删除线 [url=...] 链接 [quote] 引用 [code] 代码 [size=3] 字号；仍可直接粘贴 CC98 图片链接' : '支持 Markdown 格式：**加粗** *斜体* [链接](url) > 引用 等'"
                 rows="6"
               ></textarea>
             </div>
 
-            <label v-else class="contribution-form__wide">
-              <span>内容</span>
-              <textarea v-model="form.body" rows="5"></textarea>
-            </label>
-
-            <!-- CRIT-RES-1: the file input was a stub — only the filename
-                 was sent to the server, the binary was never uploaded. Use
-                 the UBB [img]URL[/img] tag (above) or paste a CC98 image
-                 link to embed images in your post. -->
-            <p class="contribution-form__hint">
-              插入图片请在内容里用 UBB <code>[img]图片地址[/img]</code>,
-              或在 CC98 上传后粘贴图片链接。
-            </p>
-
-            <label>
-              <span>复习资料链接</span>
-              <input v-model="form.materialLink" type="url" autocomplete="off" />
-            </label>
-
-            <label v-if="tabLabel !== '学习心得'">
-              <span>PDF（选填）</span>
-              <input type="file" accept="application/pdf,.pdf" @change="handlePdfChange" />
-            </label>
+            <div v-if="isPaper" class="contribution-form__wide">
+              <span class="contribution-form__file-label">PDF 文件</span>
+              <input
+                ref="pdfInput"
+                class="contribution-form__file-input"
+                type="file"
+                accept="application/pdf,.pdf"
+                aria-label="选择 PDF 文件"
+                @change="onPdfInput"
+              />
+              <button
+                type="button"
+                class="contribution-form__dropzone"
+                :class="{ 'is-dragging': isDraggingPdf }"
+                :disabled="isSubmittingPaper"
+                @click="pdfInput?.click()"
+                @dragenter.prevent="isDraggingPdf = true"
+                @dragover.prevent="isDraggingPdf = true"
+                @dragleave.prevent="isDraggingPdf = false"
+                @drop.prevent="onPdfDrop"
+              >
+                <strong>{{ pdfFile ? pdfFile.name : '选择 PDF 文件或拖到这里' }}</strong>
+                <small>{{ pdfFile ? `${(pdfFile.size / 1024 / 1024).toFixed(2)} MB` : '仅支持 PDF，最大 25 MB' }}</small>
+              </button>
+            </div>
 
             <p v-if="notice" class="contribution-box__notice">{{ notice }}</p>
 
             <div class="contribution-form__actions">
-              <button type="button" @click="closeModal">取消</button>
-              <button type="submit">发送审核</button>
+              <button type="button" :disabled="isSubmittingPaper" @click="closeModal">取消</button>
+              <button type="submit" :disabled="isSubmittingPaper">{{ isSubmittingPaper ? '正在提交...' : '发送审核' }}</button>
             </div>
           </form>
         </section>

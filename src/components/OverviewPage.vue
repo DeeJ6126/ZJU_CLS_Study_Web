@@ -1,8 +1,8 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { loadResourceCatalog } from '../data/courses/resourceData.js';
+import { supportedCourseCodes } from '../data/courses/courseDetails.js';
 import {
-  ALL_PROGRAM_ID,
   DEFAULT_MAJOR_ID,
   curriculumOptions,
   findCurriculumProgram,
@@ -10,6 +10,7 @@ import {
   majorOptions,
 } from '../data/courses/programCatalog.js';
 import { publicAssetPath } from '../utils/publicPath.js';
+import { loadCourseAvailability } from '../services/courseContentApiClient.js';
 import {
   buildAllCourseSections,
   buildProgramOutline,
@@ -21,7 +22,7 @@ import {
 } from '../services/demoNavigationService.js';
 
 const VALID_GROUPING_MODES = new Set(['outline', 'semester']);
-const DEFAULT_PROGRAM_ID = ALL_PROGRAM_ID;
+const DEFAULT_PROGRAM_ID = curriculumOptions[0]?.id ?? '2024';
 
 const availableMajorIds = new Set(
   majorOptions.filter((option) => option.available).map((option) => option.id),
@@ -44,15 +45,21 @@ function readFiltersFromHash() {
     programId: findCurriculumProgram(major, programId) ? programId : '',
     chosenModules: (params.get('module') ?? '').split(',').filter(Boolean),
     grouping: VALID_GROUPING_MODES.has(grouping) ? grouping : 'outline',
+    onlyWithResources: params.get('resources') === '1',
   };
 }
 
 const initialFilters = readFiltersFromHash();
+const hasExplicitProgram = Boolean(initialFilters.programId);
 const courses = ref([]);
 const selectedMajorId = ref(initialFilters.majorId);
 const selectedProgramId = ref(initialFilters.programId || DEFAULT_PROGRAM_ID);
 const chosenModules = ref(initialFilters.chosenModules);
 const groupingMode = ref(initialFilters.grouping);
+const onlyWithResources = ref(initialFilters.onlyWithResources);
+const resourceAvailability = ref(new Set(supportedCourseCodes));
+const resourceAvailabilityLoading = ref(false);
+const resourceAvailabilityLoaded = ref(false);
 const isLoading = ref(true);
 const loadError = ref('');
 const collapsedSections = reactive({});
@@ -65,7 +72,7 @@ const props = defineProps({
 const emit = defineEmits(['add-course', 'remove-course', 'navigate-course']);
 
 function applyDefaultFromGrade() {
-  if (selectedProgramId.value !== DEFAULT_PROGRAM_ID) return;
+  if (hasExplicitProgram || selectedProgramId.value !== DEFAULT_PROGRAM_ID) return;
   const fallback = programIdForGrade(props.userGrade, selectedMajorId.value);
   if (fallback) selectedProgramId.value = fallback;
 }
@@ -84,6 +91,9 @@ function syncOverviewHash() {
   if (groupingMode.value !== 'outline') {
     params.group = groupingMode.value;
   }
+  if (onlyWithResources.value) {
+    params.resources = '1';
+  }
   const nextHash = buildHashWithQuery('overview', params);
   if (window.location.hash !== nextHash) {
     history.replaceState(null, '', `${window.location.pathname}${window.location.search}${nextHash}`);
@@ -91,12 +101,11 @@ function syncOverviewHash() {
 }
 
 watch(
-  [selectedMajorId, selectedProgramId, chosenModules, groupingMode],
+  [selectedMajorId, selectedProgramId, chosenModules, groupingMode, onlyWithResources],
   () => { syncOverviewHash(); },
 );
 
-// 切换专业后原来的年级/模块可能在新专业下不存在，回退到「全部课程」而不是
-// 停在一个查不到方案的组合上。
+// 切换专业后原来的年级/模块可能在新专业下不存在，回退到默认培养方案。
 watch(selectedMajorId, (majorId) => {
   if (selectedProgramId.value !== DEFAULT_PROGRAM_ID
     && !findCurriculumProgram(majorId, selectedProgramId.value)) {
@@ -119,7 +128,7 @@ const isProgramSelected = computed(() => Boolean(selectedProgram.value));
 const programYears = computed(() => new Set(listProgramYears(selectedMajorId.value)));
 const yearOptions = computed(() => curriculumOptions.map((option) => ({
   ...option,
-  available: option.id === ALL_PROGRAM_ID || programYears.value.has(option.id),
+  available: programYears.value.has(option.id),
 })));
 
 // 同一份方案里互斥组不止一个（强基 2025 起还有转段方向），所以按「同组其他
@@ -132,16 +141,38 @@ function chooseModule(row, optionTag) {
   ];
 }
 
+async function handleResourceOnlyChange() {
+  if (!onlyWithResources.value || resourceAvailabilityLoaded.value
+      || resourceAvailabilityLoading.value || !courses.value.length) {
+    return;
+  }
+
+  resourceAvailabilityLoading.value = true;
+  try {
+    const available = await loadCourseAvailability(courses.value);
+    resourceAvailability.value = new Set([...resourceAvailability.value, ...available]);
+  } finally {
+    resourceAvailabilityLoading.value = false;
+    resourceAvailabilityLoaded.value = true;
+  }
+}
+
 const programSourceUrl = computed(() => (
   selectedProgram.value ? publicAssetPath(selectedProgram.value.sourceUrl) : ''
 ));
 
+const filteredCourses = computed(() => (
+  onlyWithResources.value && !resourceAvailabilityLoading.value
+    ? courses.value.filter((course) => resourceAvailability.value.has(course.code))
+    : courses.value
+));
+
 const sections = computed(() => {
   if (!selectedProgram.value) {
-    return buildAllCourseSections(courses.value);
+    return buildAllCourseSections(filteredCourses.value);
   }
   if (groupingMode.value === 'semester') {
-    return buildProgramSemesterSections(courses.value, selectedProgram.value, chosenModules.value);
+    return buildProgramSemesterSections(filteredCourses.value, selectedProgram.value, chosenModules.value);
   }
   return [];
 });
@@ -149,7 +180,7 @@ const sections = computed(() => {
 // 「按培养方案结构」视图：原文章节树压平后的行列表。
 const outlineRows = computed(() => (
   isProgramSelected.value && groupingMode.value === 'outline'
-    ? buildProgramOutline(courses.value, selectedProgram.value, chosenModules.value)
+    ? buildProgramOutline(filteredCourses.value, selectedProgram.value, chosenModules.value)
     : []
 ));
 
@@ -200,6 +231,9 @@ onMounted(async () => {
   try {
     const catalog = await loadResourceCatalog();
     courses.value = catalog.courses;
+    if (onlyWithResources.value) {
+      await handleResourceOnlyChange();
+    }
   } catch {
     loadError.value = '课程目录加载失败，请稍后重试。';
   } finally {
@@ -268,6 +302,15 @@ onMounted(async () => {
         </div>
       </div>
 
+      <label class="overview-resource-filter">
+        <input
+          v-model="onlyWithResources"
+          type="checkbox"
+          @change="handleResourceOnlyChange"
+        >
+        <span>仅展示有资料的课程</span>
+      </label>
+
       <!-- 必须过 publicAssetPath：站点部署在 /zjubio/ 或 GitHub Pages 的
            /ZJU_CLS_Study_Web/ 子路径下时，裸的绝对路径会指向域名根目录。 -->
       <a v-if="selectedProgram" :href="programSourceUrl" target="_blank" rel="noreferrer">
@@ -314,8 +357,9 @@ onMounted(async () => {
               <span>{{ course.code }}</span>
               <small>{{ course.credits }} 学分 · {{ course.totalHours }} 学时</small>
             </a>
+            <!-- 收藏替代原“我的课程”清单入口，课程收藏与个人课表分开保存。 -->
             <button v-if="canManageCourses" type="button" @click="toggleSavedCourse(course)">
-              {{ isSaved(course.code) ? '移出我的课程' : '加入我的课程' }}
+              {{ isSaved(course.code) ? '取消收藏' : '收藏' }}
             </button>
           </article>
         </div>
@@ -347,7 +391,7 @@ onMounted(async () => {
                   <small>{{ course.credits }} 学分 · {{ course.totalHours }} 学时</small>
                 </a>
                 <button v-if="canManageCourses" type="button" @click="toggleSavedCourse(course)">
-                  {{ isSaved(course.code) ? '移出我的课程' : '加入我的课程' }}
+                  {{ isSaved(course.code) ? '取消收藏' : '收藏' }}
                 </button>
               </article>
             </div>
@@ -374,7 +418,7 @@ onMounted(async () => {
                   <small>{{ course.credits }} 学分 · {{ course.totalHours }} 学时</small>
                 </a>
                 <button v-if="canManageCourses" type="button" @click="toggleSavedCourse(course)">
-                  {{ isSaved(course.code) ? '移出我的课程' : '加入我的课程' }}
+                  {{ isSaved(course.code) ? '取消收藏' : '收藏' }}
                 </button>
               </article>
             </div>

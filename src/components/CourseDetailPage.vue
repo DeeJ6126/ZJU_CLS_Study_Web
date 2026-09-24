@@ -460,7 +460,7 @@ function emitContribution(payload) {
               <em>{{ paper.summary }}</em>
             </span>
             <span>{{ paper.year }}</span>
-            <span>{{ paper.teacher }}班</span>
+            <span>{{ paper.teacher || '教师未填写' }}</span>
           </a>
         </div>
       </template>

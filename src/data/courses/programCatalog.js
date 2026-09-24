@@ -71,7 +71,6 @@ export const majorOptions = [
 ];
 
 export const curriculumOptions = [
-  { id: ALL_PROGRAM_ID, label: '全部课程', available: true },
   { id: '2024', label: '2024级培养方案', available: true },
   { id: '2025', label: '2025级培养方案', available: true },
   { id: '2026', label: '2026级培养方案', available: true },

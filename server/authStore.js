@@ -529,6 +529,30 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
       return this.listFavoriteIds(userId);
     },
 
+    listCourseFavoriteCodes(userId) {
+      return db.prepare(        "select content_id as contentId from user_favorites where user_id = ? and content_id like 'course:%' order by created_at desc",
+      ).all(userId).map((row) => row.contentId.slice('course:'.length));
+    },
+
+    addCourseFavorite(userId, courseCode) {
+      const normalized = String(courseCode ?? '').trim().toUpperCase();
+      if (!normalized) throw new Error('addCourseFavorite requires a course code');
+      return this.addFavorite(userId, `course:${normalized}`);
+    },
+
+    removeCourseFavorite(userId, courseCode) {
+      const normalized = String(courseCode ?? '').trim().toUpperCase();
+      return this.removeFavorite(userId, `course:${normalized}`);
+    },
+
+    countCourseFavoriteUsers(courseCode) {
+      const normalized = String(courseCode ?? '').trim().toUpperCase();
+      if (!normalized) return 0;
+      const row = db.prepare(        "select count(distinct user_id) as count from user_favorites where content_id = ?",
+      ).get(`course:${normalized}`);
+      return Number(row?.count ?? 0);
+    },
+
     createNotification(input) {
       const id = input.id ?? randomUUID();
       db.prepare(`

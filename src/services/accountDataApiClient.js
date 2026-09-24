@@ -22,6 +22,18 @@ export function createAccountDataApiClient(fetchImpl = fetch) {
     ),
     removeCourse: (courseCode) => request(`api/account/courses/${encodeURIComponent(courseCode)}`, { method: 'DELETE' }),
     fetchFavorites: () => request('api/account/favorites'),
+    fetchCourseFavorites: () => request('api/account/course-favorites'),
+    addCourseFavorite: (courseCode) => request(
+      `api/account/course-favorites/${encodeURIComponent(courseCode)}`,
+      json('PUT'),
+    ),
+    removeCourseFavorite: (courseCode) => request(
+      `api/account/course-favorites/${encodeURIComponent(courseCode)}`,
+      { method: 'DELETE' },
+    ),
+    fetchCourseFavoriteCount: (courseCode) => request(
+      `api/course-favorite-counts/${encodeURIComponent(courseCode)}`,
+    ),
     addFavorite: (contentId) => request(`api/account/favorites/${encodeURIComponent(contentId)}`, json('PUT')),
     removeFavorite: (contentId) => request(`api/account/favorites/${encodeURIComponent(contentId)}`, { method: 'DELETE' }),
     fetchNotifications: () => request('api/account/notifications'),

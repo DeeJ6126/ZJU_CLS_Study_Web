@@ -330,6 +330,8 @@ const profileError = ref('');
 const profileNotice = ref('');
 const activeProfilePublicId = ref('');
 const accountCourses = ref([]);
+const accountCourseFavorites = ref([]);
+const courseFavoriteCount = ref(0);
 const accountFavorites = ref([]);
 const courseImportPreview = ref(null);
 const notifications = ref([]);
@@ -344,15 +346,15 @@ const quizProgressByCollection = ref({});
 const activeOverviewHasQuiz = computed(() => supportedCourses.some((course) => (
   course.code === activeOverviewCourse.value?.code
 )));
-// Counts how many distinct demo accounts have favorited at least one item
-// of the currently-open course. The badge in CourseDetailPage uses this
-// value so visitors can see how popular a course is at a glance. We only
-// have a demo-side answer today; the real backend has no per-course
-// aggregate, so non-demo sessions report 0 to avoid a misleading number.
+// Course popularity is based only on explicit course favorites, never on
+// favorites of individual notes, materials, or exam papers.
 const favoriteCount = computed(() => {
   const courseCode = activeOverviewCourse.value?.code;
-  if (!courseCode || !isDemoAccount.value) return 0;
-  return countUsersFavoritingCourse(demoAccountService.getAllAccounts(), courseCode);
+  if (!courseCode) return 0;
+  if (isDemoAccount.value) {
+    return countUsersFavoritingCourse(demoAccountService.getAllAccounts(), courseCode);
+  }
+  return courseFavoriteCount.value;
 });
 const activeCourse = computed(
   () => supportedCourses.find((course) => course.code === activeCourseCode.value) ?? null,
@@ -413,6 +415,7 @@ const activeProfileIsOwn = computed(() => (
 ));
 const rangeOptions = computed(() => buildQuizRangeOptions(activeCourseCode.value, categories.value));
 const favoriteContentIds = computed(() => accountFavorites.value.map((item) => item.id));
+const favoriteCourseCodes = computed(() => accountCourseFavorites.value);
 const savedCourseCodes = computed(() => accountCourses.value.map((course) => course.courseCode));
 const activeOverviewItem = computed(() => {
   if (!activeOverviewCourse.value || !overviewRoute.value.itemId) return null;
@@ -1647,6 +1650,7 @@ function mutationNotice(result, successMessage) {
 async function loadAccountData() {
   if (viewerIsGuest.value) {
     accountCourses.value = [];
+    accountCourseFavorites.value = [];
     accountFavorites.value = [];
     notifications.value = [];
     unreadNotificationCount.value = 0;
@@ -1656,6 +1660,7 @@ async function loadAccountData() {
     const result = demoAccountService.getPrivateProfile(activeDemoAccountId.value);
     if (result.ok) {
       accountCourses.value = result.courses ?? [];
+      accountCourseFavorites.value = result.courseFavorites ?? [];
       accountFavorites.value = result.favorites ?? [];
       notifications.value = result.notifications ?? [];
       unreadNotificationCount.value = result.unreadCount ?? 0;
@@ -1663,12 +1668,14 @@ async function loadAccountData() {
     }
     return;
   }
-  const [coursesResult, favoritesResult, notificationsResult] = await Promise.all([
+  const [coursesResult, courseFavoritesResult, favoritesResult, notificationsResult] = await Promise.all([
     accountDataApiClient.fetchCourses(),
+    accountDataApiClient.fetchCourseFavorites(),
     accountDataApiClient.fetchFavorites(),
     accountDataApiClient.fetchNotifications(),
   ]);
   if (coursesResult.ok) accountCourses.value = coursesResult.courses ?? [];
+  if (courseFavoritesResult.ok) accountCourseFavorites.value = courseFavoritesResult.courseCodes ?? [];
   if (favoritesResult.ok) accountFavorites.value = favoritesResult.favorites ?? [];
   if (notificationsResult.ok) {
     notifications.value = notificationsResult.notifications ?? [];
@@ -1873,6 +1880,25 @@ function openAdminPage() {
   window.location.hash = '#admin';
 }
 
+async function refreshCourseFavoriteCount(courseCode) {
+  const normalizedCode = String(courseCode ?? '').trim().toUpperCase();
+  if (!normalizedCode) {
+    courseFavoriteCount.value = 0;
+    return;
+  }
+  if (isDemoAccount.value) {
+    courseFavoriteCount.value = countUsersFavoritingCourse(
+      demoAccountService.getAllAccounts(),
+      normalizedCode,
+    );
+    return;
+  }
+  const result = await accountDataApiClient.fetchCourseFavoriteCount(normalizedCode);
+  if (activeOverviewCourse.value?.code === normalizedCode) {
+    courseFavoriteCount.value = result.ok ? Number(result.count ?? 0) : 0;
+  }
+}
+
 async function syncPageFromHash() {
   const nextPage = routeFromHash();
   resetPageState(nextPage);
@@ -1943,6 +1969,8 @@ async function syncPageFromHash() {
       materials: [],
       papers: [],
     };
+    courseFavoriteCount.value = 0;
+    void refreshCourseFavoriteCount(requestedCourseCode);
     overviewContentLoading.value = true;
     overviewContentError.value = '';
     try {
@@ -2041,26 +2069,63 @@ function backToOverview() {
 async function submitCourseContribution(payload) {
   contributionNotice.value = '正在提交审核...';
   const typeByTab = { experiences: 'experience', materials: 'material', papers: 'paper' };
+  const isPaper = payload.tabId === 'papers';
   const input = {
     courseCode: activeOverviewCourse.value.code,
     type: typeByTab[payload.tabId],
     title: payload.title,
     summary: payload.subtitle,
     author: payload.cc98Name || viewer.value.nickname || '',
-    body: payload.body,
+    body: isPaper ? '' : payload.body,
     bodyFormat: payload.bodyFormat || 'markdown',
     cc98Url: payload.cc98Link,
     gpa: payload.gpa,
     gradePercentage: payload.gradePercentage,
-    externalUrl: payload.materialLink,
+    year: isPaper ? payload.year : '',
+    teacher: isPaper ? payload.teacher : '',
   };
-  let result = isDemoAccount.value
-    ? demoAccountService.createSubmission(activeDemoAccountId.value, input)
-    : await submissionApiClient.create(input);
-  if (!isDemoAccount.value && result.ok && payload.pdfFile) {
-    result = await submissionApiClient.uploadPdf(result.submission.id, payload.pdfFile);
+
+  let createdSubmissionId = payload.submissionId || '';
+  try {
+    if (isPaper && isDemoAccount.value) {
+      const file = payload.pdfFile;
+      const result = demoAccountService.createSubmission(activeDemoAccountId.value, {
+        ...input,
+        file: {
+          fileName: file.name,
+          mimeType: 'application/pdf',
+          size: file.size,
+          url: URL.createObjectURL(file),
+        },
+      });
+      contributionNotice.value = mutationNotice(result, '投稿已进入审核队列。');
+      payload.onComplete?.(result);
+      return;
+    }
+
+    const created = payload.submissionId
+      ? { ok: true, submission: { id: payload.submissionId } }
+      : isDemoAccount.value
+        ? demoAccountService.createSubmission(activeDemoAccountId.value, input)
+        : await submissionApiClient.create(input);
+    if (!created.ok || !isPaper) {
+      contributionNotice.value = mutationNotice(created, '投稿已进入审核队列。');
+      if (isPaper) payload.onComplete?.(created);
+      return;
+    }
+
+    createdSubmissionId = created.submission.id;
+    contributionNotice.value = '正在上传 PDF...';
+    const uploaded = await submissionApiClient.uploadPdf(created.submission.id, payload.pdfFile);
+    contributionNotice.value = mutationNotice(uploaded, '投稿已进入审核队列。');
+    payload.onComplete?.({
+      ...uploaded,
+      submissionId: uploaded.ok ? '' : created.submission.id,
+    });
+  } catch {
+    contributionNotice.value = '投稿或 PDF 上传失败，请重试。';
+    if (isPaper) payload.onComplete?.({ ok: false, message: contributionNotice.value, submissionId: createdSubmissionId });
   }
-  contributionNotice.value = mutationNotice(result, '投稿已进入审核队列。');
 }
 
 async function toggleContentLike(contentId) {
@@ -2173,6 +2238,26 @@ async function replaceAccountCourses(courses) {
   accountCourses.value = resultData.courses ?? [];
   courseImportPreview.value = null;
   profileNotice.value = mutationNotice(resultData, '课程清单已替换。');
+}
+
+async function toggleCourseFavorite(course) {
+  const courseCode = typeof course === 'string' ? course : course?.courseCode ?? course?.code;
+  if (!courseCode || viewerIsGuest.value) return;
+  const exists = favoriteCourseCodes.value.includes(courseCode);
+  const resultData = isDemoAccount.value
+    ? (exists
+      ? demoAccountService.removeCourseFavorite(activeDemoAccountId.value, courseCode)
+      : demoAccountService.addCourseFavorite(activeDemoAccountId.value, courseCode))
+    : (exists
+      ? await accountDataApiClient.removeCourseFavorite(courseCode)
+      : await accountDataApiClient.addCourseFavorite(courseCode));
+  if (!resultData.ok) {
+    profileNotice.value = resultData.message;
+    return;
+  }
+  accountCourseFavorites.value = resultData.courseFavorites ?? resultData.courseCodes ?? [];
+  demoDataVersion.value += 1;
+  profileNotice.value = resultData.persistenceWarning || (exists ? '已取消收藏。' : '已收藏这门课程。');
 }
 
 async function addAccountCourse(course) {
@@ -2338,6 +2423,7 @@ async function handleLogout() {
   authBusy.value = false;
   studentViewer.value = guestViewer();
   accountCourses.value = [];
+  accountCourseFavorites.value = [];
   accountFavorites.value = [];
   notifications.value = [];
   unreadNotificationCount.value = 0;
@@ -2615,10 +2701,10 @@ onBeforeUnmount(() => {
         <OverviewPage
           v-else
           :can-manage-courses="!viewerIsGuest"
-          :saved-course-codes="savedCourseCodes"
+          :saved-course-codes="favoriteCourseCodes"
           :user-grade="viewer.grade ?? null"
-          @add-course="addAccountCourse"
-          @remove-course="removeAccountCourse"
+          @add-course="toggleCourseFavorite"
+          @remove-course="toggleCourseFavorite"
           @navigate-course="onOverviewNavigateCourse"
         />
       </template>

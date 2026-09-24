@@ -230,7 +230,7 @@
   align-items: center;
   padding: 0 9px;
   border: 1px solid var(--color-line);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: var(--resource-chip-bg);
   color: var(--resource-chip-text);
   font-size: 12px;
