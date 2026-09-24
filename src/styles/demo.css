@@ -598,6 +598,19 @@ html[data-theme="dark"] .demo-user-chip__tag {
   margin-bottom: 24px;
 }
 
+.practice-question__head--with-shortcuts {
+  flex-wrap: wrap;
+}
+
+.practice-shortcuts {
+  flex: 1 1 360px;
+  min-width: 0;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
 .practice-question__head span {
   margin-left: auto;
 }
@@ -757,6 +770,11 @@ html[data-theme="dark"] .demo-user-chip__tag {
 .review-card {
   max-width: 760px;
   margin: 0 auto;
+}
+
+.practice-shortcuts--review {
+  margin: 16px 0 0;
+  text-align: center;
 }
 
 .vocabulary-list {
@@ -1430,6 +1448,9 @@ html[data-theme="dark"] .practice-question__head button {
 }
 html[data-theme="dark"] .practice-question__head span,
 html[data-theme="dark"] .practice-question__meta {
+  color: #8a98ad;
+}
+html[data-theme="dark"] .practice-shortcuts {
   color: #8a98ad;
 }
 html[data-theme="dark"] .practice-question h1 {

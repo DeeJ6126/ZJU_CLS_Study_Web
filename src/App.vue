@@ -105,7 +105,6 @@ import {
   cycleMicrobiologyVocabularyStatus,
   normalizeMicrobiologyCategorySelection,
   readMicrobiologyMistakes,
-  readMicrobiologySelection,
   readMicrobiologyVocabularyRecords,
   removeMicrobiologyMistake,
   selectedMicrobiologyQuestionCount,
@@ -642,6 +641,9 @@ async function loadCollectionsForCourse(courseCode) {
 async function selectCourse(courseCode) {
   activeCourseCode.value = courseCode;
   session.value = null;
+  if (courseCode === 'BIO2110F') {
+    selectedCategorySourceIds.value = [];
+  }
   interaction.value = resetQuizInteraction('');
   message.value = '';
   isLoading.value = true;
@@ -703,7 +705,7 @@ async function loadCategories() {
   if (isBotanyCollection.value) {
     selectedCategorySourceIds.value = normalizeBotanyCategorySelection(readBotanySelection(quizScope.value), categories.value);
   } else if (isMicrobiologyCollection.value) {
-    selectedCategorySourceIds.value = normalizeMicrobiologyCategorySelection(readMicrobiologySelection(quizScope.value), categories.value);
+    selectedCategorySourceIds.value = [];
   } else {
     selectedCategorySourceIds.value = [];
   }
@@ -873,15 +875,19 @@ async function beginPractice() {
 
 async function beginBotanyPractice() {
   selectedCategorySourceIds.value = writeBotanySelection(
+    quizScope.value,
     normalizeBotanyCategorySelection(selectedCategorySourceIds.value, categories.value),
   );
+  if (!selectedCategorySourceIds.value.length) return;
   await beginPractice();
 }
 
 async function beginMicrobiologyPractice() {
   selectedCategorySourceIds.value = writeMicrobiologySelection(
+    quizScope.value,
     normalizeMicrobiologyCategorySelection(selectedCategorySourceIds.value, categories.value),
   );
+  if (!selectedCategorySourceIds.value.length) return;
   await beginPractice();
 }
 
@@ -1601,7 +1607,11 @@ function handleGlobalKeydown(event) {
     return;
   }
 
-  if (quizView.value !== 'practice' && !(quizView.value === 'molecular' && molecularPage.value === 'practice')) {
+  const isPracticePage = quizView.value === 'practice'
+    || (quizView.value === 'molecular' && molecularPage.value === 'practice')
+    || (quizView.value === 'botany' && botanyPage.value === 'practice')
+    || (quizView.value === 'microbiology' && microbiologyPage.value === 'practice');
+  if (!isPracticePage || !session.value || !activeQuestion.value) {
     return;
   }
 
@@ -1611,8 +1621,17 @@ function handleGlobalKeydown(event) {
     return;
   }
 
+  if (quizView.value === 'microbiology' && event.key.toLowerCase() === 'u'
+    && !vocabularyPickEnabled.value && !result.value && !currentQuestionLocked.value) {
+    event.preventDefault();
+    submitUnknownAnswer();
+    return;
+  }
+
   const keyResult = handleQuizKey(interaction.value, event);
-  if (keyResult.action === 'none') {
+  if (keyResult.action === 'none'
+    || (keyResult.action === 'select' && currentQuestionLocked.value)
+    || (quizView.value === 'microbiology' && vocabularyPickEnabled.value && keyResult.action === 'select')) {
     return;
   }
   event.preventDefault();
@@ -1625,6 +1644,8 @@ function handleGlobalKeydown(event) {
     moveToNextQuestion();
   } else if (keyResult.action === 'previous') {
     moveQuestion('previous');
+  } else if (keyResult.action === 'reveal') {
+    revealAnswer();
   } else if (keyResult.action === 'speak') {
     speakMolecularText(getMolecularSpeakText({
       answerTerm: result.value?.correctDisplay ?? interaction.value.textAnswer,
@@ -3259,9 +3280,10 @@ onBeforeUnmount(() => {
           >
 
             <article v-if="activeQuestion" class="practice-question">
-              <header class="practice-question__head">
+              <header class="practice-question__head practice-question__head--with-shortcuts">
                 <button type="button" @click="backToRangeSelection">返回章节</button>
                 <button type="button" class="danger-button" @click="exitPractice">退出练习</button>
+                <small class="practice-shortcuts">A–D 选项 · Enter 提交 · U 不知道 · ←/→ 未作答时切题 · 空格 提交后下一题</small>
                 <button type="button" class="secondary-button" @click="vocabularyPickEnabled = !vocabularyPickEnabled">
                   {{ vocabularyPickEnabled ? '退出取词' : '取词模式' }}
                 </button>
@@ -3490,9 +3512,10 @@ onBeforeUnmount(() => {
           >
 
             <article v-if="activeQuestion" class="practice-question">
-              <header class="practice-question__head">
+              <header class="practice-question__head practice-question__head--with-shortcuts">
                 <button type="button" @click="backToRangeSelection">返回题型选择</button>
                 <button type="button" class="danger-button" @click="exitPractice">退出练习</button>
+                <small class="practice-shortcuts">A–D 选项 · T/F 判断 · Enter 提交 · ←/→ 未作答时切题 · 空格 提交后下一题 · Tab 翻译朗读（非输入框）</small>
                 <span
                   v-if="activeQuestion.type !== 'translation'"
                   class="language-toggle"
@@ -3638,6 +3661,7 @@ onBeforeUnmount(() => {
                 <button type="button" @click="molecularReviewShowAnswer = true">显示答案</button>
                 <button type="button" @click="moveReviewCard(1)">下一张</button>
               </div>
+              <p class="practice-shortcuts practice-shortcuts--review">Enter 显示答案 · 空格 发音 · ←/→ 切换卡片</p>
             </article>
             <p v-else class="molecular-empty">先在题型选择里选择中英互译分类，再进入复习。</p>
           </section>
@@ -3797,9 +3821,10 @@ onBeforeUnmount(() => {
           >
 
             <article v-if="activeQuestion" class="practice-question botany-question">
-              <header class="practice-question__head">
+              <header class="practice-question__head practice-question__head--with-shortcuts">
                 <button type="button" @click="backToRangeSelection">返回分类</button>
                 <button type="button" class="danger-button" @click="exitPractice">退出练习</button>
+                <small class="practice-shortcuts">Enter 揭晓 · ←/→ 揭晓前切图 · 空格 揭晓后下一张</small>
                 <span>{{ questionIndexText }}</span>
               </header>
               <p class="practice-question__meta">先观察切片图，再揭晓答案。</p>

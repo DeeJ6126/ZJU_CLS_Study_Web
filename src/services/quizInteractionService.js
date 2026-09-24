@@ -94,6 +94,12 @@ export function handleQuizKey(state, event) {
   }
 
   if (key === 'Enter') {
+    if (isJudged(state)) {
+      return { action: 'none', state };
+    }
+    if (state.questionType === 'image_reveal') {
+      return { action: 'reveal', state };
+    }
     const answer = buildSubmitAnswer(state);
     return answer ? { action: 'submit', state, answer } : { action: 'none', state };
   }
@@ -102,12 +108,12 @@ export function handleQuizKey(state, event) {
     return { action: 'speak', state };
   }
 
-  if (choiceTypes.has(state.questionType) && /^[a-d]$/i.test(key)) {
+  if (choiceTypes.has(state.questionType) && !isJudged(state) && /^[a-d]$/i.test(key)) {
     const nextState = selectPendingAnswer(state, key);
     return { action: 'select', state: nextState };
   }
 
-  if (state.questionType === 'true_false' && /^[tf]$/i.test(key)) {
+  if (state.questionType === 'true_false' && !isJudged(state) && /^[tf]$/i.test(key)) {
     const nextState = selectPendingAnswer(state, key.toLowerCase() === 't');
     return { action: 'select', state: nextState };
   }
