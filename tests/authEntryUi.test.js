@@ -23,6 +23,11 @@ test('auth entry components expose the real account menu without a test account 
   assert.match(accountPopover, /select-demo/);
   assert.match(app, /demoIdentityId/);
   assert.match(app, /selectDemoIdentity/);
+  assert.match(app, /demoIdentityEnabled = import\.meta\.env\.DEV/);
+  assert.match(app, /if \(!demoIdentityEnabled\) saveDemoIdentityId\(''\)/);
+  assert.match(app, /demoIdentityOptions = demoIdentityEnabled \? getDemoIdentityOptions\(\) : \[\]/);
+  assert.match(accountPopover, /showDemoOptions = import\.meta\.env\.DEV/);
+  assert.match(accountPopover, /v-if="showDemoOptions && demoOptions\.length"/);
 });
 
 test('auth dialog exposes only student-ID registration, login, and recovery', async () => {

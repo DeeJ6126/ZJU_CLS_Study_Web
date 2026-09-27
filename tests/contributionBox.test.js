@@ -33,3 +33,16 @@ test('contribution form keeps PDF-only past-paper uploads and removes legacy hel
   assert.doesNotMatch(contributionBox, /🖼|🎨|☺/);
   assert.match(contributionBox, /CC98 图片链接/);
 });
+
+test('numeric grade input is normalized before submission', () => {
+  assert.match(contributionBox, /String\(form\.gradePercentage \?\? ''\)\.trim\(\)/);
+  assert.doesNotMatch(contributionBox, /form\.gradePercentage\.trim\(\)/);
+});
+
+test('Markdown and UBB toolbars expose only the requested insertion tools', () => {
+  for (const token of ['markdownToolbar', 'ubbToolbar', '## ', '**', '~~', '> ', '- ', '[del]', '[align=left]', '[align=center]', '[align=right]', '[size=', '[color=', '[url=']) {
+    assert.ok(contributionBox.includes(token), `missing ${token}`);
+  }
+  assert.match(contributionBox, /type="color"/);
+  assert.doesNotMatch(contributionBox, /id: 'image'|title: '插入图片'/);
+});

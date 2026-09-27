@@ -25,9 +25,11 @@ export function validateContentInput(input, { partial = false, current = null } 
   const summary = clean(data.summary);
   const author = clean(data.author);
   const body = clean(data.body);
+  const bodyFormat = clean(data.bodyFormat || 'markdown');
   const externalUrl = clean(data.externalUrl);
   const cc98Url = clean(data.cc98Url);
   const gpa = clean(data.gpa);
+  const gradePercentage = clean(data.gradePercentage);
   const year = clean(data.year);
   const teacher = clean(data.teacher);
 
@@ -39,6 +41,12 @@ export function validateContentInput(input, { partial = false, current = null } 
   }
   if (summary.length > 200 || author.length > 40 || body.length > 100000) {
     return { ok: false, status: 400, message: '内容字段超过长度限制。' };
+  }
+  if (!['markdown', 'ubb'].includes(bodyFormat)) {
+    return { ok: false, status: 400, message: '内容格式无效。' };
+  }
+  if (gradePercentage && (!/^\d{1,3}$/.test(gradePercentage) || Number(gradePercentage) > 100)) {
+    return { ok: false, status: 400, message: '成绩百分制需要填写 0 到 100。' };
   }
   if (!isHttpUrl(externalUrl)) {
     return { ok: false, status: 400, message: '外部链接必须使用 http 或 https。' };
@@ -55,7 +63,7 @@ export function validateContentInput(input, { partial = false, current = null } 
 
   return {
     ok: true,
-    value: { courseCode, type, title, summary, author, body, externalUrl, cc98Url, gpa, year, teacher },
+    value: { courseCode, type, title, summary, author, body, bodyFormat, externalUrl, cc98Url, gpa, gradePercentage, year, teacher },
   };
 }
 
@@ -79,9 +87,11 @@ export function toPublicContentItem(item, likeState = {}, owner = null) {
     summary: item.summary,
     author: item.author,
     body: item.body,
+    bodyFormat: item.bodyFormat,
     externalUrl: item.externalUrl,
     cc98Url: item.cc98Url,
     gpa: item.gpa,
+    gradePercentage: item.gradePercentage,
     year: item.year,
     teacher: item.teacher,
     file: item.file ? {

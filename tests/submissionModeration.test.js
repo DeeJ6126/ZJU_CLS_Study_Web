@@ -63,6 +63,22 @@ test('submission validation rejects unsafe links and invalid GPA values', () => 
   store.close();
 });
 
+test('different published posts may share the same CC98 and resource links', () => {
+  const store = createTestStore();
+  const submitter = { id: 7, nickname: 'submitter', verifications: { email: true } };
+  const actor = { id: 2, cc98Nickname: 'admin' };
+  for (const title of ['第一篇', '第二篇']) {
+    const result = createSubmission(store, {
+      courseCode: 'BIO2110F', type: 'material', title, body: '**内容**', bodyFormat: 'markdown',
+      cc98Url: 'https://www.cc98.org/topic/123', externalUrl: 'https://example.com/resource.pdf',
+    }, submitter);
+    assert.equal(result.ok, true);
+    assert.equal(approveSubmission(store, result.submission.id, actor).ok, true);
+  }
+  assert.equal(store.listPublishedByCourse('BIO2110F').length, 2);
+  store.close();
+});
+
 test('unverified logged-in users cannot submit content', () => {
   const store = createTestStore();
   const result = createSubmission(store, {

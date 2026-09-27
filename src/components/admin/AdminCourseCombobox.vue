@@ -7,6 +7,7 @@ const props = defineProps({
   modelValue: { type: String, default: '' },
   courses: { type: Array, default: () => [] },
   pendingCourseCodes: { type: Array, default: () => [] },
+  pendingCourseOrder: { type: Array, default: () => [] },
   allowAll: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
   required: { type: Boolean, default: false },
@@ -21,7 +22,14 @@ const open = ref(false);
 const activeIndex = ref(-1);
 
 const selectedCourse = computed(() => props.courses.find((course) => course.code === props.modelValue) ?? null);
-const visibleCourses = computed(() => filterAdminCourses(props.courses, query.value));
+const visibleCourses = computed(() => {
+  const rank = new Map(props.pendingCourseOrder.map((code, index) => [code, index]));
+  return [...filterAdminCourses(props.courses, query.value)].sort((a, b) => {
+    const aRank = rank.get(a.code) ?? Infinity;
+    const bRank = rank.get(b.code) ?? Infinity;
+    return aRank - bRank;
+  });
+});
 const pendingSet = computed(() => new Set(props.pendingCourseCodes));
 const inputPlaceholder = computed(() => (props.allowAll ? '全部课程（可输入检索）' : props.placeholder));
 
@@ -33,7 +41,7 @@ function showOptions() {
   if (props.disabled) return;
   open.value = true;
   activeIndex.value = -1;
-  input.value?.select();
+  query.value = '';
 }
 
 function toggleOptions() {

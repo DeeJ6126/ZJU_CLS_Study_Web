@@ -119,6 +119,7 @@ onBeforeUnmount(() => {
 
 function switchFormat(format) {
   form.bodyFormat = format;
+  cancelPrompt();
 }
 
 // HI-UI-4: replace blocking window.prompt with an inline input shown
@@ -127,6 +128,8 @@ function switchFormat(format) {
 const pendingPrompt = ref(null);
 const promptInput = ref('');
 const promptInputRef = ref(null);
+const selectedUbbSize = ref('');
+const selectedUbbColor = ref('#ff0000');
 
 function openPrompt(action) {
   pendingPrompt.value = action;
@@ -151,7 +154,8 @@ function confirmPrompt() {
 }
 
 function applyPromptedUbbTag(action, value) {
-  if (action.label === '🔗') wrapSelection(`[url=${value}]`, '[/url]');
+  if (action.id === 'link' && action.format === 'ubb') wrapSelection(`[url=${value}]`, '[/url]');
+  if (action.id === 'link' && action.format === 'markdown') wrapSelection('[', `](${value})`);
 }
 function wrapSelection(openTag, closeTag) {
   const textarea = bodyTextarea.value;
@@ -169,32 +173,61 @@ function wrapSelection(openTag, closeTag) {
   });
 }
 
-const ubbToolbar = [
-  { label: 'B', title: '加粗', wrap: ['[b]', '[/b]'] },
-  { label: 'I', title: '斜体', wrap: ['[i]', '[/i]'] },
-  { label: 'U', title: '下划线', wrap: ['[u]', '[/u]'] },
-  { label: 'S', title: '删除线', wrap: ['[s]', '[/s]'] },
-  { label: '🔗', title: '链接', wrap: ['[url=]', '[/url]'], prompt: '请输入链接地址' },
-  { label: '"', title: '引用', wrap: ['[quote]', '[/quote]'] },
-  { label: '< >', title: '代码', wrap: ['[code]', '[/code]'] },
-  { label: 'T1', title: '字号', wrap: ['[size=3]', '[/size]'] },
+function prefixSelectedLines(prefix) {
+  const textarea = bodyTextarea.value;
+  if (!textarea) return;
+  const start = textarea.selectionStart ?? form.body.length;
+  const end = textarea.selectionEnd ?? start;
+  const lineStart = form.body.lastIndexOf('\n', start - 1) + 1;
+  const nextBreak = form.body.indexOf('\n', end);
+  const lineEnd = nextBreak < 0 ? form.body.length : nextBreak;
+  const selected = form.body.slice(lineStart, lineEnd);
+  const transformed = selected.split('\n').map((line) => `${prefix}${line}`).join('\n');
+  form.body = `${form.body.slice(0, lineStart)}${transformed}${form.body.slice(lineEnd)}`;
+  nextTick(() => {
+    textarea.focus();
+    textarea.setSelectionRange(lineStart + prefix.length, lineStart + transformed.length);
+  });
+}
+
+const markdownToolbar = [
+  { id: 'heading', label: 'H', title: '标题', prefix: '## ' },
+  { id: 'bold', label: 'B', title: '加粗', wrap: ['**', '**'] },
+  { id: 'italic', label: 'I', title: '斜体', wrap: ['*', '*'] },
+  { id: 'strike', label: 'S', title: '删除线', wrap: ['~~', '~~'] },
+  { id: 'link', label: '🔗', title: '插入链接', format: 'markdown', prompt: '请输入链接地址' },
+  { id: 'quote', label: '❞', title: '引用块', prefix: '> ' },
+  { id: 'code', label: '</>', title: '代码块', wrap: ['\n```\n', '\n```\n'] },
+  { id: 'list', label: '•', title: '无序列表', prefix: '- ' },
 ];
 
-function applyUbbTag(action) {
-  if (!isUbb.value) {
-    form.bodyFormat = 'ubb';
-    nextTick(() => applyUbbTag(action));
-    return;
-  }
-  // Actions that need a parameter (URL, image URL, color, smiley) open an
-  // inline input via openPrompt() instead of blocking on window.prompt.
-  if (action.prompt) {
-    openPrompt(action);
-    return;
-  }
-  let openTag = action.wrap[0];
-  let closeTag = action.wrap[1];
-  wrapSelection(openTag, closeTag);
+const ubbToolbar = [
+  { id: 'bold', label: 'B', title: '加粗', wrap: ['[b]', '[/b]'] },
+  { id: 'italic', label: 'I', title: '斜体', wrap: ['[i]', '[/i]'] },
+  { id: 'underline', label: 'U', title: '下划线', wrap: ['[u]', '[/u]'] },
+  { id: 'strike', label: 'S', title: '删除线', wrap: ['[del]', '[/del]'] },
+  { id: 'left', label: '≡', title: '靠左', wrap: ['[align=left]', '[/align]'] },
+  { id: 'center', label: '≡', title: '居中', wrap: ['[align=center]', '[/align]'] },
+  { id: 'right', label: '≡', title: '靠右', wrap: ['[align=right]', '[/align]'] },
+];
+const ubbLinkAction = { id: 'link', label: '🔗', title: '插入链接', format: 'ubb', prompt: '请输入链接地址' };
+
+function applyToolbarAction(action) {
+  if (action.prompt) openPrompt(action);
+  else if (action.prefix) prefixSelectedLines(action.prefix);
+  else wrapSelection(...action.wrap);
+}
+
+function applyUbbSize(event) {
+  const size = event.target.value;
+  if (!size) return;
+  wrapSelection(`[size=${size}]`, '[/size]');
+  selectedUbbSize.value = '';
+}
+
+function applyUbbColor(event) {
+  selectedUbbColor.value = event.target.value;
+  wrapSelection(`[color=${selectedUbbColor.value}]`, '[/color]');
 }
 
 function selectPdf(file) {
@@ -273,7 +306,7 @@ async function submitContribution() {
     return;
   }
 
-  const percentage = form.gradePercentage.trim();
+  const percentage = String(form.gradePercentage ?? '').trim();
   if (percentage && (Number.isNaN(Number(percentage)) || Number(percentage) < 0 || Number(percentage) > 100)) {
     notice.value = '百分制成绩需要在 0-100 之间。';
     return;
@@ -370,17 +403,37 @@ async function submitContribution() {
                   >UBB（论坛格式）</button>
                 </div>
               </div>
-              <div v-if="isUbb" class="contribution-form__ubb-toolbar" aria-label="UBB 工具栏">
+              <div v-if="!isUbb" class="contribution-form__toolbar" aria-label="Markdown 工具栏">
                 <button
-                  v-for="action in ubbToolbar"
-                  :key="action.label"
+                  v-for="action in markdownToolbar"
+                  :key="action.id"
                   type="button"
-                  class="contribution-form__ubb-button"
+                  class="contribution-form__tool-button"
+                  :class="{ 'is-italic': action.id === 'italic', 'is-strike': action.id === 'strike' }"
                   :title="action.title"
-                  @click="applyUbbTag(action)"
+                  :aria-label="action.title"
+                  @click="applyToolbarAction(action)"
                 >{{ action.label }}</button>
               </div>
-              <div v-if="pendingPrompt" class="contribution-form__ubb-prompt" role="dialog" aria-label="UBB 参数输入">
+              <div v-else class="contribution-form__toolbar" aria-label="UBB 工具栏">
+                <button
+                  v-for="action in ubbToolbar"
+                  :key="action.id"
+                  type="button"
+                  class="contribution-form__tool-button"
+                  :class="{ 'is-italic': action.id === 'italic', 'is-underline': action.id === 'underline', 'is-strike': action.id === 'strike', [`is-align-${action.id}`]: ['left', 'center', 'right'].includes(action.id) }"
+                  :title="action.title"
+                  :aria-label="action.title"
+                  @click="applyToolbarAction(action)"
+                >{{ action.label }}</button>
+                <select v-model="selectedUbbSize" class="contribution-form__tool-select" title="字号大小" aria-label="字号大小" @change="applyUbbSize">
+                  <option value="" disabled>字号</option>
+                  <option v-for="size in 7" :key="size" :value="size">{{ size }}</option>
+                </select>
+                <input v-model="selectedUbbColor" class="contribution-form__color-picker" type="color" title="取色器" aria-label="取色器" @change="applyUbbColor">
+                <button type="button" class="contribution-form__tool-button" title="插入链接" aria-label="插入链接" @click="applyToolbarAction(ubbLinkAction)">🔗</button>
+              </div>
+              <div v-if="pendingPrompt" class="contribution-form__ubb-prompt" role="dialog" aria-label="链接地址输入">
                 <label>
                   <span>{{ pendingPrompt.title }}</span>
                   <input
@@ -397,7 +450,7 @@ async function submitContribution() {
               <textarea
                 ref="bodyTextarea"
                 v-model="form.body"
-                :placeholder="isUbb ? '支持 [b] 加粗 [i] 斜体 [u] 下划线 [s] 删除线 [url=...] 链接 [quote] 引用 [code] 代码 [size=3] 字号；仍可直接粘贴 CC98 图片链接' : '支持 Markdown 格式：**加粗** *斜体* [链接](url) > 引用 等'"
+                :placeholder="isUbb ? '支持加粗、斜体、下划线、删除线、对齐、字号、颜色和链接；仍可直接粘贴 CC98 图片链接' : '支持标题、加粗、斜体、删除线、链接、引用块、代码块和无序列表'"
                 rows="6"
               ></textarea>
             </div>

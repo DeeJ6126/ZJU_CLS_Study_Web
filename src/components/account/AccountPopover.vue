@@ -1,6 +1,10 @@
 <script setup>
+import { defineAsyncComponent } from 'vue';
 import AuthStatusBadges from './AuthStatusBadges.vue';
-import AccountSwitcher from './AccountSwitcher.vue';
+const showDemoOptions = import.meta.env.DEV;
+const AccountSwitcher = showDemoOptions
+  ? defineAsyncComponent(() => import('./AccountSwitcher.vue'))
+  : null;
 
 defineProps({
   user: {
@@ -86,7 +90,7 @@ const emit = defineEmits([
     </div>
 
     <AccountSwitcher
-      v-if="demoOptions.length"
+      v-if="showDemoOptions && demoOptions.length"
       class="account-popover__switcher"
       :options="demoOptions"
       :active-id="demoActiveId"

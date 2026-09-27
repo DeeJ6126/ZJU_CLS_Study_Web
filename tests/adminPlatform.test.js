@@ -83,6 +83,10 @@ test('admin page uses the shared header, green sidebar, dense table, and explici
   assert.doesNotMatch(component, /推荐到首页“近期活动”/);
   assert.match(component, /activeApiClient\.value\.fetchActivities/);
   assert.match(component, /AdminCourseCombobox/);
+  assert.match(component, /majorOptions/);
+  assert.match(component, /:courses="majorCourses"/);
+  assert.match(component, /@change="changeMajor"/);
+  assert.match(css, /\.admin-list__filters--course/);
   assert.doesNotMatch(component, /selectedCourseCode = ref\('BIO2110F'\)/);
   assert.match(courseCombobox, /输入课程代码或名称/);
   assert.match(courseCombobox, /admin-course-combobox__pending/);

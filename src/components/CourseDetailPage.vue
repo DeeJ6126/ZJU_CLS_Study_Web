@@ -1,11 +1,13 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import CommentSection from './CommentSection.vue';
 import ContributionBox from './ContributionBox.vue';
 import FavoriteButton from './FavoriteButton.vue';
 import { buildCourseRoute, courseDetailTabs } from '../data/courses/resourcePaths.js';
 import { getProfileHref } from '../services/demoNavigationService.js';
 import { formatGrade } from '../utils/gradeConversion.js';
+import { thumbsUpPaths } from '../utils/vendor/lucidePaths.js';
+import { renderCourseMarkdown } from '../utils/renderCourseMarkdown.js';
 import { isUbbFormat, ubbToHtml } from '../utils/ubbParser.js';
 
 const props = defineProps({
@@ -102,12 +104,17 @@ const activeItemBody = computed(() => {
   const item = activeItem.value;
   if (!item) return { html: '', isUbb: false };
   const body = String(item.body ?? '');
-  const isUbb = isUbbFormat(item.bodyFormat) || /\[\/?(b|i|u|s|url|img|size|color|quote|code|smiley|align)\b/i.test(body);
+  const isUbb = isUbbFormat(item.bodyFormat)
+    || (!item.bodyFormat && /\[\/?(b|i|u|s|del|url|img|size|color|quote|code|smiley|align)\b/i.test(body));
   return {
-    html: isUbb ? ubbToHtml(body) : '',
-    paragraphs: isUbb ? [] : String(item.body ?? '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean),
+    html: isUbb ? ubbToHtml(body) : renderCourseMarkdown(body),
     isUbb,
   };
+});
+
+const gradeVisible = ref(false);
+watch(() => [props.course.code, props.activeTabId, props.activeItemId], () => {
+  gradeVisible.value = false;
 });
 
 const activeItemGradeLabel = computed(() => {
@@ -236,16 +243,21 @@ function emitContribution(payload) {
             </div>
           </div>
           <p v-if="likeNotice" class="article-detail-card__notice">{{ likeNotice }}</p>
-          <div v-if="activeItemBody.isUbb" class="article-body article-body--ubb" v-html="activeItemBody.html"></div>
-          <template v-else>
-            <p v-for="paragraph in activeItemBody.paragraphs" :key="paragraph">{{ paragraph }}</p>
-          </template>
+          <p v-if="commentNotice" class="article-detail-card__notice">{{ commentNotice }}</p>
+          <div
+            class="article-body"
+            :class="activeItemBody.isUbb ? 'article-body--ubb' : 'article-body--markdown'"
+            v-html="activeItemBody.html"
+          ></div>
           <div class="article-detail-card__actions">
-            <span
+            <button
               v-if="activeItemGradeLabel"
               class="article-detail-card__grade"
-              aria-label="本资源关联的成绩"
-            >成绩 {{ activeItemGradeLabel }}</span>
+              type="button"
+              :aria-expanded="gradeVisible"
+              :aria-label="gradeVisible ? '隐藏成绩' : '查看成绩'"
+              @click="gradeVisible = !gradeVisible"
+            >{{ gradeVisible ? `成绩 ${activeItemGradeLabel}` : '查看成绩' }}</button>
             <span
               v-else
               class="article-detail-card__grade article-detail-card__grade--empty"
@@ -256,10 +268,15 @@ function emitContribution(payload) {
               :class="{ 'is-active': activeItem.viewerLiked }"
               type="button"
               :disabled="!canFavorite"
-              :title="canFavorite ? '' : '完成学号认证后可点赞'"
+              :aria-pressed="Boolean(activeItem.viewerLiked)"
+              :aria-label="activeItem.viewerLiked ? '取消点赞' : '点赞'"
+              :title="canFavorite ? (activeItem.viewerLiked ? '取消点赞' : '点赞') : '完成学号认证后可点赞'"
               @click="emit('toggle-like', activeItem.contentId)"
             >
-              {{ activeItem.viewerLiked ? '已赞' : '点赞' }} {{ activeItem.likeCount || 0 }}
+              <svg class="article-action-button__icon" viewBox="0 0 24 24" :fill="activeItem.viewerLiked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path v-for="path in thumbsUpPaths" :key="path" :d="path" />
+              </svg>
+              <span>{{ activeItem.likeCount || 0 }}</span>
             </button>
             <FavoriteButton
               :active="favoriteKeys.includes(activeItemFavoriteKey)"
@@ -269,16 +286,6 @@ function emitContribution(payload) {
           </div>
         </article>
 
-        <CommentSection
-          :comments="activeItemComments"
-          :can-comment="canComment"
-          :user="user"
-          :busy="commentBusy"
-          :notice="commentNotice"
-          @add-comment="emitComment"
-          @update-comment="emit('update-comment', $event)"
-          @delete-comment="emit('delete-comment', $event)"
-        />
       </template>
 
       <template v-else>
@@ -331,19 +338,24 @@ function emitContribution(payload) {
             </div>
           </div>
           <p v-if="likeNotice" class="article-detail-card__notice">{{ likeNotice }}</p>
-          <div v-if="activeItemBody.isUbb" class="article-body article-body--ubb" v-html="activeItemBody.html"></div>
-          <template v-else>
-            <p v-for="paragraph in activeItemBody.paragraphs" :key="paragraph">{{ paragraph }}</p>
-          </template>
+          <p v-if="commentNotice" class="article-detail-card__notice">{{ commentNotice }}</p>
+          <div
+            class="article-body"
+            :class="activeItemBody.isUbb ? 'article-body--ubb' : 'article-body--markdown'"
+            v-html="activeItemBody.html"
+          ></div>
           <a v-if="activeItem.externalUrl" class="course-action-link" :href="activeItem.externalUrl" target="_blank" rel="noreferrer">
             打开刷题网站
           </a>
           <div class="article-detail-card__actions">
-            <span
+            <button
               v-if="activeItemGradeLabel"
               class="article-detail-card__grade"
-              aria-label="本资源关联的成绩"
-            >成绩 {{ activeItemGradeLabel }}</span>
+              type="button"
+              :aria-expanded="gradeVisible"
+              :aria-label="gradeVisible ? '隐藏成绩' : '查看成绩'"
+              @click="gradeVisible = !gradeVisible"
+            >{{ gradeVisible ? `成绩 ${activeItemGradeLabel}` : '查看成绩' }}</button>
             <span
               v-else
               class="article-detail-card__grade article-detail-card__grade--empty"
@@ -354,10 +366,15 @@ function emitContribution(payload) {
               :class="{ 'is-active': activeItem.viewerLiked }"
               type="button"
               :disabled="!canFavorite"
-              :title="canFavorite ? '' : '完成学号认证后可点赞'"
+              :aria-pressed="Boolean(activeItem.viewerLiked)"
+              :aria-label="activeItem.viewerLiked ? '取消点赞' : '点赞'"
+              :title="canFavorite ? (activeItem.viewerLiked ? '取消点赞' : '点赞') : '完成学号认证后可点赞'"
               @click="emit('toggle-like', activeItem.contentId)"
             >
-              {{ activeItem.viewerLiked ? '已赞' : '点赞' }} {{ activeItem.likeCount || 0 }}
+              <svg class="article-action-button__icon" viewBox="0 0 24 24" :fill="activeItem.viewerLiked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path v-for="path in thumbsUpPaths" :key="path" :d="path" />
+              </svg>
+              <span>{{ activeItem.likeCount || 0 }}</span>
             </button>
             <FavoriteButton
               :active="favoriteKeys.includes(activeItemFavoriteKey)"
@@ -367,16 +384,6 @@ function emitContribution(payload) {
           </div>
         </article>
 
-        <CommentSection
-          :comments="activeItemComments"
-          :can-comment="canComment"
-          :user="user"
-          :busy="commentBusy"
-          :notice="commentNotice"
-          @add-comment="emitComment"
-          @update-comment="emit('update-comment', $event)"
-          @delete-comment="emit('delete-comment', $event)"
-        />
       </template>
 
       <template v-else>

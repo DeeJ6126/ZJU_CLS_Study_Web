@@ -178,7 +178,9 @@ const guestViewer = () => ({
   verifications: { cc98: false, email: false },
 });
 const studentViewer = ref(guestViewer());
-const demoIdentityId = ref(loadDemoIdentityId());
+const demoIdentityEnabled = import.meta.env.DEV;
+if (!demoIdentityEnabled) saveDemoIdentityId('');
+const demoIdentityId = ref(demoIdentityEnabled ? loadDemoIdentityId() : '');
 setQuizAnonymousMode(Boolean(demoIdentityId.value));
 const demoDataVersion = ref(0);
 // Re-read the demo user store on every read so external mutations (e.g. an
@@ -191,7 +193,7 @@ const viewer = computed(() => {
     ? (demoAccountService.getUser(demoIdentityId.value) ?? buildDemoUser(demoIdentityId.value))
     : studentViewer.value;
 });
-const demoIdentityOptions = getDemoIdentityOptions();
+const demoIdentityOptions = demoIdentityEnabled ? getDemoIdentityOptions() : [];
 const activeDemoAccountId = computed(() => (
   demoIdentityId.value && demoIdentityId.value !== 'guest' ? demoIdentityId.value : ''
 ));
@@ -201,6 +203,7 @@ const demoActivityPublicClient = demoAccountService.createPublicActivityClient()
 const demoHomepagePublicClient = demoAccountService.createPublicHomepageClient(() => demoIdentityId.value);
 
 async function selectDemoIdentity(identityId) {
+  if (!demoIdentityEnabled) return;
   demoIdentityId.value = identityId ?? '';
   setQuizAnonymousMode(Boolean(demoIdentityId.value));
   saveDemoIdentityId(demoIdentityId.value);

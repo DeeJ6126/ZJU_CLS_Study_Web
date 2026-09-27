@@ -71,6 +71,17 @@
   text-align: center;
 }
 
+.admin-pending-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 5px;
+  border-radius: 50%;
+  background: #d63f35;
+  vertical-align: middle;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #d63f35 18%, transparent);
+}
+
 .admin-page__nav nav button:hover,
 .admin-page__nav nav button.is-active {
   color: var(--admin-primary);
@@ -165,6 +176,16 @@
 
 .admin-list__filters--wide {
   grid-template-columns: minmax(230px, 1fr) minmax(150px, 210px) minmax(220px, 1fr);
+}
+
+.admin-list__filters--course {
+  grid-template-columns: minmax(170px, 210px) minmax(220px, 1.2fr) minmax(130px, 170px) minmax(180px, 1fr);
+}
+
+@media (max-width: 1160px) {
+  .admin-list__filters--course {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .admin-activity-programs {
@@ -316,6 +337,18 @@
   margin: 0 0 22px;
 }
 
+.admin-submission-file {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 0;
+}
+
+.admin-submission-file a {
+  color: var(--admin-primary);
+  overflow-wrap: anywhere;
+}
+
 .admin-audit-list {
   border-top: 2px solid var(--admin-primary);
 }
@@ -409,6 +442,16 @@
 .admin-status[data-status="archived"] {
   color: #87524d;
   background: #f4e9e7;
+}
+
+.admin-status[data-status="pending"] {
+  color: #8a4d12;
+  background: #fff0cf;
+}
+
+.admin-status[data-status="rejected"] {
+  color: #9b342e;
+  background: #fae4e1;
 }
 
 .admin-content-table__actions {
@@ -632,6 +675,14 @@ html[data-theme="dark"] .admin-status {
 html[data-theme="dark"] .admin-status[data-status="archived"] {
   color: #f0a8a0;
   background: #3a1d1d;
+}
+html[data-theme="dark"] .admin-status[data-status="pending"] {
+  color: #ffd08a;
+  background: #4d361c;
+}
+html[data-theme="dark"] .admin-status[data-status="rejected"] {
+  color: #f4aca6;
+  background: #492526;
 }
 html[data-theme="dark"] .admin-editor__head {
   background: #1d2a3b;

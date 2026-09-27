@@ -21,6 +21,10 @@ test('renders basic inline tags b/i/u/s', () => {
   assert.equal(result, '<p><strong>粗</strong> <em>斜</em> <u>下</u> <s>删</s></p>');
 });
 
+test('renders CC98 del tags as strikethrough', () => {
+  assert.equal(ubbToHtml('[del]划掉[/del]'), '<p><s>划掉</s></p>');
+});
+
 test('paired [url=href]text[/url] becomes anchor with safe href', () => {
   const result = ubbToHtml('[url=https://example.com]链接[/url]');
   assert.equal(result, '<p><a class="ubb-link" href="https://example.com" target="_blank" rel="noopener noreferrer">链接</a></p>');

@@ -275,6 +275,30 @@ export async function handleContentHttpRequest({
   }
 
   const submissionFileMatch = url.pathname.match(/^\/api\/submissions\/([^/]+)\/file$/);
+  const adminSubmissionFileMatch = url.pathname.match(/^\/api\/admin\/submissions\/([^/]+)\/file$/);
+  if (request.method === 'GET' && adminSubmissionFileMatch) {
+    if (!authorizeAdmin(sendJson, response, user)) return true;
+    const submission = contentStore.findSubmissionById(decodeURIComponent(adminSubmissionFileMatch[1]));
+    const storedName = submission?.file?.storedName;
+    if (!storedName || basename(storedName) !== storedName) {
+      sendJson(response, 404, { message: '文件不存在。' });
+      return true;
+    }
+    try {
+      const file = readFileSync(join(uploadDirectory, storedName));
+      response.writeHead(200, {
+        'content-type': 'application/pdf',
+        'content-length': file.length,
+        'content-disposition': `inline; filename*=UTF-8''${encodeURIComponent(submission.file.fileName)}`,
+        'x-content-type-options': 'nosniff',
+        'cache-control': 'private, no-store',
+      });
+      response.end(file);
+    } catch {
+      sendJson(response, 404, { message: '文件不存在。' });
+    }
+    return true;
+  }
   if (request.method === 'PUT' && submissionFileMatch) {
     if (!canLeaveSiteTrace(user)) {
       sendJson(response, userId ? 403 : 401, { message: '完成学号认证后才可以上传文件。' });

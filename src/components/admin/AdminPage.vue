@@ -11,6 +11,9 @@ import {
 import { adminApiClient as defaultAdminApiClient } from '../../services/adminApiClient.js';
 import { isAdministrator } from '../../services/authService.js';
 import { loadResourceCatalog } from '../../data/courses/resourceData.js';
+import { majorOptions } from '../../data/courses/programCatalog.js';
+import { filterAdminCoursesToOverview, pendingCourseOrder } from '../../services/adminCourseService.js';
+import { publicApiPath } from '../../services/apiClient.js';
 import { activityImageOptions, activityPrograms, activityProgramLabel } from '../../data/activityConfig.js';
 import { publicAssetPath } from '../../utils/publicPath.js';
 import { imageFileToAvatarDataUrl } from '../../services/studentHomepageApiClient.js';
@@ -33,6 +36,8 @@ const statusOptions = [
   { id: 'draft', label: '草稿' },
   { id: 'published', label: '已发布' },
   { id: 'archived', label: '已下架' },
+  { id: 'pending', label: '待审核' },
+  { id: 'rejected', label: '已拒绝' },
 ];
 const statusLabels = { draft: '草稿', published: '已发布', archived: '已下架' };
 const submissionStatusLabels = { pending: '待审核', approved: '已通过', rejected: '已拒绝' };
@@ -52,6 +57,7 @@ const authBusy = ref(false);
 const authNotice = ref('');
 const credentials = reactive({ code: '', studentId: '', nickname: '', password: '' });
 const courses = ref([]);
+const selectedMajorId = ref(majorOptions[0]?.id ?? '');
 const selectedCourseCode = ref('');
 const selectedType = ref('experience');
 const selectedStatus = ref('');
@@ -59,10 +65,6 @@ const selectedView = ref('content');
 const contentQuery = ref('');
 const items = ref([]);
 const submissions = ref([]);
-const pendingCount = ref(0);
-const pendingCourseCounts = ref({});
-const submissionStatus = ref('pending');
-const submissionQuery = ref('');
 const submissionEditorOpen = ref(false);
 const editingSubmissionId = ref('');
 const submissionForm = reactive(emptyForm());
@@ -92,19 +94,28 @@ const editingActivityId = ref('');
 const activityForm = reactive(emptyActivityForm());
 
 const isAdmin = computed(() => isAdministrator(currentUser.value));
+const majorCourses = computed(() => filterAdminCoursesToOverview(courses.value, selectedMajorId.value));
 const editingItem = computed(() => items.value.find((item) => item.id === editingId.value) ?? null);
 const selectedTypeLabel = computed(() => contentTypes.find((type) => type.id === selectedType.value)?.label ?? '内容');
-const pendingCourseCodes = computed(() => Object.keys(pendingCourseCounts.value));
-const filteredItems = computed(() => {
+const pendingCourseCodes = computed(() => pendingCourseOrder(submissions.value, selectedType.value));
+const allPendingCourseCodes = computed(() => [...new Set(submissions.value.filter((item) => item.status === 'pending' && !item.withdrawnAt).map((item) => item.courseCode))]);
+const visiblePendingCourseCodes = computed(() => pendingCourseCodes.value.filter((code) => majorCourses.value.some((course) => course.code === code)));
+const pendingTypes = computed(() => new Set(submissions.value.filter((item) => item.status === 'pending' && !item.withdrawnAt).map((item) => item.type)));
+const filteredRows = computed(() => {
   const query = contentQuery.value.trim().toLowerCase();
-  if (!query) return items.value;
-  return items.value.filter((item) => [item.title, item.summary, item.author]
-    .some((value) => String(value ?? '').toLowerCase().includes(query)));
+  const matches = (item) => !query || [item.title, item.summary, item.author, item.submitterName, item.year, item.teacher]
+    .some((value) => String(value ?? '').toLowerCase().includes(query));
+  const content = ['pending', 'rejected'].includes(selectedStatus.value) ? [] : items.value.filter(matches).map((item) => ({ ...item, rowKind: 'content' }));
+  const reviews = submissions.value.filter((item) => item.courseCode === selectedCourseCode.value
+    && item.type === selectedType.value && ['pending', 'rejected'].includes(item.status)
+    && !item.withdrawnAt && (!selectedStatus.value || selectedStatus.value === item.status) && matches(item))
+    .sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt))
+    .map((item) => ({ ...item, rowKind: 'submission' }));
+  return [...reviews, ...content];
 });
 const pageTitle = computed(() => {
   if (selectedView.value === 'activities') return '活动管理';
   if (selectedView.value === 'homepages') return '同学主页';
-  if (selectedView.value === 'submissions') return '投稿审核';
   if (selectedView.value === 'logs') return '操作日志';
   return selectedTypeLabel.value;
 });
@@ -159,7 +170,7 @@ function setForm(input = {}) {
 async function loadCourses() {
   try {
     const catalog = await loadResourceCatalog();
-    courses.value = catalog.courses;
+    courses.value = filterAdminCoursesToOverview(catalog.courses);
   } catch {
     notice.value = '课程目录加载失败。';
   }
@@ -174,7 +185,7 @@ async function refreshItems() {
   const result = await activeApiClient.value.fetchContent({
     courseCode: selectedCourseCode.value,
     type: selectedType.value,
-    status: selectedStatus.value,
+    status: ['pending', 'rejected'].includes(selectedStatus.value) ? '' : selectedStatus.value,
   });
   if (result.ok) {
     items.value = result.items ?? [];
@@ -187,15 +198,9 @@ async function refreshItems() {
 async function refreshSubmissions() {
   if (!isAdmin.value) return;
   listBusy.value = true;
-  const result = await activeApiClient.value.fetchSubmissions({
-    courseCode: selectedCourseCode.value,
-    status: submissionStatus.value,
-    query: submissionQuery.value,
-  });
+  const result = await activeApiClient.value.fetchSubmissions({});
   if (result.ok) {
     submissions.value = result.submissions ?? [];
-    pendingCount.value = result.pendingCount ?? 0;
-    pendingCourseCounts.value = result.pendingCourseCounts ?? {};
   }
   else notice.value = result.message;
   listBusy.value = false;
@@ -366,8 +371,11 @@ function changeView(view, type = '') {
   homepageEditorOpen.value = false;
   if (type) selectedType.value = type;
   notice.value = '';
-  if (view === 'content') refreshItems();
-  if (view === 'submissions') refreshSubmissions();
+  if (view === 'content') {
+    selectedStatus.value = '';
+    refreshItems();
+    refreshSubmissions();
+  }
   if (view === 'activities') refreshActivities();
   if (view === 'homepages') refreshHomepages();
   if (view === 'logs') refreshAuditLogs();
@@ -437,24 +445,31 @@ async function logout() {
   authNotice.value = '';
 }
 
-function changeType(type) {
-  if (dirty.value && !window.confirm('当前修改尚未保存，确定放弃吗？')) {
-    return;
+function changeMajor() {
+  const availableCodes = new Set(majorCourses.value.map((course) => course.code));
+  if (!availableCodes.has(selectedCourseCode.value)) selectedCourseCode.value = '';
+  if (editorOpen.value && !editingId.value && form.courseCode && !availableCodes.has(form.courseCode)) {
+    form.courseCode = '';
+    dirty.value = true;
   }
-  selectedType.value = type;
-  selectedView.value = 'content';
-  editorOpen.value = false;
-  editingId.value = '';
-  refreshItems();
+  if (selectedView.value === 'content') refreshItems();
+  if (selectedView.value === 'logs') refreshAuditLogs();
 }
 
 function changeFilters() {
   editorOpen.value = false;
+  submissionEditorOpen.value = false;
   editingId.value = '';
   refreshItems();
 }
 
+function selectCourseForReview(code) {
+  selectedStatus.value = pendingCourseCodes.value.includes(code) ? 'pending' : '';
+  changeFilters();
+}
+
 function startNew() {
+  submissionEditorOpen.value = false;
   editingId.value = '';
   setForm({ courseCode: selectedCourseCode.value, type: selectedType.value });
   editorOpen.value = true;
@@ -462,6 +477,7 @@ function startNew() {
 }
 
 function editItem(item) {
+  submissionEditorOpen.value = false;
   editingId.value = item.id;
   setForm(item);
   editorOpen.value = true;
@@ -515,6 +531,7 @@ async function saveDraft() {
 }
 
 function editSubmission(item) {
+  editorOpen.value = false;
   editingSubmissionId.value = item.id;
   Object.assign(submissionForm, emptyForm(), item);
   rejectionNote.value = item.reviewNote ?? '';
@@ -529,6 +546,7 @@ async function saveSubmission() {
   if (result.ok) {
     submissionEditorOpen.value = false;
     await refreshSubmissions();
+    await refreshItems();
   }
   actionBusy.value = false;
 }
@@ -541,18 +559,28 @@ async function approveCurrentSubmission(item = null) {
   notice.value = mutationNotice(result, '投稿已通过并发布。');
   if (result.ok) submissionEditorOpen.value = false;
   await refreshSubmissions();
+  if (result.ok) await refreshItems();
   actionBusy.value = false;
 }
 
 async function rejectCurrentSubmission(item = null) {
   const target = item ?? submissions.value.find((entry) => entry.id === editingSubmissionId.value);
+  if (!rejectionNote.value.trim()) {
+    notice.value = '请先填写拒绝原因。';
+    return;
+  }
   if (!target || !window.confirm(`拒绝“${target.title}”吗？`)) return;
   actionBusy.value = true;
   const result = await activeApiClient.value.rejectSubmission(target.id, rejectionNote.value);
   notice.value = mutationNotice(result, '投稿已拒绝。');
   if (result.ok) submissionEditorOpen.value = false;
   await refreshSubmissions();
+  if (result.ok) await refreshItems();
   actionBusy.value = false;
+}
+
+function submissionFileUrl(item) {
+  return publicApiPath(`/api/admin/submissions/${encodeURIComponent(item.id)}/file`);
 }
 
 async function publishItem() {
@@ -626,15 +654,12 @@ onMounted(initialize);
           :class="{ 'is-active': selectedView === 'content' && selectedType === type.id }"
           @click="changeView('content', type.id)"
         >
-          {{ type.label }}
+          {{ type.label }} <span v-if="pendingTypes.has(type.id)" class="admin-pending-dot" title="有待审核投稿" aria-label="有待审核投稿"></span>
         </button>
         <button type="button" :class="{ 'is-active': selectedView === 'activities' }" @click="changeView('activities')">
           活动管理
         </button>
         <button type="button" :class="{ 'is-active': selectedView === 'homepages' }" @click="changeView('homepages')">同学主页</button>
-        <button type="button" :class="{ 'is-active': selectedView === 'submissions' }" @click="changeView('submissions')">
-          投稿审核 <span v-if="pendingCount" class="admin-nav-count">{{ pendingCount }}</span>
-        </button>
         <button type="button" :class="{ 'is-active': selectedView === 'logs' }" @click="changeView('logs')">操作日志</button>
       </nav>
       <button v-if="currentUser" class="admin-page__logout" type="button" @click="logout">退出登录</button>
@@ -688,7 +713,7 @@ onMounted(initialize);
             <p class="admin-page__eyebrow">课程内容运营</p>
             <h1 id="admin-title">{{ pageTitle }}</h1>
           </div>
-          <button v-if="selectedView === 'content' && !editorOpen" class="admin-primary-action" type="button" @click="startNew">新增内容</button>
+          <button v-if="selectedView === 'content' && !editorOpen && !submissionEditorOpen" class="admin-primary-action" type="button" @click="startNew">新增内容</button>
           <button v-if="selectedView === 'activities' && !activityEditorOpen" class="admin-primary-action" type="button" @click="startActivity()">新增推文</button>
           <button v-if="selectedView === 'homepages' && !homepageEditorOpen" class="admin-primary-action" type="button" @click="startHomepage()">新增主页</button>
         </header>
@@ -706,11 +731,17 @@ onMounted(initialize);
 
           <form class="admin-editor__form" @input="dirty = true" @submit.prevent="saveDraft">
             <label>
+              <span>专业</span>
+              <select v-model="selectedMajorId" :disabled="Boolean(editingId)" @change="changeMajor">
+                <option v-for="major in majorOptions" :key="major.id" :value="major.id">{{ major.label }}</option>
+              </select>
+            </label>
+            <label>
               <span>课程</span>
               <AdminCourseCombobox
                 v-model="form.courseCode"
-                :courses="courses"
-                :pending-course-codes="pendingCourseCodes"
+                :courses="majorCourses"
+                :pending-course-codes="allPendingCourseCodes"
                 :disabled="Boolean(editingId)"
                 required
                 @change="dirty = true"
@@ -792,15 +823,58 @@ onMounted(initialize);
           </form>
         </section>
 
+        <section v-else-if="selectedView === 'content' && submissionEditorOpen" class="admin-editor admin-submission-editor" aria-label="审核课程投稿">
+          <header class="admin-editor__head">
+            <div>
+              <span>{{ selectedTypeLabel }} · {{ submissionForm.courseCode }} · {{ submissionForm.submitterName }} · {{ formattedTime(submissionForm.createdAt) }}</span>
+              <strong>{{ submissionForm.title || submissionForm.year || '审核投稿' }}</strong>
+            </div>
+            <button type="button" @click="submissionEditorOpen = false">关闭</button>
+          </header>
+          <form class="admin-editor__form" @submit.prevent="saveSubmission">
+            <label v-if="submissionForm.type !== 'paper'" class="admin-editor__wide"><span>标题</span><input v-model.trim="submissionForm.title" required maxlength="80" :readonly="submissionForm.status !== 'pending'"></label>
+            <label v-if="submissionForm.type !== 'paper'" class="admin-editor__wide"><span>副标题（选填）</span><input v-model.trim="submissionForm.summary" maxlength="200" :readonly="submissionForm.status !== 'pending'"></label>
+            <template v-if="submissionForm.type === 'paper'">
+              <label><span>年份</span><input v-model.trim="submissionForm.year" required maxlength="20" :readonly="submissionForm.status !== 'pending'"></label>
+              <label><span>老师（选填）</span><input v-model.trim="submissionForm.teacher" maxlength="40" :readonly="submissionForm.status !== 'pending'"></label>
+            </template>
+            <label><span>CC98 名称（选填）</span><input v-model.trim="submissionForm.author" maxlength="40" :readonly="submissionForm.status !== 'pending'"></label>
+            <label><span>CC98 链接（选填）</span><input v-model.trim="submissionForm.cc98Url" type="url" :readonly="submissionForm.status !== 'pending'"></label>
+            <label v-if="submissionForm.type === 'experience'"><span>成绩百分制（选填）</span><input v-model.trim="submissionForm.gradePercentage" type="number" min="0" max="100" :readonly="submissionForm.status !== 'pending'"></label>
+            <label v-if="submissionForm.type === 'material'"><span>资料链接（选填）</span><input v-model.trim="submissionForm.externalUrl" type="url" :readonly="submissionForm.status !== 'pending'"></label>
+            <template v-if="submissionForm.type !== 'paper'">
+              <label><span>内容格式</span><select v-model="submissionForm.bodyFormat" :disabled="submissionForm.status !== 'pending'"><option value="markdown">Markdown</option><option value="ubb">UBB</option></select></label>
+              <label class="admin-editor__wide"><span>内容</span><textarea v-model="submissionForm.body" rows="10" :readonly="submissionForm.status !== 'pending'"></textarea></label>
+            </template>
+            <p v-if="submissionForm.file" class="admin-editor__wide admin-submission-file"><span>PDF 文件</span><a :href="submissionFileUrl(submissionForm)" target="_blank" rel="noopener noreferrer">{{ submissionForm.file.fileName }} · 打开预览</a></p>
+            <p v-else-if="submissionForm.type === 'paper'" class="admin-editor__wide admin-list__empty">这份试卷投稿没有 PDF，不能通过审核。</p>
+            <label v-if="submissionForm.status === 'pending'" class="admin-editor__wide"><span>拒绝原因</span><textarea v-model.trim="rejectionNote" rows="3" maxlength="500" placeholder="拒绝时必须填写，作者将看到这条说明。"></textarea></label>
+            <p v-else-if="submissionForm.reviewNote" class="admin-editor__wide">审核备注：{{ submissionForm.reviewNote }}</p>
+            <footer class="admin-editor__actions">
+              <button type="button" @click="submissionEditorOpen = false">返回列表</button>
+              <button v-if="submissionForm.status === 'pending'" type="submit" :disabled="actionBusy">保存修改</button>
+              <button v-if="submissionForm.status === 'pending'" class="admin-danger-action" type="button" :disabled="actionBusy" @click="rejectCurrentSubmission()">拒绝并说明理由</button>
+              <button v-if="submissionForm.status === 'pending'" class="admin-primary-action" type="button" :disabled="actionBusy || (submissionForm.type === 'paper' && !submissionForm.file)" @click="approveCurrentSubmission()">通过并发布</button>
+            </footer>
+          </form>
+        </section>
+
         <section v-else-if="selectedView === 'content'" class="admin-list" aria-label="课程内容列表">
-          <div class="admin-list__filters">
+          <div class="admin-list__filters admin-list__filters--course">
             <label>
-              <span>课程</span>
+              <span>专业</span>
+              <select v-model="selectedMajorId" @change="changeMajor">
+                <option v-for="major in majorOptions" :key="major.id" :value="major.id">{{ major.label }}</option>
+              </select>
+            </label>
+            <label>
+              <span>课程 <span v-if="visiblePendingCourseCodes.length" class="admin-pending-dot" title="有待审核投稿" aria-label="有待审核投稿"></span></span>
               <AdminCourseCombobox
                 v-model="selectedCourseCode"
-                :courses="courses"
+                :courses="majorCourses"
                 :pending-course-codes="pendingCourseCodes"
-                @change="changeFilters"
+                :pending-course-order="pendingCourseCodes"
+                @change="selectCourseForReview"
               />
             </label>
             <label>
@@ -817,21 +891,21 @@ onMounted(initialize);
 
           <p v-if="!selectedCourseCode" class="admin-list__empty">请先输入课程代码或名称并选择课程。</p>
           <p v-else-if="listBusy" class="admin-list__empty">正在读取内容...</p>
-          <p v-else-if="!filteredItems.length" class="admin-list__empty">当前筛选条件下暂无内容。</p>
+          <p v-else-if="!filteredRows.length" class="admin-list__empty">当前筛选条件下暂无内容。</p>
           <div v-else class="admin-content-table" role="table" aria-label="课程内容">
             <div class="admin-content-table__head" role="row">
               <span>标题</span><span>状态</span><span>更新时间</span><span>操作</span>
             </div>
-            <article v-for="item in filteredItems" :key="item.id" class="admin-content-table__row" role="row">
+            <article v-for="item in filteredRows" :key="`${item.rowKind}-${item.id}`" class="admin-content-table__row" role="row">
               <div>
-                <strong>{{ item.title }}</strong>
-                <small>{{ item.summary || '暂无摘要' }}</small>
+                <strong>{{ item.title || item.year }}</strong>
+                <small>{{ item.rowKind === 'submission' ? `投稿人：${item.submitterName || '未知'} · ${item.summary || item.year || '待审核资料'}` : (item.summary || '暂无摘要') }}</small>
               </div>
-              <span class="admin-status" :data-status="item.status">{{ statusLabels[item.status] }}</span>
-              <time :datetime="item.updatedAt">{{ formattedTime(item.updatedAt) }}</time>
+              <span class="admin-status" :data-status="item.status">{{ item.rowKind === 'submission' ? submissionStatusLabels[item.status] : statusLabels[item.status] }}</span>
+              <time :datetime="item.rowKind === 'submission' ? item.createdAt : item.updatedAt">{{ formattedTime(item.rowKind === 'submission' ? item.createdAt : item.updatedAt) }}</time>
               <div class="admin-content-table__actions">
-                <button type="button" @click="editItem(item)">编辑</button>
-                <button v-if="item.status === 'published'" type="button" @click="archiveItem(item)">下架</button>
+                <button type="button" @click="item.rowKind === 'submission' ? editSubmission(item) : editItem(item)">{{ item.rowKind === 'submission' ? (item.status === 'pending' ? '审核' : '查看') : '编辑' }}</button>
+                <button v-if="item.rowKind === 'content' && item.status === 'published'" type="button" @click="archiveItem(item)">下架</button>
               </div>
             </article>
           </div>
@@ -944,79 +1018,19 @@ onMounted(initialize);
           </div>
         </section>
 
-        <section v-else-if="selectedView === 'submissions'" class="admin-list" aria-label="投稿审核列表">
-          <div class="admin-list__filters admin-list__filters--wide">
+        <section v-else class="admin-list" aria-label="操作日志">
+          <div class="admin-list__filters admin-list__filters--wide admin-list__filters--course">
             <label>
-              <span>课程</span>
-              <AdminCourseCombobox
-                v-model="selectedCourseCode"
-                :courses="courses"
-                :pending-course-codes="pendingCourseCodes"
-                allow-all
-                @change="refreshSubmissions"
-              />
-            </label>
-            <label>
-              <span>审核状态</span>
-              <select v-model="submissionStatus" @change="refreshSubmissions">
-                <option value="">全部状态</option>
-                <option value="pending">待审核</option>
-                <option value="approved">已通过</option>
-                <option value="rejected">已拒绝</option>
+              <span>专业</span>
+              <select v-model="selectedMajorId" @change="changeMajor">
+                <option v-for="major in majorOptions" :key="major.id" :value="major.id">{{ major.label }}</option>
               </select>
             </label>
             <label>
-              <span>投稿搜索</span>
-              <input v-model.trim="submissionQuery" type="search" placeholder="标题、作者或投稿人" @change="refreshSubmissions">
-            </label>
-          </div>
-
-          <section v-if="submissionEditorOpen" class="admin-editor admin-submission-editor">
-            <header class="admin-editor__head">
-              <div><span>审核投稿</span><strong>{{ submissionForm.title }}</strong></div>
-              <button type="button" @click="submissionEditorOpen = false">关闭</button>
-            </header>
-            <form class="admin-editor__form" @submit.prevent="saveSubmission">
-              <label class="admin-editor__wide"><span>标题</span><input v-model.trim="submissionForm.title" required maxlength="80"></label>
-              <label class="admin-editor__wide"><span>摘要</span><textarea v-model.trim="submissionForm.summary" rows="2" maxlength="200"></textarea></label>
-              <label><span>作者</span><input v-model.trim="submissionForm.author" maxlength="40"></label>
-              <label><span>CC98 链接（选填）</span><input v-model.trim="submissionForm.cc98Url" type="url"></label>
-              <label><span>绩点（选填）</span><input v-model.trim="submissionForm.gpa" inputmode="decimal"></label>
-              <label v-if="submissionForm.type === 'material'"><span>资料链接</span><input v-model.trim="submissionForm.externalUrl" type="url"></label>
-              <label class="admin-editor__wide"><span>正文</span><textarea v-model="submissionForm.body" rows="10"></textarea></label>
-              <label class="admin-editor__wide"><span>拒绝原因（选填）</span><textarea v-model.trim="rejectionNote" rows="3" maxlength="500" placeholder="说明拒绝理由,会作为审核备注展示给作者。"></textarea></label>
-              <footer class="admin-editor__actions">
-                <button type="button" @click="submissionEditorOpen = false">关闭</button>
-                <button v-if="submissionForm.status === 'pending'" type="submit" :disabled="actionBusy">保存修改</button>
-                <button v-if="submissionForm.status === 'pending'" class="admin-danger-action" type="button" :disabled="actionBusy" @click="rejectCurrentSubmission()">拒绝</button>
-                <button v-if="submissionForm.status === 'pending'" class="admin-primary-action" type="button" :disabled="actionBusy" @click="approveCurrentSubmission()">通过并发布</button>
-              </footer>
-            </form>
-          </section>
-
-          <p v-if="listBusy" class="admin-list__empty">正在读取投稿...</p>
-          <p v-else-if="!submissions.length" class="admin-list__empty">当前筛选条件下暂无投稿。</p>
-          <div v-else class="admin-content-table admin-content-table--submission" role="table" aria-label="投稿审核">
-            <div class="admin-content-table__head" role="row"><span>投稿</span><span>状态</span><span>时间</span><span>操作</span></div>
-            <article v-for="item in submissions" :key="item.id" class="admin-content-table__row" role="row">
-              <div><strong>{{ item.title }}</strong><small>{{ item.author || item.submitterName }} · {{ item.courseCode }}</small></div>
-              <span class="admin-status" :data-status="item.status">{{ submissionStatusLabels[item.status] }}</span>
-              <time :datetime="item.createdAt">{{ formattedTime(item.createdAt) }}</time>
-              <div class="admin-content-table__actions">
-                <button type="button" @click="editSubmission(item)">{{ item.status === 'pending' ? '审核' : '查看' }}</button>
-                <button v-if="item.status === 'pending'" type="button" @click="approveCurrentSubmission(item)">通过</button>
-              </div>
-            </article>
-          </div>
-        </section>
-
-        <section v-else class="admin-list" aria-label="操作日志">
-          <div class="admin-list__filters admin-list__filters--wide">
-            <label>
               <span>课程</span>
               <AdminCourseCombobox
                 v-model="selectedCourseCode"
-                :courses="courses"
+                :courses="majorCourses"
                 :pending-course-codes="pendingCourseCodes"
                 allow-all
                 @change="refreshAuditLogs"

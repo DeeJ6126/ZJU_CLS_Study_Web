@@ -105,7 +105,7 @@ function applyReplacements(input) {
 
   // [align=left|center|right]text[/align]
   text = text.replace(/\[align=(left|center|right)\]([\s\S]*?)\[\/align\]/g, (_, align, content) => {
-    return `<div class="ubb-align" style="text-align:${align}">${content}</div>`;
+    return `<span class="ubb-align" style="text-align:${align}">${content}</span>`;
   });
 
   // [smiley]code[/smiley] — pass-through as <span>.
@@ -117,7 +117,7 @@ function applyReplacements(input) {
   text = text.replace(/\[b\]([\s\S]*?)\[\/b\]/g, '<strong>$1</strong>');
   text = text.replace(/\[i\]([\s\S]*?)\[\/i\]/g, '<em>$1</em>');
   text = text.replace(/\[u\]([\s\S]*?)\[\/u\]/g, '<u>$1</u>');
-  text = text.replace(/\[s\]([\s\S]*?)\[\/s\]/g, '<s>$1</s>');
+  text = text.replace(/\[(s|del)\]([\s\S]*?)\[\/\1\]/g, '<s>$2</s>');
 
   return text;
 }

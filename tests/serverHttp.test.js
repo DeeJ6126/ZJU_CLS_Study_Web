@@ -1,4 +1,4 @@
-﻿import test from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -479,6 +479,27 @@ test('student-ID submissions, moderation, and authenticated likes work through H
     assert.equal(pendingBody.submissions.length, 1);
     assert.equal(pendingBody.pendingCount, 1);
     assert.deepEqual(pendingBody.pendingCourseCounts, { BIO2110F: 1 });
+
+    const paperResponse = await fetch(`${baseUrl}/api/submissions`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', cookie: studentCookie },
+      body: JSON.stringify({ courseCode: 'BIO2110F', type: 'paper', title: '2026 年试卷', year: '2026' }),
+    });
+    const paper = (await paperResponse.json()).submission;
+    assert.equal(paperResponse.status, 201);
+    const paperUpload = await fetch(`${baseUrl}/api/submissions/${paper.id}/file`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/pdf', 'x-file-name': 'paper.pdf', 'x-submission-upload': 'course-content', cookie: studentCookie },
+      body: '%PDF-1.7\ntest',
+    });
+    assert.equal(paperUpload.status, 201);
+    const reviewFileUrl = `${baseUrl}/api/admin/submissions/${paper.id}/file`;
+    assert.equal((await fetch(reviewFileUrl)).status, 401);
+    assert.equal((await fetch(reviewFileUrl, { headers: { cookie: studentCookie } })).status, 403);
+    const paperPreview = await fetch(reviewFileUrl, { headers: { cookie: adminCookie } });
+    assert.equal(paperPreview.status, 200);
+    assert.equal(paperPreview.headers.get('content-type'), 'application/pdf');
+    assert.match(await paperPreview.text(), /^%PDF-/);
 
     const approved = await fetch(`${baseUrl}/api/admin/submissions/${submittedBody.submission.id}/approve`, {
       method: 'POST', headers: { 'content-type': 'application/json', cookie: adminCookie }, body: '{}',
