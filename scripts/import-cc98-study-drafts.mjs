@@ -10,10 +10,13 @@ const sourcePrefix = 'cc98-bio-resource/v3/';
 
 function stripDuplicateHeadings(body, courseCode) {
   const lines = body.split(/\r?\n/);
-  if (!new RegExp(`^#\\s+${courseCode}(?:\\s|（|\\()`).test(lines[0] ?? '')) return body;
-  let next = 1;
-  while (!lines[next]?.trim()) next += 1;
+  let next = 0;
+  if (new RegExp(`^#\\s+${courseCode}(?:\\s|（|\\()`).test(lines[next] ?? '')) {
+    next += 1;
+    while (!lines[next]?.trim()) next += 1;
+  }
   if (/^##\s+课程介绍(?:\s|（|$)/.test(lines[next] ?? '')) next += 1;
+  if (next === 0) return body;
   while (!lines[next]?.trim()) next += 1;
   return lines.slice(next).join('\n');
 }
@@ -91,7 +94,13 @@ export function reviseStudyDrafts(db, drafts, { apply = false } = {}) {
         throw new Error(`Imported draft missing or changed: ${draft.sourcePath}`);
       }
       const updated = existing.title === draft.title && existing.summary === draft.summary && existing.body === draft.body;
-      if (!updated && (existing.title !== draft.originalTitle || existing.body !== draft.originalBody)) {
+      const knownTitle = [draft.originalTitle, draft.title, '资源楼'].includes(existing.title);
+      const knownSummary = [
+        `资源楼 ${draft.sourceFloor}；转载授权未确认，仅供后台审核。`,
+        `资源楼 ${draft.sourceFloor}`,
+        draft.summary,
+      ].includes(existing.summary);
+      if (!updated && (!knownTitle || !knownSummary || stripDuplicateHeadings(existing.body, draft.courseCode) !== draft.body)) {
         throw new Error(`Existing imported post changed: ${draft.sourcePath}`);
       }
       const action = updated ? 'skipped' : apply ? 'revised' : 'planned';

@@ -84,7 +84,7 @@ test('revises only unchanged imported drafts and remains idempotent', () => {
   const db = makeDatabase();
   const [draft] = prepareStudyDrafts(JSON.stringify(makeRow()));
   db.prepare(`insert into content_items (id, course_code, type, title, summary, body, status, source_path)
-    values ('id-1', ?, 'experience', ?, 'old summary', ?, 'draft', ?)`).run(
+    values ('id-1', ?, 'experience', ?, '资源楼 5L；转载授权未确认，仅供后台审核。', ?, 'draft', ?)`).run(
     draft.courseCode, draft.originalTitle, draft.originalBody, draft.sourcePath,
   );
   assert.equal(reviseStudyDrafts(db, [draft]).drafts[0].action, 'planned');
@@ -95,5 +95,19 @@ test('revises only unchanged imported drafts and remains idempotent', () => {
   assert.equal(reviseStudyDrafts(db, [draft], { apply: true }).skipped, 1);
   db.prepare('update content_items set body = ?').run('管理员修改过的正文');
   assert.throws(() => reviseStudyDrafts(db, [draft], { apply: true }), /changed/);
+  db.close();
+});
+
+test('accepts a previously cleaned first heading but preserves unknown body edits', () => {
+  const db = makeDatabase();
+  const [draft] = prepareStudyDrafts(JSON.stringify(makeRow({
+    body: '# BIO2011F 生物化学（甲）\n\n## 课程介绍 by 23级 张同学\n\n正文',
+  })));
+  db.prepare(`insert into content_items (id, course_code, type, title, summary, body, status, source_path)
+    values ('id-2', ?, 'experience', '资源楼', '资源楼 5L', ?, 'draft', ?)`).run(
+    draft.courseCode, '## 课程介绍 by 23级 张同学\n\n正文', draft.sourcePath,
+  );
+  assert.equal(reviseStudyDrafts(db, [draft], { apply: true }).revised, 1);
+  assert.equal(db.prepare('select body from content_items').get().body, '正文');
   db.close();
 });
