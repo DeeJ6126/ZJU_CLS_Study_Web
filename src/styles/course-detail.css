@@ -967,12 +967,12 @@ html[data-theme="dark"] .article-body--ubb .ubb-code {
 
 .contribution-form__optional-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
 
 .contribution-form__optional-row--with-grade {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .contribution-box__notice {

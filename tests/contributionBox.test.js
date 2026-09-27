@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const contributionBox = readFileSync(new URL('../src/components/ContributionBox.vue', import.meta.url), 'utf8');
+const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8');
 
 test('contribution entry is a compact button that opens a centered modal', () => {
   assert.match(contributionBox, />投稿</);
@@ -12,11 +13,13 @@ test('contribution entry is a compact button that opens a centered modal', () =>
 });
 
 test('contribution modal keeps the shared fields and both body formats', () => {
-  for (const label of ['标题', '副标题', 'cc98名字', 'cc98链接', '内容格式', 'Markdown', 'UBB']) {
+  for (const label of ['标题', '副标题', '老师姓名（选填）', 'cc98名字', 'cc98链接', '内容格式', 'Markdown', 'UBB']) {
     assert.match(contributionBox, new RegExp(label));
   }
   assert.match(contributionBox, /v-model="form.title"/);
   assert.match(contributionBox, /v-model="form.cc98Link"/);
+  assert.match(contributionBox, /v-model.trim="form.teacher"/);
+  assert.match(contributionBox, /teacher: form.teacher.trim\(\)/g);
   assert.match(contributionBox, /v-model="form.body"/);
   assert.match(contributionBox, /成绩百分制（选填/);
   assert.match(contributionBox, /投稿审核/);
@@ -27,7 +30,7 @@ test('contribution form keeps PDF-only past-paper uploads and removes legacy hel
   assert.doesNotMatch(contributionBox, /复习资料链接/);
   assert.match(contributionBox, /isPaper/);
   assert.match(contributionBox, /v-model.trim="form.year"/);
-  assert.match(contributionBox, /老师（选填）/);
+  assert.match(contributionBox, /老师姓名（选填）/);
   assert.match(contributionBox, /type="file"/);
   assert.match(contributionBox, /拖到这里/);
   assert.doesNotMatch(contributionBox, /🖼|🎨|☺/);
@@ -37,6 +40,11 @@ test('contribution form keeps PDF-only past-paper uploads and removes legacy hel
 test('numeric grade input is normalized before submission', () => {
   assert.match(contributionBox, /String\(form\.gradePercentage \?\? ''\)\.trim\(\)/);
   assert.doesNotMatch(contributionBox, /form\.gradePercentage\.trim\(\)/);
+});
+
+test('teacher name is forwarded from every course submission to the content API', () => {
+  assert.match(app, /teacher: payload.teacher \|\| ''/);
+  assert.doesNotMatch(app, /teacher: isPaper \? payload.teacher : ''/);
 });
 
 test('Markdown and UBB toolbars expose only the requested insertion tools', () => {

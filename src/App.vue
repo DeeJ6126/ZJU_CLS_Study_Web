@@ -2107,7 +2107,7 @@ async function submitCourseContribution(payload) {
     gpa: payload.gpa,
     gradePercentage: payload.gradePercentage,
     year: isPaper ? payload.year : '',
-    teacher: isPaper ? payload.teacher : '',
+    teacher: payload.teacher || '',
   };
 
   let createdSubmissionId = payload.submissionId || '';

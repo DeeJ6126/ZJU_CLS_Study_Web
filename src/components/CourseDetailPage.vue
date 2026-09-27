@@ -226,6 +226,7 @@ function emitContribution(payload) {
               <p class="course-detail__kicker">学习心得</p>
               <h1 id="experience-title">{{ activeItem.title }}</h1>
               <p v-if="activeItem.subtitle" class="article-detail-card__subtitle">{{ activeItem.subtitle }}</p>
+              <p v-if="activeItem.teacher" class="article-detail-card__subtitle">授课老师：{{ activeItem.teacher }}</p>
             </div>
             <div class="article-detail-card__author">
               <a v-if="activeItem.owner" class="article-author-link" :href="getProfileHref(activeItem.owner.publicId)">{{ activeItem.owner.nickname }}</a>
@@ -321,6 +322,7 @@ function emitContribution(payload) {
               <p class="course-detail__kicker">复习资料</p>
               <h1 id="material-title">{{ activeItem.title }}</h1>
               <p v-if="activeItem.subtitle" class="article-detail-card__subtitle">{{ activeItem.subtitle }}</p>
+              <p v-if="activeItem.teacher" class="article-detail-card__subtitle">授课老师：{{ activeItem.teacher }}</p>
             </div>
             <div class="article-detail-card__author">
               <a v-if="activeItem.owner" class="article-author-link" :href="getProfileHref(activeItem.owner.publicId)">{{ activeItem.owner.nickname }}</a>

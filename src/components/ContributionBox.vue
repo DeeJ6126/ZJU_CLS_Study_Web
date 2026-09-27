@@ -315,6 +315,7 @@ async function submitContribution() {
   emit('submit-contribution', {
     title: form.title.trim(),
     subtitle: form.subtitle.trim(),
+    teacher: form.teacher.trim(),
     cc98Name: form.cc98Name.trim(),
     cc98Link: form.cc98Link.trim(),
     body: form.body.trim(),
@@ -364,8 +365,8 @@ async function submitContribution() {
                 <input v-model="form.subtitle" type="text" autocomplete="off" />
               </label>
 
-              <label v-if="isPaper">
-                <span>老师（选填）</span>
+              <label>
+                <span>老师姓名（选填）</span>
                 <input v-model.trim="form.teacher" type="text" maxlength="40" autocomplete="off" />
               </label>
 

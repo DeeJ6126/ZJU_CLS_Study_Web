@@ -24,12 +24,14 @@ test('authenticated submissions stay pending until an administrator approves the
     summary: '先建立章节框架，再补充细节。',
     author: '24级同学',
     body: '正文',
+    teacher: '王老师',
     cc98Url: 'https://www.cc98.org/topic/123',
     gpa: '4.32',
   }, { id: 7, nickname: 'submitter', verifications: { email: true } });
 
   assert.equal(created.ok, true);
   assert.equal(created.submission.status, 'pending');
+  assert.equal(created.submission.teacher, '王老师');
   assert.equal(store.listPublishedByCourse('BIO2110F').length, 0);
 
   const edited = updateSubmission(store, created.submission.id, {
@@ -42,6 +44,7 @@ test('authenticated submissions stay pending until an administrator approves the
   assert.equal(approved.submission.status, 'approved');
   assert.equal(approved.item.status, 'published');
   assert.equal(approved.item.cc98Url, 'https://www.cc98.org/topic/123');
+  assert.equal(approved.item.teacher, '王老师');
   assert.equal(approved.item.gpa, '4.32');
   assert.equal(store.listPublishedByCourse('BIO2110F').length, 1);
   assert.equal(store.listAuditLogs({ action: 'submission.approve' })[0].actorName, 'admin');

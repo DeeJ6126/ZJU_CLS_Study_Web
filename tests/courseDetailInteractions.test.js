@@ -20,6 +20,10 @@ test('article details render Markdown or UBB and keep grades concealed by defaul
   assert.match(courseDetail, /gradeVisible \? `成绩 \$\{activeItemGradeLabel\}` : '查看成绩'/);
 });
 
+test('experience and material details show the optional course teacher', () => {
+  assert.equal((courseDetail.match(/授课老师：\{\{ activeItem\.teacher \}\}/g) ?? []).length, 2);
+});
+
 test('like and favorite icons expose pressed state and remain reversible', () => {
   assert.match(courseDetail, /:aria-pressed="Boolean\(activeItem\.viewerLiked\)"/);
   assert.match(courseDetail, /activeItem\.likeCount \|\| 0/);

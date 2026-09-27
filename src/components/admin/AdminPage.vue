@@ -781,8 +781,8 @@ onMounted(initialize);
               <span>学年</span>
               <input v-model.trim="form.year" maxlength="20" placeholder="2025-2026">
             </label>
-            <label v-if="form.type === 'paper'">
-              <span>教师</span>
+            <label>
+              <span>老师姓名（选填）</span>
               <input v-model.trim="form.teacher" maxlength="40">
             </label>
             <label class="admin-editor__wide">
@@ -836,8 +836,8 @@ onMounted(initialize);
             <label v-if="submissionForm.type !== 'paper'" class="admin-editor__wide"><span>副标题（选填）</span><input v-model.trim="submissionForm.summary" maxlength="200" :readonly="submissionForm.status !== 'pending'"></label>
             <template v-if="submissionForm.type === 'paper'">
               <label><span>年份</span><input v-model.trim="submissionForm.year" required maxlength="20" :readonly="submissionForm.status !== 'pending'"></label>
-              <label><span>老师（选填）</span><input v-model.trim="submissionForm.teacher" maxlength="40" :readonly="submissionForm.status !== 'pending'"></label>
             </template>
+            <label><span>老师姓名（选填）</span><input v-model.trim="submissionForm.teacher" maxlength="40" :readonly="submissionForm.status !== 'pending'"></label>
             <label><span>CC98 名称（选填）</span><input v-model.trim="submissionForm.author" maxlength="40" :readonly="submissionForm.status !== 'pending'"></label>
             <label><span>CC98 链接（选填）</span><input v-model.trim="submissionForm.cc98Url" type="url" :readonly="submissionForm.status !== 'pending'"></label>
             <label v-if="submissionForm.type === 'experience'"><span>成绩百分制（选填）</span><input v-model.trim="submissionForm.gradePercentage" type="number" min="0" max="100" :readonly="submissionForm.status !== 'pending'"></label>
