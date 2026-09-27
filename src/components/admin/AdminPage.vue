@@ -838,7 +838,7 @@ onMounted(initialize);
               <label><span>年份</span><input v-model.trim="submissionForm.year" required maxlength="20" :readonly="submissionForm.status !== 'pending'"></label>
             </template>
             <label><span>老师姓名（选填）</span><input v-model.trim="submissionForm.teacher" maxlength="40" :readonly="submissionForm.status !== 'pending'"></label>
-            <label><span>CC98 名称（选填）</span><input v-model.trim="submissionForm.author" maxlength="40" :readonly="submissionForm.status !== 'pending'"></label>
+            <label><span>名称（选填）</span><input v-model.trim="submissionForm.author" maxlength="40" :readonly="submissionForm.status !== 'pending'"></label>
             <label><span>CC98 链接（选填）</span><input v-model.trim="submissionForm.cc98Url" type="url" :readonly="submissionForm.status !== 'pending'"></label>
             <label v-if="submissionForm.type === 'experience'"><span>成绩百分制（选填）</span><input v-model.trim="submissionForm.gradePercentage" type="number" min="0" max="100" :readonly="submissionForm.status !== 'pending'"></label>
             <label v-if="submissionForm.type === 'material'"><span>资料链接（选填）</span><input v-model.trim="submissionForm.externalUrl" type="url" :readonly="submissionForm.status !== 'pending'"></label>

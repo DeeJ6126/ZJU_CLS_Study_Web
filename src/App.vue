@@ -2100,7 +2100,7 @@ async function submitCourseContribution(payload) {
     type: typeByTab[payload.tabId],
     title: payload.title,
     summary: payload.subtitle,
-    author: payload.cc98Name || viewer.value.nickname || '',
+    author: payload.authorName || viewer.value.nickname || '',
     body: isPaper ? '' : payload.body,
     bodyFormat: payload.bodyFormat || 'markdown',
     cc98Url: payload.cc98Link,

@@ -24,7 +24,7 @@ const form = reactive({
   year: '',
   teacher: '',
   subtitle: '',
-  cc98Name: '',
+  authorName: '',
   cc98Link: '',
   body: '',
   gradePercentage: '',
@@ -45,7 +45,7 @@ function resetForm() {
   form.year = '';
   form.teacher = '';
   form.subtitle = '';
-  form.cc98Name = '';
+  form.authorName = '';
   form.cc98Link = '';
   form.body = '';
   form.gradePercentage = '';
@@ -291,7 +291,7 @@ async function submitContribution() {
       title: `${year} 历年试卷`,
       year,
       teacher: form.teacher.trim(),
-      cc98Name: form.cc98Name.trim(),
+      authorName: form.authorName.trim(),
       cc98Link: form.cc98Link.trim(),
       body: '',
       pdfFile: pdfFile.value,
@@ -316,7 +316,7 @@ async function submitContribution() {
     title: form.title.trim(),
     subtitle: form.subtitle.trim(),
     teacher: form.teacher.trim(),
-    cc98Name: form.cc98Name.trim(),
+    authorName: form.authorName.trim(),
     cc98Link: form.cc98Link.trim(),
     body: form.body.trim(),
     bodyFormat: form.bodyFormat,
@@ -371,8 +371,8 @@ async function submitContribution() {
               </label>
 
               <label>
-                <span>cc98名字（选填）</span>
-                <input v-model="form.cc98Name" type="text" autocomplete="off" />
+                <span>名称（选填）</span>
+                <input v-model.trim="form.authorName" type="text" maxlength="40" autocomplete="off" />
               </label>
 
               <label>

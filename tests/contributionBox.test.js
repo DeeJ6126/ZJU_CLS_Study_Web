@@ -13,7 +13,7 @@ test('contribution entry is a compact button that opens a centered modal', () =>
 });
 
 test('contribution modal keeps the shared fields and both body formats', () => {
-  for (const label of ['标题', '副标题', '老师姓名（选填）', 'cc98名字', 'cc98链接', '内容格式', 'Markdown', 'UBB']) {
+  for (const label of ['标题', '副标题', '老师姓名（选填）', '名称（选填）', 'cc98链接', '内容格式', 'Markdown', 'UBB']) {
     assert.match(contributionBox, new RegExp(label));
   }
   assert.match(contributionBox, /v-model="form.title"/);
@@ -44,6 +44,7 @@ test('numeric grade input is normalized before submission', () => {
 
 test('teacher name is forwarded from every course submission to the content API', () => {
   assert.match(app, /teacher: payload.teacher \|\| ''/);
+  assert.match(app, /author: payload.authorName \|\| viewer.value.nickname \|\| ''/);
   assert.doesNotMatch(app, /teacher: isPaper \? payload.teacher : ''/);
 });
 
