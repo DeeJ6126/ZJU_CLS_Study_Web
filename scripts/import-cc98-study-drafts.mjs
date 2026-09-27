@@ -90,7 +90,7 @@ export function reviseStudyDrafts(db, drafts, { apply = false } = {}) {
   try {
     for (const draft of drafts) {
       const existing = find.get(draft.sourcePath);
-      if (!existing || existing.status !== 'draft' || existing.course_code !== draft.courseCode || existing.type !== 'experience') {
+      if (!existing || !['draft', 'published'].includes(existing.status) || existing.course_code !== draft.courseCode || existing.type !== 'experience') {
         throw new Error(`Imported draft missing or changed: ${draft.sourcePath}`);
       }
       const updated = existing.title === draft.title && existing.summary === draft.summary && existing.body === draft.body;
@@ -109,7 +109,7 @@ export function reviseStudyDrafts(db, drafts, { apply = false } = {}) {
         update.run(draft.title, draft.summary, draft.body, new Date().toISOString(), existing.id);
         result.revised += 1;
       }
-      result.drafts.push({ id: existing.id, courseCode: draft.courseCode, title: draft.title, status: 'draft', action });
+      result.drafts.push({ id: existing.id, courseCode: draft.courseCode, title: draft.title, status: existing.status, action });
     }
     if (apply) db.exec('COMMIT');
   } catch (error) {

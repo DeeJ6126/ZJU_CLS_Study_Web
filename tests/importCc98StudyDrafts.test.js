@@ -104,10 +104,11 @@ test('accepts a previously cleaned first heading but preserves unknown body edit
     body: '# BIO2011F 生物化学（甲）\n\n## 课程介绍 by 23级 张同学\n\n正文',
   })));
   db.prepare(`insert into content_items (id, course_code, type, title, summary, body, status, source_path)
-    values ('id-2', ?, 'experience', '资源楼', '资源楼 5L', ?, 'draft', ?)`).run(
+    values ('id-2', ?, 'experience', '资源楼', '资源楼 5L', ?, 'published', ?)`).run(
     draft.courseCode, '## 课程介绍 by 23级 张同学\n\n正文', draft.sourcePath,
   );
   assert.equal(reviseStudyDrafts(db, [draft], { apply: true }).revised, 1);
   assert.equal(db.prepare('select body from content_items').get().body, '正文');
+  assert.equal(db.prepare('select status from content_items').get().status, 'published');
   db.close();
 });
