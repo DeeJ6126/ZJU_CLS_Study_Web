@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 
-import { importStudyDrafts, prepareStudyDrafts } from '../scripts/import-cc98-study-drafts.mjs';
+import { importStudyDrafts, prepareStudyDrafts, reviseStudyDrafts } from '../scripts/import-cc98-study-drafts.mjs';
 
 function makeRow(overrides = {}) {
   return {
@@ -65,5 +65,35 @@ test('duplicate or changed source records never create a second draft', () => {
   db.prepare('update content_items set body = ?').run('管理员修改过的正文');
   assert.throws(() => importStudyDrafts(db, [draft], { apply: true }), /changed/);
   assert.equal(db.prepare('select count(*) as count from content_items').get().count, 1);
+  db.close();
+});
+
+test('normalizes title, summary and repeated course headings without changing provenance', () => {
+  const original = makeRow({
+    title: '生物化学（甲）课程介绍',
+    body: '# BIO2011F（071B0051）生物化学（甲）\n\n## 课程介绍（陈老师） by 23级 张同学\n\n### 课程简介\n\n正文',
+  });
+  const [draft] = prepareStudyDrafts(JSON.stringify(original));
+  assert.equal(draft.title, '资源楼（陈老师）');
+  assert.equal(draft.summary, 'CC98 资源楼 5L。');
+  assert.equal(draft.body, '### 课程简介\n\n正文');
+  assert.equal(prepareStudyDrafts(JSON.stringify({ ...original, teacher: '' }))[0].title, '资源楼');
+});
+
+test('revises only unchanged imported drafts and remains idempotent', () => {
+  const db = makeDatabase();
+  const [draft] = prepareStudyDrafts(JSON.stringify(makeRow()));
+  db.prepare(`insert into content_items (id, course_code, type, title, summary, body, status, source_path)
+    values ('id-1', ?, 'experience', ?, 'old summary', ?, 'draft', ?)`).run(
+    draft.courseCode, draft.originalTitle, draft.originalBody, draft.sourcePath,
+  );
+  assert.equal(reviseStudyDrafts(db, [draft]).drafts[0].action, 'planned');
+  assert.equal(reviseStudyDrafts(db, [draft], { apply: true }).revised, 1);
+  assert.deepEqual({ ...db.prepare('select title, summary, body, status from content_items').get() }, {
+    title: draft.title, summary: draft.summary, body: draft.body, status: 'draft',
+  });
+  assert.equal(reviseStudyDrafts(db, [draft], { apply: true }).skipped, 1);
+  db.prepare('update content_items set body = ?').run('管理员修改过的正文');
+  assert.throws(() => reviseStudyDrafts(db, [draft], { apply: true }), /changed/);
   db.close();
 });
