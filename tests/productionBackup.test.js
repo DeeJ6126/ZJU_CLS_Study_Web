@@ -29,9 +29,11 @@ test('production backup snapshots unique databases, copies uploads, and removes 
   const authFile = path.join(dataDir, 'auth.sqlite');
   const contentFile = path.join(dataDir, 'content.sqlite');
   const homepageFile = path.join(dataDir, 'student-homepages.sqlite');
+  const consultationFile = path.join(dataDir, 'consultation.sqlite');
   createDatabase(authFile, 'auth');
   createDatabase(contentFile, 'content');
   createDatabase(homepageFile, 'homepage');
+  createDatabase(consultationFile, 'consultation');
 
   const result = await createProductionBackup({
     env: {
@@ -39,6 +41,7 @@ test('production backup snapshots unique databases, copies uploads, and removes 
       QUIZ_DB_FILE: authFile,
       CONTENT_DB_FILE: contentFile,
       STUDENT_HOMEPAGE_DB_FILE: homepageFile,
+      CONSULTATION_DB_FILE: consultationFile,
       CONTENT_UPLOAD_DIR: uploadDir,
       PROFILE_AVATAR_DIR: avatarDir,
       ZJUBIO_BACKUP_DIR: backupDir,
@@ -47,11 +50,11 @@ test('production backup snapshots unique databases, copies uploads, and removes 
     now: new Date('2026-09-15T12:00:00.000Z'),
   });
 
-  assert.equal(result.databases.length, 3);
-  assert.deepEqual(result.databases.map((item) => item.integrity), ['ok', 'ok', 'ok']);
+  assert.equal(result.databases.length, 4);
+  assert.deepEqual(result.databases.map((item) => item.integrity), ['ok', 'ok', 'ok', 'ok']);
   assert.equal(await readFile(path.join(result.snapshotDir, 'uploads', 'paper.pdf'), 'utf8'), '%PDF-test');
   assert.equal(await readFile(path.join(result.snapshotDir, 'avatars', 'avatar.webp'), 'utf8'), 'webp-test');
   const manifest = JSON.parse(await readFile(path.join(result.snapshotDir, 'manifest.json'), 'utf8'));
-  assert.equal(manifest.databases.length, 3);
+  assert.equal(manifest.databases.length, 4);
   await assert.rejects(readFile(path.join(backupDir, '2026-08-01T00-00-00-000Z', 'manifest.json')));
 });

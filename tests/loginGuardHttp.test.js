@@ -7,6 +7,7 @@ import { createLoginGuard } from '../server/loginGuard.js';
 import { createQuizStore } from '../server/quiz/quizStore.js';
 import { createContentStore } from '../server/content/contentStore.js';
 import { createStudentHomepageStore } from '../server/studentHomepage/studentHomepageStore.js';
+import { createConsultationStore } from '../server/consultation/consultationStore.js';
 
 function listen(server) {
   return new Promise((resolve) => {
@@ -21,6 +22,7 @@ function makeServer({ now } = {}) {
   const quizStore = createQuizStore({ filename: ':memory:' });
   const contentStore = createContentStore({ filename: ':memory:' });
   const studentHomepageStore = createStudentHomepageStore({ filename: ':memory:' });
+  const consultationStore = createConsultationStore({ filename: ':memory:' });
   store.initialize();
   store.seedVerificationCodes([
     { code: 'bio-cc98', cc98Name: 'cc98_bio_visitor' },
@@ -32,6 +34,7 @@ function makeServer({ now } = {}) {
     quizStore,
     contentStore,
     studentHomepageStore,
+    consultationStore,
     loginGuard: guard,
   });
   return { server, store, guard };

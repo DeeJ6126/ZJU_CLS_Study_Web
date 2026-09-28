@@ -5,6 +5,7 @@ import { createAuthServer } from '../server/server.js';
 import { createQuizStore } from '../server/quiz/quizStore.js';
 import { createContentStore } from '../server/content/contentStore.js';
 import { createStudentHomepageStore } from '../server/studentHomepage/studentHomepageStore.js';
+import { createConsultationStore } from '../server/consultation/consultationStore.js';
 
 // Stores these tests do not exercise directly. Without them createAuthServer
 // falls back to its production file paths (server/data/*.sqlite), so test
@@ -14,6 +15,7 @@ function isolatedStores() {
   return {
     contentStore: createContentStore({ filename: ':memory:' }),
     studentHomepageStore: createStudentHomepageStore({ filename: ':memory:' }),
+    consultationStore: createConsultationStore({ filename: ':memory:' }),
   };
 }
 

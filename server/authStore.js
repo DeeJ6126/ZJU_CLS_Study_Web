@@ -256,6 +256,18 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
       `).all(pattern, Math.max(1, Math.min(20, Number(limit) || 8))).map(mapUser);
     },
 
+    searchConsultationMentorCandidates(query = '', limit = 20) {
+      const clean = String(query ?? '').trim().slice(0, 80);
+      const pattern = `%${clean.replace(/[\\%_]/g, '\\$&')}%`;
+      return db.prepare(`
+        select u.id, u.nickname, substr(i.display_value, 1, instr(i.display_value, '@') - 1) as studentId
+        from users u join user_identities i on i.user_id = u.id
+        where i.provider = 'email' and i.display_value glob '[0-9]*@zju.edu.cn'
+          and (u.nickname like ? escape '\\' or i.display_value like ? escape '\\')
+        order by u.nickname_normalized, u.id limit ?
+      `).all(pattern, pattern, Math.max(1, Math.min(50, Number(limit) || 20)));
+    },
+
     createUser({ cc98Name = '', email = '', nickname = '', passwordHash, role = 'student', grade = null }) {
       const legacyName = cc98Name || `__email__:${randomUUID()}`;
       const displayNickname = String(nickname || cc98Name || email.split('@')[0] || '学生').trim();

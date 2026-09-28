@@ -5,6 +5,7 @@ import { createAuthStore } from '../server/authStore.js';
 import { createQuizStore } from '../server/quiz/quizStore.js';
 import { createContentStore } from '../server/content/contentStore.js';
 import { createStudentHomepageStore } from '../server/studentHomepage/studentHomepageStore.js';
+import { createConsultationStore } from '../server/consultation/consultationStore.js';
 import { createAuthServer, getClientIp, isHttpsRequest } from '../server/server.js';
 
 // Stores these tests do not exercise directly. Without them createAuthServer
@@ -15,6 +16,7 @@ function isolatedStores() {
   return {
     contentStore: createContentStore({ filename: ':memory:' }),
     studentHomepageStore: createStudentHomepageStore({ filename: ':memory:' }),
+    consultationStore: createConsultationStore({ filename: ':memory:' }),
   };
 }
 

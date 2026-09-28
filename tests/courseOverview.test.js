@@ -61,7 +61,8 @@ test('course detail uses a left navigation and a dedicated quiz entry', () => {
   assert.match(component, /class="course-detail__nav"/);
   assert.match(component, /class="course-detail__content"/);
   assert.match(css, /\.course-detail\s*\{[\s\S]*?grid-template-columns:\s*188px\s+minmax\(0,\s*1fr\)/);
-  assert.doesNotMatch(css, /\.course-tabs\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4/);
+  const courseTabsRule = css.match(/\.course-tabs\s*\{[^}]*\}/)?.[0] ?? '';
+  assert.doesNotMatch(courseTabsRule, /grid-template-columns:\s*repeat\(4/);
   assert.doesNotMatch(component, /QuizPracticePanel/);
   assert.match(component, /hasQuiz[\s\S]*?course-detail__quiz-link[\s\S]*?刷题网页/);
   assert.match(component, /emit\('open-quiz',\s*course\.code\)/);

@@ -110,6 +110,84 @@ html[data-theme="dark"] .demo-topnav a.is-active {
   color: #8ad3bd;
 }
 
+.demo-topnav a.is-disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.consultation-toast {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(380px, calc(100vw - 32px));
+  min-height: 72px;
+  padding: 14px 16px;
+  border: 1px solid #b8cfc2;
+  border-left: 4px solid #245e48;
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgba(19, 39, 31, 0.17);
+  color: #1f2933;
+}
+
+.consultation-toast > div {
+  display: grid;
+  flex: 1;
+  gap: 3px;
+  min-width: 0;
+}
+
+.consultation-toast span {
+  overflow: hidden;
+  color: #5c6675;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.consultation-toast button {
+  flex: none;
+  border: 1px solid #245e48;
+  border-radius: var(--radius-sm);
+  background: #245e48;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 7px 10px;
+}
+
+.consultation-toast .consultation-toast__dismiss {
+  border-color: transparent;
+  background: transparent;
+  color: #5c6675;
+  font-size: 12px;
+  padding: 3px;
+}
+
+html[data-theme="dark"] .consultation-toast {
+  border-color: #3d6257;
+  border-left-color: #8ad3bd;
+  background: #172434;
+  color: #e8edf4;
+}
+
+html[data-theme="dark"] .consultation-toast span,
+html[data-theme="dark"] .consultation-toast .consultation-toast__dismiss {
+  color: #b3c4d6;
+}
+
+html[data-theme="dark"] .consultation-toast button:not(.consultation-toast__dismiss) {
+  border-color: #8ad3bd;
+  background: #8ad3bd;
+  color: #0e1622;
+}
+
 .demo-user-chip {
   padding: 8px 14px;
   background: #245e48;
@@ -154,6 +232,22 @@ html[data-theme="dark"] .demo-user-chip__tag {
 
 .demo-main {
   min-height: calc(100vh - 68px);
+}
+
+@media (min-width: 761px) and (max-width: 1120px) {
+  .demo-head {
+    grid-template-columns: 185px minmax(0, 1fr) auto;
+    gap: 12px;
+    padding-inline: 18px;
+  }
+
+  .demo-topnav {
+    gap: 2px;
+  }
+
+  .demo-topnav a {
+    min-width: 56px;
+  }
 }
 
 .demo-home {
@@ -1685,7 +1779,7 @@ html[data-theme="dark"] .quiz-market-tabs button:hover {
     grid-column: 1 / -1;
     grid-row: 2;
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 4px;
   }
 

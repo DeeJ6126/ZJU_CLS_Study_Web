@@ -151,8 +151,9 @@ administrator edits are durable backend data.
 ### 19. Public identity has three product roles
 
 The product exposes only guest, student-ID-verified student, and administrator.
-Guests keep all read-only discovery and anonymous practice flows. Any action that
-creates a public or account-persistent trace requires numeric student-ID email
+Guests keep all read-only discovery and anonymous practice flows. Except for
+the isolated consultation room in decision 21, any action that creates a public
+or account-persistent trace requires numeric student-ID email
 verification; administrators add server-enforced management privileges. Legacy
 CC98 endpoints remain backend-only and do not independently grant write rights.
 
@@ -171,3 +172,7 @@ returned to browsers use `/zjubio/api/...`, and deployment health checks test
 both Node `/api/health` and Apache `/zjubio/api/health`. Authentication cookies
 use `Path=/zjubio/` so they are not sent to unrelated projects on the shared
 host.
+
+### 21. Consultation permits isolated guest conversations
+
+The scheduled consultation room is an explicit exception to the usual verified-account requirement for persistent writes. The server issues a separate HttpOnly guest cookie, binds each guest to one private conversation per consultation session, and rate-limits new guest identities and messages. Only the assigned verified mentor may read the session's inbox; administrator status alone does not grant access to chat content. Consultation history is stored in its own SQLite database and included in production backups.

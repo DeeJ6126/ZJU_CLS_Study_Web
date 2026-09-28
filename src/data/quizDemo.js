@@ -3,6 +3,7 @@ export const demoTopPages = [
   { id: 'overview', label: '概览' },
   { id: 'quiz', label: '刷题' },
   { id: 'activities', label: '活动' },
+  { id: 'consultation', label: '咨询' },
   { id: 'about', label: '关于' },
   { id: 'profile', label: '个人' },
 ];

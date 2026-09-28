@@ -10,6 +10,7 @@ import TrueFalseQuestionView from './components/quiz/TrueFalseQuestionView.vue';
 import HomePage from './components/HomePage.vue';
 import ActivityPage from './components/ActivityPage.vue';
 import ActivityDetailPage from './components/ActivityDetailPage.vue';
+import ConsultationPage from './components/ConsultationPage.vue';
 import OverviewPage from './components/OverviewPage.vue';
 import CourseDetailPage from './components/CourseDetailPage.vue';
 import AdminPage from './components/admin/AdminPage.vue';
@@ -56,9 +57,11 @@ import {
   buildQuizRangeOptions,
 } from './services/quizRangeService.js';
 import {
+  buildHashWithQuery,
   getDemoPageFromHash,
   getActivitySlugFromHash,
   getDemoPageHref,
+  getHashQuery,
   getProfileHref,
   getProfileIdFromHash,
 } from './services/demoNavigationService.js';
@@ -125,6 +128,7 @@ import {
 } from './services/authService.js';
 import { loadCourseContent } from './services/courseContentApiClient.js';
 import { accountDataApiClient } from './services/accountDataApiClient.js';
+import { consultationApiClient } from './services/consultationApiClient.js';
 import { commentApiClient } from './services/commentApiClient.js';
 import {
   fetchCurrentUser,
@@ -230,6 +234,10 @@ async function selectDemoIdentity(identityId) {
   commentNotice.value = '';
   demoDataVersion.value += 1;
   await loadAccountData();
+  if (activePage.value === 'consultation' && identityId) {
+    window.location.hash = '#home';
+    return;
+  }
   if (activePage.value === 'admin' && identityId !== 'admin') {
     window.location.hash = '#home';
     return;
@@ -242,6 +250,13 @@ async function selectDemoIdentity(identityId) {
   }
 }
 const activePage = ref('home');
+const consultationStatus = ref({ open: false, isMentor: false, mentor: null });
+const consultationConversationId = ref('');
+const consultationToast = ref(null);
+const seenConsultationMessages = new Set();
+let consultationStatusTimer;
+let consultationInboxTimer;
+const consultationAvailable = computed(() => Boolean(consultationStatus.value.open && !demoIdentityId.value));
 const activeActivitySlug = ref('');
 const overviewRoute = ref(parseResourceHash(''));
 const activeOverviewCourse = ref(null);
@@ -581,7 +596,52 @@ function routeFromHash() {
   return getDemoPageFromHash(window.location.hash, topPages);
 }
 
+async function refreshConsultationStatus() {
+  const result = await consultationApiClient.getStatus();
+  applyConsultationStatus(result);
+}
+
+function applyConsultationStatus(result) {
+  const previous = consultationStatus.value;
+  if (previous.startsAt !== result?.startsAt || previous.endsAt !== result?.endsAt
+    || previous.mentor?.id !== result?.mentor?.id) {
+    consultationToast.value = null;
+    seenConsultationMessages.clear();
+  }
+  consultationStatus.value = result?.ok ? result : { open: false, isMentor: false, mentor: null };
+  if (!consultationAvailable.value) consultationToast.value = null;
+  else if (consultationStatus.value.isMentor) void refreshConsultationInbox();
+}
+
+async function refreshConsultationInbox() {
+  if (!consultationAvailable.value || !consultationStatus.value.isMentor) return;
+  const result = await consultationApiClient.listConversations();
+  if (!result.ok) return;
+  const conversation = (result.conversations ?? []).find((item) => (
+    Number(item.unreadCount) > 0
+    && !(activePage.value === 'consultation' && consultationConversationId.value === item.id)
+    && item.latestMessageId
+    && !seenConsultationMessages.has(item.latestMessageId)
+  ));
+  if (!conversation) return;
+  seenConsultationMessages.add(conversation.latestMessageId);
+  consultationToast.value = {
+    conversationId: conversation.id,
+    participantName: conversation.participantName || '一位同学',
+  };
+}
+
+function openConsultationMessage() {
+  const conversationId = consultationToast.value?.conversationId;
+  consultationToast.value = null;
+  if (!conversationId) return;
+  const href = buildHashWithQuery('consultation', { conversation: conversationId });
+  if (window.location.hash === href) void syncPageFromHash();
+  else window.location.hash = href;
+}
+
 function setPage(pageId) {
+  if (pageId === 'consultation' && !consultationAvailable.value) return;
   resetPageState(pageId);
   if (pageId === 'profile') {
     if (viewer.value.publicId) {
@@ -1926,8 +1986,19 @@ async function refreshCourseFavoriteCount(courseCode) {
 
 async function syncPageFromHash() {
   const nextPage = routeFromHash();
+  if (nextPage === 'consultation' && demoIdentityId.value) {
+    window.location.hash = '#home';
+    return;
+  }
   resetPageState(nextPage);
   activePage.value = nextPage;
+
+  if (nextPage === 'consultation') {
+    consultationConversationId.value = getHashQuery(window.location.hash).get('conversation') ?? '';
+    activeOverviewCourse.value = null;
+    if (consultationToast.value?.conversationId === consultationConversationId.value) consultationToast.value = null;
+    return;
+  }
 
   if (nextPage === 'activities') {
     activeActivitySlug.value = getActivitySlugFromHash(window.location.hash);
@@ -2595,6 +2666,9 @@ async function resetActiveDemoAccount() {
 }
 
 watch(activeCollectionSlug, loadCategories);
+watch([studentViewer, demoIdentityId], () => {
+  void refreshConsultationStatus();
+});
 
 onMounted(async () => {
   try {
@@ -2608,12 +2682,17 @@ onMounted(async () => {
     // Public browsing remains available when the account service is offline.
   }
   if (isDemoAccount.value) await loadAccountData();
+  await refreshConsultationStatus();
+  consultationStatusTimer = window.setInterval(refreshConsultationStatus, 15000);
+  consultationInboxTimer = window.setInterval(refreshConsultationInbox, 4000);
   syncPageFromHash();
   window.addEventListener('hashchange', syncPageFromHash);
   window.addEventListener('keydown', handleGlobalKeydown);
 });
 
 onBeforeUnmount(() => {
+  window.clearInterval(consultationStatusTimer);
+  window.clearInterval(consultationInboxTimer);
   window.removeEventListener('hashchange', syncPageFromHash);
   window.removeEventListener('keydown', handleGlobalKeydown);
 });
@@ -2631,7 +2710,10 @@ onBeforeUnmount(() => {
           v-for="page in topPages"
           :key="page.id"
           :href="getDemoPageHref(page.id)"
-          :class="{ 'is-active': activePage === page.id }"
+          :class="{ 'is-active': activePage === page.id, 'is-disabled': page.id === 'consultation' && !consultationAvailable }"
+          :aria-disabled="page.id === 'consultation' && !consultationAvailable ? 'true' : null"
+          :tabindex="page.id === 'consultation' && !consultationAvailable ? -1 : null"
+          :title="page.id === 'consultation' && !consultationAvailable ? '咨询室当前未开放' : null"
           @click.prevent="setPage(page.id)"
         >
           {{ page.label }}
@@ -2786,6 +2868,13 @@ onBeforeUnmount(() => {
         @read="markNotificationRead"
         @read-all="markAllNotificationsRead"
         @open-target="openNotification"
+      />
+
+      <ConsultationPage
+        v-else-if="activePage === 'consultation'"
+        :status="consultationStatus"
+        :initial-conversation-id="consultationConversationId"
+        @status-refresh="applyConsultationStatus"
       />
 
       <ActivityPage
@@ -3954,5 +4043,13 @@ onBeforeUnmount(() => {
           <p v-if="message" class="demo-message">{{ message }}</p>
       </section>
     </main>
+    <div v-if="consultationToast" class="consultation-toast" role="status" aria-live="polite">
+      <div>
+        <strong>咨询室有新消息</strong>
+        <span>{{ consultationToast.participantName }}正在等待回复</span>
+      </div>
+      <button type="button" @click="openConsultationMessage">查看</button>
+      <button type="button" class="consultation-toast__dismiss" aria-label="关闭消息提醒" @click="consultationToast = null">关闭</button>
+    </div>
   </div>
 </template>

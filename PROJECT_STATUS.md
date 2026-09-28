@@ -16,9 +16,12 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 - Quiz handoff docs are in place under `src/components/quiz/`, `src/services/`, `src/data/`, `public/resource/quiz/`, `server/quiz/`, and `tests/`.
 - The Node backend now spans authentication, account data, profiles, content and moderation, activities, cross-source search, student-homepage directory APIs, and quizzes. The student-homepage domain is backend-only at present; no Vue page or dedicated frontend client completes that workflow yet.
 - The public account model now has exactly three product roles: guest, student-ID-verified student, and administrator. CC98 endpoints remain backend-only for compatibility and no longer independently grant persistent-write permissions.
+- The consultation room now supports administrator-scheduled hours, a verified assigned mentor, isolated guest or account conversations, mentor inboxes, and polling-based message alerts.
 - Project management docs have been renamed to `docs/project-guides/`, and the preferred check commands are now `npm.cmd run check*`.
 
 ## Recently Completed
+
+- Added a dedicated consultation SQLite store, scheduled open/close controls in the administrator workspace, a responsive visitor/mentor chat page, server-issued guest cookies, access checks, rate limits, and backup coverage.
 
 - Migrated quiz data and assets from the standalone molecular biology, botany, and microbiology quiz projects.
 - Built backend quiz import, SQLite storage, sessions, grading, reveal, self-judgement, progress, mistakes, reset, molecular review terms, and microbiology past-exam APIs.

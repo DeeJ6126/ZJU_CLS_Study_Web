@@ -57,6 +57,9 @@ import { handleActivityHttpRequest } from './activity/activityHttpService.js';
 import { seedActivityCatalog } from './activity/activityService.js';
 import { createStudentHomepageStore } from './studentHomepage/studentHomepageStore.js';
 import { handleStudentHomepageHttpRequest } from './studentHomepage/studentHomepageHttpService.js';
+import { createConsultationStore } from './consultation/consultationStore.js';
+import { handleConsultationHttpRequest } from './consultation/consultationHttpService.js';
+import { createGuestCreationGuard } from './consultation/guestCreationGuard.js';
 import { handleSearchHttpRequest } from './search/searchHttpService.js';
 import {
   maxAvatarBytes,
@@ -212,6 +215,9 @@ export function createAuthServer({
   studentHomepageStore = createStudentHomepageStore({
     filename: process.env.STUDENT_HOMEPAGE_DB_FILE ?? 'server/data/student-homepages.sqlite',
   }),
+  consultationStore = createConsultationStore({
+    filename: process.env.CONSULTATION_DB_FILE ?? 'server/data/consultation.sqlite',
+  }),
   uploadDirectory = process.env.CONTENT_UPLOAD_DIR ?? 'server/data/content-uploads',
   avatarDirectory = process.env.PROFILE_AVATAR_DIR ?? 'server/data/profile-avatars',
   adminCc98Names = parseAdminCc98Names(process.env.ADMIN_CC98_NAMES),
@@ -222,6 +228,7 @@ export function createAuthServer({
   emailNow,
   // Tests can inject a custom guard; the runtime default uses createLoginGuard().
   loginGuard = createLoginGuard(),
+  guestCreationGuard = createGuestCreationGuard(),
   port = 5175,
 } = {}) {
   store.initialize();
@@ -233,6 +240,7 @@ export function createAuthServer({
     store.promoteAdminByEmail(`${studentId}@zju.edu.cn`);
   }
   studentHomepageStore.initialize();
+  consultationStore.initialize();
   studentHomepageStore.seedHomepages([
     {
       id: 'homepage-dee',
@@ -536,6 +544,12 @@ export function createAuthServer({
       if (studentHomepageHandled) {
         return;
       }
+      const consultationHandled = await handleConsultationHttpRequest({
+        request, response, url, user: currentUser, userId: quizUserId, cookies,
+        authStore: store, consultationStore, sendJson, readJsonBody,
+        guestCreationGuard, clientIp: getClientIp(request),
+      });
+      if (consultationHandled) return;
       const searchHandled = handleSearchHttpRequest({
         request,
         response,

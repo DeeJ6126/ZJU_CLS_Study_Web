@@ -9,6 +9,7 @@ import {
   requestEmailVerificationCode,
 } from '../../services/authApiClient.js';
 import { adminApiClient as defaultAdminApiClient } from '../../services/adminApiClient.js';
+import { consultationApiClient } from '../../services/consultationApiClient.js';
 import { isAdministrator } from '../../services/authService.js';
 import { loadResourceCatalog } from '../../data/courses/resourceData.js';
 import { majorOptions } from '../../data/courses/programCatalog.js';
@@ -92,6 +93,14 @@ const activityQuery = ref('');
 const activityEditorOpen = ref(false);
 const editingActivityId = ref('');
 const activityForm = reactive(emptyActivityForm());
+const consultationStatus = ref(null);
+const consultationBusy = ref(false);
+const consultationNotice = ref('');
+const candidateQuery = ref('');
+const candidates = ref([]);
+const candidateBusy = ref(false);
+const selectedMentor = ref(null);
+const consultationForm = reactive({ startsAt: '', endsAt: '' });
 
 const isAdmin = computed(() => isAdministrator(currentUser.value));
 const majorCourses = computed(() => filterAdminCoursesToOverview(courses.value, selectedMajorId.value));
@@ -116,9 +125,91 @@ const filteredRows = computed(() => {
 const pageTitle = computed(() => {
   if (selectedView.value === 'activities') return '活动管理';
   if (selectedView.value === 'homepages') return '同学主页';
+  if (selectedView.value === 'consultation') return '咨询室';
   if (selectedView.value === 'logs') return '操作日志';
   return selectedTypeLabel.value;
 });
+
+const consultationScheduled = computed(() => Boolean(
+  consultationStatus.value?.mentor && !consultationStatus.value?.closed
+    && Date.parse(consultationStatus.value.endsAt) > Date.now(),
+));
+
+function localDateTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const part = (number) => String(number).padStart(2, '0');
+  return `${date.getFullYear()}-${part(date.getMonth() + 1)}-${part(date.getDate())}T${part(date.getHours())}:${part(date.getMinutes())}`;
+}
+
+function consultationDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '' : new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+  }).format(date);
+}
+
+async function refreshConsultation() {
+  if (!isAdmin.value || props.isDemo) return;
+  consultationBusy.value = true;
+  const result = await consultationApiClient.getStatus();
+  if (result.ok) {
+    consultationStatus.value = result;
+    selectedMentor.value = result.mentor && result.mentorUserId
+      ? { ...result.mentor, id: result.mentorUserId } : null;
+    const now = new Date();
+    const end = new Date(now.getTime() + 60 * 60 * 1000);
+    consultationForm.startsAt = localDateTime(consultationScheduled.value ? result.startsAt : now);
+    consultationForm.endsAt = localDateTime(consultationScheduled.value ? result.endsAt : end);
+  } else {
+    consultationNotice.value = result.message || '咨询室状态读取失败。';
+  }
+  consultationBusy.value = false;
+}
+
+async function searchMentorCandidates() {
+  if (!isAdmin.value || props.isDemo) return;
+  candidateBusy.value = true;
+  const result = await consultationApiClient.listCandidates(candidateQuery.value.trim());
+  if (result.ok) candidates.value = result.users ?? [];
+  else consultationNotice.value = result.message || '用户列表读取失败。';
+  candidateBusy.value = false;
+}
+
+async function saveConsultation() {
+  if (props.isDemo || consultationBusy.value) return;
+  consultationNotice.value = '';
+  const startsAt = new Date(consultationForm.startsAt);
+  const endsAt = new Date(consultationForm.endsAt);
+  if (!selectedMentor.value?.id) {
+    consultationNotice.value = '请先选择一位指导学长。';
+    return;
+  }
+  if (Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime())
+    || startsAt >= endsAt || endsAt <= new Date()) {
+    consultationNotice.value = '请填写有效时间，并确保结束时间晚于开始时间和当前时间。';
+    return;
+  }
+  consultationBusy.value = true;
+  const result = await consultationApiClient.setSession({
+    mentorUserId: selectedMentor.value.id,
+    startsAt: startsAt.toISOString(),
+    endsAt: endsAt.toISOString(),
+  });
+  consultationBusy.value = false;
+  consultationNotice.value = result.ok ? '咨询室安排已保存。' : result.message || '保存失败。';
+  if (result.ok) await refreshConsultation();
+}
+
+async function closeConsultation() {
+  if (props.isDemo || consultationBusy.value || !window.confirm('确定现在关闭咨询室吗？')) return;
+  consultationBusy.value = true;
+  const result = await consultationApiClient.closeSession();
+  consultationBusy.value = false;
+  consultationNotice.value = result.ok ? '咨询室已关闭。' : result.message || '关闭失败。';
+  if (result.ok) await refreshConsultation();
+}
 
 function emptyActivityForm() {
   return {
@@ -378,6 +469,10 @@ function changeView(view, type = '') {
   }
   if (view === 'activities') refreshActivities();
   if (view === 'homepages') refreshHomepages();
+  if (view === 'consultation') {
+    refreshConsultation();
+    searchMentorCandidates();
+  }
   if (view === 'logs') refreshAuditLogs();
 }
 
@@ -660,6 +755,7 @@ onMounted(initialize);
           活动管理
         </button>
         <button type="button" :class="{ 'is-active': selectedView === 'homepages' }" @click="changeView('homepages')">同学主页</button>
+        <button type="button" :class="{ 'is-active': selectedView === 'consultation' }" @click="changeView('consultation')">咨询室</button>
         <button type="button" :class="{ 'is-active': selectedView === 'logs' }" @click="changeView('logs')">操作日志</button>
       </nav>
       <button v-if="currentUser" class="admin-page__logout" type="button" @click="logout">退出登录</button>
@@ -1016,6 +1112,64 @@ onMounted(initialize);
             <button type="button" :disabled="actionBusy" @click="decideHomepageApplication(item, 'approve')">通过</button>
             <button type="button" :disabled="actionBusy" @click="decideHomepageApplication(item, 'reject')">拒绝</button>
           </div>
+        </section>
+
+        <section v-else-if="selectedView === 'consultation'" class="admin-consultation" aria-label="咨询室管理">
+          <p v-if="isDemo" class="admin-list__empty">演示管理员不能开启真实咨询室。请使用正式管理员账号操作。</p>
+          <template v-else>
+            <div class="admin-consultation__status" aria-live="polite">
+              <div>
+                <span class="admin-status" :data-status="consultationStatus?.open ? 'published' : 'archived'">
+                  {{ consultationStatus?.open ? '开放中' : consultationScheduled ? '已安排' : '未开放' }}
+                </span>
+                <strong v-if="consultationStatus?.mentor">指导学长：{{ consultationStatus.mentor.nickname }}</strong>
+                <strong v-else>尚未安排指导学长</strong>
+                <p v-if="consultationScheduled">
+                  {{ consultationDate(consultationStatus.startsAt) }} 至 {{ consultationDate(consultationStatus.endsAt) }}
+                </p>
+              </div>
+              <button v-if="consultationScheduled" class="admin-danger-action" type="button" :disabled="consultationBusy" @click="closeConsultation">提前关闭</button>
+            </div>
+
+            <p v-if="consultationNotice" class="admin-notice" role="status">{{ consultationNotice }}</p>
+
+            <form class="admin-consultation__form" @submit.prevent="saveConsultation">
+              <fieldset :disabled="consultationBusy">
+                <legend>安排咨询室</legend>
+                <div class="admin-consultation__fields">
+                  <div class="admin-consultation__mentor">
+                    <label for="admin-mentor-query">指导学长</label>
+                    <div class="admin-consultation__search">
+                      <input id="admin-mentor-query" v-model.trim="candidateQuery" type="search" placeholder="搜索昵称或学号" @keydown.enter.prevent="searchMentorCandidates">
+                      <button type="button" :disabled="candidateBusy" @click="searchMentorCandidates">搜索</button>
+                    </div>
+                    <p v-if="selectedMentor" class="admin-consultation__selected">已选择：{{ selectedMentor.nickname }}<span v-if="selectedMentor.studentId">（{{ selectedMentor.studentId }}）</span></p>
+                    <div v-if="candidates.length" class="admin-consultation__candidates" role="listbox" aria-label="可选指导学长">
+                      <button
+                        v-for="candidate in candidates"
+                        :key="candidate.id"
+                        type="button"
+                        role="option"
+                        :aria-selected="selectedMentor?.id === candidate.id"
+                        :class="{ 'is-selected': selectedMentor?.id === candidate.id }"
+                        @click="selectedMentor = candidate"
+                      >
+                        <span>{{ candidate.nickname }}</span><small>{{ candidate.studentId }}</small>
+                      </button>
+                    </div>
+                    <p v-else-if="!candidateBusy" class="admin-consultation__hint">没有找到可选用户。</p>
+                  </div>
+                  <label>开始时间<input v-model="consultationForm.startsAt" type="datetime-local" required></label>
+                  <label>结束时间<input v-model="consultationForm.endsAt" type="datetime-local" required></label>
+                </div>
+                <div class="admin-consultation__actions">
+                  <button class="admin-primary-action" type="submit" :disabled="!selectedMentor || consultationBusy">
+                    {{ consultationBusy ? '正在保存...' : consultationScheduled ? '更新安排' : '开启咨询室' }}
+                  </button>
+                </div>
+              </fieldset>
+            </form>
+          </template>
         </section>
 
         <section v-else class="admin-list" aria-label="操作日志">

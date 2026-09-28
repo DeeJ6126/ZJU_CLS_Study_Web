@@ -39,6 +39,7 @@ function databaseSources(env) {
     ['quiz', env.QUIZ_DB_FILE || env.AUTH_DB_FILE || 'server/data/auth.sqlite'],
     ['content', env.CONTENT_DB_FILE || 'server/data/content.sqlite'],
     ['student-homepages', env.STUDENT_HOMEPAGE_DB_FILE || 'server/data/student-homepages.sqlite'],
+    ['consultation', env.CONSULTATION_DB_FILE || 'server/data/consultation.sqlite'],
   ];
   const unique = new Map();
   for (const [label, source] of definitions) {

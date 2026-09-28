@@ -22,6 +22,7 @@ Lightweight Node backend for the current application.
 - Cross-device quiz progress, mistakes, vocabulary, and anonymous-session claiming.
 - Cross-source search over courses, published content, activities, and approved student homepages.
 - Student-homepage directory storage, authenticated applications, and administrator moderation APIs.
+- Time-limited consultation room with a designated mentor, private visitor chats, and a polling inbox.
 
 ## Entry Point
 
@@ -87,6 +88,7 @@ $env:CONTENT_DB_FILE="server/data/content.sqlite"
 $env:CONTENT_UPLOAD_DIR="server/data/content-uploads"
 $env:PROFILE_AVATAR_DIR="server/data/profile-avatars"
 $env:STUDENT_HOMEPAGE_DB_FILE="server/data/student-homepages.sqlite"
+$env:CONSULTATION_DB_FILE="server/data/consultation.sqlite"
 ```
 
 Existing Markdown under `public/resource/courses/` is imported idempotently when
@@ -148,6 +150,22 @@ domain uses its own SQLite file and provides public listing, authenticated
 application, and administrator CRUD/moderation endpoints. These endpoints are
 tested, but the Vue application does not yet expose a student-homepage directory
 or its administrator workflow.
+
+## Consultation room
+
+Administrators choose a verified student account and a start/end time through
+`PUT /api/admin/consultation/session`; `DELETE` closes it early. Public
+`GET /api/consultation/status` reports whether the window is open. Visitors
+create or resume one conversation per window with
+`POST /api/consultation/conversations`, then exchange messages through
+`/api/consultation/conversations/:id/messages`. The assigned mentor can list
+the window's conversations and unread counts with
+`GET /api/consultation/conversations`. The frontend polls; there is no socket
+server. Guest identity is a server-issued, HttpOnly cookie scoped to `/zjubio/`.
+Only conversation participants can read messages, and messages cannot be sent
+outside the open window. Data lives in `CONSULTATION_DB_FILE`, included in the
+production SQLite backup. New anonymous identities are limited per source IP
+to 12 per 10 minutes; existing guest cookies can still resume their chat.
 
 ## Deployment Note
 

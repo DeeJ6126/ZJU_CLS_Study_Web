@@ -916,3 +916,163 @@ html[data-theme="dark"] .admin-activity-title img {
   .admin-homepage-row > span:not(.admin-homepage-avatar) { display: none; }
 }
 .admin-homepage-row a { display: block; overflow-wrap: anywhere; font-size: 12px; }
+
+.admin-consultation {
+  padding-top: 22px;
+}
+
+.admin-consultation__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 0 20px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.admin-consultation__status strong {
+  margin-left: 12px;
+  color: var(--color-ink);
+}
+
+.admin-consultation__status p {
+  margin: 9px 0 0;
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.admin-consultation__status button,
+.admin-consultation__search button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.admin-consultation__form fieldset {
+  min-width: 0;
+  margin: 22px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.admin-consultation__form legend {
+  margin-bottom: 17px;
+  color: var(--color-ink);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.admin-consultation__fields {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.3fr) repeat(2, minmax(190px, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.admin-consultation__fields label,
+.admin-consultation__mentor {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.admin-consultation__fields input {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  background: var(--color-input);
+  box-sizing: border-box;
+}
+
+.admin-consultation__search {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-consultation__search input {
+  flex: 1;
+}
+
+.admin-consultation__selected,
+.admin-consultation__hint {
+  margin: 2px 0;
+  color: var(--color-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.admin-consultation__candidates {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--color-line);
+}
+
+.admin-consultation__candidates button {
+  width: 100%;
+  min-height: 39px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 11px;
+  border: 0;
+  border-bottom: 1px solid var(--color-line);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-consultation__candidates button:last-child { border-bottom: 0; }
+.admin-consultation__candidates button:hover,
+.admin-consultation__candidates button.is-selected { background: var(--admin-primary-soft); }
+.admin-consultation__candidates small { color: var(--color-muted); }
+
+.admin-consultation__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+
+html[data-theme="dark"] .admin-consultation__status,
+html[data-theme="dark"] .admin-consultation__candidates,
+html[data-theme="dark"] .admin-consultation__candidates button { border-color: #2a374a; }
+html[data-theme="dark"] .admin-consultation__status strong,
+html[data-theme="dark"] .admin-consultation__form legend,
+html[data-theme="dark"] .admin-consultation__fields label,
+html[data-theme="dark"] .admin-consultation__mentor { color: #e8edf4; }
+html[data-theme="dark"] .admin-consultation__fields input,
+html[data-theme="dark"] .admin-consultation__status button,
+html[data-theme="dark"] .admin-consultation__search button,
+html[data-theme="dark"] .admin-consultation__candidates button {
+  border-color: #2a374a;
+  color: #e8edf4;
+  background: #15202f;
+}
+html[data-theme="dark"] .admin-consultation__candidates button:hover,
+html[data-theme="dark"] .admin-consultation__candidates button.is-selected { background: #1d2a3b; }
+
+@media (max-width: 1100px) {
+  .admin-consultation__fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-consultation__mentor { grid-column: 1 / -1; }
+}
+
+@media (max-width: 620px) {
+  .admin-consultation__status { align-items: flex-start; flex-direction: column; }
+  .admin-consultation__status strong { display: block; margin: 10px 0 0; }
+  .admin-consultation__fields { grid-template-columns: 1fr; }
+  .admin-consultation__mentor { grid-column: auto; }
+  .admin-consultation__actions .admin-primary-action { width: 100%; }
+}

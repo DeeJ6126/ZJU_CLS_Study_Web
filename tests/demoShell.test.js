@@ -11,7 +11,7 @@ test('demo shell exposes the requested top-level pages and sparse home search', 
   const homeCss = await readFile(new URL('../src/styles/home.css', import.meta.url), 'utf8');
   const overviewCss = await readFile(new URL('../src/styles/overview.css', import.meta.url), 'utf8');
 
-  for (const label of ['首页', '概览', '刷题', '活动', '关于']) {
+  for (const label of ['首页', '概览', '刷题', '活动', '咨询', '关于']) {
     assert.match(data, new RegExp(`label: '${label}'`));
   }
 
@@ -32,7 +32,7 @@ test('demo shell exposes the requested top-level pages and sparse home search', 
   assert.match(overviewCss, /\.overview-page\s*\{[\s\S]*?max-width:\s*1360px/);
   assert.match(overviewCss, /\.overview-course-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(overviewCss, /\.overview-section__body\s*\{[\s\S]*?padding:\s*18px\s+24px\s+24px/);
-  assert.match(demoCss, /@media \(max-width: 760px\)[\s\S]*?\.demo-topnav\s*\{[\s\S]*?grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(demoCss, /@media \(max-width: 760px\)[\s\S]*?\.demo-topnav\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(app, /getDemoPageHref/);
   assert.match(app, /getDemoPageFromHash/);
   assert.match(app, /MarkdownResultView/);

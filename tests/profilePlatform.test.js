@@ -5,6 +5,7 @@ import { createAuthStore } from '../server/authStore.js';
 import { hashPassword } from '../server/authService.js';
 import { createContentStore } from '../server/content/contentStore.js';
 import { createStudentHomepageStore } from '../server/studentHomepage/studentHomepageStore.js';
+import { createConsultationStore } from '../server/consultation/consultationStore.js';
 import {
   approveSubmission,
   createRevisionSubmission,
@@ -20,6 +21,7 @@ function isolatedStores() {
   return {
     contentStore: createContentStore({ filename: ':memory:' }),
     studentHomepageStore: createStudentHomepageStore({ filename: ':memory:' }),
+    consultationStore: createConsultationStore({ filename: ':memory:' }),
   };
 }
 
