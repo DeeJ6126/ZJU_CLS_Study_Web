@@ -31,3 +31,11 @@ test('activity catalog facts cover every named program in the recruitment articl
     assert.match(titles, new RegExp(phrase));
   }
 });
+
+test('activity article directory keeps the supplied links grouped by program', () => {
+  assert.equal(catalog.articles.length, 12);
+  assert.equal(catalog.articles.filter((item) => item.programId === 'laboratory-open-day').length, 4);
+  assert.equal(catalog.articles.filter((item) => item.programId === 'peer-learning').length, 3);
+  assert.equal(catalog.articles.filter((item) => item.programId === 'joint-activities').length, 3);
+  assert.ok(catalog.articles.every((item) => /^https:\/\/mp\.weixin\.qq\.com\/s\//.test(item.externalUrl)));
+});

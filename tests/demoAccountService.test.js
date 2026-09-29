@@ -203,12 +203,12 @@ test('demo administrator manages the same browser-local activities shown on publ
   const service = createDemoAccountService({
     storage: createMemoryStorage(),
     now: () => '2026-08-23T12:00:00.000Z',
-    activityLoader: async () => catalog.activities,
+    activityLoader: async () => catalog.articles,
   });
   const admin = service.createAdminClient();
   const publicClient = service.createPublicActivityClient();
   const initial = await admin.fetchActivities({ status: 'published' });
-  assert.equal(initial.activities.length, 0);
+  assert.equal(initial.activities.length, 12);
 
   const created = await admin.createActivity({
     title: '实验室开放日回顾',
@@ -226,5 +226,5 @@ test('demo administrator manages the same browser-local activities shown on publ
     externalUrl: 'https://mp.weixin.qq.com/s/demo-lab',
   })).activity.title, '实验室开放日纪实');
   assert.equal((await admin.archiveActivity(created.activity.id)).ok, true);
-  assert.equal((await publicClient.fetchActivities()).activities.length, 0);
+  assert.equal((await publicClient.fetchActivities()).activities.length, 12);
 });

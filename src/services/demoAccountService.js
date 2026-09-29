@@ -28,7 +28,7 @@ function normalizeRowsFromWorkbook(workbook) {
 async function defaultActivityLoader() {
   const response = await fetch('content/activities/catalog.json');
   if (!response.ok) return [];
-  return (await response.json()).activities ?? [];
+  return (await response.json()).articles ?? [];
 }
 
 /**
