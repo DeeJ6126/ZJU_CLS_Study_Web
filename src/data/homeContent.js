@@ -32,9 +32,3 @@ export const homeQuizSearchItems = homePopularResources.map((item) => ({
   ...item,
   courseCode: item.meta.split(' · ')[0],
 }));
-
-export const homeResourceSearchItems = homePopularResources.map((item) => ({
-  ...item,
-  id: `${item.id}-resource`,
-  href: item.meta.startsWith('BIO') ? `#resources/#${item.meta.split(' · ')[0]}` : item.href,
-}));

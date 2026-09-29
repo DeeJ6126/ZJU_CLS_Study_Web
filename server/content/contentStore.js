@@ -452,6 +452,49 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
       `).all(...values).map(mapItem);
     },
 
+    searchPublishedResources({ tokens = [], tokenCourseCodes = [], course = '', courseCodes = [], type = '', teacher = '', year = '', limit = 20, offset = 0 } = {}) {
+      const clauses = ["status = 'published'"];
+      const values = [];
+      const likeValue = (value) => `%${String(value).toLowerCase().replace(/[\\%_]/g, '\\$&')}%`;
+      const courseClause = (term, codes) => {
+        const matches = Array.isArray(codes) ? codes : [];
+        values.push(likeValue(term), ...matches);
+        return `(lower(course_code) like ? escape '\\'${matches.length ? ` or course_code in (${matches.map(() => '?').join(', ')})` : ''})`;
+      };
+
+      if (course) clauses.push(courseClause(course, courseCodes));
+      if (type) {
+        clauses.push('type = ?');
+        values.push(type);
+      }
+      for (const [field, value] of [['teacher', teacher], ['academic_year', year]]) {
+        if (!value) continue;
+        clauses.push(`lower(${field}) like ? escape '\\'`);
+        values.push(likeValue(value));
+      }
+      tokens.forEach((token, index) => {
+        const fields = ['title', 'summary', 'author', 'teacher', 'academic_year', 'course_code'];
+        const fieldClauses = fields.map((field) => `lower(${field}) like ? escape '\\'`);
+        values.push(...fields.map(() => likeValue(token)));
+        const codes = tokenCourseCodes[index] ?? [];
+        if (codes.length) {
+          fieldClauses.push(`course_code in (${codes.map(() => '?').join(', ')})`);
+          values.push(...codes);
+        }
+        clauses.push(`(${fieldClauses.join(' or ')})`);
+      });
+      const where = `where ${clauses.join(' and ')}`;
+      const total = db.prepare(`select count(*) as total from content_items ${where}`).get(...values).total;
+      const items = db.prepare(`
+        select id, route_id as routeId, course_code as courseCode, type,
+          title, summary, author, teacher, academic_year as year, updated_at as updatedAt
+        from content_items ${where}
+        order by updated_at desc, created_at desc, id asc
+        limit ? offset ?
+      `).all(...values, limit, offset);
+      return { total, items };
+    },
+
     createActivity(input) {
       const id = input.id ?? randomUUID();
       const now = input.createdAt ?? new Date().toISOString();

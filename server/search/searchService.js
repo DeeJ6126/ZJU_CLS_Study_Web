@@ -3,6 +3,8 @@
 // the implementation simple: a single substring match per token, applied
 // in-memory after the relevant store returns the published subset.
 
+import { buildCourseRoute } from '../../src/data/courses/resourcePaths.js';
+
 const MAX_QUERY_LENGTH = 64;
 const DEFAULT_LIMIT = 8;
 const MAX_LIMIT = 30;
@@ -33,9 +35,7 @@ function routeForContent(item) {
     : item.type === 'material'
       ? 'materials'
       : 'papers';
-  // Use app's #resources/... protocol (no leading slash) so the router's
-  // `pageId.startsWith('resources/#')` branch in getDemoPageFromHash matches.
-  return `#resources/#${item.courseCode}/${tab}/${item.id}`;
+  return buildCourseRoute(item.courseCode, tab, item.routeId || item.id);
 }
 
 function routeForActivity(item) {

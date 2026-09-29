@@ -6,7 +6,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 
 - The project is a Vue 3 + Vite + plain CSS learning-resource platform for ZJU life-science students.
 - The app currently has top-level pages for `首页`, `概览`, `刷题`, `活动`, and `关于`, plus hash-routed course details, activity details, public/owner profiles, notifications, and a hidden administrator workspace.
-- The homepage now centers course search, supports `课程 / 资料 / 题库 / 活动 / 用户` search modes, and gives student-union activities more space than the compact popular-resource list.
+- The homepage now centers search across `课程 / 资料 / 题库 / 活动 / 用户`; the `资料` mode queries published backend posts with course, type, teacher, and year filters plus pagination, while the other modes retain their focused indexes.
 - The overview page now lists all catalog courses under `专业基础课程 / 专业课 / 通识课`, supports deeper professional-course groups, and can filter the normalized 2024, 2025, and 2026 curricula by category or twelve semester periods (each year's autumn-winter, spring-summer, and short term).
 - The quiz feature is now mostly complete for the current phase:
   - `BIO2023M` molecular biology review
@@ -21,6 +21,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 
 ## Recently Completed
 
+- Replaced the homepage's three hardcoded resource-search suggestions with paginated published-content search and canonical post links. Resource search relates historical `BIO2009F` microbiology posts to the split `BIO2110F` / `BIO2113F` courses without moving their original records.
 - Added a dedicated consultation SQLite store, scheduled open/close controls in the administrator workspace, a responsive visitor/mentor chat page, server-issued guest cookies, access checks, rate limits, and backup coverage.
 
 - Migrated quiz data and assets from the standalone molecular biology, botany, and microbiology quiz projects.

@@ -21,6 +21,7 @@ Lightweight Node backend for the current application.
 - Account favorites, identified comments/replies, and in-site notifications.
 - Cross-device quiz progress, mistakes, vocabulary, and anonymous-session claiming.
 - Cross-source search over courses, published content, activities, and approved student homepages.
+- Paginated published-resource search by keyword, course, type, teacher, and academic year.
 - Student-homepage directory storage, authenticated applications, and administrator moderation APIs.
 - Time-limited consultation room with a designated mentor, private visitor chats, and a polling inbox.
 

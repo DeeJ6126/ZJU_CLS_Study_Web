@@ -64,7 +64,7 @@ test('search matches courses by code, name, and englishName', () => {
 
 test('search matches content items by title, summary, author, and courseCode', () => {
   const items = [
-    { id: 'a', type: 'experience', title: '微生心得', summary: '期末复习', author: '张三', courseCode: 'BIO2110F', status: 'published' },
+    { id: 'a', routeId: 'public-a', type: 'experience', title: '微生心得', summary: '期末复习', author: '张三', courseCode: 'BIO2110F', status: 'published' },
     { id: 'b', type: 'material', title: '实验讲义', summary: '培养皿使用', author: '李四', courseCode: 'BIO2028M', status: 'published' },
     { id: 'c', type: 'paper', title: '其他', summary: '无关', author: '王五', courseCode: 'BIO3015F', status: 'draft' },
   ];
@@ -76,7 +76,7 @@ test('search matches content items by title, summary, author, and courseCode', (
   });
   assert.equal(result.results.content.length, 1);
   assert.equal(result.results.content[0].id, 'a');
-  assert.match(result.results.content[0].href, /^#resources\/#BIO2110F\/experiences\/a$/);
+  assert.equal(result.results.content[0].href, '#resources/#BIO2110F/#experiences/#public-a');
 
   const byAuthor = searchAll({
     query: '李四',
@@ -85,7 +85,7 @@ test('search matches content items by title, summary, author, and courseCode', (
     studentHomepageStore: createHomepageStore(),
   });
   assert.equal(byAuthor.results.content[0].id, 'b');
-  assert.match(byAuthor.results.content[0].href, /materials\/b/);
+  assert.match(byAuthor.results.content[0].href, /#materials\/#b$/);
 
   const byCode = searchAll({
     query: 'BIO2110F',

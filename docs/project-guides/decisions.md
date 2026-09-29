@@ -176,3 +176,7 @@ host.
 ### 21. Consultation permits isolated guest conversations
 
 The scheduled consultation room is an explicit exception to the usual verified-account requirement for persistent writes. The server issues a separate HttpOnly guest cookie, binds each guest to one private conversation per consultation session, and rate-limits new guest identities and messages. Only the assigned verified mentor may read the session's inbox; administrator status alone does not grant access to chat content. Consultation history is stored in its own SQLite database and included in production backups.
+
+### 22. Resource search preserves historical course ownership
+
+The published-resource search uses canonical course-code and `routeId` links and never returns draft content. `BIO2009F` was the combined microbiology theory-and-lab course; students searching the current split courses `BIO2110F` or `BIO2113F` should also discover its historical resources. This is a search alias only: no content is copied or silently moved between course records.
