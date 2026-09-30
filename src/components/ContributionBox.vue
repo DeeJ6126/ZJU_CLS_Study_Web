@@ -1,7 +1,9 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue';
+import TeacherNameInput from './TeacherNameInput.vue';
 
 const props = defineProps({
+  teacherNames: { type: Array, default: () => [] },
   tabLabel: {
     type: String,
     required: true,
@@ -367,7 +369,7 @@ async function submitContribution() {
 
               <label>
                 <span>老师姓名（选填）</span>
-                <input v-model.trim="form.teacher" type="text" maxlength="40" autocomplete="off" />
+                <TeacherNameInput v-model="form.teacher" :names="teacherNames" />
               </label>
 
               <label>

@@ -18,7 +18,7 @@ test('contribution modal keeps the shared fields and both body formats', () => {
   }
   assert.match(contributionBox, /v-model="form.title"/);
   assert.match(contributionBox, /v-model="form.cc98Link"/);
-  assert.match(contributionBox, /v-model.trim="form.teacher"/);
+  assert.match(contributionBox, /TeacherNameInput v-model="form.teacher" :names="teacherNames"/);
   assert.match(contributionBox, /teacher: form.teacher.trim\(\)/g);
   assert.match(contributionBox, /v-model="form.body"/);
   assert.match(contributionBox, /成绩百分制（选填/);

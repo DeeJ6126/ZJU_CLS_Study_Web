@@ -14,6 +14,8 @@ import { searchProfiles } from '../services/profileApiClient.js';
 import { resourceSearchApiClient } from '../services/resourceSearchApiClient.js';
 import { imageFileToAvatarDataUrl, studentHomepageApiClient } from '../services/studentHomepageApiClient.js';
 import { publicAssetPath } from '../utils/publicPath.js';
+import TeacherNameInput from './TeacherNameInput.vue';
+import { searchTeacherNames } from '../services/teacherSuggestionService.js';
 
 const props = defineProps({
   activityClient: { type: Object, default: null },
@@ -48,6 +50,7 @@ const availableMajors = majorOptions.filter((major) => major.available);
 const currentAcademicYear = currentSchoolSemester()?.academicYear ?? new Date().getFullYear();
 const cohortYears = Array.from({ length: Math.max(1, currentAcademicYear - 2023 + 1) }, (_, index) => 2023 + index);
 const resourceFilters = reactive({ course: '', type: '', teacher: '', year: '' });
+const resourceTeacherNames = computed(() => searchTeacherNames(resourceFilters.course, courses.value));
 const resourceItems = ref([]);
 const resourceTotal = ref(0);
 const resourcePage = ref(1);
@@ -270,7 +273,7 @@ onMounted(async () => {
                 <option value="paper">历年试卷</option>
               </select>
             </label>
-            <label>授课老师<input v-model.trim="resourceFilters.teacher" type="search" placeholder="老师姓名" autocomplete="off" /></label>
+            <label>授课老师<TeacherNameInput v-model="resourceFilters.teacher" :names="resourceTeacherNames" placeholder="老师姓名" /></label>
             <label>年份<input v-model.trim="resourceFilters.year" type="search" placeholder="如 2025" inputmode="numeric" autocomplete="off" /></label>
             <button type="button" class="home-resource-search__reset" @click="resetResourceFilters">清除筛选</button>
           </div>

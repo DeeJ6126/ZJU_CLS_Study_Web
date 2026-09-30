@@ -71,7 +71,7 @@ test('homepage resource mode uses backend results, filters and direct item links
   assert.match(source, /sequence !== resourceSearchSequence/);
   assert.match(source, /v-model\.trim="resourceFilters\.course"/);
   assert.match(source, /v-model="resourceFilters\.type"/);
-  assert.match(source, /v-model\.trim="resourceFilters\.teacher"/);
+  assert.match(source, /TeacherNameInput v-model="resourceFilters\.teacher" :names="resourceTeacherNames"/);
   assert.match(source, /v-model\.trim="resourceFilters\.year"/);
   assert.match(source, /:href="item\.href" class="home-resource-search__item"/);
   assert.doesNotMatch(source, /homeResourceSearchItems/);

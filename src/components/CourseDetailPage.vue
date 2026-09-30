@@ -305,7 +305,7 @@ function emitContribution(payload) {
             <p class="course-detail__kicker">学习心得</p>
             <h1 id="experience-title">学习心得</h1>
           </div>
-          <ContributionBox tab-label="学习心得" :can-submit="canSubmit" :submission-notice="submissionNotice" @submit-contribution="emitContribution" />
+          <ContributionBox tab-label="学习心得" :teacher-names="course.teachers" :can-submit="canSubmit" :submission-notice="submissionNotice" @submit-contribution="emitContribution" />
         </header>
         <p v-if="isLoading" class="resource-empty">正在加载学习心得...</p>
         <p v-else-if="loadError" class="resource-empty">{{ loadError }}</p>
@@ -405,7 +405,7 @@ function emitContribution(payload) {
             <p class="course-detail__kicker">复习资料</p>
             <h1 id="material-title">复习资料</h1>
           </div>
-          <ContributionBox tab-label="复习资料" :can-submit="canSubmit" :submission-notice="submissionNotice" @submit-contribution="emitContribution" />
+          <ContributionBox tab-label="复习资料" :teacher-names="course.teachers" :can-submit="canSubmit" :submission-notice="submissionNotice" @submit-contribution="emitContribution" />
         </header>
         <p v-if="isLoading" class="resource-empty">正在加载复习资料...</p>
         <p v-else-if="loadError" class="resource-empty">{{ loadError }}</p>
@@ -470,7 +470,7 @@ function emitContribution(payload) {
             <p class="course-detail__kicker">历年试卷</p>
             <h1 id="paper-title">历年试卷</h1>
           </div>
-          <ContributionBox tab-label="历年试卷" :can-submit="canSubmit" :submission-notice="submissionNotice" @submit-contribution="emitContribution" />
+          <ContributionBox tab-label="历年试卷" :teacher-names="course.teachers" :can-submit="canSubmit" :submission-notice="submissionNotice" @submit-contribution="emitContribution" />
         </header>
         <p v-if="isLoading" class="resource-empty">正在加载历年试卷...</p>
         <p v-else-if="loadError" class="resource-empty">{{ loadError }}</p>
