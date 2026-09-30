@@ -6,6 +6,7 @@ Structured data and data models used by the Vue app.
 
 - `config/`: navigation, themes, test users, mock messages, and temporary CC98 verification-code config.
 - `courses/`: course catalog parsing, course routes, resource indexes, and normalized curriculum-program metadata.
+- `courses/courseTeachers.json`: reviewed course-code teacher names extracted from `Lvshujun0918/chalaoshi`; source revision, matched names and unmatched courses are recorded in the file. Rebuild with `scripts/import-course-teachers.mjs` against the source SQLite snapshot. `BIO2110F` and `BIO2113F` share `BIO2009F` names; `CAB2001F` matches the source name without the A suffix.
 - `legacy/`: old or transitional data kept for migration context.
 - `quizCourseConfigs.js`: quiz course navigation and capability configuration. See `quiz-config.md`.
 - `homeContent.js`: homepage search modes and popular-resource links. Resource-search results come from the backend; recent activities come from the activity service.

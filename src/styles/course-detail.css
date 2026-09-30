@@ -435,6 +435,33 @@
   margin: 0;
 }
 
+.course-teachers {
+  margin-bottom: 18px;
+  padding: 18px 22px;
+  border-top: 2px solid var(--detail-border-strong);
+  background: var(--detail-surface);
+}
+
+.course-teachers h2 { margin: 0 0 14px; font-size: 20px; }
+.course-teachers ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
+  gap: 0 24px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.course-teachers li {
+  min-width: 0;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--detail-border);
+  color: var(--detail-link);
+  overflow-wrap: anywhere;
+  font-size: 15px;
+  font-weight: 700;
+}
+.course-teachers p { color: var(--color-muted); font-size: 14px; }
+
 .learning-card__metadata {
   display: block;
   margin-top: 6px;

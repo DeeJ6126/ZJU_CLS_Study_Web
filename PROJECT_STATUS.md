@@ -21,6 +21,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 
 ## Recently Completed
 
+- Added a course-overview teacher list from a pinned Chalaoshi data snapshot, covering 120 of 131 site courses. Microbiology theory and lab share the original combined-course list; unmatched courses remain explicitly empty.
 - Added optional major/cohort setup for guests, browser-local course/content favorites, current-semester suggestions below homepage search, and resumption of the last quiz session. Verified accounts synchronize study preferences and read their latest practice from the backend. Course-resource lists and articles now show applicable teacher/year metadata.
 - Replaced the homepage's three hardcoded resource-search suggestions with paginated published-content search and canonical post links. Resource search relates historical `BIO2009F` microbiology posts to the split `BIO2110F` / `BIO2113F` courses without moving their original records.
 - Added a dedicated consultation SQLite store, scheduled open/close controls in the administrator workspace, a responsive visitor/mentor chat page, server-issued guest cookies, access checks, rate limits, and backup coverage.

@@ -217,6 +217,14 @@ function emitContribution(payload) {
         </aside>
       </header>
 
+      <section class="course-teachers" aria-labelledby="course-teachers-title">
+        <h2 id="course-teachers-title">老师名单</h2>
+        <ul v-if="course.teachers?.length">
+          <li v-for="teacher in course.teachers" :key="teacher">{{ teacher }}</li>
+        </ul>
+        <p v-else>老师名单暂未收录。</p>
+      </section>
+
     </template>
 
     <section v-else-if="activeTab.id === 'experiences'" class="course-subpage" aria-labelledby="experience-title">

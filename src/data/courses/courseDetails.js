@@ -1,5 +1,6 @@
 import { buildCourseRoute, courseMaterialPaths } from './resourcePaths.js';
 import { buildCourseOverviewFields, buildSummaryFacts } from '../../services/courseOverviewService.js';
+import teacherCatalog from './courseTeachers.json' with { type: 'json' };
 
 const courseContentIndexes = {
   BIO2110F: {
@@ -47,6 +48,7 @@ export function getCourseDetail(course) {
     overview: course.introduction || '课程简介待整理。',
     summaryFacts: buildSummaryFacts(course),
     overviewFields: buildCourseOverviewFields(course),
+    teachers: [...(teacherCatalog.teachersByCourse[course.code] ?? [])],
     content,
     experiences: withRoutes(course.code, 'experiences', content.experiences),
     materials: withRoutes(course.code, 'materials', content.materials),
