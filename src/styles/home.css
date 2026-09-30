@@ -83,6 +83,7 @@ html[data-theme="dark"] .home-search-stage {
 
 .home-search-stage__copy,
 .home-search,
+.home-study,
 .home-search-stage__quicklinks {
   position: relative;
   z-index: 1;
@@ -300,6 +301,118 @@ html[data-theme="dark"] .home-search__results > p,
 html[data-theme="dark"] .home-search__message {
   color: #8a98ad;
 }
+
+.home-study {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid #dce4df;
+}
+
+.home-study__head,
+.home-study__last-quiz {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.home-study__head p {
+  margin: 0 0 3px;
+  color: #63746c;
+  font-size: 12px;
+}
+
+.home-study__head h2 {
+  margin: 0;
+  color: var(--home-ink);
+  font-size: 21px;
+}
+
+.home-study button,
+.home-study__last-quiz a {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid #b8cec3;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--home-green);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.home-study button:hover,
+.home-study__last-quiz a:hover { background: #e7f0eb; }
+.home-study button:disabled { opacity: .55; cursor: wait; }
+
+.home-study__setup {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.home-study__setup label { display: grid; gap: 5px; min-width: min(220px, 100%); color: #53675d; font-size: 12px; font-weight: 800; }
+.home-study__setup select { height: 38px; padding: 0 10px; border: 1px solid #cbd9d0; border-radius: 4px; background: #fff; color: #233a31; font: inherit; font-size: 13px; }
+.home-study__setup-actions { display: flex; align-items: center; gap: 8px; }
+.home-study__setup-actions button:first-child { background: var(--home-green); color: #fff; border-color: var(--home-green); }
+
+.home-study__term,
+.home-study__empty,
+.home-study__notice { margin: 14px 0 0; color: #63746c; font-size: 13px; }
+.home-study__notice { color: #b24e3b; }
+.home-study__set-later { margin-top: 15px; }
+
+.home-study__courses {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.home-study__courses a {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #dce4df;
+  border-radius: 4px;
+  background: #fff;
+  color: #233a31;
+  text-decoration: none;
+}
+
+.home-study__courses a:hover { border-color: var(--home-green); }
+.home-study__courses strong { overflow-wrap: anywhere; font-size: 14px; }
+.home-study__courses span { color: #63746c; font-size: 11px; }
+
+.home-study__last-quiz {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #dce4df;
+}
+
+.home-study__last-quiz > div { display: grid; gap: 2px; min-width: 0; }
+.home-study__last-quiz span { color: #63746c; font-size: 12px; }
+.home-study__last-quiz strong { color: var(--home-ink); font-size: 14px; }
+
+html[data-theme="dark"] .home-study,
+html[data-theme="dark"] .home-study__last-quiz { border-color: #2a374a; }
+html[data-theme="dark"] .home-study__head h2,
+html[data-theme="dark"] .home-study__last-quiz strong { color: #dbeee5; }
+html[data-theme="dark"] .home-study__head p,
+html[data-theme="dark"] .home-study__term,
+html[data-theme="dark"] .home-study__empty,
+html[data-theme="dark"] .home-study__last-quiz span,
+html[data-theme="dark"] .home-study__courses span { color: #a7b5a9; }
+html[data-theme="dark"] .home-study__courses a,
+html[data-theme="dark"] .home-study__setup select { background: #142132; border-color: #42536a; color: #e8edf4; }
+html[data-theme="dark"] .home-study button,
+html[data-theme="dark"] .home-study__last-quiz a { border-color: #42536a; color: #8ad3bd; }
+html[data-theme="dark"] .home-study__setup-actions button:first-child { background: #8ad3bd; color: #0e1622; }
 
 .home-resource-search {
   margin-top: 18px;
@@ -718,6 +831,9 @@ html[data-theme="dark"] .home-homepages__dialog input { background: #142132; bor
 }
 
 @media (max-width: 760px) {
+  .home-study__head { align-items: start; }
+  .home-study__head button { max-width: 150px; }
+  .home-study__setup label { min-width: 100%; }
   .home-resource-search__filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .home-resource-search__filters label:first-child { grid-column: 1 / -1; }
   .home-resource-search__reset { grid-column: 1 / -1; }

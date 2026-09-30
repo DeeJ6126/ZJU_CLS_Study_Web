@@ -881,6 +881,16 @@ export function createQuizStore({ filename = 'server/data/auth.sqlite' } = {}) {
       };
     },
 
+    getRecentSessionSummary(userId) {
+      return db.prepare(`
+        select s.id as sessionId, c.course_code as courseCode,
+          c.slug as collectionSlug, s.started_at as startedAt,
+          s.completed_at as completedAt
+        from quiz_sessions s join quiz_collections c on c.id = s.collection_id
+        where s.user_id = ? order by s.started_at desc, s.rowid desc limit 1
+      `).get(userId) ?? null;
+    },
+
     resetUserCollectionRecords({ userId, collectionId, scope = 'all' }) {
       if (scope === 'mistakes' || scope === 'all') {
         db.prepare('delete from quiz_mistakes where user_id = ? and collection_id = ?').run(userId, collectionId);

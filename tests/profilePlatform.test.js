@@ -210,7 +210,7 @@ test('logged-in users can update their own grade through the profile API', async
   const headers = { cookie: 'study_session=grade-session', 'content-type': 'application/json' };
   try {
     const invalid = await fetch(`${baseUrl}/api/account/profile/grade`, {
-      method: 'PATCH', headers, body: JSON.stringify({ grade: 2023 }),
+      method: 'PATCH', headers, body: JSON.stringify({ grade: 2022 }),
     });
     assert.equal(invalid.status, 400);
 
@@ -232,6 +232,21 @@ test('logged-in users can update their own grade through the profile API', async
     const clearBody = await clear.json();
     assert.equal(clear.status, 200);
     assert.equal(clearBody.user.grade, null);
+
+    const study = await fetch(`${baseUrl}/api/account/profile/study`, {
+      method: 'PATCH', headers, body: JSON.stringify({ grade: 2023, majorId: 'biology-qiangji' }),
+    });
+    const studyBody = await study.json();
+    assert.equal(study.status, 200);
+    assert.equal(studyBody.user.grade, 2023);
+    assert.equal(studyBody.user.majorId, 'biology-qiangji');
+    assert.equal(authStore.findUserById(user.id).majorId, 'biology-qiangji');
+
+    const invalidMajor = await fetch(`${baseUrl}/api/account/profile/study`, {
+      method: 'PATCH', headers, body: JSON.stringify({ grade: 2025, majorId: 'unknown' }),
+    });
+    assert.equal(invalidMajor.status, 400);
+    assert.equal(authStore.findUserById(user.id).majorId, 'biology-qiangji');
   } finally {
     server.close();
   }

@@ -46,6 +46,14 @@ test('an authenticated user can reopen their unfinished session but not another 
   });
   assert.equal(getPracticeSession(store, { userId: 42, sessionId: session.id }).id, session.id);
   assert.equal(getPracticeSession(store, { userId: 43, sessionId: session.id }).status, 404);
+  assert.deepEqual({ ...store.getRecentSessionSummary(42) }, {
+    sessionId: session.id,
+    courseCode: 'BIO2110F',
+    collectionSlug: 'microbiology-final-review',
+    startedAt: session.startedAt,
+    completedAt: null,
+  });
+  assert.equal(store.getRecentSessionSummary(43), null);
 });
 
 test('quiz account sync merges mistakes by max count and vocabulary by newest update', () => {

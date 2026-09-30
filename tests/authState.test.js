@@ -5,6 +5,7 @@ import { defaultUserId, getTestUserById, testUsers } from '../src/data/config/te
 import {
   canComment,
   canFavorite,
+  canSaveLocalFavorite,
   canSubmitResource,
   createCommentMessage,
   createSubmissionMessage,
@@ -53,6 +54,7 @@ test('resource permissions allow verified users to submit and comment while gues
   assert.equal(canSubmitResource(guest), false);
   assert.equal(canComment(guest), false);
   assert.equal(canFavorite(guest), false);
+  assert.equal(canSaveLocalFavorite(guest), true);
 
   assert.equal(canSubmitResource(cc98User), false);
   assert.equal(canComment(cc98User), false);
@@ -61,6 +63,7 @@ test('resource permissions allow verified users to submit and comment while gues
   assert.equal(canSubmitResource(emailUser), true);
   assert.equal(canComment(emailUser), true);
   assert.equal(canFavorite(emailUser), true);
+  assert.equal(canSaveLocalFavorite(emailUser), false);
 });
 
 test('verification badges stay compatible with future backend auth providers', () => {

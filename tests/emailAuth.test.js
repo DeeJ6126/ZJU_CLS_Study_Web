@@ -283,9 +283,9 @@ test('email registration auto-derives grade from the 32X0 student id prefix', as
 test('email registration stores null grade for student ids without a year mapping', async () => {
   const store = createTestStore();
   const mail = mailOptions();
-  await requestEmailCode(store, { studentId: '3230001', purpose: 'register' }, mail.options);
+  await requestEmailCode(store, { studentId: '3220001', purpose: 'register' }, mail.options);
   const result = await registerEmail(store, {
-    studentId: '3230001',
+    studentId: '3220001',
     nickname: '老生',
     code: '123456',
     password: '12345678',

@@ -72,6 +72,11 @@
   font-weight: 900;
   transition: background-color 160ms ease, color 160ms ease;
 }
+.course-tabs__item small {
+  margin-left: auto;
+  color: var(--color-muted);
+  font-size: 12px;
+}
 .course-tabs__item:hover,
 .course-tabs__item.is-active {
   background: var(--detail-tab-shell);
@@ -430,6 +435,14 @@
   margin: 0;
 }
 
+.learning-card__metadata {
+  display: block;
+  margin-top: 6px;
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .article-author-link {
   color: var(--detail-link);
   font-weight: 800;
@@ -472,6 +485,15 @@
   color: var(--detail-accent);
   font-size: 14px;
 }
+
+.article-detail-card__context,
+.paper-detail__context {
+  margin: 9px 0 0;
+  color: var(--color-muted);
+  font-size: 14px !important;
+}
+
+.article-detail-card__context span { margin-left: 16px; }
 
 .article-detail-card__author {
   display: inline-flex;
@@ -1286,6 +1308,9 @@ html[data-theme="dark"] .contribution-form__tool-button:hover {
   background: var(--detail-chip-bg);
   color: var(--detail-chip-text);
   font-weight: 900;
+  padding: 4px 6px;
+  overflow-wrap: anywhere;
+  text-align: center;
 }
 
 .paper-detail {

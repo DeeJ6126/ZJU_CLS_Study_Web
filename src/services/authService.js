@@ -133,6 +133,11 @@ export function canFavorite(user) {
   return isVerifiedUser(user);
 }
 
+/** Guest favorites are private to this browser and never call write APIs. */
+export function canSaveLocalFavorite(user) {
+  return Boolean(user && !isVerifiedUser(user));
+}
+
 /**
  * Build an inbox message describing a new submission for the administrator queue.
  *

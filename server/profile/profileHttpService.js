@@ -8,6 +8,9 @@ import {
 import { removeStoredFile } from '../content/contentFileService.js';
 import { ALLOWED_GRADES } from '../studentGrade.js';
 import { publicApiPath } from '../publicApiPath.js';
+import { majorOptions } from '../../src/data/courses/programCatalog.js';
+
+const allowedMajorIds = new Set(majorOptions.filter((option) => option.available).map((option) => option.id));
 
 function publicProfile(user) {
   if (!user) return null;
@@ -118,6 +121,25 @@ export async function handleProfileHttpRequest({
     return true;
   }
 
+  if (request.method === 'PATCH' && url.pathname === '/api/account/profile/study') {
+    if (!String(request.headers['content-type'] ?? '').toLowerCase().startsWith('application/json')) {
+      sendJson(response, 415, { message: '专业与年级修改请求格式无效。' });
+      return true;
+    }
+    const body = await readJsonBody(request);
+    const grade = body?.grade == null || body.grade === '' ? null : Number(body.grade);
+    const majorId = String(body?.majorId ?? '').trim();
+    if (!Object.hasOwn(body ?? {}, 'grade') || !Object.hasOwn(body ?? {}, 'majorId')
+      || (grade !== null && !ALLOWED_GRADES.includes(grade))
+      || (majorId && !allowedMajorIds.has(majorId))) {
+      sendJson(response, 400, { message: '请选择有效的专业和入学年级。' });
+      return true;
+    }
+    const updated = authStore.updateStudyProfile(userId, { grade, majorId });
+    sendJson(response, 200, { user: publicUser(updated) });
+    return true;
+  }
+
   if (request.method === 'PATCH' && url.pathname === '/api/account/profile/grade') {
     if (!String(request.headers['content-type'] ?? '').toLowerCase().startsWith('application/json')) {
       sendJson(response, 415, { message: '年级修改请求格式无效。' });
@@ -129,7 +151,7 @@ export async function handleProfileHttpRequest({
     if (rawGrade !== null && rawGrade !== undefined && rawGrade !== '') {
       const numericGrade = Number(rawGrade);
       if (!ALLOWED_GRADES.includes(numericGrade)) {
-        sendJson(response, 400, { message: '请选择有效的年级（2024、2025 或 2026）。' });
+        sendJson(response, 400, { message: '请选择有效的入学年级。' });
         return true;
       }
       nextGrade = numericGrade;

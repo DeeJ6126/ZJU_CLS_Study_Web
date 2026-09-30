@@ -165,11 +165,15 @@ test('quiz account APIs claim anonymous sessions and synchronize vocabulary', as
       body: JSON.stringify({ collectionSlug: 'microbiology-final-review', categorySourceIds: ['1'], limit: 1 }),
     });
     const guestSessionBody = await guestSession.json();
+    assert.equal((await fetch(`${baseUrl}/api/quiz/recent`)).status, 401);
     assert.equal((await fetch(`${baseUrl}/api/quiz/account-state?collectionSlug=microbiology-final-review`)).status, 401);
     const claimed = await fetch(`${baseUrl}/api/quiz/sessions/${guestSessionBody.session.id}/claim`, {
       method: 'POST', headers: { 'content-type': 'application/json', cookie }, body: '{}',
     });
     assert.equal(claimed.status, 200);
+    const recent = await fetch(`${baseUrl}/api/quiz/recent`, { headers: { cookie } });
+    assert.equal(recent.status, 200);
+    assert.equal((await recent.json()).recent.sessionId, guestSessionBody.session.id);
 
     const merged = await fetch(`${baseUrl}/api/quiz/account-state/merge`, {
       method: 'POST', headers: { 'content-type': 'application/json', cookie },

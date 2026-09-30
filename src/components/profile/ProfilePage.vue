@@ -37,6 +37,7 @@ const submissionDraft = ref({ title: '', summary: '', body: '' });
 
 const GRADE_OPTIONS = [
   { value: '', label: '未设置' },
+  { value: '2023', label: '2023 级' },
   { value: '2024', label: '2024 级' },
   { value: '2025', label: '2025 级' },
   { value: '2026', label: '2026 级' },
@@ -150,7 +151,7 @@ function statusLabel(status) {
             </form>
             <form v-if="isOwn" class="profile-grade-form" @submit.prevent="saveGrade">
               <label>
-                <span>所在年级</span>
+                <span>入学年级</span>
                 <select v-model="grade">
                   <option v-for="option in GRADE_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
                 </select>

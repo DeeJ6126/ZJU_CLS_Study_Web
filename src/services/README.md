@@ -34,6 +34,8 @@ Shared business logic and API clients.
 - `commentApiClient.js`: identified comment/reply create, edit, delete, and public listing calls.
 - `profileApiClient.js`: public profiles plus owner post, submission, avatar, and identity management.
 - `consultationApiClient.js`: consultation availability, administrator scheduling, guest/account conversations, mentor inbox, and messages.
+- `localWorkspaceService.js`: scoped browser-local study preferences, guest favorites, and latest quiz session.
+- `currentSemesterService.js`: Shanghai academic-period selection and curriculum-based homepage course suggestions.
 
 For the quiz handoff map, read `quiz-services.md`.
 

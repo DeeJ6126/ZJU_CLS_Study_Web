@@ -21,6 +21,9 @@ export function createProfileApiClient(fetchImpl = fetch) {
     updateMyGrade(grade) {
       return request('api/account/profile/grade', json('PATCH', { grade }));
     },
+    updateMyStudyProfile({ grade, majorId }) {
+      return request('api/account/profile/study', json('PATCH', { grade, majorId }));
+    },
     uploadMyAvatar(file) {
       return request('api/account/profile/avatar', {
         method: 'PUT',
@@ -74,6 +77,7 @@ export const fetchPublicProfile = (...args) => profileApiClient.fetchPublicProfi
 export const fetchMyProfile = (...args) => profileApiClient.fetchMyProfile(...args);
 export const updateMyNickname = (...args) => profileApiClient.updateMyNickname(...args);
 export const updateMyGrade = (...args) => profileApiClient.updateMyGrade(...args);
+export const updateMyStudyProfile = (...args) => profileApiClient.updateMyStudyProfile(...args);
 export const uploadMyAvatar = (...args) => profileApiClient.uploadMyAvatar(...args);
 export const removeMyAvatar = (...args) => profileApiClient.removeMyAvatar(...args);
 export const bindMyCc98 = (...args) => profileApiClient.bindMyCc98(...args);

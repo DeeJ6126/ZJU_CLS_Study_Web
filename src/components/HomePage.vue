@@ -5,9 +5,11 @@ import {
   homeSearchKinds,
 } from '../data/homeContent.js';
 import { activityProgramLabel } from '../data/activityConfig.js';
+import { majorOptions } from '../data/courses/programCatalog.js';
 import { loadResourceCatalog } from '../data/courses/resourceData.js';
 import { activityApiClient } from '../services/activityApiClient.js';
 import { buildHomeSearchIndex, searchHomeIndex } from '../services/homeSearchService.js';
+import { currentSchoolSemester, currentSemesterCourses } from '../services/currentSemesterService.js';
 import { searchProfiles } from '../services/profileApiClient.js';
 import { resourceSearchApiClient } from '../services/resourceSearchApiClient.js';
 import { imageFileToAvatarDataUrl, studentHomepageApiClient } from '../services/studentHomepageApiClient.js';
@@ -18,7 +20,12 @@ const props = defineProps({
   homepageClient: { type: Object, default: null },
   resourceSearchClient: { type: Object, default: null },
   canSubmit: { type: Boolean, default: false },
+  studyProfile: { type: Object, default: () => ({ majorId: '', cohortYear: null, onboardingDismissed: false }) },
+  lastQuiz: { type: Object, default: null },
+  studyNotice: { type: String, default: '' },
+  studySaving: { type: Boolean, default: false },
 });
+const emit = defineEmits(['save-study-profile', 'dismiss-study-setup', 'resume-quiz']);
 const activeActivityClient = computed(() => props.activityClient ?? activityApiClient);
 const activeHomepageClient = computed(() => props.homepageClient ?? studentHomepageApiClient);
 const activeResourceSearchClient = computed(() => props.resourceSearchClient ?? resourceSearchApiClient);
@@ -26,6 +33,7 @@ const activeResourceSearchClient = computed(() => props.resourceSearchClient ?? 
 const activeKind = ref('course');
 const query = ref('');
 const courses = ref([]);
+const courseCatalogReady = ref(false);
 const catalogMessage = ref('');
 const users = ref([]);
 const activities = ref([]);
@@ -34,6 +42,11 @@ const homepageDialogOpen = ref(false);
 const homepageForm = ref({ name: '', href: '', avatarUrl: '' });
 const homepageNotice = ref('');
 const homepageBusy = ref(false);
+const studyDraft = reactive({ majorId: '', cohortYear: '' });
+const editingStudyProfile = ref(false);
+const availableMajors = majorOptions.filter((major) => major.available);
+const currentAcademicYear = currentSchoolSemester()?.academicYear ?? new Date().getFullYear();
+const cohortYears = Array.from({ length: Math.max(1, currentAcademicYear - 2023 + 1) }, (_, index) => 2023 + index);
 const resourceFilters = reactive({ course: '', type: '', teacher: '', year: '' });
 const resourceItems = ref([]);
 const resourceTotal = ref(0);
@@ -67,6 +80,24 @@ const searchResults = computed(() => searchHomeIndex(searchIndex.value, query.va
 const hasQuery = computed(() => Boolean(query.value.trim()));
 const recentActivities = computed(() => activities.value.slice(0, 3));
 const resourcePageCount = computed(() => Math.max(1, Math.ceil(resourceTotal.value / resourcePageSize)));
+const hasStudyProfile = computed(() => Boolean(props.studyProfile.majorId && props.studyProfile.cohortYear));
+const semesterOverview = computed(() => currentSemesterCourses({
+  majorId: props.studyProfile.majorId, cohortYear: props.studyProfile.cohortYear,
+  courses: courses.value,
+}));
+const showStudyForm = computed(() => editingStudyProfile.value
+  || (!hasStudyProfile.value && !props.studyProfile.onboardingDismissed));
+
+watch(() => [props.studyProfile.majorId, props.studyProfile.cohortYear], ([majorId, cohortYear]) => {
+  studyDraft.majorId = majorId || '';
+  studyDraft.cohortYear = cohortYear == null ? '' : String(cohortYear);
+  if (majorId && cohortYear) editingStudyProfile.value = false;
+}, { immediate: true });
+
+function saveStudyProfile() {
+  if (!studyDraft.majorId || !studyDraft.cohortYear) return;
+  emit('save-study-profile', { majorId: studyDraft.majorId, cohortYear: Number(studyDraft.cohortYear) });
+}
 
 async function loadResourceResults() {
   if (activeKind.value !== 'resource') return;
@@ -196,6 +227,7 @@ onMounted(async () => {
   if (homepageResult.ok) homepages.value = homepageResult.homepages;
   if (catalogResult.ok) courses.value = catalogResult.catalog.courses;
   else catalogMessage.value = '课程目录暂时无法读取，请稍后再试。';
+  courseCatalogReady.value = true;
 });
 </script>
 
@@ -282,6 +314,55 @@ onMounted(async () => {
 
         <p v-if="catalogMessage" class="home-search__message">{{ catalogMessage }}</p>
       </div>
+
+      <section class="home-study" aria-labelledby="home-study-title">
+        <header class="home-study__head">
+          <div>
+            <p>按培养方案建议</p>
+            <h2 id="home-study-title">本学期课程</h2>
+          </div>
+          <button v-if="hasStudyProfile && !showStudyForm" type="button" @click="editingStudyProfile = true">修改专业与年级</button>
+        </header>
+
+        <form v-if="showStudyForm" class="home-study__setup" @submit.prevent="saveStudyProfile">
+          <label>专业
+            <select v-model="studyDraft.majorId" required>
+              <option value="">选择专业</option>
+              <option v-for="major in availableMajors" :key="major.id" :value="major.id">{{ major.label }}</option>
+            </select>
+          </label>
+          <label>入学年级
+            <select v-model="studyDraft.cohortYear" required>
+              <option value="">选择年级</option>
+              <option v-for="year in cohortYears" :key="year" :value="String(year)">{{ year }} 级</option>
+            </select>
+          </label>
+          <div class="home-study__setup-actions">
+            <button type="submit" :disabled="studySaving">{{ studySaving ? '正在保存...' : '保存' }}</button>
+            <button v-if="!hasStudyProfile" type="button" @click="emit('dismiss-study-setup'); editingStudyProfile = false">稍后设置</button>
+            <button v-else type="button" @click="editingStudyProfile = false">取消</button>
+          </div>
+        </form>
+        <p v-else-if="hasStudyProfile && !courseCatalogReady" class="home-study__empty">正在读取课程...</p>
+        <template v-else-if="hasStudyProfile && semesterOverview.status === 'ready'">
+          <p class="home-study__term">{{ semesterOverview.label }} · {{ availableMajors.find((major) => major.id === studyProfile.majorId)?.label }}</p>
+          <div v-if="semesterOverview.courses.length" class="home-study__courses">
+            <a v-for="course in semesterOverview.courses" :key="course.code" :href="course.href">
+              <strong>{{ course.name }}</strong><span>{{ course.code }}</span>
+            </a>
+          </div>
+          <p v-else class="home-study__empty">本学期暂无已收录的课程。可前往概览查看完整培养方案。</p>
+        </template>
+        <p v-else-if="hasStudyProfile && semesterOverview.status === 'no-program'" class="home-study__empty">这一年级的培养方案暂未收录，课程建议无法准确生成。</p>
+        <button v-else type="button" class="home-study__set-later" @click="editingStudyProfile = true">设置专业与入学年级</button>
+        <p v-if="studyNotice" class="home-study__notice" role="status">{{ studyNotice }}</p>
+
+        <div class="home-study__last-quiz">
+          <div><span>上次刷题</span><strong>{{ lastQuiz?.courseName || '还没有刷题记录' }}</strong></div>
+          <button v-if="lastQuiz" type="button" @click="emit('resume-quiz')">{{ lastQuiz.sessionId && !lastQuiz.completedAt ? '继续练习' : '再次进入' }}</button>
+          <a v-else href="#quiz">开始刷题</a>
+        </div>
+      </section>
 
       <div v-if="!hasQuery && activeKind !== 'resource'" class="home-search-stage__quicklinks" aria-label="常用入口">
         <span>常用入口</span>

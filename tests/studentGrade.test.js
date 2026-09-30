@@ -7,7 +7,8 @@ import {
   isAllowedGrade,
 } from '../server/studentGrade.js';
 
-test('gradeFromStudentId maps the three documented prefixes to their year', () => {
+test('gradeFromStudentId maps supported cohort prefixes to their year', () => {
+  assert.equal(gradeFromStudentId('3230001'), 2023);
   assert.equal(gradeFromStudentId('3240123'), 2024);
   assert.equal(gradeFromStudentId('3250999'), 2025);
   assert.equal(gradeFromStudentId('3260001'), 2026);
@@ -18,7 +19,7 @@ test('gradeFromStudentId accepts longer student ids and trims whitespace', () =>
 });
 
 test('gradeFromStudentId returns null for non-matching or malformed ids', () => {
-  assert.equal(gradeFromStudentId('3230001'), null);
+  assert.equal(gradeFromStudentId('3220001'), null);
   assert.equal(gradeFromStudentId('3270001'), null);
   assert.equal(gradeFromStudentId('324'), null);
   assert.equal(gradeFromStudentId(''), null);
@@ -30,7 +31,7 @@ test('isAllowedGrade only accepts the documented years', () => {
   for (const grade of ALLOWED_GRADES) {
     assert.equal(isAllowedGrade(grade), true);
   }
-  assert.equal(isAllowedGrade(2023), false);
+  assert.equal(isAllowedGrade(2023), true);
   assert.equal(isAllowedGrade(2027), false);
   assert.equal(isAllowedGrade('2024'), false);
   assert.equal(isAllowedGrade(null), false);

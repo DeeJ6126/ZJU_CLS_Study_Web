@@ -2,6 +2,7 @@
 // Convention: student IDs starting with `32X0` (X = last digit of the year)
 // identify students by the year they enter the university.
 const STUDENT_ID_TO_GRADE = Object.freeze({
+  '3230': 2023,
   '3240': 2024,
   '3250': 2025,
   '3260': 2026,

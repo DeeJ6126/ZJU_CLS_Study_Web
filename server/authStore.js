@@ -33,6 +33,7 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
       avatarStoredName: row.avatarStoredName ?? '',
       avatarMimeType: row.avatarMimeType ?? '',
       grade: row.grade ?? null,
+      majorId: row.majorId ?? '',
       cc98Name: cc98?.displayValue ?? '',
       email: email?.displayValue ?? '',
       identities,
@@ -81,6 +82,9 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
       }
       if (!userColumns.some((column) => column.name === 'grade')) {
         db.exec('alter table users add column grade integer');
+      }
+      if (!userColumns.some((column) => column.name === 'major_id')) {
+        db.exec("alter table users add column major_id text not null default ''");
       }
       const sessionColumns = db.prepare('pragma table_info(sessions)').all();
       if (!sessionColumns.some((column) => column.name === 'expires_at')) {
@@ -203,7 +207,7 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
       const row = db.prepare(`
         select u.id, u.password_hash as passwordHash, u.role, u.nickname,
           u.public_id as publicId, u.avatar_stored_name as avatarStoredName,
-          u.avatar_mime_type as avatarMimeType, u.grade
+          u.avatar_mime_type as avatarMimeType, u.grade, u.major_id as majorId
         from users u join user_identities i on i.user_id = u.id
         where i.provider = ? and i.identifier = ?
       `).get(provider, normalizeIdentity(provider, identifier));
@@ -221,7 +225,7 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
     findUserById(id) {
       return mapUser(db.prepare(`
         select id, password_hash as passwordHash, role, nickname, public_id as publicId,
-          avatar_stored_name as avatarStoredName, avatar_mime_type as avatarMimeType, grade
+          avatar_stored_name as avatarStoredName, avatar_mime_type as avatarMimeType, grade, major_id as majorId
         from users where id = ?
       `).get(id));
     },
@@ -229,7 +233,7 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
     findUserByPublicId(publicId) {
       return mapUser(db.prepare(`
         select id, password_hash as passwordHash, role, nickname, public_id as publicId,
-          avatar_stored_name as avatarStoredName, avatar_mime_type as avatarMimeType, grade
+          avatar_stored_name as avatarStoredName, avatar_mime_type as avatarMimeType, grade, major_id as majorId
         from users where public_id = ?
       `).get(String(publicId ?? '').trim()));
     },
@@ -237,7 +241,7 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
     findUserByNickname(nickname) {
       return mapUser(db.prepare(`
         select id, password_hash as passwordHash, role, nickname, public_id as publicId,
-          avatar_stored_name as avatarStoredName, avatar_mime_type as avatarMimeType, grade
+          avatar_stored_name as avatarStoredName, avatar_mime_type as avatarMimeType, grade, major_id as majorId
         from users where nickname_normalized = ?
       `).get(normalizeNickname(nickname)));
     },
@@ -251,7 +255,7 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
       const pattern = `%${normalized.replace(/[\\%_]/g, '\\$&')}%`;
       return db.prepare(`
         select id, password_hash as passwordHash, role, nickname, public_id as publicId,
-          avatar_stored_name as avatarStoredName, avatar_mime_type as avatarMimeType, grade
+          avatar_stored_name as avatarStoredName, avatar_mime_type as avatarMimeType, grade, major_id as majorId
         from users where nickname_normalized like ? escape '\\' order by nickname_normalized limit ?
       `).all(pattern, Math.max(1, Math.min(20, Number(limit) || 8))).map(mapUser);
     },
@@ -301,6 +305,12 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
     updateGrade(userId, grade) {
       const next = grade == null || grade === '' ? null : Number(grade);
       db.prepare('update users set grade = ? where id = ?').run(next, userId);
+      return this.findUserById(userId);
+    },
+
+    updateStudyProfile(userId, { grade, majorId }) {
+      db.prepare('update users set grade = ?, major_id = ? where id = ?')
+        .run(grade == null ? null : Number(grade), majorId, userId);
       return this.findUserById(userId);
     },
 

@@ -675,6 +675,14 @@ export function createAuthServer({
       }
 
       if (url.pathname.startsWith('/api/quiz/')) {
+        if (request.method === 'GET' && url.pathname === '/api/quiz/recent') {
+          if (!quizAccountUserId) {
+            sendJson(response, 401, { message: '请先登录后读取跨设备练习记录。' });
+            return;
+          }
+          sendJson(response, 200, { recent: quizStore.getRecentSessionSummary(quizAccountUserId) });
+          return;
+        }
         if (request.method === 'GET' && url.pathname === '/api/quiz/account-state') {
           if (!quizAccountUserId) {
             sendJson(response, 401, { message: '请先登录后同步学习记录。' });

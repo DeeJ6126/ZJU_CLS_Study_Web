@@ -24,6 +24,7 @@ import {
   createQuizSession,
   fetchQuizAccountState,
   fetchQuizSession,
+  fetchRecentQuizSession,
   fetchQuizCategories,
   fetchQuizCollections,
   fetchQuizImageGallery,
@@ -31,7 +32,6 @@ import {
   fetchQuizPastExamQuestions,
   fetchQuizPastExams,
   fetchQuizReviewTerms,
-  mergeQuizAccountState,
   navigateQuizSession,
   revealQuizAnswer,
   selfJudgeQuizAnswer,
@@ -120,6 +120,7 @@ import {
 import {
   canComment,
   canFavorite,
+  canSaveLocalFavorite,
   canSubmitResource,
   getAccountState,
   getVerificationBadges,
@@ -128,6 +129,10 @@ import {
 } from './services/authService.js';
 import { loadCourseContent } from './services/courseContentApiClient.js';
 import { accountDataApiClient } from './services/accountDataApiClient.js';
+import {
+  readLocalWorkspace, recordLocalQuiz, toggleLocalContentFavorite,
+  toggleLocalCourseFavorite, updateLocalWorkspace,
+} from './services/localWorkspaceService.js';
 import { consultationApiClient } from './services/consultationApiClient.js';
 import { commentApiClient } from './services/commentApiClient.js';
 import {
@@ -147,6 +152,7 @@ import {
   resubmitMySubmission,
   submitPostRevision,
   updateMyGrade,
+  updateMyStudyProfile,
   updateMyNickname,
   updateMySubmission,
   uploadMyAvatar,
@@ -175,6 +181,8 @@ const guestViewer = () => ({
   id: 'guest',
   role: 'guest',
   nickname: '访客',
+  grade: null,
+  majorId: '',
   cc98Nickname: '未绑定',
   email: '',
   avatarInitials: 'G',
@@ -197,6 +205,14 @@ const viewer = computed(() => {
     ? (demoAccountService.getUser(demoIdentityId.value) ?? buildDemoUser(demoIdentityId.value))
     : studentViewer.value;
 });
+const localWorkspaceScope = computed(() => demoIdentityId.value
+  ? `demo-${demoIdentityId.value}`
+  : studentViewer.value?.role === 'guest' ? 'guest' : `account-${studentViewer.value.id}`);
+const localWorkspace = ref(readLocalWorkspace(localWorkspaceScope.value));
+const studySaving = ref(false);
+const studyNotice = ref('');
+const accountRecentQuiz = ref(null);
+watch(localWorkspaceScope, (scope) => { localWorkspace.value = readLocalWorkspace(scope); });
 const demoIdentityOptions = demoIdentityEnabled ? getDemoIdentityOptions() : [];
 const activeDemoAccountId = computed(() => (
   demoIdentityId.value && demoIdentityId.value !== 'guest' ? demoIdentityId.value : ''
@@ -276,10 +292,8 @@ const activePracticeRangeId = ref('');
 const answeredQuestionStatus = ref({});
 const session = ref(null);
 const interaction = ref(createQuizInteractionState({ questionType: '' }));
-// quizScope must be declared before any read*/write* call uses it.
-// It is intentionally a plain function (not computed) so call sites
-// always read the *current* viewer/demoIdentityId rather than a snapshot.
-const quizScope = computed(() => viewer?.id || demoIdentityId || 'guest');
+// Browser-only quiz records belong to the current guest, account, or demo.
+const quizScope = computed(() => demoIdentityId.value ? `demo-${demoIdentityId.value}` : viewer.value?.id || 'guest');
 const molecularLanguage = ref(readMolecularLanguage(quizScope.value));
 const molecularReviewTerms = ref([]);
 const molecularReviewIndex = ref(0);
@@ -422,10 +436,26 @@ const pendingTrueFalse = computed(() => interaction.value.pendingAnswer?.value);
 const canSubmitAnswer = computed(() => Boolean(buildSubmitAnswer(interaction.value)) && !result.value && !currentQuestionLocked.value);
 const userCanSubmit = computed(() => canSubmitResource(viewer.value));
 const userCanComment = computed(() => canComment(viewer.value));
-const userCanFavorite = computed(() => canFavorite(viewer.value));
+const userCanFavorite = computed(() => canFavorite(viewer.value) || canSaveLocalFavorite(viewer.value));
+const userCanLike = computed(() => canFavorite(viewer.value));
 const accountState = computed(() => getAccountState(viewer.value));
 const verificationBadges = computed(() => getVerificationBadges(viewer.value));
 const viewerIsGuest = computed(() => !isAuthenticated(viewer.value));
+const studyProfile = computed(() => (viewerIsGuest.value || demoIdentityId.value)
+  ? localWorkspace.value
+  : {
+    majorId: viewer.value.majorId ?? '', cohortYear: viewer.value.grade ?? null,
+    onboardingDismissed: localWorkspace.value.onboardingDismissed,
+  });
+const lastQuiz = computed(() => {
+  const record = viewerIsGuest.value || demoIdentityId.value
+    ? localWorkspace.value.lastQuiz : (accountRecentQuiz.value ?? localWorkspace.value.lastQuiz);
+  if (!record) return null;
+  return {
+    ...record,
+    courseName: supportedCourses.find((course) => course.code === record.courseCode)?.name ?? record.courseCode,
+  };
+});
 const viewerIsAdministrator = computed(() => isAdministrator(viewer.value));
 const activeProfileIsOwn = computed(() => (
   Boolean(activeProfilePublicId.value)
@@ -742,6 +772,7 @@ async function resumeSyncedPractice() {
     return;
   }
   session.value = resultData.session;
+  rememberQuiz(resultData.session);
   selectedCategorySourceIds.value = resultData.session.selectedCategorySourceIds ?? [];
   answeredQuestionStatus.value = {};
   resetForQuestion(activeQuestion.value);
@@ -752,6 +783,7 @@ async function resumeSyncedPractice() {
 }
 
 async function loadCategories() {
+  const requestedSlug = activeCollectionSlug.value;
   categories.value = [];
   selectedCategorySourceIds.value = [];
 
@@ -759,14 +791,17 @@ async function loadCategories() {
     return;
   }
 
-  const resultData = await fetchQuizCategories(activeCollectionSlug.value);
+  const resultData = await fetchQuizCategories(requestedSlug);
+  if (requestedSlug !== activeCollectionSlug.value) return;
   if (!resultData.ok) {
     message.value = resultData.message;
     return;
   }
 
   categories.value = resultData.categories ?? [];
-  if (isBotanyCollection.value) {
+  if (session.value?.collectionSlug === requestedSlug) {
+    selectedCategorySourceIds.value = session.value.selectedCategorySourceIds ?? [];
+  } else if (isBotanyCollection.value) {
     selectedCategorySourceIds.value = normalizeBotanyCategorySelection(readBotanySelection(quizScope.value), categories.value);
   } else if (isMicrobiologyCollection.value) {
     selectedCategorySourceIds.value = [];
@@ -920,6 +955,7 @@ async function beginPractice() {
   }
 
   session.value = resultData.session;
+  rememberQuiz(resultData.session);
   if (isMolecularCollection.value) {
     molecularPage.value = 'practice';
   } else if (isBotanyCollection.value) {
@@ -976,6 +1012,7 @@ async function beginMistakePractice() {
   }
 
   session.value = resultData.session;
+  rememberQuiz(resultData.session);
   molecularPage.value = 'practice';
   activePracticeRangeId.value = rangeOptions.value[0]?.id ?? '';
   answeredQuestionStatus.value = {};
@@ -1004,6 +1041,7 @@ async function beginBotanyMistakePractice() {
   }
 
   session.value = resultData.session;
+  rememberQuiz(resultData.session);
   selectedCategorySourceIds.value = Array.from(new Set(botanyMistakeRecords.value
     .map((record) => record.categorySourceId)
     .filter(Boolean)));
@@ -1036,6 +1074,7 @@ async function beginMicrobiologyMistakePractice() {
   }
 
   session.value = resultData.session;
+  rememberQuiz(resultData.session);
   selectedCategorySourceIds.value = Array.from(new Set(microbiologyMistakeRecords.value
     .map((record) => record.categorySourceId)
     .filter(Boolean)));
@@ -1732,11 +1771,65 @@ function mutationNotice(result, successMessage) {
   return result.ok ? (result.persistenceWarning || successMessage) : result.message;
 }
 
+function applyLocalWorkspaceChange(result) {
+  if (result.ok) localWorkspace.value = result.value;
+  return result;
+}
+
+async function saveStudyProfile({ majorId, cohortYear }) {
+  studySaving.value = true;
+  studyNotice.value = '';
+  if (viewerIsGuest.value || demoIdentityId.value) {
+    const result = applyLocalWorkspaceChange(updateLocalWorkspace(localWorkspaceScope.value, {
+      majorId, cohortYear, onboardingDismissed: true,
+    }));
+    studyNotice.value = result.ok ? '专业与年级已保存在此浏览器。' : result.message;
+  } else {
+    const result = await updateMyStudyProfile({ majorId, grade: cohortYear });
+    if (result.ok) studentViewer.value = result.user;
+    studyNotice.value = result.ok ? '专业与年级已同步到账号。' : result.message;
+  }
+  studySaving.value = false;
+}
+
+function dismissStudySetup() {
+  const result = applyLocalWorkspaceChange(updateLocalWorkspace(localWorkspaceScope.value, { onboardingDismissed: true }));
+  if (!result.ok) studyNotice.value = result.message;
+}
+
+async function loadRecentQuiz() {
+  if (viewerIsGuest.value || demoIdentityId.value) {
+    accountRecentQuiz.value = null;
+    return;
+  }
+  const result = await fetchRecentQuizSession();
+  accountRecentQuiz.value = result.ok ? result.recent : null;
+}
+
+function rememberQuiz(sessionData = null) {
+  const courseCode = activeCourseCode.value;
+  if (!courseCode) return;
+  const quiz = {
+    courseCode, collectionSlug: activeCollectionSlug.value,
+    sessionId: sessionData?.id ?? '', startedAt: sessionData?.startedAt,
+  };
+  const result = applyLocalWorkspaceChange(recordLocalQuiz(localWorkspaceScope.value, quiz));
+  if (!result.ok && viewerIsGuest.value) message.value = result.message;
+  if (!viewerIsGuest.value && !demoIdentityId.value && sessionData) {
+    accountRecentQuiz.value = {
+      courseCode, collectionSlug: activeCollectionSlug.value,
+      sessionId: sessionData.id, startedAt: sessionData.startedAt, completedAt: null,
+    };
+  }
+}
+
 async function loadAccountData() {
   if (viewerIsGuest.value) {
     accountCourses.value = [];
-    accountCourseFavorites.value = [];
-    accountFavorites.value = [];
+    const local = readLocalWorkspace(localWorkspaceScope.value);
+    localWorkspace.value = local;
+    accountCourseFavorites.value = local.courseFavorites;
+    accountFavorites.value = local.contentFavorites;
     notifications.value = [];
     unreadNotificationCount.value = 0;
     return;
@@ -1834,45 +1927,18 @@ async function refreshQuizAccountState(collectionSlug) {
   if (resultData.ok) applyQuizAccountState(collectionSlug, resultData.state);
 }
 
-async function migrateLocalQuizData() {
+async function refreshQuizAccountAfterSignIn() {
   if (viewerIsGuest.value || isDemoAccount.value) return;
-  // CRIT-STATE-2: the localStorage keys are now scoped per identity (see
-  // CRIT-STATE-1), so a real user never reads demo/guest mistake records.
-  // No further guard needed: read* functions read from `quizScope.value`
-  // (real user id) which is empty for a freshly logged-in account.
-  // CRIT-STATE-3: drop any in-memory anonymous practice session that may
-  // have been started by a previous identity. Claiming such a session
-  // would transfer question order, answers, and progress to the real
-  // account, polluting the new account's quiz history.
   if (session.value) {
     session.value = null;
     activeCollectionSlug.value = '';
     quizView.value = 'catalog';
   }
-  const entries = [
-    ['molecular-biology-review', readMolecularMistakes(quizScope.value), readVocabularyRecords(quizScope.value)],
-    ['botany-slice', readBotanyMistakes(quizScope.value), []],
-    ['microbiology-final-review', readMicrobiologyMistakes(quizScope.value), readMicrobiologyVocabularyRecords(quizScope.value)],
-  ];
-  for (const [collectionSlug, mistakes, vocabulary] of entries) {
-    const resultData = mistakes.length || vocabulary.length
-      ? await mergeQuizAccountState({
-        collectionSlug,
-        mistakes,
-        vocabulary: vocabulary.map((record) => ({
-          ...record,
-          recordKey: record.recordKey ?? record.id,
-          context: { ...record },
-        })),
-      })
-      : await fetchQuizAccountState(collectionSlug);
+  for (const collectionSlug of ['molecular-biology-review', 'botany-slice', 'microbiology-final-review']) {
+    const resultData = await fetchQuizAccountState(collectionSlug);
     if (resultData.ok) applyQuizAccountState(collectionSlug, resultData.state);
   }
-  writeMolecularMistakes(quizScope.value, []);
-  writeBotanyMistakes(quizScope.value, []);
-  writeMicrobiologyMistakes(quizScope.value, []);
-  writeVocabularyRecords(quizScope.value, []);
-  writeMicrobiologyVocabularyRecords(quizScope.value, []);
+  await loadRecentQuiz();
 }
 
 function persistGuestRecords(records, writer) {
@@ -1992,6 +2058,18 @@ async function syncPageFromHash() {
   }
   resetPageState(nextPage);
   activePage.value = nextPage;
+
+  if (nextPage === 'quiz') {
+    const params = getHashQuery(window.location.hash);
+    const courseCode = params.get('course');
+    if (supportedCourses.some((course) => course.code === courseCode)) {
+      await selectCourse(courseCode);
+      const sessionId = params.get('session');
+      if (sessionId) await resumeQuizSession(sessionId);
+    }
+    activeOverviewCourse.value = null;
+    return;
+  }
 
   if (nextPage === 'consultation') {
     consultationConversationId.value = getHashQuery(window.location.hash).get('conversation') ?? '';
@@ -2154,8 +2232,39 @@ async function loadActiveProfile() {
 }
 
 async function openCourseQuiz(courseCode) {
-  setPage('quiz');
-  await selectCourse(courseCode);
+  window.location.hash = buildHashWithQuery('quiz', { course: courseCode });
+}
+
+async function openLastQuiz() {
+  const record = lastQuiz.value;
+  if (!record) return;
+  const href = buildHashWithQuery('quiz', {
+    course: record.courseCode,
+    session: record.completedAt ? '' : record.sessionId,
+  });
+  if (window.location.hash === href) await syncPageFromHash();
+  else window.location.hash = href;
+}
+
+async function resumeQuizSession(sessionId) {
+  const resultData = await fetchQuizSession(sessionId);
+  if (!resultData.ok) {
+    message.value = resultData.message || '上次的练习无法继续，可以重新开始。';
+    return;
+  }
+  if (resultData.session.collectionSlug !== activeCollectionSlug.value) {
+    message.value = '这份练习记录与当前课程不匹配。';
+    return;
+  }
+  session.value = resultData.session;
+  rememberQuiz(resultData.session);
+  selectedCategorySourceIds.value = resultData.session.selectedCategorySourceIds ?? [];
+  answeredQuestionStatus.value = {};
+  resetForQuestion(activeQuestion.value);
+  if (isMolecularCollection.value) molecularPage.value = 'practice';
+  else if (isBotanyCollection.value) botanyPage.value = 'practice';
+  else if (isMicrobiologyCollection.value) microbiologyPage.value = 'practice';
+  else quizView.value = 'practice';
 }
 
 function backToOverview() {
@@ -2260,11 +2369,26 @@ async function toggleContentLike(contentId) {
 }
 
 async function toggleContentFavorite(contentId) {
-  if (!contentId || viewerIsGuest.value) return;
+  if (!contentId) return;
   const exists = favoriteContentIds.value.includes(contentId);
   const item = ['experiences', 'materials', 'papers']
     .flatMap((key) => activeOverviewCourse.value?.[key] ?? [])
     .find((entry) => entry.contentId === contentId);
+  if (!item) return;
+  if (viewerIsGuest.value) {
+    const result = applyLocalWorkspaceChange(toggleLocalContentFavorite(localWorkspaceScope.value, {
+      id: contentId, routeId: item?.id ?? contentId,
+      courseCode: item?.courseCode ?? activeOverviewCourse.value?.code ?? '',
+      type: item?.type ?? { experiences: 'experience', materials: 'material', papers: 'paper' }[overviewRoute.value.tabId],
+      title: item?.title ?? '', summary: item?.summary ?? '',
+    }));
+    if (!result.ok) commentNotice.value = result.message;
+    else {
+      accountFavorites.value = result.value.contentFavorites;
+      commentNotice.value = exists ? '已取消本机收藏。' : '已保存在此浏览器。';
+    }
+    return;
+  }
   const resultData = isDemoAccount.value
     ? (exists
       ? demoAccountService.removeFavorite(activeDemoAccountId.value, contentId)
@@ -2338,8 +2462,17 @@ async function replaceAccountCourses(courses) {
 
 async function toggleCourseFavorite(course) {
   const courseCode = typeof course === 'string' ? course : course?.courseCode ?? course?.code;
-  if (!courseCode || viewerIsGuest.value) return;
+  if (!courseCode) return;
   const exists = favoriteCourseCodes.value.includes(courseCode);
+  if (viewerIsGuest.value) {
+    const result = applyLocalWorkspaceChange(toggleLocalCourseFavorite(localWorkspaceScope.value, courseCode));
+    if (!result.ok) profileNotice.value = result.message;
+    else {
+      accountCourseFavorites.value = result.value.courseFavorites;
+      profileNotice.value = exists ? '已取消本机收藏。' : '已保存在此浏览器。';
+    }
+    return;
+  }
   const resultData = isDemoAccount.value
     ? (exists
       ? demoAccountService.removeCourseFavorite(activeDemoAccountId.value, courseCode)
@@ -2440,7 +2573,7 @@ async function finishAuthentication(user) {
   authNotice.value = '';
   accountOpen.value = true;
   await loadAccountData();
-  await migrateLocalQuizData();
+  await refreshQuizAccountAfterSignIn();
   if (activePage.value === 'profile' && activeProfilePublicId.value === user.publicId) {
     loadActiveProfile();
   }
@@ -2479,7 +2612,7 @@ async function handleRegisterEmail(payload) {
     authNotice.value = '注册成功，请使用刚才设置的密码登录。';
     return;
   }
-  finishAuthentication(loggedIn.user);
+  await finishAuthentication(loggedIn.user);
 }
 
 async function handleLoginEmail(payload) {
@@ -2488,7 +2621,7 @@ async function handleLoginEmail(payload) {
   const result = await loginEmailAccount(payload);
   authBusy.value = false;
   if (result.ok) {
-    finishAuthentication(result.user);
+    await finishAuthentication(result.user);
   } else {
     authNotice.value = result.message;
   }
@@ -2519,8 +2652,8 @@ async function handleLogout() {
   authBusy.value = false;
   studentViewer.value = guestViewer();
   accountCourses.value = [];
-  accountCourseFavorites.value = [];
-  accountFavorites.value = [];
+  await loadAccountData();
+  accountRecentQuiz.value = null;
   notifications.value = [];
   unreadNotificationCount.value = 0;
   commentsByContentId.value = {};
@@ -2676,12 +2809,12 @@ onMounted(async () => {
     if (auth.ok) {
       studentViewer.value = auth.user;
       await loadAccountData();
-      await migrateLocalQuizData();
+      await refreshQuizAccountAfterSignIn();
     }
   } catch {
     // Public browsing remains available when the account service is offline.
   }
-  if (isDemoAccount.value) await loadAccountData();
+  if (viewerIsGuest.value || isDemoAccount.value) await loadAccountData();
   await refreshConsultationStatus();
   consultationStatusTimer = window.setInterval(refreshConsultationStatus, 15000);
   consultationInboxTimer = window.setInterval(refreshConsultationInbox, 4000);
@@ -2775,6 +2908,13 @@ onBeforeUnmount(() => {
         :activity-client="demoIdentityId ? demoActivityPublicClient : null"
         :homepage-client="demoIdentityId ? demoHomepagePublicClient : null"
         :can-submit="userCanSubmit"
+        :study-profile="studyProfile"
+        :last-quiz="lastQuiz"
+        :study-notice="studyNotice"
+        :study-saving="studySaving"
+        @save-study-profile="saveStudyProfile"
+        @dismiss-study-setup="dismissStudySetup"
+        @resume-quiz="openLastQuiz"
       />
 
       <template v-else-if="activePage === 'overview'">
@@ -2787,6 +2927,7 @@ onBeforeUnmount(() => {
           :can-submit="userCanSubmit"
           :can-comment="userCanComment"
           :can-favorite="userCanFavorite"
+          :can-like="userCanLike"
           :favorite-count="favoriteCount"
           :has-quiz="activeOverviewHasQuiz"
           :favorite-keys="favoriteContentIds"
@@ -2809,7 +2950,7 @@ onBeforeUnmount(() => {
         />
         <OverviewPage
           v-else
-          :can-manage-courses="!viewerIsGuest"
+          :can-manage-courses="true"
           :saved-course-codes="favoriteCourseCodes"
           :user-grade="viewer.grade ?? null"
           @add-course="toggleCourseFavorite"

@@ -81,6 +81,10 @@ export function fetchQuizSession(sessionId) {
   return request(`/api/quiz/sessions/${encodeURIComponent(sessionId)}`);
 }
 
+export function fetchRecentQuizSession() {
+  return request('/api/quiz/recent');
+}
+
 export function navigateQuizSession(sessionId, { direction, currentIndex } = {}) {
   return request(`/api/quiz/sessions/${encodeURIComponent(sessionId)}/navigation`, {
     method: 'POST',

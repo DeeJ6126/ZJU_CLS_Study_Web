@@ -17,6 +17,7 @@ const scrypt = promisify(scryptCallback);
  * @property {string} nickname
  * @property {string} [publicId]
  * @property {string|null} [grade]
+ * @property {string} [majorId]
  * @property {string} cc98Nickname
  * @property {string} email
  * @property {string} [avatarUrl]
@@ -40,6 +41,8 @@ export const guestUser = {
   id: 'guest',
   role: 'guest',
   nickname: '访客',
+  grade: null,
+  majorId: '',
   cc98Nickname: '未绑定',
   email: '',
   avatarUrl: '',
@@ -103,6 +106,7 @@ export function publicUser(user) {
     nickname: user.nickname,
     publicId: user.publicId,
     grade: user.grade ?? null,
+    majorId: user.majorId ?? '',
     cc98Nickname: user.cc98Name || '未绑定',
     email: maskEmail(user.email),
     avatarUrl: user.avatarStoredName
