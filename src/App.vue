@@ -25,6 +25,8 @@ import {
   fetchQuizAccountState,
   fetchQuizSession,
   fetchRecentQuizSession,
+  mergeQuizAccountState,
+  claimQuizSession,
   fetchQuizCategories,
   fetchQuizCollections,
   fetchQuizImageGallery,
@@ -133,6 +135,10 @@ import {
   readLocalWorkspace, recordLocalQuiz, toggleLocalContentFavorite,
   toggleLocalCourseFavorite, updateLocalWorkspace,
 } from './services/localWorkspaceService.js';
+import {
+  applyGuestMerge, buildGuestMergePreview, markGuestMergeConfirmed,
+  readLocalQuizForMerge, wasGuestMergeConfirmed,
+} from './services/guestMergeService.js';
 import { consultationApiClient } from './services/consultationApiClient.js';
 import { commentApiClient } from './services/commentApiClient.js';
 import {
@@ -212,6 +218,9 @@ const localWorkspace = ref(readLocalWorkspace(localWorkspaceScope.value));
 const studySaving = ref(false);
 const studyNotice = ref('');
 const accountRecentQuiz = ref(null);
+const guestMergePreview = ref(null);
+const guestMergeBusy = ref(false);
+const guestMergeNotice = ref('');
 watch(localWorkspaceScope, (scope) => { localWorkspace.value = readLocalWorkspace(scope); });
 const demoIdentityOptions = demoIdentityEnabled ? getDemoIdentityOptions() : [];
 const activeDemoAccountId = computed(() => (
@@ -1939,6 +1948,45 @@ async function refreshQuizAccountAfterSignIn() {
     if (resultData.ok) applyQuizAccountState(collectionSlug, resultData.state);
   }
   await loadRecentQuiz();
+}
+
+async function prepareGuestDataMerge() {
+  if (viewerIsGuest.value || isDemoAccount.value) return;
+  await refreshQuizAccountAfterSignIn();
+  const preview = buildGuestMergePreview({
+    workspace: readLocalWorkspace('guest'),
+    quizGroups: readLocalQuizForMerge('guest'),
+    account: {
+      user: viewer.value,
+      courseFavorites: accountCourseFavorites.value,
+      favorites: accountFavorites.value,
+    },
+  });
+  guestMergePreview.value = preview.hasChanges
+    && !wasGuestMergeConfirmed(viewer.value.id, preview.sourceFingerprint) ? preview : null;
+}
+
+async function confirmGuestDataMerge() {
+  const preview = guestMergePreview.value;
+  if (!preview || guestMergeBusy.value) return;
+  guestMergeBusy.value = true;
+  guestMergeNotice.value = '';
+  const result = await applyGuestMerge(preview, {
+    accountClient: accountDataApiClient,
+    profileClient: { updateMyStudyProfile },
+    quizClient: { mergeQuizAccountState, claimQuizSession },
+  });
+  guestMergeBusy.value = false;
+  if (!result.ok) {
+    guestMergeNotice.value = result.message;
+    return;
+  }
+  if (result.user) studentViewer.value = result.user;
+  markGuestMergeConfirmed(viewer.value.id, preview.sourceFingerprint);
+  guestMergePreview.value = null;
+  await loadAccountData();
+  await loadRecentQuiz();
+  for (const group of preview.quiz) await refreshQuizAccountState(group.collectionSlug);
 }
 
 function persistGuestRecords(records, writer) {

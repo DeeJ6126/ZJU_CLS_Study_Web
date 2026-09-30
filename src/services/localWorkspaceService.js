@@ -11,7 +11,7 @@ function browserStorage() {
 function emptyWorkspace() {
   return {
     majorId: '', cohortYear: null, onboardingDismissed: false,
-    courseFavorites: [], contentFavorites: [], lastQuiz: null,
+    courseFavorites: [], contentFavorites: [], lastQuiz: null, quizSessions: [],
   };
 }
 
@@ -21,6 +21,7 @@ function cleanWorkspace(value) {
   const courseFavorites = Array.isArray(data.courseFavorites) ? data.courseFavorites : [];
   const contentFavorites = Array.isArray(data.contentFavorites) ? data.contentFavorites : [];
   const lastQuiz = data.lastQuiz && typeof data.lastQuiz === 'object' ? data.lastQuiz : null;
+  const quizSessions = Array.isArray(data.quizSessions) ? data.quizSessions : [];
   return {
     majorId: majorIds.has(data.majorId) ? data.majorId : '',
     cohortYear: data.cohortYear != null && Number.isInteger(year) && year >= 2023 && year <= 2035 ? year : null,
@@ -39,6 +40,13 @@ function cleanWorkspace(value) {
         sessionId: String(lastQuiz.sessionId ?? '').slice(0, 100),
         updatedAt: String(lastQuiz.updatedAt ?? ''),
       } : null,
+    quizSessions: [...new Map(quizSessions.filter((entry) => entry && typeof entry.sessionId === 'string'
+      && /^quiz_[a-f0-9]{32}$/.test(entry.sessionId) && /^[A-Z0-9-]{3,24}$/.test(String(entry.courseCode ?? '')))
+      .map((entry) => [entry.sessionId, {
+        sessionId: entry.sessionId, courseCode: entry.courseCode,
+        collectionSlug: String(entry.collectionSlug ?? '').slice(0, 100),
+        startedAt: String(entry.startedAt ?? ''),
+      }])).values()].slice(-100),
   };
 }
 
@@ -76,11 +84,18 @@ export function toggleLocalContentFavorite(scope, item, storage = browserStorage
 }
 
 export function recordLocalQuiz(scope, quiz, storage = browserStorage()) {
+  const current = readLocalWorkspace(scope, storage);
   const entry = {
     courseCode: quiz.courseCode,
     collectionSlug: quiz.collectionSlug ?? '',
     sessionId: quiz.sessionId ?? '',
     updatedAt: new Date().toISOString(),
   };
-  return updateLocalWorkspace(scope, { lastQuiz: entry }, storage);
+  const quizSessions = entry.sessionId
+    ? [...current.quizSessions.filter((item) => item.sessionId !== entry.sessionId), {
+      courseCode: entry.courseCode, collectionSlug: entry.collectionSlug,
+      sessionId: entry.sessionId, startedAt: quiz.startedAt ?? entry.updatedAt,
+    }]
+    : current.quizSessions;
+  return updateLocalWorkspace(scope, { lastQuiz: entry, quizSessions }, storage);
 }

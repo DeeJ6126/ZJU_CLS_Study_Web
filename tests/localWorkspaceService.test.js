@@ -24,6 +24,7 @@ test('guest profile and favorites persist locally without mixing demo scopes', (
   assert.deepEqual(readLocalWorkspace('guest', local).courseFavorites, ['BIO2011F']);
   assert.deepEqual(readLocalWorkspace('guest', local).contentFavorites.map((item) => item.id), ['note-1']);
   recordLocalQuiz('guest', { courseCode: 'BIO2110F', collectionSlug: 'microbiology-final-review', sessionId: `quiz_${'a'.repeat(32)}` }, local);
+  assert.equal(readLocalWorkspace('guest', local).quizSessions.length, 1);
   assert.equal(readLocalWorkspace('guest', local).lastQuiz.courseCode, 'BIO2110F');
   assert.equal(readLocalWorkspace('guest', local).cohortYear, 2025);
   assert.equal(readLocalWorkspace('demo-student', local).majorId, '');
