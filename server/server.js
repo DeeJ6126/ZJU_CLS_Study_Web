@@ -54,6 +54,7 @@ import { createContentStore } from './content/contentStore.js';
 import { importStaticCourseContent } from './content/contentImportService.js';
 import { handleContentHttpRequest } from './content/contentHttpService.js';
 import { handleActivityHttpRequest } from './activity/activityHttpService.js';
+import { handleNoticeHttpRequest } from './notice/noticeHttpService.js';
 import { seedActivityCatalog } from './activity/activityService.js';
 import { createStudentHomepageStore } from './studentHomepage/studentHomepageStore.js';
 import { handleStudentHomepageHttpRequest } from './studentHomepage/studentHomepageHttpService.js';
@@ -518,6 +519,11 @@ export function createAuthServer({
       if (profileHandled) {
         return;
       }
+      const noticeHandled = await handleNoticeHttpRequest({
+        request, response, url, user: currentUser, userId: quizUserId, contentStore,
+        uploadDirectory, sendJson, readJsonBody, readBinaryBody,
+      });
+      if (noticeHandled) return;
       const activityHandled = await handleActivityHttpRequest({
         request,
         response,

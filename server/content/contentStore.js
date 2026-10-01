@@ -254,6 +254,38 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
         );
         create index if not exists activity_public_idx
           on activity_items(status, featured, display_order, updated_at desc);
+        create table if not exists notice_items (
+          id text primary key,
+          title text not null,
+          summary text not null default '',
+          body text not null default '',
+          category text not null check(category in ('awards', 'scholarships', 'aid', 'academic', 'general')),
+          publisher text not null default '',
+          source_url text not null default '',
+          audience text not null default '全体学生',
+          major_ids text not null default '[]',
+          cohort_years text not null default '[]',
+          published_date text not null,
+          deadline text not null default '',
+          pinned integer not null default 0,
+          status text not null default 'draft' check(status in ('draft', 'published', 'archived')),
+          created_by integer,
+          updated_by integer,
+          created_at text not null,
+          updated_at text not null
+        );
+        create index if not exists notice_public_idx on notice_items(status, pinned desc, published_date desc);
+        create table if not exists notice_attachments (
+          id text primary key,
+          notice_id text not null,
+          file_name text not null,
+          stored_name text not null,
+          mime_type text not null,
+          size integer not null,
+          created_at text not null,
+          foreign key (notice_id) references notice_items(id)
+        );
+        create index if not exists notice_attachment_idx on notice_attachments(notice_id, created_at);
       `);
       const columns = db.prepare('pragma table_info(content_items)').all();
       if (!columns.some((column) => column.name === 'route_id')) {
@@ -567,6 +599,100 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
         select ${activitySelectColumns} from activity_items ${where}
         order by created_at desc, id
       `).all(...values).map(mapActivity);
+    },
+
+    createNotice(input) {
+      const id = input.id ?? randomUUID();
+      const now = input.createdAt ?? new Date().toISOString();
+      db.prepare(`
+        insert into notice_items (id, title, summary, body, category, publisher, source_url, audience,
+          major_ids, cohort_years, published_date, deadline, pinned, status, created_by, updated_by, created_at, updated_at)
+        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(id, input.title, input.summary ?? '', input.body ?? '', input.category, input.publisher ?? '',
+        input.sourceUrl ?? '', input.audience ?? '全体学生', JSON.stringify(input.majorIds ?? []),
+        JSON.stringify(input.cohortYears ?? []), input.publishedDate, input.deadline ?? '', input.pinned ? 1 : 0,
+        input.status ?? 'draft', input.createdBy ?? null, input.updatedBy ?? input.createdBy ?? null, now, now);
+      return this.findNoticeById(id);
+    },
+
+    findNoticeById(id) {
+      const row = db.prepare(`
+        select id, title, summary, body, category, publisher, source_url as sourceUrl, audience,
+          major_ids as majorIds, cohort_years as cohortYears, published_date as publishedDate, deadline,
+          pinned, status, created_at as createdAt, updated_at as updatedAt from notice_items where id = ?
+      `).get(id);
+      if (!row) return null;
+      return { ...row, pinned: Boolean(row.pinned), majorIds: JSON.parse(row.majorIds),
+        cohortYears: JSON.parse(row.cohortYears), attachments: this.listNoticeAttachments(id) };
+    },
+
+    updateNotice(id, changes) {
+      const current = this.findNoticeById(id);
+      if (!current) return null;
+      const next = { ...current, ...changes };
+      db.prepare(`
+        update notice_items set title = ?, summary = ?, body = ?, category = ?, publisher = ?, source_url = ?,
+          audience = ?, major_ids = ?, cohort_years = ?, published_date = ?, deadline = ?, pinned = ?,
+          status = ?, updated_by = ?, updated_at = ? where id = ?
+      `).run(next.title, next.summary, next.body, next.category, next.publisher, next.sourceUrl, next.audience,
+        JSON.stringify(next.majorIds), JSON.stringify(next.cohortYears), next.publishedDate, next.deadline,
+        next.pinned ? 1 : 0, next.status, changes.updatedBy ?? null, new Date().toISOString(), id);
+      return this.findNoticeById(id);
+    },
+
+    listNotices({ publicOnly = false, query = '', category = '', status = '', majorId = '',
+      cohortYear = null, timing = '', now = new Date().toISOString(), page = 1, pageSize = 20 } = {}) {
+      const clauses = [];
+      const values = [];
+      if (publicOnly) clauses.push("status = 'published'");
+      else if (status) { clauses.push('status = ?'); values.push(status); }
+      if (category) { clauses.push('category = ?'); values.push(category); }
+      if (query) {
+        clauses.push("(lower(title) like ? escape '\\' or lower(summary) like ? escape '\\' or lower(publisher) like ? escape '\\')");
+        const pattern = `%${query.toLowerCase().replace(/[\\%_]/g, '\\$&')}%`;
+        values.push(pattern, pattern, pattern);
+      }
+      if (majorId) {
+        clauses.push('(json_array_length(major_ids) = 0 or exists (select 1 from json_each(major_ids) where value = ?))');
+        values.push(majorId);
+      }
+      if (cohortYear !== null) {
+        clauses.push('(json_array_length(cohort_years) = 0 or exists (select 1 from json_each(cohort_years) where value = ?))');
+        values.push(cohortYear);
+      }
+      if (timing === 'active') { clauses.push("(deadline = '' or deadline > ?)"); values.push(now); }
+      if (timing === 'expired') { clauses.push("deadline <> '' and deadline <= ?"); values.push(now); }
+      const where = clauses.length ? `where ${clauses.join(' and ')}` : '';
+      const total = db.prepare(`select count(*) as total from notice_items ${where}`).get(...values).total;
+      const ids = db.prepare(`select id from notice_items ${where}
+        order by pinned desc, published_date desc, created_at desc, id asc limit ? offset ?`)
+        .all(...values, pageSize, (page - 1) * pageSize);
+      return { items: ids.map(({ id }) => this.findNoticeById(id)), total, page, pageSize };
+    },
+
+    listNoticeAttachments(noticeId) {
+      return db.prepare(`select id, file_name as fileName, stored_name as storedName, mime_type as mimeType,
+        size from notice_attachments where notice_id = ? order by created_at, id`).all(noticeId);
+    },
+
+    attachNoticeFile(noticeId, file, updatedBy) {
+      if (!this.findNoticeById(noticeId)) return null;
+      const id = file.id ?? randomUUID();
+      const inserted = db.prepare(`insert into notice_attachments (id, notice_id, file_name, stored_name, mime_type, size, created_at)
+        select ?, ?, ?, ?, ?, ?, ?
+        where (select count(*) from notice_attachments where notice_id = ?) < 20`)
+        .run(id, noticeId, file.fileName, file.storedName, file.mimeType, file.size, new Date().toISOString(), noticeId);
+      if (!inserted.changes) {
+        const error = new Error('每条通知最多上传 20 个附件。');
+        error.code = 'NOTICE_ATTACHMENT_LIMIT';
+        throw error;
+      }
+      return this.updateNotice(noticeId, { updatedBy });
+    },
+
+    removeNoticeFile(noticeId, attachmentId, updatedBy) {
+      db.prepare('delete from notice_attachments where notice_id = ? and id = ?').run(noticeId, attachmentId);
+      return this.updateNotice(noticeId, { updatedBy });
     },
 
     createSubmission(input) {

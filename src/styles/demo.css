@@ -250,6 +250,12 @@ html[data-theme="dark"] .demo-user-chip__tag {
   }
 }
 
+@media (min-width: 761px) and (max-width: 1000px) {
+  .demo-head { height: auto; grid-template-columns: minmax(0, 1fr) auto; padding-block: 12px; }
+  .demo-topnav { grid-column: 1 / -1; grid-row: 2; justify-content: center; }
+  .demo-account { grid-column: 2; grid-row: 1; }
+}
+
 .demo-home {
   max-width: 860px;
   margin: 0 auto;

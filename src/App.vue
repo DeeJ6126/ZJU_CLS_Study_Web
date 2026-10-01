@@ -10,6 +10,7 @@ import TrueFalseQuestionView from './components/quiz/TrueFalseQuestionView.vue';
 import HomePage from './components/HomePage.vue';
 import ActivityPage from './components/ActivityPage.vue';
 import ActivityDetailPage from './components/ActivityDetailPage.vue';
+import NoticePage from './components/NoticePage.vue';
 import ConsultationPage from './components/ConsultationPage.vue';
 import OverviewPage from './components/OverviewPage.vue';
 import CourseDetailPage from './components/CourseDetailPage.vue';
@@ -266,6 +267,7 @@ async function selectDemoIdentity(identityId) {
   }
 }
 const activePage = ref('home');
+const adminPageRef = ref(null);
 const consultationStatus = ref({ open: false, isMentor: false, mentor: null });
 const consultationConversationId = ref('');
 const consultationToast = ref(null);
@@ -274,6 +276,7 @@ let consultationStatusTimer;
 let consultationInboxTimer;
 const consultationAvailable = computed(() => Boolean(consultationStatus.value.open && !demoIdentityId.value));
 const activeActivitySlug = ref('');
+const activeNoticeId = ref('');
 const overviewRoute = ref(parseResourceHash(''));
 const activeOverviewCourse = ref(null);
 const overviewContentLoading = ref(false);
@@ -671,6 +674,7 @@ function openConsultationMessage() {
 }
 
 function setPage(pageId) {
+  if (activePage.value === 'admin' && pageId !== 'admin' && adminPageRef.value?.canLeave?.() === false) return;
   if (pageId === 'consultation' && !consultationAvailable.value) return;
   resetPageState(pageId);
   if (pageId === 'profile') {
@@ -2052,12 +2056,24 @@ async function refreshCourseFavoriteCount(courseCode) {
 
 async function syncPageFromHash() {
   const nextPage = routeFromHash();
+  if (activePage.value === 'admin' && nextPage !== 'admin' && adminPageRef.value?.canLeave?.() === false) {
+    window.history.replaceState(null, '', '#admin');
+    return;
+  }
   if (nextPage === 'consultation' && demoIdentityId.value) {
     window.location.hash = '#home';
     return;
   }
   resetPageState(nextPage);
   activePage.value = nextPage;
+
+  if (nextPage === 'notices') {
+    const noticePath = String(window.location.hash).replace(/^#notices\/?/, '').split('?')[0];
+    try { activeNoticeId.value = decodeURIComponent(noticePath); }
+    catch { activeNoticeId.value = 'invalid'; }
+    activeOverviewCourse.value = null;
+    return;
+  }
 
   if (nextPage === 'quiz') {
     const params = getHashQuery(window.location.hash);
@@ -2185,7 +2201,7 @@ async function syncPageFromHash() {
   // one tick so the page has rendered, then look up the anchor.
   const hash = String(window.location.hash ?? '');
   const anchorMatch = hash.match(/#([^/?#]+)$/);
-  const anchorId = anchorMatch && !['home', 'overview', 'profile', 'activities', 'activity-detail', 'notifications', 'admin', 'quiz', 'about'].includes(anchorMatch[1]) ? anchorMatch[1] : '';
+  const anchorId = anchorMatch && !['home', 'overview', 'profile', 'activities', 'activity-detail', 'notifications', 'notices', 'admin', 'quiz', 'about'].includes(anchorMatch[1]) ? anchorMatch[1] : '';
   if (anchorId) {
     await nextTick();
     const target = typeof document !== 'undefined' ? document.getElementById(anchorId) : null;
@@ -2961,6 +2977,7 @@ onBeforeUnmount(() => {
 
       <AdminPage
         v-else-if="activePage === 'admin'"
+        ref="adminPageRef"
         :key="`${demoIdentityId || 'real-admin'}-${demoDataVersion}`"
         :initial-user="demoIdentityId === 'admin' ? viewer : null"
         :api-client="demoIdentityId === 'admin' ? demoAdminApiClient : null"
@@ -2998,6 +3015,12 @@ onBeforeUnmount(() => {
         @remove-favorite="removeProfileFavorite"
         @edit-comment="editProfileComment"
         @delete-comment="deleteProfileComment"
+      />
+
+      <NoticePage
+        v-else-if="activePage === 'notices'"
+        :notice-id="activeNoticeId"
+        :study-profile="studyProfile"
       />
 
       <NotificationsPage

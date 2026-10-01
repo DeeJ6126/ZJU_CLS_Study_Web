@@ -104,6 +104,10 @@ src/utils/publicPath.js
 - `npm run check:routes`：检查课程路由契约。
 - `npm run check:content`：检查长内容是否误入组件。
 
+## Public Notices
+
+Public notices use `/api/notices` and `#notices/:id`; private account messages retain `/api/account/notifications` and `#notifications`. `category` is `awards`, `scholarships`, `aid`, `academic`, or `general`. Empty `majorIds`/`cohortYears` means unrestricted, not hidden. `publishedDate` is a date-only string; `deadline` is an optional timezone-qualified timestamp displayed in Asia/Shanghai. List APIs paginate after sorting pinned notices first and publication dates descending. Drafts and archived notices are only visible to administrators, including attachment downloads. No real notices are seeded from invented data.
+
 ## User Profiles
 
 - Email identities use `${studentId}@zju.edu.cn`, where `studentId` is digits only.

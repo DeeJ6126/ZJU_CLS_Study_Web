@@ -5,7 +5,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 ## Current State
 
 - The project is a Vue 3 + Vite + plain CSS learning-resource platform for ZJU life-science students.
-- The app currently has top-level pages for `首页`, `概览`, `刷题`, `活动`, and `关于`, plus hash-routed course details, activity details, public/owner profiles, notifications, and a hidden administrator workspace.
+- The app currently has top-level pages for `首页`, `概览`, `刷题`, `活动`, `通知`, `咨询`, and `关于`, plus hash-routed course/notice details, activity details, public/owner profiles, private account messages, and a hidden administrator workspace.
 - The homepage now centers search across `课程 / 资料 / 题库 / 活动 / 用户`; the `资料` mode queries published backend posts with course, type, teacher, and year filters plus pagination, while the other modes retain their focused indexes.
 - The overview page now lists all catalog courses under `专业基础课程 / 专业课 / 通识课`, supports deeper professional-course groups, and can filter the normalized 2024, 2025, and 2026 curricula by category or twelve semester periods (each year's autumn-winter, spring-summer, and short term).
 - The quiz feature is now mostly complete for the current phase:
@@ -21,6 +21,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 
 ## Recently Completed
 
+- Added administrator-maintained public notices with category/major/cohort/deadline filters, pagination, pinned ordering, safe Markdown details, source links and PDF/DOCX/XLSX attachments. Drafts and archived content remain private; no application, comment or submission workflow is exposed. Notice data and files reuse existing production backup coverage.
 - Added freely editable teacher-name suggestions to resource search, course submissions, and administrator content forms. Suggestions use the course teacher catalog, narrow by course and name prefix, and highlight the prefix without requiring a listed teacher for submission.
 - Added a course-overview teacher list from a pinned Chalaoshi data snapshot, covering 120 of 131 site courses. Microbiology theory and lab share the original combined-course list; unmatched courses remain explicitly empty.
 - Added optional major/cohort setup for guests, browser-local course/content favorites, current-semester suggestions below homepage search, and resumption of the last quiz session. Verified accounts synchronize study preferences and read their latest practice from the backend. Course-resource lists and articles now show applicable teacher/year metadata.
@@ -69,6 +70,8 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 ## Known Good Verification
 
 Current known verification:
+
+The 2026-10-01 notice release passed all 469 Node tests, the production build and project checks locally, including administrator-only writes, published-only downloads and deterministic concurrent upload/edit regressions. The notice browser suite uses isolated real HTTP handlers, in-memory SQLite and temporary files; no test notices are seeded online.
 
 ```bash
 npm.cmd test

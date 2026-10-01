@@ -21,6 +21,7 @@ import { activityImageOptions, activityPrograms, activityProgramLabel } from '..
 import { publicAssetPath } from '../../utils/publicPath.js';
 import { imageFileToAvatarDataUrl } from '../../services/studentHomepageApiClient.js';
 import AdminCourseCombobox from './AdminCourseCombobox.vue';
+import NoticeAdminPanel from './NoticeAdminPanel.vue';
 
 const props = defineProps({
   initialUser: { type: Object, default: null },
@@ -50,6 +51,9 @@ const auditActionLabels = {
   'submission.update': '编辑投稿', 'submission.approve': '通过投稿', 'submission.reject': '拒绝投稿',
   'activity.create': '新建活动', 'activity.update': '编辑活动',
   'activity.publish': '发布活动', 'activity.archive': '下架活动',
+  'notice.create': '新建通知', 'notice.update': '编辑通知',
+  'notice.publish': '发布通知', 'notice.archive': '下架通知',
+  'notice.file.add': '上传通知附件', 'notice.file.upload': '上传通知附件', 'notice.file.remove': '移除通知附件',
   'student_homepage.create': '新增同学主页', 'student_homepage.update': '编辑同学主页', 'student_homepage.delete': '移除同学主页',
   'student_homepage_application.create': '投稿同学主页', 'student_homepage_application.approve': '通过主页投稿', 'student_homepage_application.reject': '拒绝主页投稿',
 };
@@ -65,6 +69,7 @@ const selectedCourseCode = ref('');
 const selectedType = ref('experience');
 const selectedStatus = ref('');
 const selectedView = ref('content');
+const noticePanel = ref(null);
 const contentQuery = ref('');
 const items = ref([]);
 const submissions = ref([]);
@@ -125,6 +130,7 @@ const filteredRows = computed(() => {
   return [...reviews, ...content];
 });
 const pageTitle = computed(() => {
+  if (selectedView.value === 'notices') return '通知管理';
   if (selectedView.value === 'activities') return '活动管理';
   if (selectedView.value === 'homepages') return '同学主页';
   if (selectedView.value === 'consultation') return '咨询室';
@@ -456,6 +462,8 @@ async function requestAdminEmailCode() {
 }
 
 function changeView(view, type = '') {
+  if (view === 'notices' && selectedView.value === 'notices') return;
+  if (selectedView.value === 'notices' && !noticePanel.value?.canLeave()) return;
   if (dirty.value && !window.confirm('当前修改尚未保存，确定放弃吗？')) return;
   selectedView.value = view;
   editorOpen.value = false;
@@ -464,6 +472,7 @@ function changeView(view, type = '') {
   homepageEditorOpen.value = false;
   if (type) selectedType.value = type;
   notice.value = '';
+  if (view === 'notices') dirty.value = false;
   if (view === 'content') {
     selectedStatus.value = '';
     refreshItems();
@@ -531,6 +540,7 @@ async function archiveManagedActivity(activity) {
 }
 
 async function logout() {
+  if (selectedView.value === 'notices' && !noticePanel.value?.canLeave()) return;
   if (props.initialUser) {
     authNotice.value = '请从右上角身份菜单切换演示身份。';
     return;
@@ -735,6 +745,7 @@ function formattedTime(value) {
   }).format(new Date(value));
 }
 
+defineExpose({ canLeave: () => selectedView.value !== 'notices' || (noticePanel.value?.canLeave() ?? true) });
 onMounted(initialize);
 </script>
 
@@ -756,6 +767,7 @@ onMounted(initialize);
         <button type="button" :class="{ 'is-active': selectedView === 'activities' }" @click="changeView('activities')">
           活动管理
         </button>
+        <button type="button" :class="{ 'is-active': selectedView === 'notices' }" @click="changeView('notices')">通知</button>
         <button type="button" :class="{ 'is-active': selectedView === 'homepages' }" @click="changeView('homepages')">同学主页</button>
         <button type="button" :class="{ 'is-active': selectedView === 'consultation' }" @click="changeView('consultation')">咨询室</button>
         <button type="button" :class="{ 'is-active': selectedView === 'logs' }" @click="changeView('logs')">操作日志</button>
@@ -808,7 +820,7 @@ onMounted(initialize);
         <p v-if="isDemo" class="admin-notice" role="status">演示数据仅保存在当前浏览器，不会提交到服务器。</p>
         <header class="admin-page__head">
           <div>
-            <p class="admin-page__eyebrow">课程内容运营</p>
+            <p class="admin-page__eyebrow">{{ selectedView === 'notices' ? '通知内容运营' : '课程内容运营' }}</p>
             <h1 id="admin-title">{{ pageTitle }}</h1>
           </div>
           <button v-if="selectedView === 'content' && !editorOpen && !submissionEditorOpen" class="admin-primary-action" type="button" @click="startNew">新增内容</button>
@@ -1081,6 +1093,8 @@ onMounted(initialize);
             </article>
           </div>
         </section>
+
+        <NoticeAdminPanel v-else-if="selectedView === 'notices'" ref="noticePanel" :is-demo="isDemo" />
 
         <section v-else-if="selectedView === 'homepages'" class="admin-list" aria-label="同学主页管理">
           <section v-if="homepageEditorOpen" class="admin-editor">

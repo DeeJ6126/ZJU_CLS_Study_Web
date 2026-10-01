@@ -180,3 +180,7 @@ The scheduled consultation room is an explicit exception to the usual verified-a
 ### 22. Resource search preserves historical course ownership
 
 The published-resource search uses canonical course-code and `routeId` links and never returns draft content. `BIO2009F` was the combined microbiology theory-and-lab course; students searching the current split courses `BIO2110F` or `BIO2113F` should also discover its historical resources. This is a search alias only: no content is copied or silently moved between course records.
+
+### 23. Public notices are separate from private account messages
+
+`#notices` is a public, administrator-maintained directory; `#notifications` remains private account messages. Notices have draft/published/archived states, optional major/cohort applicability, publication dates, Shanghai deadlines, source links and downloadable PDF/DOCX/XLSX attachments. Only administrators may write; there are no application, comment or submission endpoints. Notice data and files reuse the existing content database/upload directory and backup coverage. Public APIs and downloads expose only published notices, never drafts or archived records.

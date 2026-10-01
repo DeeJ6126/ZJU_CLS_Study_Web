@@ -13,6 +13,7 @@ Components should render props, hold local UI state, and emit events upward. Kee
 - `OverviewPage.vue`: course catalog, curriculum selector, category grouping, and semester grouping.
 - `admin/AdminPage.vue`: hidden-route administrator login plus course-content, moderation, audit-log, and activity maintenance UI.
 - `ConsultationPage.vue`: visitor and mentor chat views for scheduled consultation sessions.
+- `NoticePage.vue`: public notice search, filters and details; `admin/NoticeAdminPanel.vue` maintains drafts, published notices and downloadable attachments.
 - `ContributionBox.vue`: authenticated course submission form that sends review-ready fields upward.
 - `account/AccountPopover.vue` and `account/AuthDialog.vue`: account status and numeric student-ID email authentication forms; API work and permission decisions remain in the app/service layer.
 - `account/AccountSwitcher.vue`: switches between the real session and isolated browser-local demo accounts, and can reset the active demo account.
