@@ -6,6 +6,11 @@
   margin: 28px auto 64px;
 }
 
+.my-courses-page { width: min(1120px, calc(100% - 36px)); margin: 28px auto 64px; color: var(--color-ink); }
+.my-courses-page header { padding-bottom: 16px; border-bottom: 2px solid var(--demo-primary); }
+.my-courses-page h1 { margin: 14px 0 0; font-size: 28px; }
+.my-courses-page p { font-size: 14px; color: var(--color-muted); }
+
 .profile-sidebar {
   display: flex;
   flex-direction: column;

@@ -5,8 +5,10 @@ import { filterSiteCourses, parseCourseCsv } from '../../src/data/courses/resour
 const catalogFile = fileURLToPath(new URL('../../public/resource/summary/introduction.csv', import.meta.url));
 
 export function loadServerCourseCatalog(filename = catalogFile) {
-  const courses = filterSiteCourses(parseCourseCsv(readFileSync(filename, 'utf8')));
+  const allCourses = parseCourseCsv(readFileSync(filename, 'utf8'));
+  const courses = filterSiteCourses(allCourses);
   return {
+    allCourses,
     courses,
     codes: new Set(courses.map((course) => course.code)),
     byCode: new Map(courses.map((course) => [course.code, course])),

@@ -1,12 +1,17 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { buildCourseRoute } from '../../data/courses/resourcePaths.js';
+import MyCourseEditor from '../MyCourseEditor.vue';
 
 const props = defineProps({
   profile: { type: Object, default: null },
   posts: { type: Array, default: () => [] },
   submissions: { type: Array, default: () => [] },
   courses: { type: Array, default: () => [] },
+  courseCatalog: { type: Array, default: () => [] },
+  coursesBusy: { type: Boolean, default: false },
+  courseNotice: { type: String, default: '' },
+  courseCatalogError: { type: String, default: '' },
   favorites: { type: Array, default: () => [] },
   comments: { type: Array, default: () => [] },
   courseImportPreview: { type: Object, default: null },
@@ -23,6 +28,7 @@ const emit = defineEmits([
   'resubmit', 'preview-course-schedule', 'replace-courses', 'remove-course',
   'remove-favorite', 'edit-comment', 'delete-comment', 'edit-submission', 'withdraw-submission',
   'delete-submission',
+  'add-course', 'reset-course-preset', 'retry-course-catalog',
 ]);
 const activeSection = ref('profile');
 const nickname = ref('');
@@ -168,16 +174,10 @@ function statusLabel(status) {
             <p v-if="courseImportPreview.duplicateGroupCount">已合并 {{ courseImportPreview.duplicateGroupCount }} 组重复课程。</p>
             <button type="button" @click="emit('replace-courses', courseImportPreview.courses)">确认替换课程清单</button>
           </div>
-          <p v-if="!courses.length" class="profile-state">还没有课程，可上传教务系统导出的 XLSX 课表。</p>
-          <div v-else class="profile-course-table">
-            <div class="profile-course-row profile-course-row--head"><span>课程</span><span>教师</span><span>学期</span><span>时间与地点</span><span></span></div>
-            <div v-for="course in courses" :key="course.courseCode" class="profile-course-row">
-              <span><a v-if="course.catalogMatched" :href="buildCourseRoute(course.courseCode)">{{ course.courseName }}</a><strong v-else>{{ course.courseName }}</strong><small>{{ course.courseCode }}<em v-if="!course.catalogMatched">站内暂未收录</em></small></span>
-              <span>{{ course.teacherName || '未注明' }}</span><span>{{ course.term || '未注明' }}</span>
-              <span>{{ course.classTime || '时间待定' }}<small>{{ course.classLocation || '地点待定' }}</small></span>
-              <button type="button" @click="emit('remove-course', course)">移除</button>
-            </div>
-          </div>
+          <p v-if="courseNotice" class="profile-notice" role="status">{{ courseNotice }}</p>
+          <MyCourseEditor :courses="courses" :catalog="courseCatalog" :busy="coursesBusy" :catalog-error="courseCatalogError"
+            @add-course="emit('add-course', $event)" @remove-course="emit('remove-course', $event)"
+            @reset-preset="emit('reset-course-preset')" @retry-catalog="emit('retry-course-catalog')" />
         </section>
 
         <section v-if="isOwn && activeSection === 'favorites'" class="profile-management">

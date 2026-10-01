@@ -1,6 +1,7 @@
 import { maxCourseScheduleBytes, parseCourseScheduleWorkbook } from './courseScheduleService.js';
 import { canLeaveSiteTrace } from '../authService.js';
 import { publicApiPath } from '../publicApiPath.js';
+import { initializeCourseWorkspace } from './courseWorkspaceService.js';
 
 function isJson(request) {
   return String(request.headers['content-type'] ?? '').toLowerCase().startsWith('application/json');
@@ -80,6 +81,7 @@ export async function handleAccountHttpRequest({
   readJsonBody,
   readBinaryBody,
   catalogCodes = new Set(),
+  courseCatalog = [],
 }) {
   if (request.method === 'GET' && url.pathname.startsWith('/api/course-favorite-counts/')) {
     const courseCode = decodeURIComponent(url.pathname.slice('/api/course-favorite-counts/'.length)).trim().toUpperCase();
@@ -98,7 +100,24 @@ export async function handleAccountHttpRequest({
   if (!requireAccount(sendJson, response, userId, user)) return true;
 
   if (request.method === 'GET' && url.pathname === '/api/account/courses') {
-    sendJson(response, 200, { courses: courseViews(authStore.listUserCourses(userId), catalogCodes) });
+    const workspace = initializeCourseWorkspace(authStore, userId, user, courseCatalog);
+    sendJson(response, 200, { courses: courseViews(workspace.courses, catalogCodes) });
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/account/courses/preset') {
+    if (!isJson(request)) {
+      sendJson(response, 415, { message: '课程预置请求格式无效。' });
+      return true;
+    }
+    await readJsonBody(request);
+    const latestUser = authStore.findUserById(userId);
+    const workspace = initializeCourseWorkspace(authStore, userId, latestUser, courseCatalog, { reset: true });
+    if (workspace.status !== 'ready') {
+      sendJson(response, 400, { message: '当前专业、年级或学期暂无可用培养方案，原课程清单未改变。' });
+      return true;
+    }
+    sendJson(response, 200, { courses: courseViews(workspace.courses, catalogCodes) });
     return true;
   }
 
@@ -146,6 +165,11 @@ export async function handleAccountHttpRequest({
     const course = cleanCourse({ ...(await readJsonBody(request)), courseCode: decodeURIComponent(courseMatch[1]) });
     if (!course) {
       sendJson(response, 400, { message: '课程信息无效。' });
+      return true;
+    }
+    const currentCourses = authStore.listUserCourses(userId);
+    if (currentCourses.length >= 100 && !currentCourses.some((entry) => entry.courseCode === course.courseCode)) {
+      sendJson(response, 400, { message: '我的课程最多保留 100 门。' });
       return true;
     }
     sendJson(response, 200, { courses: courseViews(authStore.upsertUserCourse(userId, course), catalogCodes) });

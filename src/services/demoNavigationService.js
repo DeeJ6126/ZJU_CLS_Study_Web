@@ -43,6 +43,7 @@ export function getDemoPageFromHash(hash, pages) {
   if (pageId === 'notifications') {
     return 'notifications';
   }
+  if (pageId === 'my-courses') return 'my-courses';
   if (pageId === 'notices' || pageId.startsWith('notices/')) {
     return 'notices';
   }

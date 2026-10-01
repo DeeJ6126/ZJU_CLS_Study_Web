@@ -37,6 +37,7 @@ Shared business logic and API clients.
 - `noticeApiClient.js`: public notice lists/details and administrator-only notice publication and attachment maintenance; separate from private account messages.
 - `localWorkspaceService.js`: scoped browser-local study preferences, guest favorites, and latest quiz session.
 - `currentSemesterService.js`: Shanghai academic-period selection and curriculum-based homepage course suggestions.
+- `myCourseService.js`: professional/foundation-only presets, course-row normalization, course-picker search and safe site-course detail links for My Courses. `localWorkspaceService.js` stores guest courses separately from favorites; account courses remain backend-owned.
 
 For the quiz handoff map, read `quiz-services.md`.
 

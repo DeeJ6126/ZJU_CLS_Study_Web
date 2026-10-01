@@ -123,6 +123,8 @@ Public notices use `/api/notices` and `#notices/:id`; private account messages r
 
 ## Account Learning Data
 
+My Courses and course favorites are independent. Guests keep `myCourses` plus `coursesInitialized` in their existing browser workspace. Verified accounts use `user_courses` and a `user_course_workspace` initialization marker in auth SQLite. An uninitialized empty list with a supported major/cohort is seeded from current-term professional/foundation sections; existing imports are retained. Manual deletion to an empty list remains empty across reloads/devices. `POST /api/account/courses/preset` explicitly replaces the list after UI confirmation; unsupported curricula leave it unchanged. The full CSV is used only by the course picker/preset, while public resource discovery and course routes retain the BIO/CAB site restriction.
+
 - `auth.sqlite` stores private courses, favorites, notifications, and account-linked quiz ownership.
 - `content.sqlite` stores identified comments keyed by immutable content and user IDs. Replies use one level and deletion is soft.
 - Signed-in quiz data is keyed by user ID, collection ID, and a stable source-question or vocabulary key. Successful first-login merge clears the corresponding local browser records.

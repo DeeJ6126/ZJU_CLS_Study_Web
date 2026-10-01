@@ -15,6 +15,7 @@ Components should render props, hold local UI state, and emit events upward. Kee
 - `ConsultationPage.vue`: visitor and mentor chat views for scheduled consultation sessions.
 - `NoticePage.vue`: public notice search, filters and details; `admin/NoticeAdminPanel.vue` maintains drafts, published notices and downloadable attachments.
 - `ContributionBox.vue`: authenticated course submission form that sends review-ready fields upward.
+- `MyCourseGrid.vue` / `MyCourseEditor.vue`: shared homepage/personal course cards and full-catalog name/code search, with hover/focus removal and visible touch controls; persistence stays in App/services.
 - `account/AccountPopover.vue` and `account/AuthDialog.vue`: account status and numeric student-ID email authentication forms; API work and permission decisions remain in the app/service layer.
 - `account/AccountSwitcher.vue`: switches between the real session and isolated browser-local demo accounts, and can reset the active demo account.
 - `account/NotificationsPage.vue`: account-only message list and read actions.

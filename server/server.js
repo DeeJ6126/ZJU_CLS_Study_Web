@@ -499,6 +499,7 @@ export function createAuthServer({
         readJsonBody,
         readBinaryBody,
         catalogCodes: courseCatalog.codes,
+        courseCatalog: courseCatalog.allCourses,
       });
       if (accountHandled) {
         return;

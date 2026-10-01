@@ -373,6 +373,8 @@ html[data-theme="dark"] .home-search__message {
   margin-top: 12px;
 }
 
+.home-study__course-notice { color: var(--home-ink); font-size: 13px; margin-top: 12px; }
+
 .home-study__courses a {
   display: grid;
   gap: 3px;

@@ -133,6 +133,11 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
           created_at text not null,
           primary key (user_id, content_id)
         );
+        create table if not exists user_course_workspace (
+          user_id integer not null,
+          initialized_at text not null,
+          primary key (user_id)
+        );
         create table if not exists notifications (
           id text primary key,
           user_id integer not null,
@@ -485,6 +490,15 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
       `).all(userId);
     },
 
+    userCoursesInitialized(userId) {
+      return Boolean(db.prepare('select user_id from user_course_workspace where user_id = ?').get(userId));
+    },
+
+    markUserCoursesInitialized(userId) {
+      db.prepare('insert into user_course_workspace (user_id, initialized_at) values (?, ?) on conflict(user_id) do nothing')
+        .run(userId, new Date().toISOString());
+    },
+
     replaceUserCourses(userId, courses) {
       const now = new Date().toISOString();
       db.exec('begin immediate');
@@ -501,6 +515,7 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
             course.term ?? '', course.classTime ?? '', course.classLocation ?? '', now,
           );
         }
+        this.markUserCoursesInitialized(userId);
         db.exec('commit');
       } catch (error) {
         db.exec('rollback');
@@ -521,12 +536,14 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
         userId, String(course.courseCode).toUpperCase(), course.courseName, course.teacherName ?? '',
         course.term ?? '', course.classTime ?? '', course.classLocation ?? '', new Date().toISOString(),
       );
+      this.markUserCoursesInitialized(userId);
       return this.listUserCourses(userId);
     },
 
     removeUserCourse(userId, courseCode) {
       db.prepare('delete from user_courses where user_id = ? and course_code = ?')
         .run(userId, String(courseCode).toUpperCase());
+      this.markUserCoursesInitialized(userId);
       return this.listUserCourses(userId);
     },
 

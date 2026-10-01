@@ -76,6 +76,7 @@ const emit = defineEmits([
     </div>
 
     <div v-if="isGuest" class="account-popover__actions">
+      <button type="button" @click="emit('open-profile')">我的课程</button>
       <button type="button" @click="emit('open-register-email')">学号认证注册</button>
       <button type="button" @click="emit('open-login')">登录</button>
     </div>

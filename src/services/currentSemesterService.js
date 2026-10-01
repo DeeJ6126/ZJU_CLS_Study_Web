@@ -20,7 +20,7 @@ export function currentSchoolSemester(now = new Date()) {
   return { academicYear, term };
 }
 
-export function currentSemesterCourses({ majorId, cohortYear, courses = [], now = new Date(), chosenModules = [] } = {}) {
+export function currentSemesterCourses({ majorId, cohortYear, courses = [], now = new Date(), chosenModules = [], professionalOnly = false } = {}) {
   if (!majorIds.has(majorId) || cohortYear == null || cohortYear === '' || !Number.isInteger(Number(cohortYear))) {
     return { status: 'missing-profile', courses: [], semesterId: '', label: '' };
   }
@@ -33,7 +33,10 @@ export function currentSemesterCourses({ majorId, cohortYear, courses = [], now 
     return { status: 'outside-program', courses: [], semesterId: '', label: '' };
   }
   const semesterId = `${studyYear}-${schoolTerm.term}`;
-  const { semesterByCourse } = flattenProgram(program, chosenModules);
+  const selectedProgram = professionalOnly ? {
+    ...program, sections: program.sections.filter((section) => /专业基础课程|专业课程/.test(section.tag)),
+  } : program;
+  const { semesterByCourse } = flattenProgram(selectedProgram, chosenModules);
   const byCode = new Map(courses.map((course) => [course.code, course]));
   const recommendedCodes = Object.entries(semesterByCourse)
     .filter(([, semester]) => semester === semesterId)

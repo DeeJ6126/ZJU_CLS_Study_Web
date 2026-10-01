@@ -6,6 +6,7 @@ export function createAccountDataApiClient(fetchImpl = fetch) {
 
   return {
     fetchCourses: () => request('api/account/courses'),
+    resetCoursePreset: () => request('api/account/courses/preset', json('POST', {})),
     previewCourseSchedule: (file) => request('api/account/courses/import-preview', {
       method: 'POST',
       headers: {

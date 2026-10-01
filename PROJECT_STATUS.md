@@ -21,6 +21,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 
 ## Recently Completed
 
+- Homepage and personal workspace now share one editable My Courses list. First setup seeds current-term professional/foundation curriculum sections; optional electives remain searchable in the full course picker. Guests persist locally and verified accounts persist in auth SQLite with an initialization marker so removing all courses never silently reseeds them. Existing imported lists are preserved; explicit preset reset requires confirmation. Course favorites remain separate.
 - Added administrator-maintained public notices with category/major/cohort/deadline filters, pagination, pinned ordering, safe Markdown details, source links and PDF/DOCX/XLSX attachments. Drafts and archived content remain private; no application, comment or submission workflow is exposed. Notice data and files reuse existing production backup coverage.
 - Added freely editable teacher-name suggestions to resource search, course submissions, and administrator content forms. Suggestions use the course teacher catalog, narrow by course and name prefix, and highlight the prefix without requiring a listed teacher for submission.
 - Added a course-overview teacher list from a pinned Chalaoshi data snapshot, covering 120 of 131 site courses. Microbiology theory and lab share the original combined-course list; unmatched courses remain explicitly empty.

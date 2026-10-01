@@ -19,6 +19,7 @@ Lightweight Node backend for the current application.
 - Student-ID-verified post likes and administrator operation logs.
 - Public profiles, nickname search, avatar uploads, and owner post management.
 - Private course lists with XLSX timetable preview/import.
+- Personal course-list initialization uses the current Shanghai term and professional/foundation curriculum sections, preserves existing imports and permanently empty customized lists, and keeps favorites separate. Explicit reset is account-protected at `POST /api/account/courses/preset`; metadata remains in the already backed-up auth database.
 - Account favorites, identified comments/replies, and in-site notifications.
 - Cross-device quiz progress, mistakes, vocabulary, and anonymous-session claiming.
 - Cross-source search over courses, published content, activities, and approved student homepages.

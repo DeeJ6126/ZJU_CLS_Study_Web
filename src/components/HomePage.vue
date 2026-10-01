@@ -15,6 +15,7 @@ import { resourceSearchApiClient } from '../services/resourceSearchApiClient.js'
 import { imageFileToAvatarDataUrl, studentHomepageApiClient } from '../services/studentHomepageApiClient.js';
 import { publicAssetPath } from '../utils/publicPath.js';
 import TeacherNameInput from './TeacherNameInput.vue';
+import MyCourseGrid from './MyCourseGrid.vue';
 import { searchTeacherNames } from '../services/teacherSuggestionService.js';
 
 const props = defineProps({
@@ -26,8 +27,11 @@ const props = defineProps({
   lastQuiz: { type: Object, default: null },
   studyNotice: { type: String, default: '' },
   studySaving: { type: Boolean, default: false },
+  myCourses: { type: Array, default: () => [] },
+  coursesBusy: { type: Boolean, default: false },
+  courseNotice: { type: String, default: '' },
 });
-const emit = defineEmits(['save-study-profile', 'dismiss-study-setup', 'resume-quiz']);
+const emit = defineEmits(['save-study-profile', 'dismiss-study-setup', 'resume-quiz', 'remove-course']);
 const activeActivityClient = computed(() => props.activityClient ?? activityApiClient);
 const activeHomepageClient = computed(() => props.homepageClient ?? studentHomepageApiClient);
 const activeResourceSearchClient = computed(() => props.resourceSearchClient ?? resourceSearchApiClient);
@@ -321,9 +325,9 @@ onMounted(async () => {
       <section class="home-study" aria-labelledby="home-study-title">
         <header class="home-study__head">
           <div>
-            <p>按培养方案建议</p>
-            <h2 id="home-study-title">本学期课程</h2>
+            <h2 id="home-study-title">我的课程</h2>
           </div>
+          <a href="#my-courses">设置我的课程</a>
           <button v-if="hasStudyProfile && !showStudyForm" type="button" @click="editingStudyProfile = true">修改专业与年级</button>
         </header>
 
@@ -349,15 +353,12 @@ onMounted(async () => {
         <p v-else-if="hasStudyProfile && !courseCatalogReady" class="home-study__empty">正在读取课程...</p>
         <template v-else-if="hasStudyProfile && semesterOverview.status === 'ready'">
           <p class="home-study__term">{{ semesterOverview.label }} · {{ availableMajors.find((major) => major.id === studyProfile.majorId)?.label }}</p>
-          <div v-if="semesterOverview.courses.length" class="home-study__courses">
-            <a v-for="course in semesterOverview.courses" :key="course.code" :href="course.href">
-              <strong>{{ course.name }}</strong><span>{{ course.code }}</span>
-            </a>
-          </div>
-          <p v-else class="home-study__empty">本学期暂无已收录的课程。可前往概览查看完整培养方案。</p>
         </template>
         <p v-else-if="hasStudyProfile && semesterOverview.status === 'no-program'" class="home-study__empty">这一年级的培养方案暂未收录，课程建议无法准确生成。</p>
         <button v-else type="button" class="home-study__set-later" @click="editingStudyProfile = true">设置专业与入学年级</button>
+        <MyCourseGrid v-if="myCourses.length" class="home-study__courses" :courses="myCourses" :busy="coursesBusy" @remove-course="emit('remove-course', $event)" />
+        <p v-else-if="!studySaving" class="home-study__empty">暂无课程。</p>
+        <p v-if="courseNotice" class="home-study__course-notice" role="status">{{ courseNotice }}</p>
         <p v-if="studyNotice" class="home-study__notice" role="status">{{ studyNotice }}</p>
 
         <div class="home-study__last-quiz">

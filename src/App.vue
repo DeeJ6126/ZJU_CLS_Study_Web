@@ -8,6 +8,7 @@ import QuizPracticeLayout from './components/quiz/QuizPracticeLayout.vue';
 import TextAnswerQuestionView from './components/quiz/TextAnswerQuestionView.vue';
 import TrueFalseQuestionView from './components/quiz/TrueFalseQuestionView.vue';
 import HomePage from './components/HomePage.vue';
+import MyCourseEditor from './components/MyCourseEditor.vue';
 import ActivityPage from './components/ActivityPage.vue';
 import ActivityDetailPage from './components/ActivityDetailPage.vue';
 import NoticePage from './components/NoticePage.vue';
@@ -162,7 +163,8 @@ import {
 import { submissionApiClient } from './services/submissionApiClient.js';
 import { quizCourseConfigs } from './data/quizCourseConfigs.js';
 import { demoPendingCourses, demoSupportedCourses, demoTopPages } from './data/quizDemo.js';
-import { getResourceCourseByCode } from './data/courses/resourceData.js';
+import { getResourceCourseByCode, loadCoursePickerCatalog } from './data/courses/resourceData.js';
+import { courseListPreset, myCourseViews } from './services/myCourseService.js';
 import { getCourseDetail } from './data/courses/courseDetails.js';
 import { buildCourseRoute, parseResourceHash } from './data/courses/resourcePaths.js';
 import { publicAssetPath } from './utils/publicPath.js';
@@ -213,7 +215,7 @@ const localWorkspace = ref(readLocalWorkspace(localWorkspaceScope.value));
 const studySaving = ref(false);
 const studyNotice = ref('');
 const accountRecentQuiz = ref(null);
-watch(localWorkspaceScope, (scope) => { localWorkspace.value = readLocalWorkspace(scope); });
+watch(localWorkspaceScope, (scope) => { localWorkspace.value = readLocalWorkspace(scope); courseListNotice.value = ''; });
 const demoIdentityOptions = demoIdentityEnabled ? getDemoIdentityOptions() : [];
 const activeDemoAccountId = computed(() => (
   demoIdentityId.value && demoIdentityId.value !== 'guest' ? demoIdentityId.value : ''
@@ -365,6 +367,11 @@ const profileError = ref('');
 const profileNotice = ref('');
 const activeProfilePublicId = ref('');
 const accountCourses = ref([]);
+const coursePickerCatalog = ref([]);
+const courseCatalogError = ref('');
+const courseListBusy = ref(false);
+const courseListNotice = ref('');
+let courseReadSequence = 0;
 const accountCourseFavorites = ref([]);
 const courseFavoriteCount = ref(0);
 const accountFavorites = ref([]);
@@ -450,6 +457,7 @@ const studyProfile = computed(() => (viewerIsGuest.value || demoIdentityId.value
     majorId: viewer.value.majorId ?? '', cohortYear: viewer.value.grade ?? null,
     onboardingDismissed: localWorkspace.value.onboardingDismissed,
   });
+const myCourses = computed(() => myCourseViews(viewerIsGuest.value ? localWorkspace.value.myCourses : accountCourses.value, coursePickerCatalog.value));
 const lastQuiz = computed(() => {
   const record = viewerIsGuest.value || demoIdentityId.value
     ? localWorkspace.value.lastQuiz : (accountRecentQuiz.value ?? localWorkspace.value.lastQuiz);
@@ -682,8 +690,8 @@ function setPage(pageId) {
       activePage.value = pageId;
       window.location.hash = getProfileHref(viewer.value.publicId);
     } else {
-      activePage.value = 'home';
-      window.location.hash = getDemoPageHref('home');
+      activePage.value = 'my-courses';
+      window.location.hash = '#my-courses';
     }
     return;
   }
@@ -1781,6 +1789,12 @@ function applyLocalWorkspaceChange(result) {
 }
 
 async function saveStudyProfile({ majorId, cohortYear }) {
+  if (studySaving.value || courseListBusy.value) return;
+  const changed = studyProfile.value.majorId !== majorId || Number(studyProfile.value.cohortYear) !== Number(cohortYear);
+  const preset = courseListPreset({ majorId, cohortYear, courses: coursePickerCatalog.value });
+  if (changed && myCourses.value.length && preset.status === 'ready'
+    && !window.confirm('修改专业或年级后，将重新预置本学期课程并替换当前“我的课程”。确定继续吗？')) return;
+  const scope = localWorkspaceScope.value;
   studySaving.value = true;
   studyNotice.value = '';
   if (viewerIsGuest.value || demoIdentityId.value) {
@@ -1788,10 +1802,14 @@ async function saveStudyProfile({ majorId, cohortYear }) {
       majorId, cohortYear, onboardingDismissed: true,
     }));
     studyNotice.value = result.ok ? '专业与年级已保存在此浏览器。' : result.message;
+    if (result.ok && (changed || !localWorkspace.value.coursesInitialized)) await resetCoursePreset(false);
   } else {
     const result = await updateMyStudyProfile({ majorId, grade: cohortYear });
+    if (scope !== localWorkspaceScope.value) { studySaving.value = false; return; }
     if (result.ok) studentViewer.value = result.user;
     studyNotice.value = result.ok ? '专业与年级已同步到账号。' : result.message;
+    if (result.ok && changed) await resetCoursePreset(false);
+    else if (result.ok) await loadAccountData();
   }
   studySaving.value = false;
 }
@@ -1828,10 +1846,13 @@ function rememberQuiz(sessionData = null) {
 }
 
 async function loadAccountData() {
+  const sequence = ++courseReadSequence;
+  const scope = localWorkspaceScope.value;
   if (viewerIsGuest.value) {
     accountCourses.value = [];
     const local = readLocalWorkspace(localWorkspaceScope.value);
     localWorkspace.value = local;
+    initializeLocalCourses();
     accountCourseFavorites.value = local.courseFavorites;
     accountFavorites.value = local.contentFavorites;
     notifications.value = [];
@@ -1856,6 +1877,7 @@ async function loadAccountData() {
     accountDataApiClient.fetchFavorites(),
     accountDataApiClient.fetchNotifications(),
   ]);
+  if (sequence !== courseReadSequence || scope !== localWorkspaceScope.value) return;
   if (coursesResult.ok) accountCourses.value = coursesResult.courses ?? [];
   if (courseFavoritesResult.ok) accountCourseFavorites.value = courseFavoritesResult.courseCodes ?? [];
   if (favoritesResult.ok) accountFavorites.value = favoritesResult.favorites ?? [];
@@ -2464,16 +2486,10 @@ async function previewCourseSchedule(file) {
 }
 
 async function replaceAccountCourses(courses) {
-  const resultData = isDemoAccount.value
+  const saved = await mutateMyCourses(() => isDemoAccount.value
     ? demoAccountService.replaceCourses(activeDemoAccountId.value, courses)
-    : await accountDataApiClient.replaceCourses(courses);
-  if (!resultData.ok) {
-    profileNotice.value = resultData.message;
-    return;
-  }
-  accountCourses.value = resultData.courses ?? [];
-  courseImportPreview.value = null;
-  profileNotice.value = mutationNotice(resultData, '课程清单已替换。');
+    : accountDataApiClient.replaceCourses(courses), '课程清单已替换。');
+  if (saved) courseImportPreview.value = null;
 }
 
 async function toggleCourseFavorite(course) {
@@ -2506,25 +2522,63 @@ async function toggleCourseFavorite(course) {
 }
 
 async function addAccountCourse(course) {
-  const resultData = isDemoAccount.value
-    ? demoAccountService.addCourse(activeDemoAccountId.value, course)
-    : await accountDataApiClient.addCourse(course);
-  if (resultData.ok) {
-    accountCourses.value = resultData.courses ?? [];
-    if (resultData.persistenceWarning) profileNotice.value = resultData.persistenceWarning;
-  }
+  if (myCourses.value.some((entry) => entry.courseCode === course.courseCode)) return;
+  if (myCourses.value.length >= 100) { courseListNotice.value = '我的课程最多保留 100 门，请先删除部分课程。'; return; }
+  await mutateMyCourses(() => viewerIsGuest.value
+    ? updateLocalWorkspace(localWorkspaceScope.value, { myCourses: [...localWorkspace.value.myCourses, course], coursesInitialized: true })
+    : isDemoAccount.value ? demoAccountService.addCourse(activeDemoAccountId.value, course)
+      : accountDataApiClient.addCourse(course), '课程已添加。');
 }
 
 async function removeAccountCourse(course) {
   const courseCode = typeof course === 'string' ? course : course.courseCode;
-  const resultData = isDemoAccount.value
-    ? demoAccountService.removeCourse(activeDemoAccountId.value, courseCode)
-    : await accountDataApiClient.removeCourse(courseCode);
-  if (resultData.ok) {
-    accountCourses.value = resultData.courses ?? [];
-    if (resultData.persistenceWarning) profileNotice.value = resultData.persistenceWarning;
-  }
-  else profileNotice.value = resultData.message;
+  await mutateMyCourses(() => viewerIsGuest.value
+    ? updateLocalWorkspace(localWorkspaceScope.value, { myCourses: localWorkspace.value.myCourses.filter((entry) => entry.courseCode !== courseCode), coursesInitialized: true })
+    : isDemoAccount.value ? demoAccountService.removeCourse(activeDemoAccountId.value, courseCode)
+      : accountDataApiClient.removeCourse(courseCode), '课程已删除。');
+}
+
+async function mutateMyCourses(operation, successMessage) {
+  if (courseListBusy.value) return;
+  const scope = localWorkspaceScope.value;
+  courseListBusy.value = true;
+  courseListNotice.value = '';
+  courseReadSequence += 1;
+  try {
+    const result = await operation();
+    if (scope !== localWorkspaceScope.value) return false;
+    if (!result.ok) { courseListNotice.value = result.message || '课程清单保存失败。'; return false; }
+    if (viewerIsGuest.value) applyLocalWorkspaceChange(result);
+    else accountCourses.value = result.courses ?? [];
+    courseListNotice.value = result.persistenceWarning || successMessage;
+    return true;
+  } catch { if (scope === localWorkspaceScope.value) courseListNotice.value = '课程清单保存失败，请重试。'; return false; }
+  finally { courseListBusy.value = false; }
+}
+
+function initializeLocalCourses() {
+  if (!viewerIsGuest.value || localWorkspace.value.coursesInitialized || !coursePickerCatalog.value.length) return;
+  const preset = courseListPreset({ ...studyProfile.value, courses: coursePickerCatalog.value });
+  if (preset.status !== 'ready') return;
+  const result = applyLocalWorkspaceChange(updateLocalWorkspace(localWorkspaceScope.value, { myCourses: preset.courses, coursesInitialized: true }));
+  if (!result.ok) courseListNotice.value = result.message;
+}
+
+async function loadCourseCatalog() {
+  courseCatalogError.value = '';
+  try { coursePickerCatalog.value = await loadCoursePickerCatalog(); initializeLocalCourses(); }
+  catch { courseCatalogError.value = '课程目录暂时无法读取。'; }
+}
+
+async function resetCoursePreset(confirm = true) {
+  if (courseListBusy.value) return;
+  if (confirm && myCourses.value.length && !window.confirm('重新预置将替换当前“我的课程”，手动增删会被重置。确定继续吗？')) return;
+  const preset = courseListPreset({ ...studyProfile.value, courses: coursePickerCatalog.value });
+  if (preset.status !== 'ready') { courseListNotice.value = '当前专业、年级或学期暂无可用培养方案，原课程清单未改变。'; return; }
+  await mutateMyCourses(() => viewerIsGuest.value
+    ? updateLocalWorkspace(localWorkspaceScope.value, { myCourses: preset.courses, coursesInitialized: true })
+    : isDemoAccount.value ? demoAccountService.replaceCourses(activeDemoAccountId.value, preset.courses)
+      : accountDataApiClient.resetCoursePreset(), '本学期课程已预置，可继续增删。');
 }
 
 // OverviewPage 在用户点击与自己所在 hash 相同的课程卡片时会上抛该事件。
@@ -2690,8 +2744,9 @@ async function handleLogout() {
 }
 
 function openOwnProfile() {
-  if (!viewer.value.publicId) return;
   accountOpen.value = false;
+  if (viewerIsGuest.value) { window.location.hash = '#my-courses'; return; }
+  if (!viewer.value.publicId) return;
   window.location.hash = getProfileHref(viewer.value.publicId);
 }
 
@@ -2820,6 +2875,7 @@ watch([studentViewer, demoIdentityId], () => {
 });
 
 onMounted(async () => {
+  await loadCourseCatalog();
   try {
     const auth = await fetchCurrentUser();
     if (auth.ok) {
@@ -2928,6 +2984,10 @@ onBeforeUnmount(() => {
         :last-quiz="lastQuiz"
         :study-notice="studyNotice"
         :study-saving="studySaving"
+        :my-courses="myCourses"
+        :courses-busy="courseListBusy"
+        :course-notice="courseListNotice"
+        @remove-course="removeAccountCourse"
         @save-study-profile="saveStudyProfile"
         @dismiss-study-setup="dismissStudySetup"
         @resume-quiz="openLastQuiz"
@@ -2989,7 +3049,11 @@ onBeforeUnmount(() => {
         :profile="profileView.profile"
         :posts="profileView.posts"
         :submissions="profileView.submissions"
-        :courses="accountCourses"
+        :courses="myCourses"
+        :course-catalog="coursePickerCatalog"
+        :courses-busy="courseListBusy"
+        :course-notice="courseListNotice"
+        :course-catalog-error="courseCatalogError"
         :favorites="accountFavorites"
         :comments="profileView.comments"
         :course-import-preview="courseImportPreview"
@@ -3012,10 +3076,21 @@ onBeforeUnmount(() => {
         @preview-course-schedule="previewCourseSchedule"
         @replace-courses="replaceAccountCourses"
         @remove-course="removeAccountCourse"
+        @add-course="addAccountCourse"
+        @reset-course-preset="resetCoursePreset"
+        @retry-course-catalog="loadCourseCatalog"
         @remove-favorite="removeProfileFavorite"
         @edit-comment="editProfileComment"
         @delete-comment="deleteProfileComment"
       />
+
+      <section v-else-if="activePage === 'my-courses'" class="my-courses-page">
+        <header><a href="#home">返回首页</a><h1>我的课程</h1></header>
+        <p v-if="viewerIsGuest">课程清单保存在当前浏览器。</p>
+        <p v-if="courseListNotice" role="status">{{ courseListNotice }}</p>
+        <MyCourseEditor :courses="myCourses" :catalog="coursePickerCatalog" :busy="courseListBusy" :catalog-error="courseCatalogError"
+          @add-course="addAccountCourse" @remove-course="removeAccountCourse" @reset-preset="resetCoursePreset" @retry-catalog="loadCourseCatalog" />
+      </section>
 
       <NoticePage
         v-else-if="activePage === 'notices'"

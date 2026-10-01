@@ -4,6 +4,7 @@ export { programOptions, resourceProgramMeta } from './resourceCatalog.js';
 
 const resourceSummaryUrl = '/resource/summary/introduction.csv';
 let catalogCache = null;
+let fullCatalogCache = null;
 
 export async function loadResourceCatalog() {
   if (catalogCache) {
@@ -17,10 +18,16 @@ export async function loadResourceCatalog() {
   }
 
   const csvText = await response.text();
-  const courses = filterSiteCourses(parseCourseCsv(csvText));
+  fullCatalogCache = parseCourseCsv(csvText);
+  const courses = filterSiteCourses(fullCatalogCache);
   const sections = buildResourceSections(courses);
   catalogCache = { courses, sections };
   return catalogCache;
+}
+
+export async function loadCoursePickerCatalog() {
+  if (!fullCatalogCache) await loadResourceCatalog();
+  return fullCatalogCache;
 }
 
 export async function getResourceCourseByCode(courseCode) {

@@ -1,4 +1,5 @@
 import { majorOptions } from '../data/courses/programCatalog.js';
+import { cleanMyCourses } from './myCourseService.js';
 
 const storagePrefix = 'zjubio:local-workspace:v1:';
 const majorIds = new Set(majorOptions.filter((option) => option.available).map((option) => option.id));
@@ -12,6 +13,7 @@ function emptyWorkspace() {
   return {
     majorId: '', cohortYear: null, onboardingDismissed: false,
     courseFavorites: [], contentFavorites: [], lastQuiz: null,
+    myCourses: [], coursesInitialized: false,
   };
 }
 
@@ -25,6 +27,8 @@ function cleanWorkspace(value) {
     majorId: majorIds.has(data.majorId) ? data.majorId : '',
     cohortYear: data.cohortYear != null && Number.isInteger(year) && year >= 2023 && year <= 2035 ? year : null,
     onboardingDismissed: data.onboardingDismissed === true,
+    myCourses: cleanMyCourses(data.myCourses),
+    coursesInitialized: data.coursesInitialized === true || (Array.isArray(data.myCourses) && data.myCourses.length > 0),
     courseFavorites: [...new Set(courseFavorites.filter((code) => typeof code === 'string' && /^[A-Z0-9-]{3,24}$/.test(code)))],
     contentFavorites: [...new Map(contentFavorites.filter((item) => item && typeof item.id === 'string'
       && item.id && contentTypes.has(item.type) && typeof item.courseCode === 'string')
