@@ -55,11 +55,11 @@ test('about content sanitizer accepts a full html document and returns a bare fr
 test('about sections config declares the sidebar entries as data, not component literals', () => {
   assert.deepEqual(
     aboutSections.map((section) => section.id),
-    ['about-us', 'about-site', 'contributors'],
+    ['about-site', 'about-us', 'contributors'],
   );
   assert.deepEqual(
     aboutSections.map((section) => section.label),
-    ['关于我们', '关于网站', '贡献者'],
+    ['关于网站', '关于我们', '贡献者'],
   );
 
   for (const section of aboutSections) {
@@ -92,7 +92,7 @@ test('app renders the about page component instead of the old placeholder', () =
   const app = readFileSync('src/App.vue', 'utf8');
 
   assert.match(app, /import AboutPage from '\.\/components\/AboutPage\.vue'/);
-  assert.match(app, /<AboutPage v-else-if="activePage === 'about'" \/>/);
+  assert.match(app, /<AboutPage v-else-if="activePage === 'about'"[^>]*\/>/);
   assert.doesNotMatch(app, /生科智学会先把刷题和资源入口做稳/);
 });
 

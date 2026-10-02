@@ -88,6 +88,16 @@ export function createDemoAccountService({
     return clone(read().accounts);
   }
 
+  function createFeedbackClient(identityProvider) {
+    return { submit: async (body) => {
+      if (typeof body !== 'string' || !body.trim() || body.trim().length > 2000) return { ok: false, message: '请填写1至2000字的意见。' };
+      const identityId = typeof identityProvider === 'function' ? identityProvider() : identityProvider;
+      const feedback = { id: nextId('feedback'), body: body.trim(), authorName: account(identityId)?.user.nickname || '游客', createdAt: now(), readAt: '' };
+      (read().feedback ??= []).unshift(feedback);
+      return persist({ ok: true, feedback: { id: feedback.id, createdAt: feedback.createdAt } });
+    } };
+  }
+
   function identityByPublicId(publicId) {
     return Object.entries(read().accounts).find(([, value]) => value.user.publicId === publicId)?.[0] ?? '';
   }
@@ -606,6 +616,9 @@ export function createDemoAccountService({
       updateSubmission: async (id, input) => { const found = findSubmission(id); if (!found) return { ok: false, message: '投稿不存在。' }; Object.assign(found.item, clone(input)); return persist({ ok: true, submission: clone(found.item) }); },
       approveSubmission: async (id) => reviewSubmission(id, 'approved'),
       rejectSubmission: async (id, note) => reviewSubmission(id, 'rejected', note),
+      fetchFeedback: async (page = 1) => ({ ok: true, items: clone((read().feedback ?? []).slice((page - 1) * 50, page * 50)), total: (read().feedback ?? []).length, unreadCount: (read().feedback ?? []).filter((item) => !item.readAt).length, pageSize: 50 }),
+      fetchFeedbackCount: async () => ({ ok: true, unreadCount: (read().feedback ?? []).filter((item) => !item.readAt).length }),
+      markFeedbackRead: async (ids) => { for (const item of read().feedback ?? []) if (ids.includes(item.id) && !item.readAt) item.readAt = now(); return persist({ ok: true, unreadCount: (read().feedback ?? []).filter((item) => !item.readAt).length }); },
       fetchAuditLogs: async (filters = {}) => ({ ok: true, logs: clone(read().auditLogs.filter((item) => (!filters.courseCode || item.courseCode === filters.courseCode) && (!filters.action || item.action === filters.action) && (!filters.query || JSON.stringify(item).toLowerCase().includes(String(filters.query).toLowerCase())))) }),
       fetchActivities: async (filters = {}) => {
         const all = await ensureActivities();
@@ -762,6 +775,7 @@ export function createDemoAccountService({
     createAdminClient,
     createPublicActivityClient,
     createPublicHomepageClient,
+    createFeedbackClient,
     getPublishedCourseContent,
     resetAccount,
     getAllAccounts,

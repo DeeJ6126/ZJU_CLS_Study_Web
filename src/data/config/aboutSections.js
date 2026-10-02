@@ -9,16 +9,16 @@
  */
 export const aboutSections = [
   {
-    id: 'about-us',
-    label: '关于我们',
-    kicker: 'About Us',
-    contentUrl: 'content/about/about-us.html',
-  },
-  {
     id: 'about-site',
     label: '关于网站',
     kicker: 'About the Site',
     contentUrl: 'content/about/about-site.html',
+  },
+  {
+    id: 'about-us',
+    label: '关于我们',
+    kicker: 'About Us',
+    contentUrl: 'content/about/about-us.html',
   },
   {
     id: 'contributors',

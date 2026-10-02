@@ -769,3 +769,23 @@ test('activity HTTP API exposes only administrator-managed push-article entries'
     server.close();
   }
 });
+
+test('guest feedback is routed through real HTTP handlers but never publicly readable', async () => {
+  const contentStore = createContentStore({ filename: ':memory:' });
+  const { server } = createAuthServer({ ...isolatedStores(), contentStore });
+  const port = await listen(server);
+  const baseUrl = `http://127.0.0.1:${port}`;
+  try {
+    const response = await fetch(`${baseUrl}/api/feedback`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ body: '**普通文字**\n<b>不是格式</b>' }),
+    });
+    assert.equal(response.status, 201);
+    assert.ok((await response.json()).feedback.id);
+    assert.equal(contentStore.listFeedback().items[0].body, '**普通文字**\n<b>不是格式</b>');
+    assert.equal(contentStore.countUnreadFeedback(), 1);
+    assert.equal((await fetch(`${baseUrl}/api/feedback`)).status, 404);
+    assert.equal((await fetch(`${baseUrl}/api/admin/feedback`)).status, 401);
+    assert.equal((await fetch(`${baseUrl}/api/admin/feedback/count`)).status, 401);
+  } finally { server.close(); }
+});

@@ -8,9 +8,12 @@ import {
 import { buildHashWithQuery, getHashQuery } from '../services/demoNavigationService.js';
 import { sanitizeHtmlFragment } from '../utils/htmlFragment.js';
 import { publicAssetPath } from '../utils/publicPath.js';
+import FeedbackBox from './FeedbackBox.vue';
 
 const props = defineProps({
   sections: { type: Array, default: () => defaultAboutSections },
+  feedbackClient: { type: Object, default: null },
+  viewerKey: { type: String, default: 'guest' },
 });
 
 const html = ref('');
@@ -146,6 +149,7 @@ onBeforeUnmount(() => {
       <p v-if="loading" class="about-page__status" aria-live="polite">正在加载内容…</p>
       <p v-else-if="message" class="about-page__status" aria-live="polite">{{ message }}</p>
       <article v-else class="about-page__body" v-html="html"></article>
+      <FeedbackBox v-if="activeSectionId === 'about-us' && !loading && !message" :client="feedbackClient" :viewer-key="viewerKey" />
     </div>
   </div>
 </template>

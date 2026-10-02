@@ -4,6 +4,8 @@ This directory owns the first-phase course-content administration backend.
 
 ## Responsibilities
 
+- Private plain-text feedback, including guest submissions, rate/duplicate limits and administrator-only unread/read state. Feedback stays out of published course content and search.
+
 - SQLite records for learning experiences, review materials, and past papers.
 - Idempotent import from `public/resource/courses/`.
 - Draft, published, and archived status transitions.

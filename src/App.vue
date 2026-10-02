@@ -227,6 +227,7 @@ const isDemoAccount = computed(() => Boolean(activeDemoAccountId.value));
 const demoAdminApiClient = demoAccountService.createAdminClient();
 const demoActivityPublicClient = demoAccountService.createPublicActivityClient();
 const demoHomepagePublicClient = demoAccountService.createPublicHomepageClient(() => demoIdentityId.value);
+const demoFeedbackClient = demoAccountService.createFeedbackClient(() => demoIdentityId.value);
 
 async function selectDemoIdentity(identityId) {
   if (!demoIdentityEnabled) return;
@@ -3129,7 +3130,7 @@ onBeforeUnmount(() => {
         :activity-client="demoIdentityId ? demoActivityPublicClient : null"
       />
 
-      <AboutPage v-else-if="activePage === 'about'" />
+      <AboutPage v-else-if="activePage === 'about'" :feedback-client="demoIdentityId ? demoFeedbackClient : null" :viewer-key="localWorkspaceScope" />
       <MorePage v-else-if="activePage === 'more'" :homepage-client="demoIdentityId ? demoHomepagePublicClient : null" :can-submit="userCanSubmit" :viewer-key="quizScope" @request-login="openAuthDialog('login')" />
 
       <section v-else class="quiz-demo" aria-label="刷题">

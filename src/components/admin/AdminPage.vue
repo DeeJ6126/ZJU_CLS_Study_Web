@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 
 import {
   fetchCurrentUser,
@@ -94,6 +94,9 @@ const homepageApplications = ref([]);
 const homepageEditorOpen = ref(false);
 const editingHomepageId = ref('');
 const homepageForm = reactive({ name: '', href: '', avatarUrl: '', sortOrder: 0, status: 'approved' });
+const feedbackItems = ref([]), feedbackUnread = ref(0), feedbackTotal = ref(0), feedbackPage = ref(1), feedbackBusy = ref(false);
+const pendingHomepages = computed(() => homepageApplications.value.some((item) => item.status === 'pending'));
+let badgeTimer, badgeSequence = 0, feedbackSequence = 0, feedbackCountSequence = 0;
 const activities = ref([]);
 const activityProgramId = ref(activityPrograms[0].id);
 const activityQuery = ref('');
@@ -133,6 +136,7 @@ const pageTitle = computed(() => {
   if (selectedView.value === 'notices') return '通知管理';
   if (selectedView.value === 'activities') return '活动管理';
   if (selectedView.value === 'more') return '更多';
+  if (selectedView.value === 'feedback') return '意见反馈';
   if (selectedView.value === 'consultation') return '咨询室';
   if (selectedView.value === 'logs') return '操作日志';
   return selectedTypeLabel.value;
@@ -295,6 +299,7 @@ async function refreshItems() {
 }
 
 async function refreshSubmissions() {
+  ++badgeSequence;
   if (!isAdmin.value) return;
   listBusy.value = true;
   const result = await activeApiClient.value.fetchSubmissions({});
@@ -319,6 +324,7 @@ async function refreshAuditLogs() {
 }
 
 async function refreshHomepages() {
+  ++badgeSequence;
   if (!isAdmin.value) return;
   const [directory, applications] = await Promise.all([
     activeApiClient.value.fetchHomepages(),
@@ -393,18 +399,61 @@ async function refreshActivities() {
   listBusy.value = false;
 }
 
+async function refreshFeedbackCount() {
+  if (!isAdmin.value || !activeApiClient.value.fetchFeedbackCount) return;
+  const token = ++feedbackCountSequence;
+  const result = await activeApiClient.value.fetchFeedbackCount();
+  if (token === feedbackCountSequence && result.ok) feedbackUnread.value = Number(result.unreadCount) || 0;
+}
+
+async function refreshFeedback(page = 1) {
+  if (!isAdmin.value) return;
+  const token = ++feedbackSequence;
+  feedbackBusy.value = true; feedbackItems.value = []; feedbackPage.value = page;
+  try {
+    const result = await activeApiClient.value.fetchFeedback(page);
+    if (token !== feedbackSequence) return;
+    if (!result.ok) { notice.value = result.message; return; }
+    feedbackItems.value = result.items ?? []; feedbackTotal.value = Number(result.total) || 0;
+    feedbackUnread.value = Number(result.unreadCount) || 0;
+    const unread = feedbackItems.value.filter((item) => !item.readAt).map((item) => item.id);
+    if (unread.length && selectedView.value === 'feedback') {
+      ++feedbackCountSequence;
+      const read = await activeApiClient.value.markFeedbackRead(unread);
+      if (token !== feedbackSequence) return;
+      if (read.ok) {
+        ++feedbackCountSequence;
+        feedbackUnread.value = Number(read.unreadCount) || 0;
+        feedbackItems.value = feedbackItems.value.map((item) => ({ ...item, readAt: item.readAt || new Date().toISOString() }));
+      } else notice.value = read.message;
+    }
+  } catch { if (token === feedbackSequence) notice.value = '意见反馈暂时无法读取，请稍后重试。'; }
+  finally { if (token === feedbackSequence) feedbackBusy.value = false; }
+}
+
+async function refreshPendingBadges() {
+  if (!isAdmin.value || document.hidden) return;
+  const token = ++badgeSequence;
+  const [reviews, homepagesResult] = await Promise.all([
+    activeApiClient.value.fetchSubmissions({}), activeApiClient.value.fetchHomepageApplications(), refreshFeedbackCount(),
+  ]);
+  if (token !== badgeSequence) return;
+  if (reviews.ok) submissions.value = reviews.submissions ?? [];
+  if (homepagesResult.ok) homepageApplications.value = homepagesResult.applications ?? [];
+}
+
 async function initialize() {
   await loadCourses();
   if (props.initialUser) {
     currentUser.value = props.initialUser;
-    await Promise.all([refreshItems(), refreshSubmissions(), refreshActivities(), refreshHomepages()]);
+    await Promise.all([refreshItems(), refreshSubmissions(), refreshActivities(), refreshHomepages(), refreshFeedbackCount()]);
     return;
   }
   try {
     const result = await fetchCurrentUser();
     currentUser.value = result.ok ? result.user : null;
     if (isAdmin.value) {
-      await Promise.all([refreshItems(), refreshSubmissions(), refreshActivities()]);
+      await Promise.all([refreshItems(), refreshSubmissions(), refreshActivities(), refreshHomepages(), refreshFeedbackCount()]);
     }
   } catch {
     currentUser.value = null;
@@ -440,7 +489,7 @@ async function submitAuth() {
       } else {
         credentials.password = '';
         await refreshItems();
-        await Promise.all([refreshSubmissions(), refreshActivities(), refreshHomepages()]);
+        await Promise.all([refreshSubmissions(), refreshActivities(), refreshHomepages(), refreshFeedbackCount()]);
       }
     }
   } catch {
@@ -465,6 +514,7 @@ function changeView(view, type = '') {
   if (view === 'notices' && selectedView.value === 'notices') return;
   if (selectedView.value === 'notices' && !noticePanel.value?.canLeave()) return;
   if (dirty.value && !window.confirm('当前修改尚未保存，确定放弃吗？')) return;
+  if (view !== 'feedback') { ++feedbackSequence; feedbackBusy.value = false; }
   selectedView.value = view;
   editorOpen.value = false;
   submissionEditorOpen.value = false;
@@ -480,6 +530,7 @@ function changeView(view, type = '') {
   }
   if (view === 'activities') refreshActivities();
   if (view === 'more') refreshHomepages();
+  if (view === 'feedback') refreshFeedback(1);
   if (view === 'consultation') {
     refreshConsultation();
     searchMentorCandidates();
@@ -747,7 +798,8 @@ function formattedTime(value) {
 }
 
 defineExpose({ canLeave: () => selectedView.value !== 'notices' || (noticePanel.value?.canLeave() ?? true) });
-onMounted(initialize);
+onMounted(() => { initialize(); badgeTimer = setInterval(refreshPendingBadges, 30000); document.addEventListener('visibilitychange', refreshPendingBadges); });
+onBeforeUnmount(() => { clearInterval(badgeTimer); ++badgeSequence; ++feedbackSequence; ++feedbackCountSequence; document.removeEventListener('visibilitychange', refreshPendingBadges); });
 </script>
 
 <template>
@@ -763,13 +815,14 @@ onMounted(initialize);
           :class="{ 'is-active': selectedView === 'content' && selectedType === type.id }"
           @click="changeView('content', type.id)"
         >
-          {{ type.label }} <span v-if="pendingTypes.has(type.id)" class="admin-pending-dot" title="有待审核投稿" aria-label="有待审核投稿"></span>
+          {{ type.label }} <span v-if="pendingTypes.has(type.id)" class="admin-pending-dot admin-sidebar-dot" title="有待审核投稿" aria-hidden="true"></span>
         </button>
         <button type="button" :class="{ 'is-active': selectedView === 'activities' }" @click="changeView('activities')">
           活动管理
         </button>
         <button type="button" :class="{ 'is-active': selectedView === 'notices' }" @click="changeView('notices')">通知</button>
-        <button type="button" :class="{ 'is-active': selectedView === 'more' }" @click="changeView('more')">更多</button>
+        <button type="button" :class="{ 'is-active': selectedView === 'more' }" @click="changeView('more')">更多<span v-if="pendingHomepages" class="admin-pending-dot admin-sidebar-dot" title="有待审核主页投稿" aria-hidden="true"></span></button>
+        <button type="button" :class="{ 'is-active': selectedView === 'feedback' }" @click="changeView('feedback')">意见反馈<span v-if="feedbackUnread" class="admin-pending-dot admin-sidebar-dot" title="有未读意见反馈" aria-hidden="true"></span></button>
         <button type="button" :class="{ 'is-active': selectedView === 'consultation' }" @click="changeView('consultation')">咨询室</button>
         <button type="button" :class="{ 'is-active': selectedView === 'logs' }" @click="changeView('logs')">操作日志</button>
       </nav>
@@ -1102,7 +1155,7 @@ onMounted(initialize);
         <NoticeAdminPanel v-else-if="selectedView === 'notices'" ref="noticePanel" :is-demo="isDemo" />
 
         <section v-else-if="selectedView === 'more'" class="admin-list" aria-label="更多管理">
-          <nav class="admin-more-tabs" role="tablist" aria-label="更多栏目"><button type="button" role="tab" aria-selected="true">同学主页</button></nav>
+          <nav class="admin-more-tabs" role="tablist" aria-label="更多栏目"><button type="button" role="tab" aria-selected="true">同学主页<span v-if="pendingHomepages" class="admin-pending-dot admin-sidebar-dot" title="有待审核主页投稿" aria-hidden="true"></span></button></nav>
           <section v-if="homepageEditorOpen" class="admin-editor">
             <header class="admin-editor__head"><div><span>同学主页</span><strong>{{ editingHomepageId ? '编辑主页' : '新增主页' }}</strong></div><button type="button" @click="homepageEditorOpen = false">关闭</button></header>
             <form class="admin-editor__form" @submit.prevent="saveHomepage">
@@ -1136,6 +1189,20 @@ onMounted(initialize);
           </div>
         </section>
 
+        <section v-else-if="selectedView === 'feedback'" class="admin-feedback" aria-label="意见反馈管理">
+          <header class="admin-feedback-toolbar"><span>共 {{ feedbackTotal }} 条</span><button type="button" :disabled="feedbackBusy" @click="refreshFeedback(feedbackPage)">刷新</button></header>
+          <p v-if="feedbackBusy" class="admin-list__empty">正在读取意见...</p>
+          <p v-else-if="!feedbackItems.length" class="admin-list__empty">暂无意见反馈。</p>
+          <article v-for="item in feedbackItems" v-else :key="item.id" class="admin-feedback-item">
+            <header><strong>{{ item.authorName || '游客' }}</strong><time :datetime="item.createdAt">{{ formattedTime(item.createdAt) }}</time></header>
+            <p>{{ item.body }}</p>
+          </article>
+          <nav v-if="feedbackTotal > 50" class="admin-feedback-pages" aria-label="反馈分页">
+            <button type="button" :disabled="feedbackBusy || feedbackPage === 1" @click="refreshFeedback(feedbackPage - 1)">上一页</button>
+            <span>第 {{ feedbackPage }} / {{ Math.ceil(feedbackTotal / 50) }} 页</span>
+            <button type="button" :disabled="feedbackBusy || feedbackPage * 50 >= feedbackTotal" @click="refreshFeedback(feedbackPage + 1)">下一页</button>
+          </nav>
+        </section>
         <section v-else-if="selectedView === 'consultation'" class="admin-consultation" aria-label="咨询室管理">
           <p v-if="isDemo" class="admin-list__empty">演示管理员不能开启真实咨询室。请使用正式管理员账号操作。</p>
           <template v-else>

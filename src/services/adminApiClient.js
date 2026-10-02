@@ -15,6 +15,9 @@ export function createAdminApiClient(fetchImpl = fetch) {
   const { request } = createRequestClient({ name: 'admin', fetchImpl, networkErrorMessage: '管理服务暂时无法连接。' });
 
   return {
+    fetchFeedback(page = 1) { return request(`api/admin/feedback?page=${page}`); },
+    fetchFeedbackCount() { return request('api/admin/feedback/count'); },
+    markFeedbackRead(ids) { return request('api/admin/feedback/read', { method: 'POST', body: { ids } }); },
     fetchContent(filters = {}) {
       return request(`api/admin/content${queryString(filters)}`);
     },

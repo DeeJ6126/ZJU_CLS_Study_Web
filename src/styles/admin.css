@@ -50,6 +50,7 @@
 
 .admin-page__nav nav button,
 .admin-page__logout {
+  position: relative;
   min-height: 42px;
   padding: 0 12px;
   border: 0;
@@ -81,6 +82,9 @@
   vertical-align: middle;
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-negative) 18%, transparent);
 }
+
+.admin-page__nav .admin-sidebar-dot, .admin-more-tabs .admin-sidebar-dot { position: absolute; right: 6px; top: 6px; margin: 0; }
+.admin-more-tabs button { position: relative; padding-right: 26px; }
 
 .admin-page__nav nav button:hover,
 .admin-page__nav nav button.is-active {

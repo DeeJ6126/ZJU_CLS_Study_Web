@@ -137,6 +137,15 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
   return {
     initialize() {
       db.exec(`
+        create table if not exists private_feedback (
+          id text primary key,
+          body text not null,
+          author_name text not null default '游客',
+          sender_key text not null,
+          created_at text not null,
+          read_at text not null default ''
+        );
+        create index if not exists feedback_sender_idx on private_feedback(sender_key, created_at);
         create table if not exists content_items (
           id text primary key,
           route_id text not null default '',
@@ -926,6 +935,38 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
           actor_name as actorName, detail, created_at as createdAt
         from audit_logs ${where} order by created_at desc limit ?
       `).all(...values, Math.max(1, Math.min(Number(limit) || 200, 500)));
+    },
+
+    createFeedback({ body, authorName = '游客', senderKey, createdAt = new Date().toISOString() }) {
+      const id = randomUUID();
+      db.prepare('insert into private_feedback(id, body, author_name, sender_key, created_at) values (?, ?, ?, ?, ?)')
+        .run(id, body, authorName, senderKey, createdAt);
+      return { id, createdAt };
+    },
+
+    countRecentFeedback(senderKey, since) {
+      return db.prepare('select count(*) as count from private_feedback where sender_key = ? and created_at >= ?').get(senderKey, since).count;
+    },
+
+    hasRecentFeedbackBody(senderKey, body, since) {
+      return Boolean(db.prepare('select 1 from private_feedback where sender_key = ? and body = ? and created_at >= ? limit 1').get(senderKey, body, since));
+    },
+
+    countUnreadFeedback() {
+      return db.prepare("select count(*) as count from private_feedback where read_at = ''").get().count;
+    },
+
+    listFeedback({ page = 1, pageSize = 50 } = {}) {
+      const total = db.prepare('select count(*) as count from private_feedback').get().count;
+      const items = db.prepare('select id, body, author_name as authorName, created_at as createdAt, read_at as readAt from private_feedback order by created_at desc, id limit ? offset ?')
+        .all(pageSize, (page - 1) * pageSize).map((item) => ({ ...item }));
+      return { items, total, unreadCount: this.countUnreadFeedback() };
+    },
+
+    markFeedbackRead(ids) {
+      if (ids.length) db.prepare(`update private_feedback set read_at = ? where read_at = '' and id in (${ids.map(() => '?').join(',')})`)
+        .run(new Date().toISOString(), ...ids);
+      return this.countUnreadFeedback();
     },
 
     close() {

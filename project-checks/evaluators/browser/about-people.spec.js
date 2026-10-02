@@ -1,14 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { readFileSync } from 'node:fs';
 
 test.use({ viewport: { width: 1440, height: 1000 } });
-const avatar = readFileSync(new URL('../../../public/resource/homepages/dee.png', import.meta.url));
 
 test('about contact and ordered GitHub contributors remain readable in both themes', async ({ page }) => {
   const errors = [], writes = [], githubApiRequests = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('request', (request) => { if (new URL(request.url()).hostname === 'api.github.com') githubApiRequests.push(request.url()); });
-  await page.route('https://avatars.githubusercontent.com/**', (route) => route.fulfill({ contentType: 'image/png', body: avatar }));
   await page.route('**/api/**', async (route) => {
     if (route.request().method() !== 'GET') writes.push(route.request().url());
     const path = new URL(route.request().url()).pathname;
@@ -18,7 +15,7 @@ test('about contact and ordered GitHub contributors remain readable in both them
     await route.fulfill({ json: payload });
   });
   for (const mode of ['light', 'dark']) {
-    await page.goto('/#about');
+    await page.goto('/#about?section=about-us');
     await expect(page.locator('.about-contact')).toBeVisible();
     if ((await page.locator('html').getAttribute('data-theme') === 'dark') !== (mode === 'dark')) await page.locator('.theme-switch').click();
     const contact = page.locator('.about-contact');

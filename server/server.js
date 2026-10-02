@@ -53,6 +53,7 @@ import {
 import { createContentStore } from './content/contentStore.js';
 import { importStaticCourseContent } from './content/contentImportService.js';
 import { handleContentHttpRequest } from './content/contentHttpService.js';
+import { handleFeedbackHttpRequest } from './content/feedbackHttpService.js';
 import { handleActivityHttpRequest } from './activity/activityHttpService.js';
 import { handleNoticeHttpRequest } from './notice/noticeHttpService.js';
 import { seedActivityCatalog } from './activity/activityService.js';
@@ -487,6 +488,11 @@ export function createAuthServer({
         return;
       }
 
+      const feedbackHandled = await handleFeedbackHttpRequest({
+        request, response, url, user: currentUser, userId: quizUserId,
+        clientIp: getClientIp(request), contentStore, sendJson, readJsonBody,
+      });
+      if (feedbackHandled) return;
       const accountHandled = await handleAccountHttpRequest({
         request,
         response,
