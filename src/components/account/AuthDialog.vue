@@ -156,6 +156,8 @@ watch(() => props.mode, () => {
           {{ busy ? '正在处理...' : mode === 'login' ? '登录' : mode === 'register' ? '完成学号认证注册' : '重置密码' }}
         </button>
         <button v-if="mode === 'login'" class="auth-dialog__text-action" type="button" @click="emit('switch-mode', 'reset')">忘记密码</button>
+        <button v-if="mode === 'login'" class="auth-dialog__text-action" type="button" @click="emit('switch-mode', 'register')">学号认证注册</button>
+        <button v-if="mode === 'register'" class="auth-dialog__text-action" type="button" @click="emit('switch-mode', 'login')">返回登录</button>
         <button v-if="mode === 'reset'" class="auth-dialog__text-action" type="button" @click="emit('switch-mode', 'login')">返回登录</button>
         <p v-if="message" class="auth-dialog__message" role="status">{{ message }}</p>
       </form>

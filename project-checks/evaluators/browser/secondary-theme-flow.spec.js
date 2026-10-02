@@ -102,22 +102,20 @@ test('about sections and source-backed activities remain readable in desktop lig
   expect(state.writes).toEqual([]);
 });
 
-test('account menu and all auth modes keep desktop dialogs centered in both themes', async ({ page }) => {
+test('direct login and all auth modes keep desktop dialogs centered in both themes', async ({ page }) => {
   const state = await fixture(page);
   for (const mode of ['light', 'dark']) {
     await page.goto('/#about');
     await theme(page, mode);
     await page.locator('.demo-user-chip').click();
     expect(state.errors).toEqual([]);
-    await expect(page.locator('.account-popover')).toBeVisible();
-    await checkView(page, `account-menu-${mode}`, '.account-popover dd, .account-popover button');
-    await page.locator('.account-popover').getByRole('button', { name: '登录', exact: true }).click();
+    await expect(page.locator('.account-popover')).toHaveCount(0);
+    await expect(page.locator('.auth-dialog')).toBeVisible();
     for (const authMode of ['login', 'reset', 'register']) {
       if (authMode === 'reset') await page.getByRole('button', { name: '忘记密码', exact: true }).click();
       if (authMode === 'register') {
-        await page.getByRole('button', { name: '关闭登录对话框' }).click();
-        await page.locator('.demo-user-chip').click();
-        await page.locator('.account-popover').getByRole('button', { name: '学号认证注册', exact: true }).click();
+        await page.getByRole('button', { name: '返回登录', exact: true }).click();
+        await page.locator('.auth-dialog').getByRole('button', { name: '学号认证注册', exact: true }).click();
       }
       await expect(page.locator('.auth-dialog')).toBeVisible();
       const position = await page.locator('.auth-dialog').evaluate((element) => { const rect = element.getBoundingClientRect(); return { x: Math.abs(rect.x + rect.width / 2 - innerWidth / 2), y: Math.abs(rect.y + rect.height / 2 - innerHeight / 2) }; });

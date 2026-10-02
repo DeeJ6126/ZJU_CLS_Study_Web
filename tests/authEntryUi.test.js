@@ -2,32 +2,29 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-test('auth entry components expose the real account menu without a test account switcher', async () => {
+test('account header uses direct profile/login and a message bell instead of an account card', async () => {
   const app = await readFile(new URL('../src/App.vue', import.meta.url), 'utf8');
-  const accountPopover = await readFile(new URL('../src/components/account/AccountPopover.vue', import.meta.url), 'utf8');
+  const profile = await readFile(new URL('../src/components/profile/ProfilePage.vue', import.meta.url), 'utf8');
   const settingsPanel = await readFile(new URL('../src/components/SettingsPanel.vue', import.meta.url), 'utf8');
 
-  assert.match(app, /AccountPopover/);
+  assert.doesNotMatch(app, /AccountPopover|accountOpen|accountPopoverRef/);
   assert.match(app, /AuthDialog/);
   assert.match(app, /canSubmitResource/);
   assert.match(app, /canComment/);
   assert.match(app, /canFavorite/);
-  assert.doesNotMatch(accountPopover, /CC98/);
-  assert.match(accountPopover, /学号认证注册/);
-  assert.match(accountPopover, /登录/);
-  assert.match(accountPopover, /站内消息/);
-  assert.match(accountPopover, /unreadCount/);
-  assert.equal(accountPopover.includes('UserSwitcher'), false);
+  assert.match(app, /demo-notification-bell/);
+  assert.match(app, /bellPaths/);
+  assert.match(app, /unreadNotificationCount > 0/);
+  assert.match(app, /viewerIsGuest \? openAuthDialog\('login'\) : openOwnProfile\(\)/);
+  assert.match(profile, /v-if="isOwn" class="profile-account-footer"/);
+  assert.match(profile, /v-if="canOpenAdmin"/);
+  assert.match(profile, /emit\('logout'\)/);
   assert.equal(settingsPanel.includes('UserSwitcher'), false);
-  assert.match(accountPopover, /AccountSwitcher/);
-  assert.match(accountPopover, /select-demo/);
   assert.match(app, /demoIdentityId/);
   assert.match(app, /selectDemoIdentity/);
   assert.match(app, /demoIdentityEnabled = import\.meta\.env\.DEV/);
   assert.match(app, /if \(!demoIdentityEnabled\) saveDemoIdentityId\(''\)/);
-  assert.match(app, /demoIdentityOptions = demoIdentityEnabled \? getDemoIdentityOptions\(\) : \[\]/);
-  assert.match(accountPopover, /showDemoOptions = import\.meta\.env\.DEV/);
-  assert.match(accountPopover, /v-if="showDemoOptions && demoOptions\.length"/);
+  assert.doesNotMatch(app, /<AccountSwitcher/);
 });
 
 test('auth dialog exposes only student-ID registration, login, and recovery', async () => {
@@ -43,6 +40,7 @@ test('auth dialog exposes only student-ID registration, login, and recovery', as
   assert.match(dialog, /submit-register-email/);
   assert.match(dialog, /submit-login-email/);
   assert.match(dialog, /submit-reset-email/);
+  assert.match(dialog, /switch-mode', 'register'/);
   assert.doesNotMatch(dialog, /submit-bind-email/);
   assert.match(styles, /\.auth-dialog__code-row/);
   assert.match(styles, /\.account-popover__signed-in-actions/);

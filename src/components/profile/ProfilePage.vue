@@ -21,6 +21,8 @@ const props = defineProps({
   notice: { type: String, default: '' },
   grade: { type: Number, default: null },
   isDemo: { type: Boolean, default: false },
+  canOpenAdmin: { type: Boolean, default: false },
+  logoutBusy: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
@@ -29,6 +31,7 @@ const emit = defineEmits([
   'remove-favorite', 'edit-comment', 'delete-comment', 'edit-submission', 'withdraw-submission',
   'delete-submission',
   'add-course', 'reset-course-preset', 'retry-course-catalog',
+  'logout', 'open-admin',
 ]);
 const activeSection = ref('profile');
 const nickname = ref('');
@@ -128,6 +131,7 @@ function statusLabel(status) {
     <aside class="profile-sidebar">
       <a href="#home">返回首页</a>
       <template v-if="isOwn">
+        <button v-if="canOpenAdmin" class="profile-admin-shortcut" type="button" @click="emit('open-admin')">管理后台</button>
         <button v-for="section in [
           ['profile', '账号资料'], ['courses', '我的课程'], ['favorites', '我的收藏'],
           ['posts', '我的帖子'], ['comments', '我的评论'],
@@ -249,6 +253,7 @@ function statusLabel(status) {
           </article>
         </section>
       </template>
+      <footer v-if="isOwn" class="profile-account-footer"><button type="button" :disabled="logoutBusy" @click="emit('logout')">{{ logoutBusy ? '正在退出...' : '退出登录' }}</button></footer>
     </main>
   </article>
 </template>

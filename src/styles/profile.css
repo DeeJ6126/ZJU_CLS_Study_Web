@@ -54,6 +54,11 @@
   min-width: 0;
 }
 
+.profile-account-footer { margin-top: 36px; padding-top: 22px; border-top: 1px solid var(--color-line); display: flex; justify-content: flex-end; }
+.profile-account-footer button { min-width: 120px; min-height: 38px; padding: 7px 16px; border: 1px solid var(--color-line); border-radius: 4px; background: var(--color-surface); color: var(--color-negative); }
+.profile-account-footer button:disabled { opacity: .5; cursor: default; }
+.profile-sidebar .profile-admin-shortcut { color: var(--color-primary); border: 1px solid var(--color-line); margin-bottom: 8px; }
+
 .profile-identity {
   display: grid;
   grid-template-columns: 150px minmax(0, 1fr);

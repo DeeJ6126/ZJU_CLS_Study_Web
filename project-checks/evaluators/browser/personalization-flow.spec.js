@@ -97,7 +97,6 @@ test('last guest practice resumes and login/logout keeps account and guest prefe
   await expect(page.getByText('继续练习的第二道题', { exact: true })).toBeVisible();
   await page.locator('.demo-brand').click();
   await page.locator('.demo-user-chip').click();
-  await page.locator('.account-popover').getByRole('button', { name: '登录', exact: true }).click();
   await page.locator('.auth-dialog input[type="text"]').fill('3240100001');
   await page.locator('.auth-dialog input[type="password"]').fill('testpass123');
   await page.locator('.auth-dialog').getByRole('button', { name: '登录', exact: true }).click();
@@ -113,7 +112,7 @@ test('last guest practice resumes and login/logout keeps account and guest prefe
   await page.reload();
   await expect(page.locator('.home-study__term')).toContainText('求是科学班');
   await page.locator('.demo-user-chip').click();
-  await page.locator('.account-popover').getByRole('button', { name: '退出登录' }).click();
+  await page.getByRole('button', { name: '退出登录', exact: true }).click();
   await expect(page.locator('.home-study__term')).toContainText('生物科学');
   expect(errors).toEqual([]);
 });

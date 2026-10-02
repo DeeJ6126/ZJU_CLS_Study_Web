@@ -85,6 +85,11 @@
   gap: 16px;
 }
 
+.demo-notification-bell { position: relative; display: grid; place-items: center; flex: 0 0 38px; width: 38px; height: 38px; border: 0; border-radius: 4px; color: var(--color-muted); background: transparent; }
+.demo-notification-bell:hover { color: var(--color-primary); background: var(--color-lab); }
+.demo-notification-bell svg { width: 22px; height: 22px; }
+.demo-notification-bell__dot { position: absolute; right: 3px; top: 3px; width: 8px; height: 8px; border-radius: 50%; background: var(--color-negative); box-shadow: 0 0 0 2px var(--color-surface); }
+
 .demo-user-chip {
   max-width: 160px;
   min-height: 36px;

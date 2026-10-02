@@ -114,7 +114,7 @@ test('account profile and homepage share courses and preserve data on failed sav
   await expect(page.locator('.home-study')).not.toContainText('生物化学（甲）');
   await page.reload();
   await expect(page.locator('.home-study')).toContainText('英语口语');
-  await page.getByRole('button', { name: '打开账号面板' }).click();
+  await page.getByRole('button', { name: '打开个人页面' }).click();
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
   await expect(page.locator('.home-study .my-course-card')).toHaveCount(0);
   expect(state.errors).toEqual([]);

@@ -18,7 +18,7 @@ import MorePage from './components/MorePage.vue';
 import OverviewPage from './components/OverviewPage.vue';
 import CourseDetailPage from './components/CourseDetailPage.vue';
 import AdminPage from './components/admin/AdminPage.vue';
-import AccountPopover from './components/account/AccountPopover.vue';
+import { bellPaths } from './utils/vendor/lucidePaths.js';
 import AuthDialog from './components/account/AuthDialog.vue';
 import NotificationsPage from './components/account/NotificationsPage.vue';
 import ProfilePage from './components/profile/ProfilePage.vue';
@@ -127,8 +127,6 @@ import {
   canFavorite,
   canSaveLocalFavorite,
   canSubmitResource,
-  getAccountState,
-  getVerificationBadges,
   isAuthenticated,
   isAdministrator,
 } from './services/authService.js';
@@ -173,7 +171,6 @@ import { buildCourseRoute, parseResourceHash } from './data/courses/resourcePath
 import { publicAssetPath } from './utils/publicPath.js';
 import {
   buildDemoUser,
-  getDemoIdentityOptions,
   loadDemoIdentityId,
   saveDemoIdentityId,
 } from './services/demoIdentityService.js';
@@ -219,7 +216,6 @@ const studySaving = ref(false);
 const studyNotice = ref('');
 const accountRecentQuiz = ref(null);
 watch(localWorkspaceScope, (scope) => { localWorkspace.value = readLocalWorkspace(scope); courseListNotice.value = ''; });
-const demoIdentityOptions = demoIdentityEnabled ? getDemoIdentityOptions() : [];
 const activeDemoAccountId = computed(() => (
   demoIdentityId.value && demoIdentityId.value !== 'guest' ? demoIdentityId.value : ''
 ));
@@ -327,42 +323,9 @@ const message = ref('');
 const contributionNotice = ref('');
 const likeNotice = ref('');
 const isLoading = ref(false);
-const accountOpen = ref(false);
 const authDialogOpen = ref(false);
 const authDialogMode = ref('login');
 
-// HI-UI-3: close account popover on click outside or Esc.
-const accountPopoverRef = ref(null);
-
-function onAccountPopoverDocumentClick(event) {
-  if (!accountOpen.value) return;
-  const root = accountPopoverRef.value;
-  if (root && !root.contains(event.target)) {
-    accountOpen.value = false;
-  }
-}
-
-function onAccountPopoverKeydown(event) {
-  if (accountOpen.value && event.key === 'Escape') {
-    event.stopPropagation();
-    accountOpen.value = false;
-  }
-}
-
-watch(accountOpen, async (open) => {
-  if (open) {
-    document.addEventListener('click', onAccountPopoverDocumentClick);
-    document.addEventListener('keydown', onAccountPopoverKeydown);
-  } else {
-    document.removeEventListener('click', onAccountPopoverDocumentClick);
-    document.removeEventListener('keydown', onAccountPopoverKeydown);
-  }
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', onAccountPopoverDocumentClick);
-  document.removeEventListener('keydown', onAccountPopoverKeydown);
-});
 const authNotice = ref('');
 const authBusy = ref(false);
 const profileView = ref({ profile: null, posts: [], submissions: [], comments: [] });
@@ -382,6 +345,16 @@ const accountFavorites = ref([]);
 const courseImportPreview = ref(null);
 const notifications = ref([]);
 const unreadNotificationCount = ref(0);
+let notificationCountSequence = 0, notificationCountTimer;
+
+async function refreshNotificationCount() {
+  if (viewerIsGuest.value || document.hidden) return;
+  const scope = quizScope.value, token = ++notificationCountSequence;
+  const result = isDemoAccount.value
+    ? demoAccountService.getPrivateProfile(activeDemoAccountId.value)
+    : await accountDataApiClient.fetchNotifications();
+  if (result.ok && token === notificationCountSequence && scope === quizScope.value && !viewerIsGuest.value) unreadNotificationCount.value = result.unreadCount ?? 0;
+}
 const notificationsLoading = ref(false);
 const notificationNotice = ref('');
 const commentsByContentId = ref({});
@@ -452,8 +425,6 @@ const userCanSubmit = computed(() => canSubmitResource(viewer.value));
 const userCanComment = computed(() => canComment(viewer.value));
 const userCanFavorite = computed(() => canFavorite(viewer.value) || canSaveLocalFavorite(viewer.value));
 const userCanLike = computed(() => canFavorite(viewer.value));
-const accountState = computed(() => getAccountState(viewer.value));
-const verificationBadges = computed(() => getVerificationBadges(viewer.value));
 const viewerIsGuest = computed(() => !isAuthenticated(viewer.value));
 const studyProfile = computed(() => (viewerIsGuest.value || demoIdentityId.value)
   ? localWorkspace.value
@@ -2023,6 +1994,7 @@ async function openNotification(notification) {
 }
 
 async function markNotificationRead(notification) {
+  ++notificationCountSequence;
   const resultData = isDemoAccount.value
     ? demoAccountService.markNotificationRead(activeDemoAccountId.value, notification.id)
     : await accountDataApiClient.markNotificationRead(notification.id);
@@ -2034,10 +2006,12 @@ async function markNotificationRead(notification) {
     item.id === notification.id ? { ...item, readAt: new Date().toISOString() } : item
   ));
   unreadNotificationCount.value = resultData.unreadCount ?? 0;
+  ++notificationCountSequence;
   if (resultData.persistenceWarning) notificationNotice.value = resultData.persistenceWarning;
 }
 
 async function markAllNotificationsRead() {
+  ++notificationCountSequence;
   const resultData = isDemoAccount.value
     ? demoAccountService.markAllNotificationsRead(activeDemoAccountId.value)
     : await accountDataApiClient.markAllNotificationsRead();
@@ -2048,16 +2022,15 @@ async function markAllNotificationsRead() {
   const now = new Date().toISOString();
   notifications.value = notifications.value.map((item) => ({ ...item, readAt: item.readAt || now }));
   unreadNotificationCount.value = 0;
+  ++notificationCountSequence;
   if (resultData.persistenceWarning) notificationNotice.value = resultData.persistenceWarning;
 }
 
 function openNotifications() {
-  accountOpen.value = false;
   window.location.hash = '#notifications';
 }
 
 function openAdminPage() {
-  accountOpen.value = false;
   window.location.hash = '#admin';
 }
 
@@ -2635,7 +2608,6 @@ function openAuthDialog(mode) {
   authDialogMode.value = mode;
   authNotice.value = '';
   authDialogOpen.value = true;
-  accountOpen.value = false;
 }
 
 async function finishAuthentication(user) {
@@ -2645,7 +2617,6 @@ async function finishAuthentication(user) {
   saveDemoIdentityId('');
   authDialogOpen.value = false;
   authNotice.value = '';
-  accountOpen.value = true;
   await loadAccountData();
   await refreshQuizAccountAfterSignIn();
   if (activePage.value === 'profile' && activeProfilePublicId.value === user.publicId) {
@@ -2718,7 +2689,6 @@ async function handleResetEmailPassword(payload) {
 async function handleLogout() {
   if (demoIdentityId.value) {
     await selectDemoIdentity('guest');
-    accountOpen.value = false;
     return;
   }
   authBusy.value = true;
@@ -2738,7 +2708,6 @@ async function handleLogout() {
   botanyMistakeRecords.value = readBotanyMistakes(quizScope.value);
   microbiologyMistakeRecords.value = readMicrobiologyMistakes(quizScope.value);
   microbiologyVocabularyRecords.value = readMicrobiologyVocabularyRecords(quizScope.value);
-  accountOpen.value = false;
   // HI-NAV-2: after logout the user is back to guest, so URL should
   // return to #home. Without this, deep-linked /profile or /admin
   // pages stay in the URL and confuse the next user of the device.
@@ -2748,7 +2717,6 @@ async function handleLogout() {
 }
 
 function openOwnProfile() {
-  accountOpen.value = false;
   if (viewerIsGuest.value) { window.location.hash = '#my-courses'; return; }
   if (!viewer.value.publicId) return;
   window.location.hash = getProfileHref(viewer.value.publicId);
@@ -2893,6 +2861,8 @@ onMounted(async () => {
   if (viewerIsGuest.value || isDemoAccount.value) await loadAccountData();
   await refreshConsultationStatus();
   consultationStatusTimer = window.setInterval(refreshConsultationStatus, 15000);
+  notificationCountTimer = window.setInterval(refreshNotificationCount, 30000);
+  window.addEventListener('focus', refreshNotificationCount);
   consultationInboxTimer = window.setInterval(refreshConsultationInbox, 4000);
   syncPageFromHash();
   window.addEventListener('hashchange', syncPageFromHash);
@@ -2901,6 +2871,9 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.clearInterval(consultationStatusTimer);
+  window.clearInterval(notificationCountTimer);
+  ++notificationCountSequence;
+  window.removeEventListener('focus', refreshNotificationCount);
   window.clearInterval(consultationInboxTimer);
   window.removeEventListener('hashchange', syncPageFromHash);
   window.removeEventListener('keydown', handleGlobalKeydown);
@@ -2933,35 +2906,16 @@ onBeforeUnmount(() => {
         <button
           class="demo-user-chip"
           type="button"
-          :aria-expanded="accountOpen"
-          aria-label="打开账号面板"
-          @click.stop="accountOpen = !accountOpen"
+          :aria-label="viewerIsGuest ? '登录' : '打开个人页面'"
+          @click="viewerIsGuest ? openAuthDialog('login') : openOwnProfile()"
         >
           {{ viewerIsGuest ? '游客' : viewer.nickname }}
           <span v-if="demoIdentityId" class="demo-user-chip__tag">演示</span>
         </button>
-        <div ref="accountPopoverRef" class="demo-account__popover-wrapper">
-        <AccountPopover
-          v-if="accountOpen"
-          :user="viewer"
-          :account-state="accountState"
-          :badges="verificationBadges"
-          :is-guest="viewerIsGuest"
-          :can-open-admin="viewerIsAdministrator"
-          :unread-count="unreadNotificationCount"
-          :demo-options="demoIdentityOptions"
-          :demo-active-id="demoIdentityId"
-          :demo-account-active="isDemoAccount"
-          @select-demo="selectDemoIdentity"
-          @reset-demo="resetActiveDemoAccount"
-          @logout="handleLogout"
-          @open-profile="openOwnProfile"
-          @open-notifications="openNotifications"
-          @open-admin="openAdminPage"
-          @open-login="openAuthDialog('login')"
-          @open-register-email="openAuthDialog('register')"
-        />
-        </div>
+        <button v-if="!viewerIsGuest" type="button" class="demo-notification-bell" aria-label="站内消息" :aria-description="`${unreadNotificationCount} 条未读消息`" :title="unreadNotificationCount ? `站内消息：${unreadNotificationCount} 条未读` : '站内消息'" @click="openNotifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path v-for="path in bellPaths" :key="path" :d="path" /></svg>
+          <span v-if="unreadNotificationCount > 0" class="demo-notification-bell__dot" aria-hidden="true"></span>
+        </button>
       </div>
     </header>
 
@@ -3065,6 +3019,10 @@ onBeforeUnmount(() => {
         :notice="profileNotice"
         :grade="viewer.grade ?? null"
         :is-demo="isDemoAccount"
+        :can-open-admin="viewerIsAdministrator"
+        :logout-busy="authBusy"
+        @open-admin="openAdminPage"
+        @logout="handleLogout"
         @save-nickname="saveProfileNickname"
         @save-grade="saveProfileGrade"
         @upload-avatar="uploadProfileAvatar"

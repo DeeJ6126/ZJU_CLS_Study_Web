@@ -16,6 +16,7 @@ async function productionFixture(page, user, staleIdentity) {
     }
     let payload = { items: [], activities: [], submissions: [], notifications: [], unreadCount: 0, courses: [], initialized: true };
     if (path === '/api/auth/me') payload = { user };
+    if (path === '/api/account/profile') payload = { user, posts: [], submissions: [], comments: [] };
     if (path === '/api/consultation/status') payload = { open: false, isMentor: false };
     if (path === '/api/quiz/recent') payload = { recent: null };
     await route.fulfill({ json: payload });
@@ -23,13 +24,14 @@ async function productionFixture(page, user, staleIdentity) {
   return writes;
 }
 
-test('production guest ignores a stale demo administrator and exposes only real account access', async ({ page }) => {
+test('production guest ignores a stale demo administrator and opens direct login', async ({ page }) => {
   const writes = await productionFixture(page, guest, 'admin');
   await page.goto('/');
   await expect(page.locator('.demo-user-chip')).toContainText('游客');
   await page.locator('.demo-user-chip').click();
-  const menu = page.locator('.account-popover');
+  const menu = page.locator('.auth-dialog');
   await expect(menu).toBeVisible();
+  await expect(page.locator('.account-popover')).toHaveCount(0);
   await expect(page.locator('.account-switcher')).toHaveCount(0);
   await expect(page.locator('.demo-user-chip__tag')).toHaveCount(0);
   await expect(menu.getByRole('button', { name: '管理后台', exact: true })).toHaveCount(0);
@@ -43,13 +45,14 @@ test('production guest ignores a stale demo administrator and exposes only real 
   expect(writes).toEqual([]);
 });
 
-test('production administrator has real management access without a demo identity switcher', async ({ page }) => {
+test('production administrator reaches real management through the own profile', async ({ page }) => {
   const writes = await productionFixture(page, admin, 'email');
   await page.goto('/');
   await expect(page.locator('.demo-user-chip')).toContainText(admin.nickname);
   await page.locator('.demo-user-chip').click();
-  const menu = page.locator('.account-popover');
+  const menu = page.locator('.profile-page');
   await expect(menu).toBeVisible();
+  await expect(page.locator('.account-popover')).toHaveCount(0);
   await expect(page.locator('.account-switcher')).toHaveCount(0);
   await expect(page.locator('.demo-user-chip__tag')).toHaveCount(0);
   await expect(menu.getByRole('button', { name: '退出登录', exact: true })).toBeVisible();
