@@ -132,7 +132,7 @@ const filteredRows = computed(() => {
 const pageTitle = computed(() => {
   if (selectedView.value === 'notices') return '通知管理';
   if (selectedView.value === 'activities') return '活动管理';
-  if (selectedView.value === 'homepages') return '同学主页';
+  if (selectedView.value === 'more') return '更多';
   if (selectedView.value === 'consultation') return '咨询室';
   if (selectedView.value === 'logs') return '操作日志';
   return selectedTypeLabel.value;
@@ -479,7 +479,7 @@ function changeView(view, type = '') {
     refreshSubmissions();
   }
   if (view === 'activities') refreshActivities();
-  if (view === 'homepages') refreshHomepages();
+  if (view === 'more') refreshHomepages();
   if (view === 'consultation') {
     refreshConsultation();
     searchMentorCandidates();
@@ -769,7 +769,7 @@ onMounted(initialize);
           活动管理
         </button>
         <button type="button" :class="{ 'is-active': selectedView === 'notices' }" @click="changeView('notices')">通知</button>
-        <button type="button" :class="{ 'is-active': selectedView === 'homepages' }" @click="changeView('homepages')">同学主页</button>
+        <button type="button" :class="{ 'is-active': selectedView === 'more' }" @click="changeView('more')">更多</button>
         <button type="button" :class="{ 'is-active': selectedView === 'consultation' }" @click="changeView('consultation')">咨询室</button>
         <button type="button" :class="{ 'is-active': selectedView === 'logs' }" @click="changeView('logs')">操作日志</button>
       </nav>
@@ -821,12 +821,12 @@ onMounted(initialize);
         <p v-if="isDemo" class="admin-notice" role="status">演示数据仅保存在当前浏览器，不会提交到服务器。</p>
         <header class="admin-page__head">
           <div>
-            <p class="admin-page__eyebrow">{{ selectedView === 'notices' ? '通知内容运营' : '课程内容运营' }}</p>
+            <p class="admin-page__eyebrow">{{ selectedView === 'notices' ? '通知内容运营' : selectedView === 'more' ? '更多内容' : '课程内容运营' }}</p>
             <h1 id="admin-title">{{ pageTitle }}</h1>
           </div>
           <button v-if="selectedView === 'content' && !editorOpen && !submissionEditorOpen" class="admin-primary-action" type="button" @click="startNew">新增内容</button>
           <button v-if="selectedView === 'activities' && !activityEditorOpen" class="admin-primary-action" type="button" @click="startActivity()">新增推文</button>
-          <button v-if="selectedView === 'homepages' && !homepageEditorOpen" class="admin-primary-action" type="button" @click="startHomepage()">新增主页</button>
+          <button v-if="selectedView === 'more' && !homepageEditorOpen" class="admin-primary-action" type="button" @click="startHomepage()">新增主页</button>
         </header>
 
         <p v-if="notice" class="admin-notice" role="status">{{ notice }}</p>
@@ -1101,7 +1101,8 @@ onMounted(initialize);
 
         <NoticeAdminPanel v-else-if="selectedView === 'notices'" ref="noticePanel" :is-demo="isDemo" />
 
-        <section v-else-if="selectedView === 'homepages'" class="admin-list" aria-label="同学主页管理">
+        <section v-else-if="selectedView === 'more'" class="admin-list" aria-label="更多管理">
+          <nav class="admin-more-tabs" role="tablist" aria-label="更多栏目"><button type="button" role="tab" aria-selected="true">同学主页</button></nav>
           <section v-if="homepageEditorOpen" class="admin-editor">
             <header class="admin-editor__head"><div><span>同学主页</span><strong>{{ editingHomepageId ? '编辑主页' : '新增主页' }}</strong></div><button type="button" @click="homepageEditorOpen = false">关闭</button></header>
             <form class="admin-editor__form" @submit.prevent="saveHomepage">

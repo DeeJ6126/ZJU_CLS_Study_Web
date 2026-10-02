@@ -5,7 +5,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 ## Current State
 
 - The project is a Vue 3 + Vite + plain CSS learning-resource platform for ZJU life-science students.
-- The app currently has top-level pages for `首页`, `概览`, `刷题`, `活动`, `通知`, `咨询`, and `关于`, plus hash-routed course/notice details, activity details, public/owner profiles, private account messages, and a hidden administrator workspace.
+- The app currently has top-level pages for `首页`, `概览`, `刷题`, `活动`, `通知`, `咨询`, `关于`, and `更多`, plus hash-routed course/notice details, activity details, public/owner profiles, private account messages, and a hidden administrator workspace.
 - The homepage now centers search across `课程 / 资料 / 题库 / 活动 / 用户`; the `资料` mode queries published backend posts with course, type, teacher, and year filters plus pagination, while the other modes retain their focused indexes.
 - The overview page now lists all catalog courses under `专业基础课程 / 专业课 / 通识课`, supports deeper professional-course groups, and can filter the normalized 2024, 2025, and 2026 curricula by category or twelve semester periods (each year's autumn-winter, spring-summer, and short term).
 - The quiz feature is now mostly complete for the current phase:
@@ -14,13 +14,14 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
   - `BIO2110F` microbiology final review
 - Quiz practice now uses a shared course shell, shared practice layout, shared question views, backend grading, answer locking, and safe answer-return rules.
 - Quiz handoff docs are in place under `src/components/quiz/`, `src/services/`, `src/data/`, `public/resource/quiz/`, `server/quiz/`, and `tests/`.
-- The Node backend now spans authentication, account data, profiles, content and moderation, activities, cross-source search, student-homepage directory APIs, and quizzes. Student homepages retain backend and administrator maintenance; their homepage directory is intentionally hidden pending a new location.
+- The Node backend now spans authentication, account data, profiles, content and moderation, activities, cross-source search, student-homepage directory APIs, and quizzes. Student homepages are displayed and submitted in More, with management and moderation nested under the administrator More workspace.
 - The public account model now has exactly three product roles: guest, student-ID-verified student, and administrator. CC98 endpoints remain backend-only for compatibility and no longer independently grant persistent-write permissions.
 - The consultation room now supports administrator-scheduled hours, a verified assigned mentor, isolated guest or account conversations, mentor inboxes, and polling-based message alerts.
 - Project management docs have been renamed to `docs/project-guides/`, and the preferred check commands are now `npm.cmd run check*`.
 
 ## Recently Completed
 
+- Added More after About in the top navigation. It restores the student-homepage directory, external links and name/avatar/link submissions through the existing API; guests use the shared login entry. The administrator More workspace contains homepage CRUD and application review. No other supplementary categories or new data stores are introduced.
 - Removed the academic-voyage activity program. Homepage recent activities now require an explicit administrator recommendation; new/seeded records default off, offline fallbacks never recommend records, and the release clears previous recommendations once without deleting posts. The activity editor supports enabling/disabling homepage display. Homepage search now aligns with the full My Courses content width.
 - Merged the `activity` and `about` branches and applied the approved Minimal professional presentation to all public, account, administrator, quiz and course-content pages. The site now shares neutral surfaces, teal accents, 4px controls, locally bundled Outfit/Space Grotesk fonts and light/dark tokens. The animated ThemeSwitch remains unchanged. Homepage search, My Courses, last practice and activity links remain functional; Markdown/UBB readers share typography while preserving author formatting. Browser acceptance also caught and fixed missing activity-search and activity-detail imports.
 - Homepage and personal workspace now share one editable My Courses list. First setup seeds current-term professional/foundation curriculum sections; optional electives remain searchable in the full course picker. Guests persist locally and verified accounts persist in auth SQLite with an initialization marker so removing all courses never silently reseeds them. Existing imported lists are preserved; explicit preset reset requires confirmation. Course favorites remain separate.
@@ -74,6 +75,8 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 
 Current known verification:
 
+The More/student-homepage release passed all 506 Node tests, 36 production-preview browser tests, the build and project checks. The new flows cover guest login entry, safe external links, avatar processing, failed-submission retention, administrator creation, approval and rejection.
+
 The follow-up activity/homepage update passed 503 Node tests, all 34 production-preview browser cases, the build and project checks. Administrator recommendation/withdrawal and the initially empty homepage feed are covered with isolated fixtures.
 
 The 2026-10-02 full-site theme work passed all 502 Node tests, the production build, project checks and all 34 browser tests against the production preview locally. Its 18 new desktop light/dark cases cover homepage/overview, Markdown/UBB articles and contribution forms, administrator review/directories, all three quiz experiences, activity/about, profile/auth, notices and consultation. Existing course/personalization/teacher/notice regressions and production no-demo checks also passed. Browser fixtures use intercepted APIs or isolated in-memory SQLite/temp files; no synthetic content is seeded online.
@@ -102,7 +105,6 @@ homepage recommendation management.
 - Public browser and API traffic share the `/zjubio/` namespace. Apache maps public `/zjubio/api/...` requests to the Node service's internal `/api/...` routes, so this project does not claim the shared host's root `/api/`. Run the external launch gate and create the first administrator account with student ID `3240105782` after deploying this mapping.
 - More course quiz migrations beyond the three current quiz courses.
 - Content version history and multi-level administrator permissions.
-- A new public location for the student-homepage directory; administrator maintenance remains implemented.
 - A deliberate product decision on whether the unmounted cross-source `SearchBar` should return or the endpoint should remain infrastructure-only; the homepage currently keeps its focused search experience.
 - The 2023 curriculum is omitted because it used legacy numeric course codes with no BIO-encoded courses.
 

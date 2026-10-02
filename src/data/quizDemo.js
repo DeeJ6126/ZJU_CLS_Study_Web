@@ -6,6 +6,7 @@ export const demoTopPages = [
   { id: 'notices', label: '通知' },
   { id: 'consultation', label: '咨询' },
   { id: 'about', label: '关于' },
+  { id: 'more', label: '更多' },
   { id: 'profile', label: '个人' },
 ];
 

@@ -14,6 +14,7 @@ import ActivityDetailPage from './components/ActivityDetailPage.vue';
 import NoticePage from './components/NoticePage.vue';
 import ConsultationPage from './components/ConsultationPage.vue';
 import AboutPage from './components/AboutPage.vue';
+import MorePage from './components/MorePage.vue';
 import OverviewPage from './components/OverviewPage.vue';
 import CourseDetailPage from './components/CourseDetailPage.vue';
 import AdminPage from './components/admin/AdminPage.vue';
@@ -3129,6 +3130,7 @@ onBeforeUnmount(() => {
       />
 
       <AboutPage v-else-if="activePage === 'about'" />
+      <MorePage v-else-if="activePage === 'more'" :homepage-client="demoIdentityId ? demoHomepagePublicClient : null" :can-submit="userCanSubmit" :viewer-key="quizScope" @request-login="openAuthDialog('login')" />
 
       <section v-else class="quiz-demo" aria-label="刷题">
         <template v-if="quizView === 'catalog'">

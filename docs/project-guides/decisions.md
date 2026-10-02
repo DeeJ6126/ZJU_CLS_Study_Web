@@ -196,3 +196,7 @@ Impact: extend the shared tokens and reading defaults rather than adding page-sp
 The homepage presents focused search, My Courses, last-practice resumption and published recent activities. The student-homepage directory is intentionally no longer shown there; its backend and administrator capabilities remain available.
 
 Impact: do not restore the homepage student directory or remove its retained infrastructure as incidental cleanup during styling work.
+
+### 26. Supplementary showcases belong in More
+
+`#more` sits after About and before the personal workspace in the top navigation. It initially contains only the existing student-homepage directory and submission form. Administrator homepage maintenance/review is nested under More rather than remaining a separate top-level management category. Extend this area only when the user identifies another supplementary category; reuse the existing homepage data and permission boundaries.

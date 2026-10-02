@@ -137,7 +137,7 @@ test('about stylesheet defines the sidebar grid and a narrow-screen fallback', (
 });
 
 test('about content only references routes the app can resolve', () => {
-  const topLevelRoots = new Set(['home', 'overview', 'quiz', 'activities', 'about', 'profile']);
+  const topLevelRoots = new Set(['home', 'overview', 'quiz', 'activities', 'about', 'more', 'profile']);
   const deepRoots = new Set(['resources', 'activity', 'notifications', 'admin']);
   const cjk = /[\u3400-\u9fff]/;
 
@@ -171,7 +171,7 @@ test('the about-site guide documents the real top-level navigation', () => {
   const guide = readFileSync('public/content/about/about-site.html', 'utf8');
   const topPages = readFileSync('src/data/quizDemo.js', 'utf8');
 
-  for (const id of ['home', 'overview', 'quiz', 'activities', 'about', 'profile']) {
+  for (const id of ['home', 'overview', 'quiz', 'activities', 'about', 'more', 'profile']) {
     assert.match(guide, new RegExp(`<code>#${id}</code>`), `guide should document #${id}`);
     assert.match(topPages, new RegExp(`id: '${id}'`), `#${id} should be a real top page`);
   }

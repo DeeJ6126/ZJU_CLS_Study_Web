@@ -244,7 +244,7 @@ for (const mode of ['light', 'dark']) {
     await expect(page.getByRole('textbox', { name: '推文链接', exact: true })).toBeVisible();
     await readable(page, '.admin-editor label > span, .admin-editor__actions button', `admin-activity-${mode}`);
     await page.getByRole('button', { name: '关闭', exact: true }).click();
-    await page.locator('.admin-page__nav').getByRole('button', { name: '同学主页', exact: true }).click();
+    await page.locator('.admin-page__nav').getByRole('button', { name: '更多', exact: true }).click();
     await expect(page.locator('.admin-homepage-row')).toContainText('同学主页测试');
     await page.getByRole('button', { name: '新增主页', exact: true }).click();
     await readable(page, '.admin-editor label > span, .admin-editor__actions button', `admin-homepage-${mode}`);

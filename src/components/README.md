@@ -11,6 +11,7 @@ Components should render props, hold local UI state, and emit events upward. Kee
 - `HomePage.vue`: homepage search entry, API-backed featured activity feed, and compact static popular-resource list.
 - `ActivityPage.vue`: published activity directory, category filters, source imagery, and stable activity-detail hashes.
 - `AboutPage.vue`: renders a section sidebar beside the sanitized author-written fragments under `public/content/about/`. Sidebar entries come from `src/data/config/aboutSections.js`, and the active section is kept in the `#about?section=` hash.
+- `MorePage.vue`: supplementary public directory at `#more`, initially containing student homepages and their authenticated submission form. Management and moderation remain in the administrator More workspace.
 - `OverviewPage.vue`: course catalog, curriculum selector, category grouping, and semester grouping.
 - `admin/AdminPage.vue`: hidden-route administrator login plus course-content, moderation, audit-log, and activity maintenance UI.
 - `ConsultationPage.vue`: visitor and mentor chat views for scheduled consultation sessions.
