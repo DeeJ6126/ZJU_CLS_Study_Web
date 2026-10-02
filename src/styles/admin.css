@@ -560,7 +560,7 @@
 }
 
 .admin-activity-placement {
-  color: var(--demo-muted);
+  color: var(--color-muted);
   font-size: 0.82rem;
 }
 

@@ -11,6 +11,7 @@ import './styles/home.css';
 import './styles/activities.css';
 import './styles/notices.css';
 import './styles/consultation.css';
+import './styles/about.css';
 import './styles/overview.css';
 import './styles/admin.css';
 import './styles/profile.css';

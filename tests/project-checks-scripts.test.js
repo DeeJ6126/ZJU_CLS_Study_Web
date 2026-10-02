@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { fileURLToPath } from 'node:url';
 
 import { checkArchitecture } from '../project-checks/scripts/check-architecture.mjs';
 import { checkContentLocation } from '../project-checks/scripts/check-content-location.mjs';
@@ -7,7 +8,9 @@ import { checkRoutes } from '../project-checks/scripts/check-routes.mjs';
 import { checkThemes } from '../project-checks/scripts/check-themes.mjs';
 import { buildReport } from '../project-checks/scripts/collect-report.mjs';
 
-const rootDir = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
+// fileURLToPath decodes percent-encoded characters, so repositories living under a
+// non-ASCII directory path (for example a Chinese folder name) still resolve.
+const rootDir = fileURLToPath(new URL('..', import.meta.url));
 
 test('project route check validates course-code resource routes', async () => {
   const result = await checkRoutes({ rootDir });
