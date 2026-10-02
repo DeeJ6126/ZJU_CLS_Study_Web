@@ -257,7 +257,7 @@ export function createAuthServer({
   importConfiguredQuizCollections(quizStore);
   contentStore.initialize();
   importStaticCourseContent(contentStore, { rootDirectory: staticCourseRoot });
-  seedActivityCatalog(contentStore, activityCatalog.activities);
+  seedActivityCatalog(contentStore, activityCatalog.articles);
   const courseCatalog = loadServerCourseCatalog();
 
   const server = createServer(async (request, response) => {

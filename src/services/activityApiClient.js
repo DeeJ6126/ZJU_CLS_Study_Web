@@ -8,7 +8,7 @@ export function createActivityApiClient(fetchImpl = fetch) {
       const response = await fetchImpl(fallbackCatalogPath);
       if (!response.ok) return { ok: false, activities: [], message: '活动内容暂时无法读取。' };
       const data = await response.json();
-      const activities = (data.activities ?? [])
+      const activities = (data.articles ?? [])
         .filter((item) => item.status === 'published' && item.externalUrl)
         .sort((a, b) => String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? '')));
       return { ok: true, fallback: true, activities };

@@ -81,5 +81,5 @@ test('public activity client keeps successful empty API responses and falls back
   const fallback = await fallbackClient.fetchActivities();
   assert.equal(fallback.ok, true);
   assert.equal(fallback.fallback, true);
-  assert.equal(fallback.activities.length, 0);
+  assert.equal(fallback.activities.length, 12);
 });
