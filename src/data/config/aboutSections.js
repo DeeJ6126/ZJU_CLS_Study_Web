@@ -21,10 +21,10 @@ export const aboutSections = [
     contentUrl: 'content/about/about-site.html',
   },
   {
-    id: 'thanks',
-    label: '致谢',
-    kicker: 'Thanks',
-    contentUrl: 'content/about/thanks.html',
+    id: 'contributors',
+    label: '贡献者',
+    kicker: 'Contributors',
+    contentUrl: 'content/about/contributors.html',
   },
 ];
 

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
 import {
   aboutSections as defaultAboutSections,
@@ -24,7 +24,8 @@ function sectionById(sectionId) {
 }
 
 function readSectionIdFromHash() {
-  const requested = getHashQuery(window.location.hash).get('section');
+  const section = getHashQuery(window.location.hash).get('section');
+  const requested = section === 'thanks' ? 'contributors' : section;
   return sectionById(requested) ? requested : defaultAboutSectionId;
 }
 
@@ -94,9 +95,25 @@ function handleSectionClick(event, sectionId) {
   selectSection(sectionId);
 }
 
+function handleHashChange() {
+  if (!/^#about(?:\?|$)/.test(window.location.hash)) return;
+  const requested = readSectionIdFromHash();
+  if (requested !== activeSectionId.value) {
+    activeSectionId.value = requested;
+    loadSection(activeSection.value);
+  }
+  syncSectionHash();
+}
+
 onMounted(() => {
+  window.addEventListener('hashchange', handleHashChange);
   syncSectionHash();
   loadSection(activeSection.value);
+});
+
+onBeforeUnmount(() => {
+  ++requestToken;
+  window.removeEventListener('hashchange', handleHashChange);
 });
 </script>
 

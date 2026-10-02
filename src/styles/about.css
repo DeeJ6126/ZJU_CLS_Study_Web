@@ -220,6 +220,17 @@
   font-weight: 600;
 }
 
+.about-contact { display: flex; align-items: center; gap: 18px; padding: 18px 0; }
+.about-contact__details { display: grid; gap: 7px; min-width: 0; }
+.about-contact__details strong { font-size: 18px; line-height: 1.5; }
+.about-contact__details a { font-size: 14px; overflow-wrap: anywhere; }
+.about-contributor-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 20px; }
+.about-contributor { display: flex; align-items: center; gap: 16px; padding: 16px 0; min-width: 0; }
+.about-page .about-page__body .about-contributor { text-decoration: none; }
+.about-contributor strong { font-size: 18px; overflow-wrap: anywhere; }
+.about-page .about-page__body .about-contributor:hover strong { color: var(--color-primary); }
+.about-page .about-page__body :is(.about-contact, .about-contributor) img { flex: 0 0 64px; width: 64px; height: 64px; object-fit: cover; margin: 0; border-radius: 4px; }
+
 /* 窄屏：左边栏折叠成正文上方的横向标签，与课程详情页的断点保持一致。 */
 @media (max-width: 860px) {
   .about-page {

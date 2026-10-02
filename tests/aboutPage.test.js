@@ -55,11 +55,11 @@ test('about content sanitizer accepts a full html document and returns a bare fr
 test('about sections config declares the sidebar entries as data, not component literals', () => {
   assert.deepEqual(
     aboutSections.map((section) => section.id),
-    ['about-us', 'about-site', 'thanks'],
+    ['about-us', 'about-site', 'contributors'],
   );
   assert.deepEqual(
     aboutSections.map((section) => section.label),
-    ['关于我们', '关于网站', '致谢'],
+    ['关于我们', '关于网站', '贡献者'],
   );
 
   for (const section of aboutSections) {
@@ -106,18 +106,31 @@ test('every about content fragment stays a sanitized safe fragment', () => {
     assert.doesNotMatch(rendered, /<!--/, file);
     assert.doesNotMatch(rendered, /\son[a-z]+\s*=/i, file);
 
-    // 「致谢」按需求暂时留空，允许渲染结果为空；有正文的栏目必须带标题和导语。
-    if (!rendered.length) continue;
     assert.match(rendered, /<h2>/, `${file} should carry a section heading`);
-    assert.match(rendered, /class="about-lead"/, `${file} should carry a lead paragraph`);
+    if (section.id !== 'contributors') assert.match(rendered, /class="about-lead"/, `${file} should carry a lead paragraph`);
   }
 });
 
-test('the acknowledgements section is registered but intentionally empty', () => {
-  const thanks = readFileSync('public/content/about/thanks.html', 'utf8');
+test('contributors display only GitHub avatars and logins in commit-count order', () => {
+  const source = readFileSync('public/content/about/contributors.html', 'utf8');
+  const html = sanitizeHtmlFragment(source);
+  const counts = [...html.matchAll(/data-contributions="(\d+)"/g)].map((match) => Number(match[1]));
+  const logins = [...html.matchAll(/<strong>([^<]+)<\/strong>/g)].map((match) => match[1]);
+  assert.deepEqual(logins, ['DeeJ6126', 'somnis7', 'serashikan']);
+  assert.deepEqual(counts, [...counts].sort((a, b) => b - a));
+  assert.equal(counts.length, 3);
+  assert.equal([...html.matchAll(/<img /g)].length, 3);
+  assert.match(source, /api\.github\.com\/repos\/DeeJ6126\/ZJU_CLS_Study_Web\/contributors/);
+  assert.doesNotMatch(html, /<p>|commit 次|提交次数/);
+  assert.match(readFileSync('src/components/AboutPage.vue', 'utf8'), /section === 'thanks' \? 'contributors'/);
+});
 
-  // 目前只有给编辑者看的注释，清洗后没有任何正文。
-  assert.equal(sanitizeHtmlFragment(thanks), '');
+test('contact shows the responsible person avatar and the supplied email', () => {
+  const html = sanitizeHtmlFragment(readFileSync('public/content/about/about-us.html', 'utf8'), { rewriteUrl: (value) => `/zjubio/${value}` });
+  assert.match(html, /src="\/zjubio\/resource\/homepages\/dee\.png"/);
+  assert.match(html, /<strong>主要负责人<\/strong>/);
+  assert.match(html, /href="mailto:3240105782@zju\.edu\.cn"/);
+  assert.doesNotMatch(html, /暂无联系方式/);
 });
 
 test('the legacy single-fragment about file is gone', () => {

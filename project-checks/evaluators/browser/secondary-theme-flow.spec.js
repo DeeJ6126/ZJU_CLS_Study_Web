@@ -79,11 +79,11 @@ test('about sections and source-backed activities remain readable in desktop lig
     await expect(page.locator('.about-page__body table')).toHaveCount(2);
     await expect(page.locator('.about-page__body table').first()).toBeVisible();
     await checkView(page, `about-site-${mode}`, '.about-page__body p, .about-page__body td');
-    await page.locator('.about-nav__item').filter({ hasText: '致谢' }).click();
-    await expect(page.locator('.about-nav__item').filter({ hasText: '致谢' })).toHaveAttribute('aria-current', 'page');
+    await page.locator('.about-nav__item').filter({ hasText: '贡献者' }).click();
+    await expect(page.locator('.about-nav__item').filter({ hasText: '贡献者' })).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('.about-page__head h1')).toHaveText('关于生科智学');
     await expect(page.locator('.about-page__status')).toHaveCount(0);
-    await expect(page.locator('.about-page__body')).toBeEmpty();
+    await expect(page.locator('.about-contributor strong')).toHaveText(['DeeJ6126', 'somnis7', 'serashikan']);
     await page.goto('/#activities');
     await expect(page.locator('.activity-program')).toHaveCount(5);
     await expect(page.locator('.activity-directory__list a').first()).toBeVisible();
