@@ -4,15 +4,14 @@ import {
   homeQuizSearchItems,
   homeSearchKinds,
 } from '../data/homeContent.js';
-import { activityProgramLabel } from '../data/activityConfig.js';
 import { majorOptions } from '../data/courses/programCatalog.js';
+import { activityProgramLabel } from '../data/activityConfig.js';
 import { loadResourceCatalog } from '../data/courses/resourceData.js';
 import { activityApiClient } from '../services/activityApiClient.js';
 import { buildHomeSearchIndex, searchHomeIndex } from '../services/homeSearchService.js';
 import { currentSchoolSemester, currentSemesterCourses } from '../services/currentSemesterService.js';
 import { searchProfiles } from '../services/profileApiClient.js';
 import { resourceSearchApiClient } from '../services/resourceSearchApiClient.js';
-import { imageFileToAvatarDataUrl, studentHomepageApiClient } from '../services/studentHomepageApiClient.js';
 import { publicAssetPath } from '../utils/publicPath.js';
 import TeacherNameInput from './TeacherNameInput.vue';
 import MyCourseGrid from './MyCourseGrid.vue';
@@ -20,9 +19,7 @@ import { searchTeacherNames } from '../services/teacherSuggestionService.js';
 
 const props = defineProps({
   activityClient: { type: Object, default: null },
-  homepageClient: { type: Object, default: null },
   resourceSearchClient: { type: Object, default: null },
-  canSubmit: { type: Boolean, default: false },
   studyProfile: { type: Object, default: () => ({ majorId: '', cohortYear: null, onboardingDismissed: false }) },
   lastQuiz: { type: Object, default: null },
   studyNotice: { type: String, default: '' },
@@ -33,7 +30,6 @@ const props = defineProps({
 });
 const emit = defineEmits(['save-study-profile', 'dismiss-study-setup', 'resume-quiz', 'remove-course']);
 const activeActivityClient = computed(() => props.activityClient ?? activityApiClient);
-const activeHomepageClient = computed(() => props.homepageClient ?? studentHomepageApiClient);
 const activeResourceSearchClient = computed(() => props.resourceSearchClient ?? resourceSearchApiClient);
 
 const activeKind = ref('course');
@@ -43,11 +39,6 @@ const courseCatalogReady = ref(false);
 const catalogMessage = ref('');
 const users = ref([]);
 const activities = ref([]);
-const homepages = ref([]);
-const homepageDialogOpen = ref(false);
-const homepageForm = ref({ name: '', href: '', avatarUrl: '' });
-const homepageNotice = ref('');
-const homepageBusy = ref(false);
 const studyDraft = reactive({ majorId: '', cohortYear: '' });
 const editingStudyProfile = ref(false);
 const availableMajors = majorOptions.filter((major) => major.available);
@@ -163,41 +154,13 @@ function selectSearchKind(kindId) {
   activeKind.value = kindId;
 }
 
-function avatarImage(path) {
-  return path?.startsWith('data:image/webp;base64,') || path?.startsWith('/zjubio/') ? path : (path ? publicAssetPath(path) : '');
+function activityImage(path) {
+  return path ? publicAssetPath(path) : '';
 }
-
-async function selectHomepageAvatar(event) {
-  homepageNotice.value = '';
-  try {
-    homepageForm.value.avatarUrl = await imageFileToAvatarDataUrl(event.target.files?.[0]);
-  } catch (error) {
-    homepageForm.value.avatarUrl = '';
-    homepageNotice.value = error.message;
-  }
+function submitSearch() {
+  query.value = query.value.trim();
+  if (activeKind.value === 'resource') queueResourceSearch({ immediate: true });
 }
-
-async function submitHomepage() {
-  if (!props.canSubmit) {
-    homepageNotice.value = '完成学号认证后即可投稿个人主页。';
-    return;
-  }
-  if (!homepageForm.value.avatarUrl) {
-    homepageNotice.value = '请先选择头像。';
-    return;
-  }
-  homepageBusy.value = true;
-  const result = await activeHomepageClient.value.submitApplication(homepageForm.value);
-  homepageBusy.value = false;
-  if (!result.ok) {
-    homepageNotice.value = result.message;
-    return;
-  }
-  homepageDialogOpen.value = false;
-  homepageForm.value = { name: '', href: '', avatarUrl: '' };
-  homepageNotice.value = '投稿已提交，管理员审核后会显示在首页。';
-}
-
 watch([query, activeKind], async ([nextQuery, nextKind]) => {
   if (nextKind !== 'user' || nextQuery.trim().length < 1) {
     users.value = [];
@@ -225,13 +188,11 @@ onUnmounted(() => {
 });
 
 onMounted(async () => {
-  const [activityResult, catalogResult, homepageResult] = await Promise.all([
+  const [activityResult, catalogResult] = await Promise.all([
     activeActivityClient.value.fetchActivities(),
     loadResourceCatalog().then((catalog) => ({ ok: true, catalog })).catch(() => ({ ok: false })),
-    activeHomepageClient.value.fetchHomepages(),
   ]);
   if (activityResult.ok) activities.value = activityResult.activities;
-  if (homepageResult.ok) homepages.value = homepageResult.homepages;
   if (catalogResult.ok) courses.value = catalogResult.catalog.courses;
   else catalogMessage.value = '课程目录暂时无法读取，请稍后再试。';
   courseCatalogReady.value = true;
@@ -241,11 +202,7 @@ onMounted(async () => {
 <template>
   <div class="home-page">
     <section class="home-search-stage" aria-labelledby="home-title">
-      <div class="home-search-stage__copy">
-        <p>浙江大学生命科学学院课程资源</p>
-        <h1 id="home-title">今天想找哪门课？</h1>
-        <span>从课程入口出发，也可以查找资料、题库与学生会活动。</span>
-      </div>
+      <h1 id="home-title" class="home-sr-only">生科智学学习资源</h1>
 
       <div class="home-search" role="search">
         <div class="home-search__kinds" aria-label="搜索类型">
@@ -260,11 +217,12 @@ onMounted(async () => {
           </button>
         </div>
 
-        <label class="home-search__field">
-          <span class="home-search__icon" aria-hidden="true">⌕</span>
-          <input v-model="query" type="search" :placeholder="activeSearchKind.placeholder" autocomplete="off" />
-          <kbd v-if="activeKind !== 'resource'">Enter</kbd>
-        </label>
+        <form class="home-search__form" @submit.prevent="submitSearch">
+          <label class="home-search__field">
+            <input v-model="query" type="search" :placeholder="activeSearchKind.placeholder" aria-label="搜索课程或资料" autocomplete="off" />
+          </label>
+          <button class="home-search__submit" type="submit">搜索</button>
+        </form>
 
         <div v-if="activeKind === 'resource'" class="home-resource-search" aria-live="polite">
           <div class="home-resource-search__filters">
@@ -327,7 +285,7 @@ onMounted(async () => {
           <div>
             <h2 id="home-study-title">我的课程</h2>
           </div>
-          <a href="#my-courses">设置我的课程</a>
+          <a href="#my-courses">管理课程</a>
           <button v-if="hasStudyProfile && !showStudyForm" type="button" @click="editingStudyProfile = true">修改专业与年级</button>
         </header>
 
@@ -352,7 +310,7 @@ onMounted(async () => {
         </form>
         <p v-else-if="hasStudyProfile && !courseCatalogReady" class="home-study__empty">正在读取课程...</p>
         <template v-else-if="hasStudyProfile && semesterOverview.status === 'ready'">
-          <p class="home-study__term">{{ semesterOverview.label }} · {{ availableMajors.find((major) => major.id === studyProfile.majorId)?.label }}</p>
+          <p class="home-study__term" hidden>{{ semesterOverview.label }} · {{ availableMajors.find((major) => major.id === studyProfile.majorId)?.label }}</p>
         </template>
         <p v-else-if="hasStudyProfile && semesterOverview.status === 'no-program'" class="home-study__empty">这一年级的培养方案暂未收录，课程建议无法准确生成。</p>
         <button v-else type="button" class="home-study__set-later" @click="editingStudyProfile = true">设置专业与入学年级</button>
@@ -368,30 +326,25 @@ onMounted(async () => {
         </div>
       </section>
 
-      <div v-if="!hasQuery && activeKind !== 'resource'" class="home-search-stage__quicklinks" aria-label="常用入口">
-        <span>常用入口</span>
-        <a href="#quiz">开始刷题</a>
-        <a href="#overview">查看培养方案</a>
-      </div>
+
     </section>
 
     <section class="home-feed" aria-label="首页动态">
       <div class="home-feed__main">
         <header class="home-section-head">
           <div>
-            <p>Student Union</p>
             <h2>近期活动</h2>
           </div>
           <a href="#activities">全部活动</a>
         </header>
 
         <div class="home-activity-grid">
-          <article v-for="(activity, index) in recentActivities" :key="activity.id" :class="`is-${['green', 'amber', 'blue'][index % 3]}`">
-            <span class="home-activity-card__number">0{{ index + 1 }}</span>
+          <article v-for="activity in recentActivities" :key="activity.id">
+            <a :href="activity.externalUrl" class="home-activity-card__image" target="_blank" rel="noopener noreferrer">
+              <img v-if="activity.imageUrl" :src="activityImage(activity.imageUrl)" :alt="activity.imageAlt || activity.title" loading="lazy">
+            </a>
             <div>
-              <p>{{ activityProgramLabel(activity.programId) }}</p>
               <h3>{{ activity.title }}</h3>
-              <span>查看公众号原文</span>
             </div>
             <a :href="activity.externalUrl" target="_blank" rel="noopener noreferrer">阅读推文 <b aria-hidden="true">↗</b></a>
           </article>
@@ -399,55 +352,8 @@ onMounted(async () => {
         </div>
       </div>
 
-      <aside class="home-popular" aria-labelledby="homepages-title">
-        <header class="home-section-head">
-          <div>
-            <p>Student Pages</p>
-            <h2 id="homepages-title">同学主页</h2>
-          </div>
-          <button class="home-homepages__submit" type="button" @click="homepageNotice = ''; homepageDialogOpen = true">投稿</button>
-        </header>
 
-        <template v-for="(homepage, index) in homepages" :key="homepage.id">
-          <a v-if="homepage.href" class="home-homepages__row" :href="homepage.href" target="_blank" rel="noopener noreferrer">
-            <img v-if="homepage.avatarUrl" :src="avatarImage(homepage.avatarUrl)" :alt="`${homepage.name}的头像`" />
-            <span v-else>{{ String(index + 1).padStart(2, '0') }}</span>
-            <div>
-              <strong>{{ homepage.name }}</strong>
-              <small>{{ homepage.href }}</small>
-            </div>
-          </a>
-          <div v-else class="home-homepages__row is-placeholder">
-            <span>{{ String(index + 1).padStart(2, '0') }}</span>
-            <div>
-              <strong>{{ homepage.name }}</strong>
-              <small>期待你的主页</small>
-            </div>
-          </div>
-        </template>
-        <p v-if="!homepages.length" class="home-homepages__empty">暂无同学主页。</p>
-        <p v-if="homepageNotice && !homepageDialogOpen" class="home-homepages__notice" role="status">{{ homepageNotice }}</p>
-      </aside>
     </section>
 
-    <div v-if="homepageDialogOpen" class="home-homepages__overlay" @click.self="homepageDialogOpen = false">
-      <section class="home-homepages__dialog" role="dialog" aria-modal="true" aria-labelledby="homepage-submit-title">
-        <header>
-          <h2 id="homepage-submit-title">投稿同学主页</h2>
-          <button type="button" aria-label="关闭" @click="homepageDialogOpen = false">×</button>
-        </header>
-        <form @submit.prevent="submitHomepage">
-          <label>名称<input v-model.trim="homepageForm.name" required maxlength="40" placeholder="你的名称"></label>
-          <label>头像<input type="file" required accept="image/png,image/jpeg,image/webp" @change="selectHomepageAvatar"></label>
-          <img v-if="homepageForm.avatarUrl" class="home-homepages__preview" :src="homepageForm.avatarUrl" alt="头像预览">
-          <label>主页链接<input v-model.trim="homepageForm.href" required type="url" maxlength="500" placeholder="https://"></label>
-          <p v-if="homepageNotice" role="status">{{ homepageNotice }}</p>
-          <footer>
-            <button type="button" @click="homepageDialogOpen = false">取消</button>
-            <button type="submit" :disabled="homepageBusy">{{ homepageBusy ? '提交中...' : '提交审核' }}</button>
-          </footer>
-        </form>
-      </section>
-    </div>
   </div>
 </template>

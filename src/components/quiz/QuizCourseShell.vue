@@ -31,6 +31,7 @@ const emit = defineEmits(['navigate', 'back']);
         :key="item.id"
         type="button"
         :class="{ 'is-active': page === item.id }"
+        :aria-current="page === item.id ? 'page' : null"
         @click="emit('navigate', item.id)"
       >
         {{ item.label }}

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -713,7 +713,10 @@ test('activity HTTP API exposes only administrator-managed push-article entries'
     const publicResponse = await fetch(`${baseUrl}/api/activities`);
     const publicBody = await publicResponse.json();
     assert.equal(publicResponse.status, 200);
-    assert.equal(publicBody.activities.length, 0);
+    const catalog = JSON.parse(readFileSync('public/content/activities/catalog.json', 'utf8'));
+    const seededArticles = catalog.articles.filter((item) => item.status === 'published' && item.externalUrl);
+    assert.equal(publicBody.activities.length, seededArticles.length);
+    assert.deepEqual(new Set(publicBody.activities.map((item) => item.externalUrl)), new Set(seededArticles.map((item) => item.externalUrl)));
     assert.equal(publicBody.activities.every((item) => item.status === undefined), true);
     assert.equal((await fetch(`${baseUrl}/api/admin/activities`)).status, 401);
 
@@ -739,9 +742,11 @@ test('activity HTTP API exposes only administrator-managed push-article entries'
     assert.equal(create.status, 201);
     assert.equal(created.activity.status, 'published');
     const published = await (await fetch(`${baseUrl}/api/activities`)).json();
-    assert.equal(published.activities[0].programId, 'laboratory-open-day');
-    assert.equal(published.activities[0].externalUrl, 'https://mp.weixin.qq.com/s/http-test-lab');
-    assert.equal(published.activities[0].status, undefined);
+    const publishedCreated = published.activities.find((item) => item.slug === created.activity.slug);
+    assert.equal(published.activities.length, seededArticles.length + 1);
+    assert.equal(publishedCreated.programId, 'laboratory-open-day');
+    assert.equal(publishedCreated.externalUrl, 'https://mp.weixin.qq.com/s/http-test-lab');
+    assert.equal(publishedCreated.status, undefined);
 
     const archive = await fetch(`${baseUrl}/api/admin/activities/${created.activity.id}/archive`, {
       method: 'POST', headers: { 'content-type': 'application/json', cookie }, body: '{}',

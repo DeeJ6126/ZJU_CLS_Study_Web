@@ -16,5 +16,6 @@ import './styles/overview.css';
 import './styles/admin.css';
 import './styles/profile.css';
 import './styles/demo.css';
+import './styles/content-typography.css';
 
 createApp(App).mount('#app');

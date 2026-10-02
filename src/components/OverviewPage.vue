@@ -195,6 +195,17 @@ const visibleCourseCount = computed(() => {
   ), 0);
 });
 
+const overviewNavigation = computed(() => (
+  groupingMode.value === 'outline' && isProgramSelected.value
+    ? outlineRows.value.flatMap((row, index) => row.depth === 0
+      ? [{ id: `overview-outline-${index}`, title: row.tag }] : [])
+    : sections.value.map((section, index) => ({ id: `overview-section-${index}`, title: section.title }))
+));
+
+function jumpToOverviewSection(id) {
+  document.getElementById(id)?.scrollIntoView({ block: 'start' });
+}
+
 function toggleSection(sectionId) {
   collapsedSections[sectionId] = !collapsedSections[sectionId];
 }
@@ -246,9 +257,7 @@ onMounted(async () => {
   <section class="overview-page" aria-labelledby="overview-title">
     <header class="overview-head">
       <div>
-        <p>Course Catalog</p>
         <h1 id="overview-title">课程概览</h1>
-        <span>浏览生命科学学院课程，并进入课程页面查看简介、资料与学习内容。</span>
       </div>
       <strong>{{ visibleCourseCount }} 门课程</strong>
     </header>
@@ -322,10 +331,16 @@ onMounted(async () => {
     <p v-else-if="loadError" class="overview-empty">{{ loadError }}</p>
 
     <!-- 按培养方案原文结构展开。各专业层级深浅不同，用 depth 控制缩进。 -->
-    <div v-else-if="groupingMode === 'outline' && isProgramSelected" class="overview-outline">
+    <div v-else-if="groupingMode === 'outline' && isProgramSelected" class="overview-content-layout">
+      <nav class="overview-contents" aria-label="培养方案目录">
+        <strong>目录</strong>
+        <button v-for="item in overviewNavigation" :key="item.id" type="button" @click="jumpToOverviewSection(item.id)">{{ item.title }}</button>
+      </nav>
+      <div class="overview-outline">
       <section
-        v-for="row in outlineRows"
+        v-for="(row, index) in outlineRows"
         :key="row.id"
+        :id="`overview-outline-${index}`"
         class="overview-outline__row"
         :class="`is-depth-${row.depth}`"
       >
@@ -358,16 +373,21 @@ onMounted(async () => {
               <small>{{ course.credits }} 学分 · {{ course.totalHours }} 学时</small>
             </a>
             <!-- 收藏替代原“我的课程”清单入口，课程收藏与个人课表分开保存。 -->
-            <button v-if="canManageCourses" type="button" @click="toggleSavedCourse(course)">
+            <button v-if="canManageCourses" type="button" :class="{ 'is-saved': isSaved(course.code) }" :aria-pressed="isSaved(course.code)" @click="toggleSavedCourse(course)">
               {{ isSaved(course.code) ? '取消收藏' : '收藏' }}
             </button>
           </article>
         </div>
       </section>
+      </div>
     </div>
-
-    <div v-else class="overview-sections">
-      <section v-for="section in sections" :key="section.id" class="overview-section">
+    <div v-else class="overview-content-layout">
+      <nav class="overview-contents" aria-label="课程分组目录">
+        <strong>目录</strong>
+        <button v-for="item in overviewNavigation" :key="item.id" type="button" @click="jumpToOverviewSection(item.id)">{{ item.title }}</button>
+      </nav>
+      <div class="overview-sections">
+      <section v-for="(section, index) in sections" :key="section.id" :id="`overview-section-${index}`" class="overview-section">
         <button
           class="overview-section__head"
           type="button"
@@ -390,7 +410,7 @@ onMounted(async () => {
                   <span>{{ course.code }}</span>
                   <small>{{ course.credits }} 学分 · {{ course.totalHours }} 学时</small>
                 </a>
-                <button v-if="canManageCourses" type="button" @click="toggleSavedCourse(course)">
+                <button v-if="canManageCourses" type="button" :class="{ 'is-saved': isSaved(course.code) }" :aria-pressed="isSaved(course.code)" @click="toggleSavedCourse(course)">
                   {{ isSaved(course.code) ? '取消收藏' : '收藏' }}
                 </button>
               </article>
@@ -417,7 +437,7 @@ onMounted(async () => {
                   <span>{{ course.code }}</span>
                   <small>{{ course.credits }} 学分 · {{ course.totalHours }} 学时</small>
                 </a>
-                <button v-if="canManageCourses" type="button" @click="toggleSavedCourse(course)">
+                <button v-if="canManageCourses" type="button" :class="{ 'is-saved': isSaved(course.code) }" :aria-pressed="isSaved(course.code)" @click="toggleSavedCourse(course)">
                   {{ isSaved(course.code) ? '取消收藏' : '收藏' }}
                 </button>
               </article>
@@ -425,6 +445,7 @@ onMounted(async () => {
           </section>
         </div>
       </section>
+    </div>
     </div>
   </section>
 </template>

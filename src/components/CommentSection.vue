@@ -72,7 +72,7 @@ function saveEdit(comment) {
             <span v-else>{{ comment.author.nickname?.slice(0, 1) }}</span>
             <strong>{{ comment.author.nickname }}</strong>
           </a>
-          <p class="comment-body" v-html="renderCommentBody(comment.body)"></p>
+          <div class="comment-body" v-html="renderCommentBody(comment.body)"></div>
           <footer>
             <time>{{ comment.createdAt }}</time>
             <button v-if="canComment && !comment.deleted" type="button" @click="replyTo = comment">回复</button>
@@ -93,7 +93,7 @@ function saveEdit(comment) {
               <span v-else>{{ reply.author.nickname?.slice(0, 1) }}</span>
               <strong>{{ reply.author.nickname }}</strong>
             </a>
-            <p class="comment-body" v-html="renderCommentBody(reply.body)"></p>
+            <div class="comment-body" v-html="renderCommentBody(reply.body)"></div>
             <footer>
               <time>{{ reply.createdAt }}</time>
               <button v-if="canComment && !reply.deleted" type="button" @click="replyTo = comment">回复</button>

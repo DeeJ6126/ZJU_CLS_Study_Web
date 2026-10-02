@@ -27,7 +27,7 @@ test('teacher suggestions scope to courses, highlight prefixes and allow custom 
   const allNames = await options.allTextContents();
   expect(allNames.every((name) => name.startsWith('陈'))).toBe(true);
   await expect(options.first().locator('strong')).toHaveText('陈');
-  expect(await options.first().locator('strong').evaluate((el) => getComputedStyle(el).color)).toBe('rgb(40, 116, 72)');
+  expect(await options.first().locator('strong').evaluate((el) => getComputedStyle(el).color)).toBe('rgb(40, 107, 74)');
   await filters.getByRole('searchbox', { name: '课程', exact: true }).fill('BIO2110F');
   await teacher.focus();
   await expect(options).toHaveCount(2);

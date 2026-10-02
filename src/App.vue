@@ -63,6 +63,7 @@ import {
   buildHashWithQuery,
   getDemoPageFromHash,
   getActivitySlugFromHash,
+  getActivityDetailSlugFromHash,
   getDemoPageHref,
   getHashQuery,
   getProfileHref,
@@ -2979,8 +2980,6 @@ onBeforeUnmount(() => {
       <HomePage
         v-if="activePage === 'home'"
         :activity-client="demoIdentityId ? demoActivityPublicClient : null"
-        :homepage-client="demoIdentityId ? demoHomepagePublicClient : null"
-        :can-submit="userCanSubmit"
         :study-profile="studyProfile"
         :last-quiz="lastQuiz"
         :study-notice="studyNotice"

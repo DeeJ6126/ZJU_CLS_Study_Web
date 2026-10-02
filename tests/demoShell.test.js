@@ -1,6 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import postcss from 'postcss';
+
+const declarationsFor = (css, selector) => {
+  let declarations;
+  postcss.parse(css).walkRules((rule) => {
+    if (!declarations && rule.selectors.includes(selector)) {
+      declarations = Object.fromEntries(rule.nodes.filter((node) => node.type === 'decl').map((node) => [node.prop, node.value]));
+    }
+  });
+  assert.ok(declarations, `Missing CSS rule: ${selector}`);
+  return declarations;
+};
 
 test('demo shell exposes the requested top-level pages and sparse home search', async () => {
   const app = await readFile(new URL('../src/App.vue', import.meta.url), 'utf8');
@@ -25,13 +37,15 @@ test('demo shell exposes the requested top-level pages and sparse home search', 
     assert.match(homeData, new RegExp(label));
   }
   assert.match(home, /近期活动/);
-  assert.match(home, /同学主页/);
+  assert.doesNotMatch(home, /同学主页|今天想找哪门课/);
+  assert.match(home, /@submit.prevent="submitSearch"/);
   assert.match(app, /activePage === 'activities'/);
   assert.match(app, /<ActivityPage[\s\S]*v-else-if="activePage === 'activities'"/);
-  assert.match(homeCss, /\.home-search-stage__copy,[\s\S]*?margin-inline:\s*auto/);
-  assert.match(overviewCss, /\.overview-page\s*\{[\s\S]*?max-width:\s*1360px/);
-  assert.match(overviewCss, /\.overview-course-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
-  assert.match(overviewCss, /\.overview-section__body\s*\{[\s\S]*?padding:\s*18px\s+24px\s+24px/);
+  assert.equal(declarationsFor(homeCss, '.home-search')['max-width'], '940px');
+  assert.equal(declarationsFor(homeCss, '.home-search').margin, '0 auto 30px');
+  assert.equal(declarationsFor(overviewCss, '.overview-page')['max-width'], '1320px');
+  assert.match(declarationsFor(overviewCss, '.overview-course-grid')['grid-template-columns'], /^repeat\(auto-fit,/);
+  assert.equal(declarationsFor(overviewCss, '.overview-section__body').padding, '18px 0 24px');
   assert.match(demoCss, /@media \(max-width: 760px\)[\s\S]*?\.demo-topnav\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(app, /getDemoPageHref/);
   assert.match(app, /getDemoPageFromHash/);
@@ -53,7 +67,7 @@ test('quiz page is a course entry and molecular biology opens a seven-page subap
   assert.match(app, /v-if="activeCourseTab === 'supported'"/);
   assert.match(app, /v-else-if="activeCourseTab === 'pending'"/);
   assert.match(app, /class="quiz-course-grid"/);
-  assert.match(css, /\.quiz-course-grid\s*\{[\s\S]*?repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
+  assert.equal(declarationsFor(css, '.quiz-course-grid')['grid-template-columns'], 'repeat(auto-fit, minmax(240px, 1fr))');
   assert.doesNotMatch(app, /class="quiz-right-rail"/);
   assert.doesNotMatch(app, /class="quiz-left-nav"/);
   assert.match(css, /\.quiz-demo\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)/);
@@ -90,8 +104,9 @@ test('quiz page is a course entry and molecular biology opens a seven-page subap
   assert.match(app, /range-card-grid/);
   assert.match(app, /questionTileStatusBySourceId/);
   assert.match(app, /answeredQuestionStatus/);
-  assert.match(css, /\.question-grid-cell\s*\{[\s\S]*?inline-size:\s*48px/);
-  assert.match(css, /\.question-grid-cell\s*\{[\s\S]*?block-size:\s*48px/);
+  assert.equal(declarationsFor(css, '.question-jump-grid')['grid-template-columns'], 'repeat(5, minmax(0, 1fr))');
+  assert.equal(declarationsFor(css, '.question-grid-cell')['inline-size'], '100%');
+  assert.equal(declarationsFor(css, '.question-grid-cell')['aspect-ratio'], '1');
   assert.match(css, /\.question-grid-cell\.is-correct/);
   assert.match(css, /\.question-grid-cell\.is-incorrect/);
   assert.doesNotMatch(app, /limit:\s*30/);
@@ -140,8 +155,8 @@ test('botany slice course opens a full-width six-page subapp without family/abou
   assert.doesNotMatch(botanyShell, /已答 \{\{/);
   assert.doesNotMatch(botanyShell, /生词/);
 
-  assert.match(css, /\.quiz-course-app\s*\{[\s\S]*?grid-column:\s*1 \/ -1/);
-  assert.match(css, /\.quiz-course-content\s*\{[\s\S]*?width:\s*100%/);
+  assert.equal(declarationsFor(css, '.quiz-course-app')['grid-column'], '1 / -1');
+  assert.equal(declarationsFor(css, '.quiz-course-content').width, '100%');
   assert.match(app, /已选 \{\{ selectedCategorySourceIds\.length \}\} 类，\{\{ selectedBotanySliceCount \}\} 张/);
   assert.match(app, /返回首页[\s\S]*?开始练习/);
   assert.match(app, /botanyPage = 'categories'[\s\S]*?beginBotanyPractice/);
@@ -183,8 +198,8 @@ test('microbiology course opens a full-width seven-page subapp without about pag
   assert.doesNotMatch(microbiologyShell, /关于/);
   assert.doesNotMatch(shellComponent, /已答 \{\{/);
 
-  assert.match(css, /\.quiz-course-app\s*\{[\s\S]*?grid-column:\s*1 \/ -1/);
-  assert.match(css, /\.quiz-course-content\s*\{[\s\S]*?width:\s*100%/);
+  assert.equal(declarationsFor(css, '.quiz-course-app')['grid-column'], '1 / -1');
+  assert.equal(declarationsFor(css, '.quiz-course-content').width, '100%');
   assert.match(app, /已选 \{\{ selectedCategorySourceIds\.length \}\} 章，\{\{ selectedMicrobiologyCount \}\} 题/);
   assert.match(app, /返回首页[\s\S]*?开始练习/);
   assert.match(app, /microbiologyPage = 'categories'[\s\S]*?beginMicrobiologyPractice/);
@@ -233,10 +248,10 @@ test('course subapps use the shared shell and practice layout instead of course-
   assert.doesNotMatch(app, /MicrobiologyQuizApp/);
 });
 
-test('quiz shell uses the same green primary palette as the homepage', async () => {
+test('quiz shell follows shared site tokens rather than a separate palette', async () => {
   const css = await readFile(new URL('../src/styles/demo.css', import.meta.url), 'utf8');
 
-  assert.match(css, /--demo-primary:\s*#245e48/);
-  assert.match(css, /--demo-primary-soft:\s*#e7f0eb/);
-  assert.doesNotMatch(css, /#2f6feb|#eef4ff/i);
+  assert.equal(declarationsFor(css, '.demo-shell')['--demo-primary'], 'var(--color-primary)');
+  assert.equal(declarationsFor(css, '.demo-shell')['--demo-primary-soft'], 'var(--color-lab)');
+  assert.doesNotMatch(css, /#[0-9a-f]{3,8}\b|rgba?\(|linear-gradient\(/i);
 });

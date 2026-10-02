@@ -19,6 +19,7 @@ const emit = defineEmits(['select']);
       type="button"
       :class="{ 'is-selected': selectedValue === true }"
       :disabled="locked"
+      :aria-pressed="selectedValue === true"
       @click="emit('select', true)"
     >
       T 正确
@@ -27,6 +28,7 @@ const emit = defineEmits(['select']);
       type="button"
       :class="{ 'is-selected': selectedValue === false }"
       :disabled="locked"
+      :aria-pressed="selectedValue === false"
       @click="emit('select', false)"
     >
       F 错误

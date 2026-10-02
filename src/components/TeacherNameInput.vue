@@ -78,8 +78,5 @@ function onKeydown(event) {
 }
 .teacher-name-input li { padding: 9px 12px; cursor: pointer; font-size: 15px; font-weight: 400; overflow-wrap: anywhere; }
 .teacher-name-input li:hover, .teacher-name-input li.is-active { background: var(--color-soft); }
-.teacher-name-input strong { color: #287448; font-weight: 800; }
-:global(html[data-theme="silent-black"]) .teacher-name-input strong,
-:global(html[data-theme="tech-innovation"]) .teacher-name-input strong,
-:global(html[data-theme="dark"]) .teacher-name-input strong { color: #7fdaa2; }
+.teacher-name-input strong { color: var(--color-positive); font-weight: 800; }
 </style>

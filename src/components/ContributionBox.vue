@@ -1,6 +1,7 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import TeacherNameInput from './TeacherNameInput.vue';
+import { linkPaths } from '../utils/vendor/lucidePaths.js';
 
 const props = defineProps({
   teacherNames: { type: Array, default: () => [] },
@@ -197,7 +198,7 @@ const markdownToolbar = [
   { id: 'bold', label: 'B', title: '加粗', wrap: ['**', '**'] },
   { id: 'italic', label: 'I', title: '斜体', wrap: ['*', '*'] },
   { id: 'strike', label: 'S', title: '删除线', wrap: ['~~', '~~'] },
-  { id: 'link', label: '🔗', title: '插入链接', format: 'markdown', prompt: '请输入链接地址' },
+  { id: 'link', title: '插入链接', format: 'markdown', prompt: '请输入链接地址' },
   { id: 'quote', label: '❞', title: '引用块', prefix: '> ' },
   { id: 'code', label: '</>', title: '代码块', wrap: ['\n```\n', '\n```\n'] },
   { id: 'list', label: '•', title: '无序列表', prefix: '- ' },
@@ -212,7 +213,7 @@ const ubbToolbar = [
   { id: 'center', label: '≡', title: '居中', wrap: ['[align=center]', '[/align]'] },
   { id: 'right', label: '≡', title: '靠右', wrap: ['[align=right]', '[/align]'] },
 ];
-const ubbLinkAction = { id: 'link', label: '🔗', title: '插入链接', format: 'ubb', prompt: '请输入链接地址' };
+const ubbLinkAction = { id: 'link', title: '插入链接', format: 'ubb', prompt: '请输入链接地址' };
 
 function applyToolbarAction(action) {
   if (action.prompt) openPrompt(action);
@@ -396,12 +397,14 @@ async function submitContribution() {
                     type="button"
                     role="tab"
                     :class="{ 'is-active': form.bodyFormat === 'markdown' }"
+                    :aria-selected="form.bodyFormat === 'markdown'"
                     @click="switchFormat('markdown')"
                   >Markdown</button>
                   <button
                     type="button"
                     role="tab"
                     :class="{ 'is-active': form.bodyFormat === 'ubb' }"
+                    :aria-selected="form.bodyFormat === 'ubb'"
                     @click="switchFormat('ubb')"
                   >UBB（论坛格式）</button>
                 </div>
@@ -416,7 +419,12 @@ async function submitContribution() {
                   :title="action.title"
                   :aria-label="action.title"
                   @click="applyToolbarAction(action)"
-                >{{ action.label }}</button>
+                >
+                  <svg v-if="action.id === 'link'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path v-for="path in linkPaths" :key="path" :d="path" />
+                  </svg>
+                  <template v-else>{{ action.label }}</template>
+                </button>
               </div>
               <div v-else class="contribution-form__toolbar" aria-label="UBB 工具栏">
                 <button
@@ -434,7 +442,11 @@ async function submitContribution() {
                   <option v-for="size in 7" :key="size" :value="size">{{ size }}</option>
                 </select>
                 <input v-model="selectedUbbColor" class="contribution-form__color-picker" type="color" title="取色器" aria-label="取色器" @change="applyUbbColor">
-                <button type="button" class="contribution-form__tool-button" title="插入链接" aria-label="插入链接" @click="applyToolbarAction(ubbLinkAction)">🔗</button>
+                <button type="button" class="contribution-form__tool-button" title="插入链接" aria-label="插入链接" @click="applyToolbarAction(ubbLinkAction)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path v-for="path in linkPaths" :key="path" :d="path" />
+                  </svg>
+                </button>
               </div>
               <div v-if="pendingPrompt" class="contribution-form__ubb-prompt" role="dialog" aria-label="链接地址输入">
                 <label>

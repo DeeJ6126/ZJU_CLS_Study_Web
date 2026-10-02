@@ -22,8 +22,8 @@ const emit = defineEmits(['remove-course']);
 .my-course-card span { color: var(--color-muted); font-size: 12px; overflow-wrap: anywhere; }
 .my-course-card__metadata { display: block; padding: 0 13px 12px; color: var(--color-muted); font-size: 12px; overflow-wrap: anywhere; }
 .my-course-card:hover { border-color: var(--demo-primary); }
-.my-course-card .my-course-card__remove { position: absolute; right: 4px; top: 4px; display: grid; place-items: center; padding: 0; width: 28px; height: 28px; border: 0; border-radius: 2px; background: transparent; color: #c73131; font-size: 24px; opacity: 0; pointer-events: none; cursor: pointer; }
+.my-course-card .my-course-card__remove { position: absolute; right: 4px; top: 4px; display: grid; place-items: center; padding: 0; width: 28px; height: 28px; border: 0; border-radius: 2px; background: transparent; color: var(--color-negative); font-size: 24px; opacity: 0; pointer-events: none; cursor: pointer; }
 .my-course-card:hover .my-course-card__remove, .my-course-card:focus-within .my-course-card__remove { opacity: 1; pointer-events: auto; }
-.my-course-card__remove:hover { background: #ffeded; }
+.my-course-card__remove:hover { background: var(--color-negative-soft); }
 @media (hover: none) { .my-course-card .my-course-card__remove { opacity: 1; pointer-events: auto; } }
 </style>

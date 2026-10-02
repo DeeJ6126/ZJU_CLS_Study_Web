@@ -14,13 +14,14 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
   - `BIO2110F` microbiology final review
 - Quiz practice now uses a shared course shell, shared practice layout, shared question views, backend grading, answer locking, and safe answer-return rules.
 - Quiz handoff docs are in place under `src/components/quiz/`, `src/services/`, `src/data/`, `public/resource/quiz/`, `server/quiz/`, and `tests/`.
-- The Node backend now spans authentication, account data, profiles, content and moderation, activities, cross-source search, student-homepage directory APIs, and quizzes. The student-homepage domain is backend-only at present; no Vue page or dedicated frontend client completes that workflow yet.
+- The Node backend now spans authentication, account data, profiles, content and moderation, activities, cross-source search, student-homepage directory APIs, and quizzes. Student homepages retain backend and administrator maintenance; their homepage directory is intentionally hidden pending a new location.
 - The public account model now has exactly three product roles: guest, student-ID-verified student, and administrator. CC98 endpoints remain backend-only for compatibility and no longer independently grant persistent-write permissions.
 - The consultation room now supports administrator-scheduled hours, a verified assigned mentor, isolated guest or account conversations, mentor inboxes, and polling-based message alerts.
 - Project management docs have been renamed to `docs/project-guides/`, and the preferred check commands are now `npm.cmd run check*`.
 
 ## Recently Completed
 
+- Merged the `activity` and `about` branches and applied the approved Minimal professional presentation to all public, account, administrator, quiz and course-content pages. The site now shares neutral surfaces, teal accents, 4px controls, locally bundled Outfit/Space Grotesk fonts and light/dark tokens. The animated ThemeSwitch remains unchanged. Homepage search, My Courses, last practice and activity links remain functional; Markdown/UBB readers share typography while preserving author formatting. Browser acceptance also caught and fixed missing activity-search and activity-detail imports.
 - Homepage and personal workspace now share one editable My Courses list. First setup seeds current-term professional/foundation curriculum sections; optional electives remain searchable in the full course picker. Guests persist locally and verified accounts persist in auth SQLite with an initialization marker so removing all courses never silently reseeds them. Existing imported lists are preserved; explicit preset reset requires confirmation. Course favorites remain separate.
 - Added administrator-maintained public notices with category/major/cohort/deadline filters, pagination, pinned ordering, safe Markdown details, source links and PDF/DOCX/XLSX attachments. Drafts and archived content remain private; no application, comment or submission workflow is exposed. Notice data and files reuse existing production backup coverage.
 - Added freely editable teacher-name suggestions to resource search, course submissions, and administrator content forms. Suggestions use the course teacher catalog, narrow by course and name prefix, and highlight the prefix without requiring a listed teacher for submission.
@@ -72,12 +73,13 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 
 Current known verification:
 
-The 2026-10-01 notice release passed all 469 Node tests, the production build and project checks locally, including administrator-only writes, published-only downloads and deterministic concurrent upload/edit regressions. The notice browser suite uses isolated real HTTP handlers, in-memory SQLite and temporary files; no test notices are seeded online.
+The 2026-10-02 full-site theme work passed all 502 Node tests, the production build, project checks and all 34 browser tests against the production preview locally. Its 18 new desktop light/dark cases cover homepage/overview, Markdown/UBB articles and contribution forms, administrator review/directories, all three quiz experiences, activity/about, profile/auth, notices and consultation. Existing course/personalization/teacher/notice regressions and production no-demo checks also passed. Browser fixtures use intercepted APIs or isolated in-memory SQLite/temp files; no synthetic content is seeded online.
 
 ```bash
 npm.cmd test
 npm.cmd run build
 npm.cmd run check
+npm.cmd run check:browser
 ```
 
 On 2026-09-15, the production-readiness work passed all 380 tests,
@@ -97,9 +99,9 @@ homepage recommendation management.
 - Public browser and API traffic share the `/zjubio/` namespace. Apache maps public `/zjubio/api/...` requests to the Node service's internal `/api/...` routes, so this project does not claim the shared host's root `/api/`. Run the external launch gate and create the first administrator account with student ID `3240105782` after deploying this mapping.
 - More course quiz migrations beyond the three current quiz courses.
 - Content version history and multi-level administrator permissions.
-- Vue integration for the backend student-homepage directory/application/admin workflow.
+- A new public location for the student-homepage directory; administrator maintenance remains implemented.
 - A deliberate product decision on whether the unmounted cross-source `SearchBar` should return or the endpoint should remain infrastructure-only; the homepage currently keeps its focused search experience.
-- The overview UI is intentionally an initial layout; the 2023 curriculum is omitted because it used legacy numeric course codes with no BIO-encoded courses. Course detail layout is deferred for a later redesign.
+- The 2023 curriculum is omitted because it used legacy numeric course codes with no BIO-encoded courses.
 
 ## Recovery Order For Future AI
 

@@ -35,9 +35,9 @@
   height: 22px;
   display: grid;
   place-items: center;
-  border-radius: 999px;
+  border-radius: 4px;
   background: var(--demo-primary, var(--color-primary));
-  color: var(--color-avatar-text);
+  color: var(--color-on-primary);
   font-size: 12px;
 }
 
@@ -60,9 +60,9 @@
   place-items: center;
   flex: 0 0 auto;
   border: 1px solid color-mix(in srgb, var(--color-surface) 45%, transparent);
-  border-radius: 999px;
-  color: #ffffff;
-  font-weight: 900;
+  border-radius: 4px;
+  color: var(--color-avatar-text);
+  font-weight: 600;
 }
 
 .account-avatar--large {
@@ -103,6 +103,8 @@
 .mailbox-popover h2 {
   margin: 0 0 10px;
   font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 600;
   line-height: 1.15;
 }
 
@@ -110,7 +112,7 @@
   margin: 0;
   color: var(--demo-primary, var(--color-primary-strong));
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .account-popover dl {
@@ -127,7 +129,7 @@
 
 .account-popover dt {
   color: var(--color-muted);
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .account-popover dd {
@@ -172,7 +174,7 @@
 .cc98-verification label span {
   color: var(--color-muted);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .cc98-verification label {
@@ -198,16 +200,16 @@
 .cc98-verification button {
   padding: 0 12px;
   background: var(--demo-primary, var(--color-primary));
-  color: var(--color-avatar-text);
+  color: var(--color-on-primary);
   cursor: pointer;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .cc98-verification__message {
   grid-column: 1 / -1;
   margin: 0;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .cc98-verification__message.is-success {
@@ -215,7 +217,7 @@
 }
 
 .cc98-verification__message.is-error {
-  color: var(--color-danger, #b3261e);
+  color: var(--color-negative);
 }
 
 .auth-badges {
@@ -234,7 +236,7 @@
   background: var(--resource-chip-bg);
   color: var(--resource-chip-text);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .user-switcher {
@@ -245,7 +247,7 @@
 .user-switcher span {
   color: var(--color-muted);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .user-switcher select {
@@ -289,7 +291,7 @@
 .auth-dialog-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 30;
+  z-index: 100;
   background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
@@ -301,15 +303,12 @@
   width: min(420px, 100%);
   max-height: calc(100vh - 48px);
   overflow-y: auto;
-  padding: 20px;
+  padding: 26px;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-md);
   background: var(--color-surface);
   box-shadow: var(--detail-shadow-hover);
-}
-
-html[data-theme="dark"] .auth-dialog-backdrop {
-  background: rgba(0, 0, 0, 0.65);
+  color: var(--color-ink);
 }
 
 .auth-dialog__header,
@@ -323,6 +322,8 @@ html[data-theme="dark"] .auth-dialog-backdrop {
 .auth-dialog__header h2 {
   margin: 0;
   font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 600;
 }
 
 .auth-dialog__close {
@@ -342,13 +343,13 @@ html[data-theme="dark"] .auth-dialog-backdrop {
   background: var(--color-soft);
   color: var(--color-ink);
   cursor: pointer;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .auth-dialog__tabs button.is-active {
   border-color: var(--demo-primary, var(--color-primary));
   background: var(--demo-primary, var(--color-primary));
-  color: var(--color-avatar-text);
+  color: var(--color-on-primary);
 }
 
 .auth-dialog__body {
@@ -365,7 +366,7 @@ html[data-theme="dark"] .auth-dialog-backdrop {
 .auth-dialog__body label span {
   color: var(--color-muted);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .auth-dialog__body input {
@@ -388,7 +389,7 @@ html[data-theme="dark"] .auth-dialog-backdrop {
   background: var(--color-soft);
   color: var(--demo-primary, var(--color-primary-strong));
   cursor: pointer;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .auth-dialog__text-action {
@@ -403,9 +404,9 @@ html[data-theme="dark"] .auth-dialog-backdrop {
 .account-popover__logout,
 .account-popover__actions button:first-child {
   background: var(--demo-primary, var(--color-primary));
-  color: var(--color-avatar-text);
+  color: var(--color-on-primary);
   cursor: pointer;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .account-popover__actions {
@@ -420,7 +421,7 @@ html[data-theme="dark"] .auth-dialog-backdrop {
   background: var(--color-surface);
   color: var(--color-ink);
   cursor: pointer;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .account-popover__signed-in-actions {
@@ -435,19 +436,19 @@ html[data-theme="dark"] .auth-dialog-backdrop {
   background: var(--color-surface);
   color: var(--color-ink);
   cursor: pointer;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .account-popover__signed-in-actions button:first-child:not(:last-child) {
   background: var(--demo-primary, var(--color-primary));
-  color: var(--color-avatar-text);
+  color: var(--color-on-primary);
 }
 
 .auth-dialog__message,
 .auth-dialog__disabled {
   margin: 0;
   color: var(--color-muted);
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .account-popover__logout {
@@ -470,9 +471,7 @@ html[data-theme="dark"] .auth-dialog-backdrop {
   }
 
   .auth-dialog {
-    right: 14px;
-    bottom: 76px;
-    width: calc(100vw - 28px);
+    width: 100%;
   }
 
   .account-popover__actions {
@@ -489,19 +488,19 @@ html[data-theme="dark"] .auth-dialog-backdrop {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   overflow: hidden;
-  background: #fff;
-  border: 1px solid #bcc8c1;
+  background: var(--color-surface);
+  border: 1px solid var(--color-input-border);
   border-radius: var(--radius-sm);
 }
 
 .auth-dialog__email-field input {
-  border: 0 !important;
-  border-radius: 0 !important;
+  border: 0;
+  border-radius: 0;
 }
 
 .auth-dialog__email-field strong {
   padding: 0 12px;
-  color: #506158;
+  color: var(--color-muted);
   font-size: 14px;
   white-space: nowrap;
 }
@@ -509,7 +508,7 @@ html[data-theme="dark"] .auth-dialog-backdrop {
 .account-popover__switcher {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid #e3e9e5;
+  border-top: 1px solid var(--color-line);
 }
 
 .account-switcher__label {
@@ -518,22 +517,22 @@ html[data-theme="dark"] .auth-dialog-backdrop {
   justify-content: space-between;
   gap: 10px;
   font-size: 13px;
-  color: #506158;
+  color: var(--color-muted);
 }
 
 .account-switcher__label select {
   max-width: 220px;
   padding: 6px 8px;
-  border: 1px solid #bcc8c1;
+  border: 1px solid var(--color-input-border);
   border-radius: var(--radius-sm);
-  background: #fff;
-  color: #1f2933;
+  background: var(--color-surface);
+  color: var(--color-ink);
   font-size: 13px;
 }
 
 .account-switcher__hint {
   margin: 8px 0 0;
-  color: #85948b;
+  color: var(--color-muted);
   font-size: 12px;
   line-height: 1.5;
 }
@@ -543,33 +542,8 @@ html[data-theme="dark"] .auth-dialog-backdrop {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #9b3f37;
+  color: var(--color-negative);
   font-size: 12px;
   text-decoration: underline;
   cursor: pointer;
-}
-
-html[data-theme="dark"] .auth-dialog__email-field {
-  background: #0e1622;
-  border-color: #2a374a;
-}
-html[data-theme="dark"] .auth-dialog__email-field strong {
-  color: #b3c4d6;
-}
-html[data-theme="dark"] .account-popover__switcher {
-  border-top-color: #2a374a;
-}
-html[data-theme="dark"] .account-switcher__label {
-  color: #b3c4d6;
-}
-html[data-theme="dark"] .account-switcher__label select {
-  background: #0e1622;
-  border-color: #2a374a;
-  color: #e8edf4;
-}
-html[data-theme="dark"] .account-switcher__hint {
-  color: #8a98ad;
-}
-html[data-theme="dark"] .account-switcher__reset {
-  color: #f0a8a0;
 }

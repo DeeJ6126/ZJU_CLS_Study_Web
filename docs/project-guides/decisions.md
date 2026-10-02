@@ -184,3 +184,15 @@ The published-resource search uses canonical course-code and `routeId` links and
 ### 23. Public notices are separate from private account messages
 
 `#notices` is a public, administrator-maintained directory; `#notifications` remains private account messages. Notices have draft/published/archived states, optional major/cohort applicability, publication dates, Shanghai deadlines, source links and downloadable PDF/DOCX/XLSX attachments. Only administrators may write; there are no application, comment or submission endpoints. Notice data and files reuse the existing content database/upload directory and backup coverage. Public APIs and downloads expose only published notices, never drafts or archived records.
+
+### 24. The full site uses one Minimal professional design language
+
+Public pages, account and administrator tools, quizzes, and content readers share neutral surfaces, teal accents, semantic state colors, and light/dark tokens from `base.css`. Outfit supplies body/headings with CJK fallbacks; Space Grotesk supplies identifiers; `--font-mono` supplies code. The Latin fonts are bundled locally. Controls and cards use 4px radii rather than capsules; the original animated `ThemeSwitch` is unchanged. Legacy theme IDs remain compatible but map to the shared light or dark palette.
+
+Impact: extend the shared tokens and reading defaults rather than adding page-specific palettes. Activity/about styling follows the same rules. Preserve explicit author UBB colors, sizes and alignment, except black/white text maps to theme ink for readability.
+
+### 25. The homepage prioritizes immediate study workflows
+
+The homepage presents focused search, My Courses, last-practice resumption and published recent activities. The student-homepage directory is intentionally no longer shown there; its backend and administrator capabilities remain available.
+
+Impact: do not restore the homepage student directory or remove its retained infrastructure as incidental cleanup during styling work.

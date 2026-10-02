@@ -79,7 +79,7 @@ test('guest my courses preset then edits persist across homepage personal view a
   }
   await page.reload();
   await expect(page.locator('.home-study .my-course-card')).toHaveCount(0);
-  await page.getByRole('link', { name: '设置我的课程', exact: true }).click();
+  await page.getByRole('link', { name: '管理课程', exact: true }).click();
   await expect(page.getByText('暂无课程。', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '重新预置本学期课程', exact: true }).click();
   await expect(page.locator('.my-course-card')).toHaveCount(4);

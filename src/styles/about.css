@@ -1,9 +1,13 @@
 .about-page {
   width: 100%;
   min-width: 0;
-  min-height: calc(100vh - 68px);
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 38px 40px 64px;
+  min-height: calc(100vh - 76px);
   display: grid;
   grid-template-columns: 188px minmax(0, 1fr);
+  gap: 32px;
   color: var(--color-ink);
 }
 
@@ -11,17 +15,18 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 26px 14px;
+  padding: 0 20px 0 0;
   border-right: 1px solid var(--color-line);
-  background: var(--color-surface);
+  background: transparent;
+  align-self: start;
 }
 
 .about-page__nav-title {
   margin: 0 6px 8px;
   color: var(--color-muted);
   font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-weight: 600;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -48,25 +53,25 @@
 
 .about-nav__item.is-active {
   border-left-color: var(--demo-primary);
-  background: var(--color-soft);
-  color: var(--color-ink);
+  background: var(--demo-primary-soft);
+  color: var(--demo-primary);
 }
 
 .about-nav__label {
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .about-nav__kicker {
   color: var(--color-muted);
   font-size: 0.68rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .about-page__main {
   min-width: 0;
-  padding: clamp(28px, 4vw, 58px) clamp(20px, 5vw, 76px) 96px;
+  padding: 0;
 }
 
 .about-page__head {
@@ -80,15 +85,17 @@
   margin: 0;
   color: var(--demo-primary);
   font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-weight: 600;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .about-page__head h1 {
   margin: 0;
-  font-size: clamp(2.2rem, 4.6vw, 4.2rem);
-  line-height: 1;
+  font-family: var(--font-heading);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.35;
   letter-spacing: 0;
 }
 
@@ -101,7 +108,7 @@
 .about-page__body {
   max-width: 76ch;
   margin-top: 36px;
-  font-size: 1.02rem;
+  font-size: 16px;
   line-height: 1.9;
 }
 
@@ -112,15 +119,15 @@
 .about-page__body .about-lead > p {
   margin: 0;
   color: var(--color-ink);
-  font-size: clamp(1.15rem, 1.8vw, 1.42rem);
+  font-size: 18px;
   line-height: 1.75;
 }
 
 .about-page__body h2 {
   margin-top: 46px;
-  padding-left: 14px;
-  border-left: 3px solid var(--demo-primary);
-  font-size: clamp(1.3rem, 2.2vw, 1.7rem);
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 600;
   line-height: 1.35;
 }
 
@@ -147,7 +154,7 @@
 
 .about-page__body strong {
   color: var(--color-ink);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* 正文里的站内地址（#resources/#BIO2110F 这类）用等宽字体方便辨认。 */
@@ -157,7 +164,7 @@
   border-radius: var(--radius-sm);
   background: var(--color-soft);
   color: var(--color-ink);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-code);
   font-size: 0.88em;
   word-break: break-all;
 }
@@ -184,7 +191,7 @@
   display: block;
   max-width: 100%;
   height: auto;
-  border-radius: 12px;
+  border-radius: 4px;
 }
 
 .about-page__body hr {
@@ -210,7 +217,7 @@
 
 .about-page__body th {
   background: var(--color-soft);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* 窄屏：左边栏折叠成正文上方的横向标签，与课程详情页的断点保持一致。 */

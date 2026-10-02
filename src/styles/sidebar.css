@@ -65,13 +65,13 @@
 .brand__eyebrow {
   color: var(--color-sidebar-muted);
   font-size: 11px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
 }
 
 .brand__name {
   font-family: var(--font-heading);
   font-size: 23px;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.15;
 }
 
@@ -144,7 +144,7 @@
 
 .nav-item__label {
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .nav-item__meta {

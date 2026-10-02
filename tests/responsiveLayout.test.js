@@ -11,14 +11,14 @@ const getBlock = (css, selector) => {
   return match[1];
 };
 
-test('primary content pages are not capped by page-level max width', () => {
+test('course resources stay full width while account settings use a readable form width', () => {
   const resourceCss = readStyle('resource');
   const courseDetailCss = readStyle('course-detail');
   const settingsCss = readStyle('settings');
 
   assert.doesNotMatch(getBlock(resourceCss, '.resource-page'), /max-width:/);
   assert.doesNotMatch(getBlock(courseDetailCss, '.course-detail'), /max-width:/);
-  assert.doesNotMatch(getBlock(settingsCss, '.settings-page'), /max-width:/);
+  assert.match(getBlock(settingsCss, '.settings-page'), /max-width:\s*1080px/);
 });
 
 test('card grids use auto fitting tracks instead of fixed column counts', () => {

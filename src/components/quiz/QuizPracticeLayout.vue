@@ -56,6 +56,7 @@ function tileClass(tile, activeIndex, statusBySourceQuestionId) {
           type="button"
           class="practice-overview-row"
           :class="{ 'is-active': activeRangeId === option.id }"
+          :aria-pressed="activeRangeId === option.id"
           @click="emit('select-range', option)"
         >
           <span>{{ option.title }}</span>
@@ -74,6 +75,8 @@ function tileClass(tile, activeIndex, statusBySourceQuestionId) {
             type="button"
             class="question-grid-cell"
             :class="tileClass(tile, activeIndex, tileStatusBySourceQuestionId)"
+            :aria-current="tile.index === activeIndex ? 'step' : null"
+            :aria-label="`第 ${tile.localNumber} 题`"
             @click="emit('move-question', tile.index)"
           >
             <span v-if="tileStatusBySourceQuestionId[tile.sourceQuestionId]">✓</span>

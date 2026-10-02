@@ -100,7 +100,10 @@ function applyReplacements(input) {
 
   // [color=#xxx|name]text[/color]
   text = text.replace(/\[color=([#\w]+)\]([\s\S]*?)\[\/color\]/g, (_, color, content) => {
-    return `<span class="ubb-color" style="color:${escapeHtml(color)}">${content}</span>`;
+    // Legacy editor default ink must remain readable in either theme.
+    const neutral = /^(?:black|white|#000|#000000|#fff|#ffffff)$/i.test(color);
+    const displayColor = neutral ? 'var(--color-ink)' : escapeHtml(color);
+    return `<span class="ubb-color" style="color:${displayColor}">${content}</span>`;
   });
 
   // [align=left|center|right]text[/align]

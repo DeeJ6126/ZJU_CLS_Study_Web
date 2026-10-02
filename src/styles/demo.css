@@ -1,119 +1,121 @@
 .demo-shell {
-  --demo-primary: #245e48;
-  --demo-primary-soft: #e7f0eb;
+  --demo-primary: var(--color-primary);
+  --demo-primary-soft: var(--color-lab);
   min-height: 100vh;
-  background: #f5f6f8;
-  color: #1f2933;
+  background: var(--color-soft);
+  color: var(--color-ink);
   font-family: var(--font-body);
-}
-
-html[data-theme="dark"] .demo-shell {
-  --demo-primary: #6dbfa5;
-  --demo-primary-soft: #1d2a3b;
-  background: #0e1622;
-  color: #e8edf4;
 }
 
 .demo-head {
   position: sticky;
   top: 0;
   z-index: 10;
-  height: 68px;
+  height: 76px;
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr) auto;
+  grid-template-columns: 220px minmax(0, 1fr) auto;
   align-items: center;
   gap: 24px;
-  padding: 0 28px;
-  border-bottom: 1px solid #e3e7ed;
-  background: rgba(255, 255, 255, 0.96);
-}
-
-html[data-theme="dark"] .demo-head {
-  border-bottom-color: #2a374a;
-  background: rgba(14, 22, 34, 0.92);
+  padding: 0 34px;
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-surface);
 }
 
 .demo-brand {
   display: grid;
-  gap: 2px;
-  color: #245e48;
+  gap: 0;
+  color: var(--color-ink);
   text-decoration: none;
 }
 
-html[data-theme="dark"] .demo-brand {
-  color: #8ad3bd;
-}
-
 .demo-brand span {
-  font-size: 22px;
-  font-weight: 900;
+  font-family: var(--font-heading);
+  font-size: 25px;
+  font-weight: 650;
+  line-height: 1.4;
 }
 
 .demo-brand strong {
-  color: #6b7280;
-  font-size: 11px;
+  color: var(--color-muted);
+  font-size: 10px;
+  font-weight: 500;
   letter-spacing: 0;
-  text-transform: uppercase;
-}
-
-html[data-theme="dark"] .demo-brand strong {
-  color: #8a98ad;
 }
 
 .demo-topnav {
   display: flex;
+  justify-content: center;
   gap: 8px;
-}
-
-.demo-topnav a,
-.demo-user-chip,
-.quiz-market-tabs button,
-.quiz-course-card button,
-.range-options button,
-.range-panel__actions button,
-.practice-menu button,
-.question-jump-grid button,
-.practice-question__head button,
-.practice-options button,
-.practice-actions button,
-.botany-quiz-nav button,
-.botany-gallery-card button {
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  font: inherit;
 }
 
 .demo-topnav a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 72px;
-  height: 38px;
-  background: transparent;
-  color: #5c6675;
-  cursor: pointer;
-  font-weight: 800;
+  min-width: 62px;
+  min-height: 42px;
+  padding: 9px 12px;
+  border-bottom: 2px solid transparent;
+  color: var(--color-muted);
+  font-size: 15px;
   text-decoration: none;
 }
 
-html[data-theme="dark"] .demo-topnav a {
-  color: #b3c4d6;
+.demo-topnav a:hover {
+  color: var(--color-primary);
 }
 
 .demo-topnav a.is-active {
-  background: #e7f0eb;
-  color: #245e48;
-}
-
-html[data-theme="dark"] .demo-topnav a.is-active {
-  background: #1d2a3b;
-  color: #8ad3bd;
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
 }
 
 .demo-topnav a.is-disabled {
   opacity: 0.42;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+.demo-account {
+  position: relative;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.demo-user-chip {
+  max-width: 160px;
+  min-height: 36px;
+  padding: 6px 11px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.demo-user-chip:hover,
+.demo-user-chip[aria-expanded="true"] {
+  border-color: var(--color-primary);
+  background: var(--color-lab);
+  color: var(--color-primary);
+}
+
+.demo-user-chip__tag {
+  margin-left: 6px;
+  color: var(--color-muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.demo-main {
+  min-height: calc(100vh - 76px);
 }
 
 .consultation-toast {
@@ -127,12 +129,12 @@ html[data-theme="dark"] .demo-topnav a.is-active {
   width: min(380px, calc(100vw - 32px));
   min-height: 72px;
   padding: 14px 16px;
-  border: 1px solid #b8cfc2;
-  border-left: 4px solid #245e48;
+  border: 1px solid var(--color-line);
+  border-left: 3px solid var(--color-primary);
   border-radius: var(--radius-sm);
-  background: #ffffff;
-  box-shadow: 0 12px 32px rgba(19, 39, 31, 0.17);
-  color: #1f2933;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+  color: var(--color-ink);
 }
 
 .consultation-toast > div {
@@ -144,7 +146,7 @@ html[data-theme="dark"] .demo-topnav a.is-active {
 
 .consultation-toast span {
   overflow: hidden;
-  color: #5c6675;
+  color: var(--color-muted);
   font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -152,122 +154,42 @@ html[data-theme="dark"] .demo-topnav a.is-active {
 
 .consultation-toast button {
   flex: none;
-  border: 1px solid #245e48;
+  border: 1px solid var(--color-primary);
   border-radius: var(--radius-sm);
-  background: #245e48;
-  color: #ffffff;
+  background: var(--color-primary);
+  color: var(--color-avatar-text);
   cursor: pointer;
   font: inherit;
-  font-weight: 700;
+  font-size: 13px;
   padding: 7px 10px;
 }
 
 .consultation-toast .consultation-toast__dismiss {
   border-color: transparent;
   background: transparent;
-  color: #5c6675;
+  color: var(--color-muted);
   font-size: 12px;
   padding: 3px;
 }
 
-html[data-theme="dark"] .consultation-toast {
-  border-color: #3d6257;
-  border-left-color: #8ad3bd;
-  background: #172434;
-  color: #e8edf4;
-}
-
-html[data-theme="dark"] .consultation-toast span,
-html[data-theme="dark"] .consultation-toast .consultation-toast__dismiss {
-  color: #b3c4d6;
-}
-
-html[data-theme="dark"] .consultation-toast button:not(.consultation-toast__dismiss) {
-  border-color: #8ad3bd;
-  background: #8ad3bd;
-  color: #0e1622;
-}
-
-.demo-user-chip {
-  padding: 8px 14px;
-  background: #245e48;
-  color: #ffffff;
-  cursor: pointer;
-  font-weight: 900;
-}
-
-html[data-theme="dark"] .demo-user-chip {
-  background: #8ad3bd;
-  color: #0e1622;
-}
-
-.demo-user-chip__tag {
-  margin-left: 6px;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  background: #ffffff22;
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 700;
-  vertical-align: 1px;
-}
-
-html[data-theme="dark"] .demo-user-chip__tag {
-  background: rgba(14, 22, 34, 0.18);
-  color: #0e1622;
-}
-
-.demo-account {
-  position: relative;
-  justify-self: end;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.demo-account {
-  position: relative;
-  justify-self: end;
-}
-
-.demo-main {
-  min-height: calc(100vh - 68px);
-}
-
-@media (min-width: 761px) and (max-width: 1120px) {
-  .demo-head {
-    grid-template-columns: 185px minmax(0, 1fr) auto;
-    gap: 12px;
-    padding-inline: 18px;
-  }
-
-  .demo-topnav {
-    gap: 2px;
-  }
-
-  .demo-topnav a {
-    min-width: 56px;
-  }
-}
-
-@media (min-width: 761px) and (max-width: 1000px) {
-  .demo-head { height: auto; grid-template-columns: minmax(0, 1fr) auto; padding-block: 12px; }
-  .demo-topnav { grid-column: 1 / -1; grid-row: 2; justify-content: center; }
-  .demo-account { grid-column: 2; grid-row: 1; }
-}
-
-.demo-home {
-  max-width: 860px;
+.demo-home,
+.demo-placeholder {
+  max-width: 1280px;
   margin: 0 auto;
-  padding: clamp(64px, 10vw, 120px) 24px;
+  padding: 38px 36px 44px;
 }
 
-.demo-home h1 {
-  margin: 0 0 28px;
-  color: #1f2933;
+.demo-home h1,
+.demo-placeholder h1 {
+  margin: 0 0 24px;
+  color: var(--color-ink);
   font-family: var(--font-heading);
-  font-size: clamp(42px, 7vw, 72px);
-  letter-spacing: 0;
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.demo-placeholder p {
+  color: var(--color-primary);
 }
 
 .demo-search {
@@ -276,52 +198,34 @@ html[data-theme="dark"] .demo-user-chip__tag {
 }
 
 .demo-search span {
-  color: #6b7280;
+  color: var(--color-muted);
   font-size: 13px;
-  font-weight: 900;
 }
 
 .demo-search input {
   width: 100%;
-  height: 56px;
-  padding: 0 18px;
-  border: 1px solid #d7dde7;
+  height: 52px;
+  padding: 0 16px;
+  border: 1px solid var(--color-input-border);
   border-radius: var(--radius-sm);
-  background: #ffffff;
-  color: #1f2933;
+  background: var(--color-input);
+  color: var(--color-ink);
   font: inherit;
-  font-size: 17px;
-}
-
-.demo-placeholder {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 80px 24px;
-}
-
-.demo-placeholder p {
-  margin: 0 0 10px;
-  color: var(--demo-primary);
-  font-weight: 900;
-}
-
-.demo-placeholder h1 {
-  margin: 0;
-  font-family: var(--font-heading);
-  font-size: clamp(30px, 5vw, 48px);
 }
 
 .quiz-demo {
-  min-height: calc(100vh - 68px);
+  min-height: calc(100vh - 76px);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  background: #f6f7f9;
+  background: var(--color-soft);
 }
 
-
 .quiz-main {
+  width: 100%;
+  max-width: 1280px;
   min-width: 0;
-  padding: 24px;
+  margin-inline: auto;
+  padding: 38px 36px 44px;
 }
 
 .quiz-range-page,
@@ -330,59 +234,93 @@ html[data-theme="dark"] .demo-user-chip__tag {
   margin: 24px;
 }
 
+.quiz-demo button,
+.quiz-demo .secondary-button {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.quiz-demo button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.quiz-demo button:focus-visible,
+.quiz-demo textarea:focus-visible,
+.demo-user-chip:focus-visible,
+.demo-topnav a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
 .quiz-market-tabs {
   display: flex;
-  gap: 10px;
-  margin-bottom: 22px;
+  gap: 26px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--color-line);
 }
 
 .quiz-market-tabs button {
-  height: 40px;
-  padding: 0 18px;
-  background: #ffffff;
-  color: #5c6675;
-  cursor: pointer;
-  font-weight: 900;
+  min-height: 42px;
+  padding: 0 2px 10px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 15px;
 }
 
 .quiz-market-tabs button.is-active {
-  background: var(--demo-primary);
-  color: #ffffff;
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.quiz-market-tabs button:hover {
+  color: var(--color-primary);
 }
 
 .quiz-course-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
 }
 
 .quiz-course-card {
-  min-height: 188px;
+  min-height: 190px;
   display: grid;
   align-content: space-between;
   gap: 14px;
-  padding: 18px;
-  border: 1px solid #dfe5ee;
+  padding: 20px;
+  border: 1px solid var(--color-line);
   border-radius: var(--radius-sm);
-  background: #ffffff;
+  background: var(--color-surface);
 }
 
-.quiz-course-card span {
-  color: var(--demo-primary);
+.quiz-course-card span,
+.range-panel__head > div > span {
+  color: var(--color-muted);
+  font-family: var(--font-code);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 500;
 }
 
 .quiz-course-card h2 {
   margin: 0;
-  color: #1f2933;
-  font-size: 21px;
+  color: var(--color-ink);
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .quiz-course-card p {
   margin: 0;
-  color: #6b7280;
-  line-height: 1.6;
+  color: var(--color-muted);
+  line-height: 1.65;
+  font-size: 14px;
 }
 
 .quiz-course-card button,
@@ -390,57 +328,84 @@ html[data-theme="dark"] .demo-user-chip__tag {
 .practice-actions button,
 .practice-question__head button {
   min-height: 38px;
-  padding: 0 14px;
-  background: var(--demo-primary);
-  color: #ffffff;
-  cursor: pointer;
-  font-weight: 900;
+  padding: 7px 14px;
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-avatar-text);
+  font-weight: 500;
+  line-height: 1.5;
 }
 
-.quiz-course-card button:disabled,
-.practice-actions button:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
+.quiz-course-card button:hover:not(:disabled),
+.range-panel__actions button:hover:not(:disabled),
+.practice-actions button:hover:not(:disabled) {
+  background: var(--color-primary-strong);
 }
 
 .quiz-course-card.is-pending button {
-  background: #eef1f5;
-  color: #8b95a5;
+  border-color: var(--color-line);
+  background: var(--color-soft);
+  color: var(--color-muted);
+}
+
+.quiz-demo .secondary-button,
+.practice-question__head button {
+  border-color: var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.quiz-demo .secondary-button:hover:not(:disabled),
+.practice-question__head button:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-lab);
+  color: var(--color-primary);
+}
+
+.quiz-demo .danger-button {
+  border-color: var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-negative);
+}
+
+.quiz-demo .danger-button:hover:not(:disabled) {
+  border-color: var(--color-negative);
+  background: var(--color-negative-soft);
+  color: var(--color-negative);
 }
 
 .range-panel {
   padding: 20px;
-  border: 1px solid #dfe5ee;
+  border: 1px solid var(--color-line);
   border-radius: var(--radius-sm);
-  background: #ffffff;
+  background: var(--color-surface);
 }
 
 .range-panel__head {
   display: flex;
   justify-content: space-between;
+  align-items: start;
   gap: 18px;
   margin-bottom: 16px;
 }
 
-.range-panel__head span {
-  color: var(--demo-primary);
-  font-size: 13px;
-  font-weight: 900;
+.range-panel__head h2 {
+  margin: 6px 0 0;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
-.range-panel__head h2,
 .range-panel__head p {
   margin: 0;
-}
-
-.range-panel__head p {
-  color: #6b7280;
+  color: var(--color-muted);
+  font-size: 14px;
 }
 
 .range-panel__hint {
   max-width: 760px;
   margin: 0 0 16px;
-  color: #6b7280;
+  color: var(--color-muted);
   line-height: 1.7;
 }
 
@@ -455,128 +420,319 @@ html[data-theme="dark"] .demo-user-chip__tag {
 
 .range-options button {
   min-height: 34px;
-  padding: 0 12px;
-  border-color: #d7dde7;
-  background: #f8fafc;
-  color: #4b5565;
-  cursor: pointer;
+  padding: 5px 12px;
+  background: var(--color-surface);
+  color: var(--color-muted);
 }
 
-.range-options button.is-selected {
-  border-color: var(--demo-primary);
-  background: var(--demo-primary-soft);
-  color: var(--demo-primary);
-  font-weight: 900;
+.range-options button.is-selected,
+.range-card.is-selected {
+  border-color: var(--color-primary);
+  background: var(--color-lab);
+  color: var(--color-primary);
 }
 
 .range-card-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 12px;
 }
 
 .range-card {
-  min-height: 92px;
+  min-height: 100px;
   display: grid;
   align-content: space-between;
   gap: 10px;
-  padding: 14px;
-  border: 1px solid #d7dde7;
-  border-radius: var(--radius-sm);
-  background: #ffffff;
-  color: #1f2933;
-  cursor: pointer;
+  padding: 16px;
+  background: var(--color-surface);
+  color: var(--color-ink);
   text-align: left;
 }
 
 .range-card strong {
   font-size: 16px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .range-card em {
-  color: #4b5565;
+  color: var(--color-muted);
   font-size: 13px;
   font-style: normal;
   line-height: 1.45;
 }
 
 .range-card span {
-  color: #6b7280;
+  color: var(--color-muted);
+  font-family: var(--font-code);
   font-size: 13px;
-  font-weight: 900;
 }
 
-.range-card.is-selected {
-  border-color: var(--demo-primary);
-  background: var(--demo-primary-soft);
+.range-card:hover:not(:disabled) {
+  border-color: var(--color-primary);
 }
 
 .range-panel__actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 10px;
   margin-top: 16px;
 }
 
-.range-panel__actions .secondary-button,
-.practice-question__head .danger-button {
-  background: #ffffff;
-  color: #4b5565;
-  border-color: #d7dde7;
-}
-
-.practice-question__head .danger-button {
-  color: #b42318;
-}
-
-.practice-layout {
-  min-height: calc(100vh - 116px);
+.practice-layout,
+.quiz-range-shell {
+  min-height: calc(100vh - 124px);
   display: grid;
-  grid-template-columns: 108px 312px minmax(0, 1fr);
-  border: 1px solid #e3e7ed;
+  grid-template-columns: 108px 288px minmax(0, 1fr);
+  border: 1px solid var(--color-line);
   border-radius: var(--radius-sm);
-  background: #ffffff;
+  background: var(--color-surface);
   overflow: hidden;
 }
 
 .quiz-range-shell {
-  min-height: calc(100vh - 116px);
-  display: grid;
   grid-template-columns: 108px minmax(0, 1fr);
-  border: 1px solid #e3e7ed;
-  border-radius: var(--radius-sm);
-  background: #ffffff;
-  overflow: hidden;
 }
 
 .practice-menu {
   display: grid;
   align-content: start;
-  gap: 8px;
+  gap: 6px;
   padding: 18px 10px;
-  border-right: 1px solid #e3e7ed;
+  border-right: 1px solid var(--color-line);
 }
 
 .practice-menu button {
-  min-height: 44px;
+  min-height: 40px;
+  border-color: transparent;
   background: transparent;
-  color: #5c6675;
-  cursor: pointer;
-  font-weight: 900;
+  color: var(--color-muted);
 }
 
 .practice-menu button.is-active {
-  background: var(--demo-primary-soft);
-  color: var(--demo-primary);
+  background: var(--color-lab);
+  color: var(--color-primary);
+}
+
+.quiz-course-app,
+.molecular-quiz-app,
+.botany-quiz-app,
+.microbiology-quiz-app {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 188px minmax(0, 1fr);
+  min-height: calc(100vh - 76px);
+  width: 100%;
+  background: var(--color-soft);
+}
+
+.quiz-course-nav,
+.molecular-quiz-nav,
+.botany-quiz-nav,
+.microbiology-quiz-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+  padding: 28px 16px;
+  border-right: 1px solid var(--color-line);
+  background: var(--color-surface);
+}
+
+.quiz-course-nav strong,
+.molecular-quiz-nav strong,
+.botany-quiz-nav strong,
+.microbiology-quiz-nav strong {
+  margin: 10px 10px 16px;
+  color: var(--color-ink);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.quiz-course-nav button,
+.molecular-quiz-nav button,
+.botany-quiz-nav button,
+.microbiology-quiz-nav button {
+  min-height: 40px;
+  padding: 8px 10px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--color-muted);
+  text-align: left;
+}
+
+.quiz-course-nav button:hover:not(:disabled),
+.molecular-quiz-nav button:hover:not(:disabled),
+.botany-quiz-nav button:hover:not(:disabled),
+.microbiology-quiz-nav button:hover:not(:disabled),
+.quiz-course-nav button.is-active,
+.molecular-quiz-nav button.is-active,
+.botany-quiz-nav button.is-active,
+.microbiology-quiz-nav button.is-active {
+  background: var(--color-lab);
+  color: var(--color-primary);
+}
+
+.quiz-course-content,
+.molecular-quiz-content,
+.botany-quiz-content,
+.microbiology-quiz-content {
+  min-width: 0;
+  width: 100%;
+  padding: 30px 32px 44px;
+}
+
+.molecular-page-stack,
+.botany-page-stack,
+.microbiology-page-stack {
+  display: grid;
+  gap: 22px;
+  width: 100%;
+}
+
+.molecular-hero,
+.botany-hero,
+.microbiology-hero {
+  padding: 0 0 22px;
+  border-bottom: 1px solid var(--color-line);
+  background: transparent;
+}
+
+.molecular-hero span,
+.botany-hero span,
+.microbiology-hero span,
+.molecular-record-card > span,
+.microbiology-record-card > span,
+.botany-gallery-card > span {
+  color: var(--color-muted);
+  font-family: var(--font-code);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.molecular-hero h2,
+.botany-hero h2,
+.microbiology-hero h2 {
+  margin: 8px 0;
+  color: var(--color-ink);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.molecular-hero p,
+.botany-hero p,
+.microbiology-hero p,
+.molecular-category-group p,
+.molecular-empty,
+.botany-empty,
+.microbiology-empty {
+  color: var(--color-muted);
+  line-height: 1.7;
+}
+
+.molecular-feature-grid,
+.molecular-record-list,
+.botany-feature-grid,
+.botany-gallery-grid,
+.microbiology-feature-grid,
+.microbiology-record-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.molecular-category-stack {
+  display: grid;
+  gap: 24px;
+}
+
+.molecular-category-group {
+  padding: 0 0 22px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.molecular-category-group__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+
+.molecular-category-group__head .practice-actions {
+  margin-top: 0;
+}
+
+.molecular-category-summary,
+.botany-category-summary,
+.microbiology-category-summary {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.molecular-category-summary .range-panel__actions,
+.botany-category-summary .range-panel__actions,
+.microbiology-category-summary .range-panel__actions {
+  margin-top: 0;
+}
+
+.molecular-category-group__head h3,
+.molecular-record-card h3,
+.microbiology-record-card h3 {
+  margin: 0 0 8px;
+  color: var(--color-ink);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.molecular-record-card,
+.microbiology-record-card,
+.botany-gallery-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+.molecular-record-card p,
+.microbiology-record-card p {
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.botany-toolbar,
+.microbiology-toolbar {
+  justify-content: flex-start;
+  margin-top: 0;
+}
+
+.quiz-practice-layout,
+.molecular-practice-layout,
+.botany-practice-layout,
+.microbiology-practice-layout {
+  display: grid;
+  grid-template-columns: 288px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
 }
 
 .question-jump {
+  min-width: 0;
   display: grid;
   align-content: start;
   gap: 16px;
-  padding: 20px 16px;
-  border-right: 1px solid #e3e7ed;
-  background: #fbfcfe;
+  padding: 18px 16px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
 }
 
 .practice-overview-head,
@@ -585,38 +741,37 @@ html[data-theme="dark"] .demo-user-chip__tag {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
-  color: #1f2933;
+  color: var(--color-ink);
 }
 
 .practice-overview-head strong,
 .practice-question-panel__head strong {
-  font-size: 18px;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .practice-overview-head span,
 .practice-question-panel__head span {
-  color: #4b5565;
-  font-weight: 900;
+  color: var(--color-muted);
+  font-size: 12px;
 }
 
 .practice-overview-list {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .practice-overview-row {
-  min-height: 56px;
+  min-height: 44px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  padding: 0 12px;
-  border: 1px solid transparent;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-line);
   border-radius: var(--radius-sm);
-  background: #ffffff;
-  color: #1f2933;
-  cursor: pointer;
-  font-weight: 900;
+  background: var(--color-surface);
+  color: var(--color-ink);
   text-align: left;
 }
 
@@ -628,120 +783,122 @@ html[data-theme="dark"] .demo-user-chip__tag {
 }
 
 .practice-overview-row strong {
-  color: #6b7280;
-  font-weight: 900;
+  color: var(--color-muted);
+  font-family: var(--font-code);
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .practice-overview-row.is-active {
-  border-color: #eef1f5;
-  background: var(--demo-primary-soft);
-  color: var(--demo-primary);
+  border-color: var(--color-primary);
+  background: var(--color-lab);
+  color: var(--color-primary);
 }
 
 .practice-question-panel {
   display: grid;
   gap: 12px;
   padding-top: 16px;
-  border-top: 1px solid #e3e7ed;
+  border-top: 1px solid var(--color-line);
 }
 
 .question-jump-grid {
   display: grid;
-  grid-template-columns: repeat(5, 48px);
-  gap: 10px 12px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .question-grid-cell {
-  inline-size: 48px;
-  block-size: 48px;
+  inline-size: 100%;
+  aspect-ratio: 1;
   display: grid;
   place-items: center;
   padding: 0;
-  border-color: #d7dde7;
-  border-radius: var(--radius-sm);
-  background: #ffffff;
-  color: #4b5565;
-  cursor: pointer;
-  font-size: 20px;
-  font-weight: 900;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-family: var(--font-code);
+  font-weight: 500;
   line-height: 1;
 }
 
-.question-grid-cell.is-active {
-  border-color: var(--demo-primary);
-  background: var(--demo-primary);
-  color: #ffffff;
-}
-
 .question-grid-cell.is-correct {
-  border-color: #95d76f;
-  background: #f0ffe8;
-  color: #3a8a10;
+  border-color: var(--color-positive);
+  background: var(--color-positive-soft);
+  color: var(--color-positive);
 }
 
 .question-grid-cell.is-incorrect {
-  border-color: #ffb3b8;
-  background: #fff0f1;
-  color: #d11f2f;
+  border-color: var(--color-negative);
+  background: var(--color-negative-soft);
+  color: var(--color-negative);
+}
+
+.question-grid-cell.is-active {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.question-grid-cell.is-active:not(.is-correct):not(.is-incorrect) {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-avatar-text);
 }
 
 .practice-question {
   min-width: 0;
-  padding: 28px 34px;
+  padding: 24px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
 }
 
 .practice-question__head {
   display: flex;
   justify-content: flex-start;
-  gap: 16px;
+  gap: 10px;
   align-items: center;
-  margin-bottom: 24px;
-}
-
-.practice-question__head--with-shortcuts {
+  margin-bottom: 22px;
   flex-wrap: wrap;
 }
 
 .practice-shortcuts {
-  flex: 1 1 360px;
+  flex: 1 1 300px;
   min-width: 0;
-  color: #6b7280;
+  color: var(--color-muted);
   font-size: 12px;
-  font-weight: 500;
-  line-height: 1.5;
+  font-weight: 400;
+  line-height: 1.6;
 }
 
-.practice-question__head span {
+.practice-question__head > span {
   margin-left: auto;
 }
 
-.practice-question__head button {
-  background: var(--demo-primary-soft);
-  color: var(--demo-primary);
-}
-
-.practice-question__head span,
+.practice-question__head > span,
 .practice-question__meta {
-  color: #6b7280;
-  font-weight: 900;
+  color: var(--color-muted);
+  font-family: var(--font-code);
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .practice-question__meta {
   margin: 0 0 10px;
-  font-size: 13px;
 }
 
 .practice-question h1 {
-  margin: 0 0 28px;
-  font-size: 24px;
-  line-height: 1.7;
+  margin: 0 0 24px;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
 }
 
 .practice-question__image {
   max-width: min(100%, 620px);
   max-height: 420px;
   object-fit: contain;
-  border: 1px solid #dfe5ee;
+  border: 1px solid var(--color-line);
   border-radius: var(--radius-sm);
 }
 
@@ -757,86 +914,132 @@ html[data-theme="dark"] .demo-user-chip__tag {
 
 .practice-options button,
 .option-button {
+  min-width: 0;
   display: flex;
-  gap: 12px;
+  gap: 14px;
   align-items: start;
-  padding: 14px;
-  border-color: #d7dde7;
-  background: #ffffff;
-  color: #1f2933;
-  cursor: pointer;
+  padding: 14px 16px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
   text-align: left;
+  font-size: 15px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.practice-options button > strong {
+  flex: 0 0 22px;
+  font-family: var(--font-code);
+  font-weight: 600;
 }
 
 .practice-options button.is-selected,
 .option-button.is-selected {
-  border-color: var(--demo-primary);
-  background: var(--demo-primary-soft);
+  border-color: var(--color-primary);
+  background: var(--color-lab);
+  color: var(--color-primary);
+}
+
+.practice-options button:hover:not(:disabled),
+.option-button:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-lab);
 }
 
 .practice-options button.is-correct,
 .option-button.is-correct {
-  border-color: #2f8f55;
-  background: #edf9f0;
-  color: #1f6b3a;
+  border-color: var(--color-positive);
+  background: var(--color-positive-soft);
+  color: var(--color-positive);
 }
 
 .practice-options button.is-incorrect,
 .option-button.is-incorrect {
-  border-color: #d64b4b;
-  background: #fff0f1;
-  color: #a51f2f;
+  border-color: var(--color-negative);
+  background: var(--color-negative-soft);
+  color: var(--color-negative);
 }
 
-.option-button.is-muted {
-  opacity: 0.72;
+.quiz-demo .practice-options button:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.quiz-panel .practice-options button:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.quiz-demo .practice-options button.is-muted {
+  opacity: 0.65;
 }
 
 .option-key {
   flex: 0 0 auto;
   min-width: 30px;
   color: inherit;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .practice-textarea {
   width: 100%;
   min-height: 130px;
   padding: 14px;
-  border: 1px solid #d7dde7;
+  border: 1px solid var(--color-input-border);
   border-radius: var(--radius-sm);
+  background: var(--color-input);
+  color: var(--color-ink);
   font: inherit;
   resize: vertical;
+  line-height: 1.7;
+}
+
+.practice-textarea:disabled {
+  background: var(--color-soft);
+  color: var(--color-muted);
 }
 
 .practice-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
+  align-items: center;
   gap: 10px;
   margin-top: 22px;
 }
 
+.practice-actions label.secondary-button {
+  min-height: 38px;
+  padding: 7px 14px;
+  line-height: 1.5;
+}
+
 .language-toggle {
   display: inline-flex;
-  gap: 4px;
-  padding: 3px;
-  border: 1px solid #d6dde8;
+  gap: 0;
+  border: 1px solid var(--color-line);
   border-radius: var(--radius-sm);
-  background: #f7f9fc;
+  background: var(--color-surface);
+  overflow: hidden;
 }
 
 .language-toggle button {
-  min-width: 42px;
+  min-width: 40px;
+  min-height: 34px;
+  padding: 5px 8px;
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: 0;
   background: transparent;
-  color: #526071;
+  color: var(--color-muted);
 }
 
 .language-toggle button.is-active {
-  background: var(--demo-primary);
-  color: #fff;
+  background: var(--color-lab);
+  color: var(--color-primary);
 }
 
 .vocabulary-picker-toggle {
@@ -844,30 +1047,40 @@ html[data-theme="dark"] .demo-user-chip__tag {
   align-items: center;
   gap: 8px;
   margin-top: 10px;
-  color: #526071;
+  color: var(--color-muted);
+  font-size: 14px;
 }
 
-.vocabulary-pick-line {
+.vocabulary-picker-toggle input {
+  accent-color: var(--color-primary);
+}
+
+.vocabulary-pick-line,
+.vocabulary-token-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.vocabulary-pick-line button {
-  border: 1px solid #d9e1ee;
-  border-radius: var(--radius-sm);
-  background: #fff;
-  color: #1f2937;
-  font: inherit;
+.vocabulary-token-row {
+  margin: 12px 0;
 }
 
-.vocabulary-feedback {
+.vocabulary-pick-line button {
+  padding: 4px 8px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.vocabulary-feedback,
+.vocabulary-confirm {
   margin: 10px 0 0;
-  color: var(--demo-primary);
-  font-weight: 900;
+  color: var(--color-positive);
+  font-size: 14px;
 }
 
 .review-card {
+  width: 100%;
   max-width: 760px;
   margin: 0 auto;
 }
@@ -879,334 +1092,52 @@ html[data-theme="dark"] .demo-user-chip__tag {
 
 .vocabulary-list {
   display: grid;
-  gap: 10px;
+  gap: 0;
+  border-top: 1px solid var(--color-line);
 }
 
 .vocabulary-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 14px;
-  border: 1px solid #d9e1ee;
-  border-radius: var(--radius-sm);
-  background: #fff;
-  color: #1f2937;
+  gap: 16px;
+  padding: 14px 4px;
+  background: transparent;
+  color: var(--color-ink);
+  text-align: left;
+}
+
+.quiz-demo .vocabulary-item {
+  border: 0;
+  border-bottom: 1px solid var(--color-line);
+  border-radius: 0;
+}
+
+.vocabulary-item span {
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.vocabulary-item:hover {
+  background: var(--color-lab);
 }
 
 .result-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 10px;
-  margin: 18px 0;
+  gap: 0;
+  margin: 0;
+  border-block: 1px solid var(--color-line);
 }
 
 .result-stats strong {
-  padding: 12px;
-  border: 1px solid #d9e1ee;
-  border-radius: var(--radius-sm);
-  background: #f8fafc;
-}
-
-.quiz-course-app {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 188px minmax(0, 1fr);
-  min-height: calc(100vh - 72px);
-  width: 100%;
-  background: #f7f9fc;
-}
-
-.quiz-course-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 22px 16px;
-  border-right: 1px solid #e3e7ed;
-  background: #ffffff;
-}
-
-.quiz-course-nav strong {
-  margin: 6px 4px 10px;
-  color: #1f2933;
+  padding: 16px 14px;
   font-size: 15px;
+  font-weight: 500;
 }
 
-.quiz-course-nav button {
-  justify-content: flex-start;
-  border: 0;
-  background: transparent;
-  color: #526071;
-  text-align: left;
-}
-
-.quiz-course-nav button.is-active {
-  background: var(--demo-primary-soft);
-  color: var(--demo-primary);
-}
-
-.quiz-course-back {
-  color: #6b7280 !important;
-}
-
-.quiz-course-content {
-  min-width: 0;
-  width: 100%;
-  padding: 28px;
-}
-
-.quiz-practice-layout {
-  display: grid;
-  grid-template-columns: minmax(288px, 320px) minmax(0, 1fr);
-  gap: 22px;
-}
-
-.molecular-quiz-app,
-.botany-quiz-app,
-.microbiology-quiz-app {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 188px minmax(0, 1fr);
-  min-height: calc(100vh - 72px);
-  width: 100%;
-  background: #f7f9fc;
-}
-
-.molecular-quiz-nav,
-.botany-quiz-nav,
-.microbiology-quiz-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 22px 16px;
-  border-right: 1px solid #e3e7ed;
-  background: #ffffff;
-}
-
-.molecular-quiz-nav strong,
-.botany-quiz-nav strong,
-.microbiology-quiz-nav strong {
-  margin: 6px 4px 10px;
-  color: #1f2933;
-  font-size: 15px;
-}
-
-.molecular-quiz-nav button,
-.botany-quiz-nav button,
-.microbiology-quiz-nav button {
-  justify-content: flex-start;
-  border: 0;
-  background: transparent;
-  color: #526071;
-  text-align: left;
-}
-
-.molecular-quiz-nav button.is-active,
-.botany-quiz-nav button.is-active,
-.microbiology-quiz-nav button.is-active {
-  background: var(--demo-primary-soft);
-  color: var(--demo-primary);
-}
-
-.molecular-back,
-.botany-back,
-.microbiology-back {
-  color: #6b7280 !important;
-}
-
-.molecular-quiz-content,
-.botany-quiz-content,
-.microbiology-quiz-content {
-  min-width: 0;
-  width: 100%;
-  padding: 28px;
-}
-
-.molecular-page-stack {
-  display: grid;
-  gap: 20px;
-  width: 100%;
-}
-
-.molecular-hero,
-.molecular-category-group,
-.molecular-record-card {
-  padding: 22px;
-  border: 1px solid #dfe5ee;
-  border-radius: var(--radius-sm);
-  background: #ffffff;
-}
-
-.molecular-hero span,
-.molecular-record-card span {
-  color: #64748b;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.molecular-hero h2 {
-  margin: 8px 0;
-  color: #1f2933;
-  font-size: 30px;
-  letter-spacing: 0;
-}
-
-.molecular-hero p,
-.molecular-category-group p,
-.molecular-empty {
-  color: #526071;
-}
-
-.molecular-feature-grid,
-.molecular-record-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
-}
-
-.molecular-category-stack {
-  display: grid;
-  gap: 18px;
-}
-
-.molecular-category-group__head {
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  align-items: start;
-  margin-bottom: 14px;
-}
-
-.molecular-category-summary {
-  display: grid;
-  justify-items: end;
-  gap: 8px;
-}
-
-.molecular-category-summary .range-panel__actions {
-  margin-top: 0;
-}
-
-.molecular-category-group__head h3,
-.molecular-record-card h3 {
-  margin: 0 0 6px;
-  color: #1f2933;
-}
-
-.molecular-practice-layout {
-  display: grid;
-  grid-template-columns: minmax(288px, 320px) minmax(0, 1fr);
-  gap: 22px;
-}
-
-.botany-quiz-app {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 188px minmax(0, 1fr);
-  min-height: calc(100vh - 72px);
-  width: 100%;
-  background: #f7f9fc;
-}
-
-.botany-quiz-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 22px 16px;
-  border-right: 1px solid #e3e7ed;
-  background: #ffffff;
-}
-
-.botany-quiz-nav strong {
-  margin: 6px 4px 10px;
-  color: #1f2933;
-  font-size: 15px;
-}
-
-.botany-quiz-nav button {
-  justify-content: flex-start;
-  border: 0;
-  background: transparent;
-  color: #526071;
-  text-align: left;
-}
-
-.botany-quiz-nav button.is-active {
-  background: var(--demo-primary-soft);
-  color: var(--demo-primary);
-}
-
-.botany-back {
-  color: #6b7280 !important;
-}
-
-.botany-quiz-content {
-  min-width: 0;
-  width: 100%;
-  padding: 28px;
-}
-
-.botany-page-stack {
-  display: grid;
-  gap: 20px;
-  width: 100%;
-}
-
-.botany-hero {
-  padding: 22px;
-  border: 1px solid #dfe5ee;
-  border-radius: var(--radius-sm);
-  background: #ffffff;
-}
-
-.botany-hero span,
-.botany-gallery-card span {
-  color: #64748b;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.botany-hero h2 {
-  margin: 8px 0;
-  color: #1f2933;
-  font-size: 30px;
-  letter-spacing: 0;
-}
-
-.botany-hero p,
-.botany-empty {
-  color: #526071;
-}
-
-.botany-feature-grid,
-.botany-gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
-}
-
-.botany-category-summary {
-  display: grid;
-  justify-items: end;
-  gap: 8px;
-}
-
-.botany-category-summary .range-panel__actions {
-  margin-top: 0;
-}
-
-.botany-toolbar {
-  justify-content: flex-start;
-  margin-top: 0;
-}
-
-.botany-practice-layout {
-  display: grid;
-  grid-template-columns: minmax(288px, 320px) minmax(0, 1fr);
-  gap: 22px;
-}
-
-.botany-question {
-  min-width: 0;
+.result-stats strong + strong {
+  border-left: 1px solid var(--color-line);
 }
 
 .botany-slice-image {
@@ -1214,558 +1145,163 @@ html[data-theme="dark"] .demo-user-chip__tag {
   width: 100%;
   max-height: 58vh;
   object-fit: contain;
-  border: 1px solid #dfe5ee;
+  border: 1px solid var(--color-line);
   border-radius: var(--radius-sm);
-  background: #ffffff;
+  background: var(--color-surface);
 }
 
 .botany-gallery-tabs {
-  display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
 .botany-gallery-card {
   display: grid;
+  align-content: start;
   gap: 10px;
   padding: 14px;
-  border: 1px solid #dfe5ee;
-  border-radius: var(--radius-sm);
-  background: #ffffff;
 }
 
 .botany-gallery-card img {
   width: 100%;
   aspect-ratio: 4 / 3;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: var(--radius-sm);
-  background: #eef1f5;
+  background: var(--color-soft);
 }
 
 .botany-gallery-card strong {
-  color: #1f2933;
-  line-height: 1.5;
-}
-
-.microbiology-quiz-app {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 188px minmax(0, 1fr);
-  min-height: calc(100vh - 72px);
-  width: 100%;
-  background: #f7f9fc;
-}
-
-.microbiology-quiz-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 22px 16px;
-  border-right: 1px solid #e3e7ed;
-  background: #ffffff;
-}
-
-.microbiology-quiz-nav strong {
-  margin: 6px 4px 10px;
-  color: #1f2933;
+  color: var(--color-ink);
   font-size: 15px;
+  font-weight: 600;
+  line-height: 1.6;
 }
 
-.microbiology-quiz-nav button {
-  justify-content: flex-start;
-  border: 0;
-  background: transparent;
-  color: #526071;
-  text-align: left;
-}
-
-.microbiology-quiz-nav button.is-active {
-  background: var(--demo-primary-soft);
-  color: var(--demo-primary);
-}
-
-.microbiology-back {
-  color: #6b7280 !important;
-}
-
-.microbiology-quiz-content {
-  min-width: 0;
-  width: 100%;
-  padding: 28px;
-}
-
-.microbiology-page-stack {
-  display: grid;
-  gap: 20px;
-  width: 100%;
-}
-
-.microbiology-hero,
-.microbiology-record-card {
-  padding: 22px;
-  border: 1px solid #dfe5ee;
-  border-radius: var(--radius-sm);
-  background: #ffffff;
-}
-
-.microbiology-hero span,
-.microbiology-record-card span {
-  color: #64748b;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.microbiology-hero h2 {
-  margin: 8px 0;
-  color: #1f2933;
-  font-size: 30px;
-  letter-spacing: 0;
-}
-
-.microbiology-hero p,
-.microbiology-empty {
-  color: #526071;
-}
-
-.microbiology-feature-grid,
-.microbiology-record-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
-}
-
-.microbiology-category-summary {
-  display: grid;
-  justify-items: end;
-  gap: 8px;
-}
-
-.microbiology-category-summary .range-panel__actions {
-  margin-top: 0;
-}
-
-.microbiology-toolbar {
-  justify-content: flex-start;
-  margin-top: 0;
-}
-
-.microbiology-practice-layout {
-  display: grid;
-  grid-template-columns: minmax(288px, 320px) minmax(0, 1fr);
-  gap: 22px;
-}
-
-.vocabulary-token-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 12px 0;
+.mistake-decision-panel {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-line);
+  color: var(--color-muted);
+  font-size: 14px;
 }
 
 .practice-result {
   margin-top: 18px;
   padding: 16px;
-  border-left: 4px solid var(--demo-primary);
+  border-left: 3px solid var(--color-primary);
   border-radius: var(--radius-sm);
-  background: #f2f5f9;
+  background: var(--color-lab);
+  color: var(--color-ink);
+}
+
+.practice-result.is-correct {
+  border-left-color: var(--color-positive);
+}
+
+.practice-result.is-incorrect {
+  border-left-color: var(--color-negative);
 }
 
 .practice-result p,
 .markdown-answer p {
   margin: 8px 0 0;
-  line-height: 1.7;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
 }
 
 .markdown-answer {
   margin-top: 8px;
-  color: #374151;
+  color: var(--color-ink);
 }
 
 .markdown-answer h3,
 .markdown-answer h4 {
   margin: 12px 0 6px;
-  color: #1f2933;
-  line-height: 1.35;
-}
-
-.markdown-answer h3 {
-  font-size: 1rem;
+  color: var(--color-ink);
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .markdown-answer h4 {
-  font-size: 0.95rem;
+  font-size: 15px;
 }
 
 .markdown-answer ul,
 .markdown-answer ol {
   margin: 8px 0 0;
   padding-left: 22px;
-  line-height: 1.7;
+  line-height: 1.75;
 }
 
 .markdown-answer pre {
   margin: 10px 0 0;
   padding: 12px;
   overflow: auto;
+  border: 1px solid var(--color-line);
   border-radius: var(--radius-sm);
-  background: #eef1f5;
-  color: #1f2933;
+  background: var(--color-soft);
+  color: var(--color-ink);
+  font-family: var(--font-code);
 }
 
 .demo-message {
-  margin: 14px 0 0;
-  color: #d64b4b;
-  font-weight: 900;
+  grid-column: 1 / -1;
+  margin: 14px 24px;
+  color: var(--color-negative);
+  font-size: 14px;
 }
 
-html[data-theme="dark"] .quiz-demo {
-  background: #0e1622;
-}
-html[data-theme="dark"] .quiz-market-tabs button {
-  background: #15202f;
-  color: #b3c4d6;
-  border-color: #2a374a;
-}
-html[data-theme="dark"] .quiz-market-tabs button.is-active {
-  background: #8ad3bd;
-  color: #0e1622;
-  border-color: #8ad3bd;
-}
-html[data-theme="dark"] .quiz-course-card {
-  background: #15202f;
-  border-color: #2a374a;
-}
-html[data-theme="dark"] .quiz-course-card h2 {
-  color: #e8edf4;
-}
-html[data-theme="dark"] .quiz-course-card p {
-  color: #8a98ad;
-}
-html[data-theme="dark"] .quiz-course-card.is-pending button {
-  background: #1d2a3b;
-  color: #8a98ad;
-}
-html[data-theme="dark"] .range-panel {
-  background: #15202f;
-  border-color: #2a374a;
-}
-html[data-theme="dark"] .range-panel__head h2 {
-  color: #e8edf4;
-}
-html[data-theme="dark"] .range-panel__head p,
-html[data-theme="dark"] .range-panel__hint {
-  color: #8a98ad;
-}
-html[data-theme="dark"] .range-options button {
-  background: #1d2a3b;
-  border-color: #2a374a;
-  color: #b3c4d6;
-}
-html[data-theme="dark"] .range-card {
-  background: #15202f;
-  border-color: #2a374a;
-  color: #e8edf4;
-}
-html[data-theme="dark"] .range-card em {
-  color: #b3c4d6;
-}
-html[data-theme="dark"] .range-card span {
-  color: #8ad3bd;
-}
-html[data-theme="dark"] .range-panel__actions .secondary-button,
-html[data-theme="dark"] .practice-question__head .danger-button {
-  background: #1d2a3b;
-  color: #b3c4d6;
-  border-color: #2a374a;
-}
-html[data-theme="dark"] .practice-question__head .danger-button {
-  color: #f0a8a0;
-}
-html[data-theme="dark"] .practice-layout,
-html[data-theme="dark"] .quiz-range-shell {
-  background: #15202f;
-  border-color: #2a374a;
-}
-html[data-theme="dark"] .practice-menu {
-  border-right-color: #2a374a;
-}
-html[data-theme="dark"] .practice-menu button {
-  color: #b3c4d6;
-}
-html[data-theme="dark"] .question-jump {
-  background: #1d2a3b;
-  border-right-color: #2a374a;
-}
-html[data-theme="dark"] .practice-overview-head,
-html[data-theme="dark"] .practice-question-panel__head {
-  color: #e8edf4;
-}
-html[data-theme="dark"] .practice-overview-head span,
-html[data-theme="dark"] .practice-question-panel__head span {
-  color: #8a98ad;
-}
-html[data-theme="dark"] .practice-overview-row {
-  background: #15202f;
-  border-color: #2a374a;
-  color: #e8edf4;
-}
-html[data-theme="dark"] .practice-overview-row strong {
-  color: #8a98ad;
-}
-html[data-theme="dark"] .practice-overview-row.is-active {
-  background: #1d2a3b;
-  color: #8ad3bd;
-  border-color: #8ad3bd;
-}
-html[data-theme="dark"] .practice-question-panel {
-  border-top-color: #2a374a;
-}
-html[data-theme="dark"] .question-jump-grid button {
-  border-color: transparent;
-}
-html[data-theme="dark"] .question-grid-cell {
-  background: #1d2a3b;
-  border-color: #2a374a;
-  color: #b3c4d6;
-}
-html[data-theme="dark"] .question-grid-cell.is-active {
-  background: #8ad3bd;
-  color: #0e1622;
-  border-color: #8ad3bd;
-}
-html[data-theme="dark"] .question-grid-cell.is-correct {
-  background: #1d3a25;
-  border-color: #6dbfa5;
-  color: #8ad3bd;
-}
-html[data-theme="dark"] .question-grid-cell.is-incorrect {
-  background: #3a1d1d;
-  border-color: #d68a3e;
-  color: #f0a8a0;
-}
-html[data-theme="dark"] .practice-question__head button {
-  background: #1d2a3b;
-  color: #8ad3bd;
-}
-html[data-theme="dark"] .practice-question__head span,
-html[data-theme="dark"] .practice-question__meta {
-  color: #8a98ad;
-}
-html[data-theme="dark"] .practice-shortcuts {
-  color: #8a98ad;
-}
-html[data-theme="dark"] .practice-question h1 {
-  color: #e8edf4;
-}
-html[data-theme="dark"] .practice-question__image {
-  border-color: #2a374a;
-}
-html[data-theme="dark"] .practice-options button,
-html[data-theme="dark"] .option-button {
-  background: #15202f;
-  border-color: #2a374a;
-  color: #e8edf4;
-}
-html[data-theme="dark"] .practice-options button.is-selected,
-html[data-theme="dark"] .option-button.is-selected {
-  background: #1d2a3b;
-  border-color: #8ad3bd;
-  color: #8ad3bd;
-}
-html[data-theme="dark"] .practice-options button.is-correct,
-html[data-theme="dark"] .option-button.is-correct {
-  background: #1d3a25;
-  border-color: #6dbfa5;
-  color: #8ad3bd;
-}
-html[data-theme="dark"] .practice-options button.is-incorrect,
-html[data-theme="dark"] .option-button.is-incorrect {
-  background: #3a1d1d;
-  border-color: #d64b4b;
-  color: #f0a8a0;
-}
-html[data-theme="dark"] .practice-textarea {
-  background: #0e1622;
-  border-color: #2a374a;
-  color: #e8edf4;
-}
-html[data-theme="dark"] .language-toggle {
-  background: #15202f;
-  border-color: #2a374a;
-}
-html[data-theme="dark"] .language-toggle button {
-  color: #b3c4d6;
-}
-html[data-theme="dark"] .vocabulary-picker-toggle {
-  color: #b3c4d6;
-}
-html[data-theme="dark"] .vocabulary-pick-line button {
-  background: #1d2a3b;
-  border-color: #2a374a;
-  color: #e8edf4;
-}
-html[data-theme="dark"] .vocabulary-feedback {
-  color: #8ad3bd;
-}
-html[data-theme="dark"] .vocabulary-item {
-  background: #15202f;
-  border-color: #2a374a;
-  color: #e8edf4;
-}
-html[data-theme="dark"] .result-stats strong {
-  background: #15202f;
-  border-color: #2a374a;
-  color: #e8edf4;
-}
-html[data-theme="dark"] .quiz-course-app,
-html[data-theme="dark"] .molecular-quiz-app,
-html[data-theme="dark"] .botany-quiz-app,
-html[data-theme="dark"] .microbiology-quiz-app {
-  background: #0e1622;
-}
-html[data-theme="dark"] .quiz-course-nav,
-html[data-theme="dark"] .molecular-quiz-nav,
-html[data-theme="dark"] .botany-quiz-nav,
-html[data-theme="dark"] .microbiology-quiz-nav {
-  background: #15202f;
-  border-right-color: #2a374a;
-}
-html[data-theme="dark"] .quiz-course-nav strong,
-html[data-theme="dark"] .molecular-quiz-nav strong,
-html[data-theme="dark"] .botany-quiz-nav strong,
-html[data-theme="dark"] .microbiology-quiz-nav strong {
-  color: #e8edf4;
-}
-html[data-theme="dark"] .quiz-course-nav button,
-html[data-theme="dark"] .molecular-quiz-nav button,
-html[data-theme="dark"] .botany-quiz-nav button,
-html[data-theme="dark"] .microbiology-quiz-nav button {
-  color: #b3c4d6;
-}
-html[data-theme="dark"] .quiz-course-nav button:hover,
-html[data-theme="dark"] .molecular-quiz-nav button:hover,
-html[data-theme="dark"] .botany-quiz-nav button:hover,
-html[data-theme="dark"] .microbiology-quiz-nav button:hover {
-  background: #1d2a3b;
-}
-html[data-theme="dark"] .quiz-course-back,
-html[data-theme="dark"] .molecular-back,
-html[data-theme="dark"] .botany-back,
-html[data-theme="dark"] .microbiology-back {
-  color: #8a98ad !important;
-}
-html[data-theme="dark"] .molecular-hero,
-html[data-theme="dark"] .molecular-category-group,
-html[data-theme="dark"] .molecular-record-card,
-html[data-theme="dark"] .botany-hero,
-html[data-theme="dark"] .botany-gallery-card,
-html[data-theme="dark"] .microbiology-hero,
-html[data-theme="dark"] .microbiology-record-card {
-  background: #15202f;
-  border-color: #2a374a;
-}
-html[data-theme="dark"] .molecular-hero h2,
-html[data-theme="dark"] .botany-hero h2,
-html[data-theme="dark"] .microbiology-hero h2 {
-  color: #e8edf4;
-}
-html[data-theme="dark"] .molecular-hero span,
-html[data-theme="dark"] .molecular-record-card span,
-html[data-theme="dark"] .botany-hero span,
-html[data-theme="dark"] .botany-gallery-card span,
-html[data-theme="dark"] .microbiology-hero span,
-html[data-theme="dark"] .microbiology-record-card span {
-  color: #8ad3bd;
-}
-html[data-theme="dark"] .molecular-hero p,
-html[data-theme="dark"] .molecular-category-group p,
-html[data-theme="dark"] .molecular-empty,
-html[data-theme="dark"] .botany-hero p,
-html[data-theme="dark"] .botany-empty,
-html[data-theme="dark"] .microbiology-hero p,
-html[data-theme="dark"] .microbiology-empty {
-  color: #b3c4d6;
-}
-html[data-theme="dark"] .molecular-category-group__head h3,
-html[data-theme="dark"] .molecular-record-card h3,
-html[data-theme="dark"] .botany-gallery-card strong,
-html[data-theme="dark"] .microbiology-record-card h3 {
-  color: #e8edf4;
-}
-html[data-theme="dark"] .botany-slice-image,
-html[data-theme="dark"] .botany-gallery-card img {
-  border-color: #2a374a;
-  background: #1d2a3b;
-}
-html[data-theme="dark"] .practice-result {
-  background: #1d2a3b;
-  color: #e8edf4;
-}
-html[data-theme="dark"] .practice-result p,
-html[data-theme="dark"] .markdown-answer p {
-  color: #b3c4d6;
-}
-html[data-theme="dark"] .markdown-answer {
-  color: #b3c4d6;
-}
-html[data-theme="dark"] .markdown-answer h3,
-html[data-theme="dark"] .markdown-answer h4 {
-  color: #e8edf4;
-}
-html[data-theme="dark"] .markdown-answer pre {
-  background: #0e1622;
-  color: #e8edf4;
-}
-html[data-theme="dark"] .demo-message {
-  color: #f0a8a0;
-}
-html[data-theme="dark"] .demo-search input {
-  background: #15202f;
-  border-color: #2a374a;
-  color: #e8edf4;
-}
-html[data-theme="dark"] .demo-home h1 {
-  color: #e8edf4;
-}
-html[data-theme="dark"] .demo-placeholder h1 {
-  color: #e8edf4;
-}
-html[data-theme="dark"] .demo-search span {
-  color: #8a98ad;
-}
-html[data-theme="dark"] .demo-placeholder p {
-  color: #8ad3bd;
-}
-html[data-theme="dark"] .demo-head .demo-search input {
-  background: #15202f;
-  border-color: #2a374a;
-  color: #e8edf4;
-}
-html[data-theme="dark"] .range-options button.is-selected,
-html[data-theme="dark"] .range-card.is-selected {
-  background: #1d2a3b;
-  border-color: #8ad3bd;
-  color: #8ad3bd;
-}
-html[data-theme="dark"] .practice-menu button.is-active {
-  background: #1d2a3b;
-  color: #8ad3bd;
-}
-html[data-theme="dark"] .quiz-market-tabs button:hover {
-  background: #1d2a3b;
-  color: #e8edf4;
+@media (min-width: 761px) and (max-width: 1120px) {
+  .demo-head {
+    grid-template-columns: 185px minmax(0, 1fr) auto;
+    gap: 12px;
+    padding-inline: 18px;
+  }
+
+  .demo-topnav {
+    gap: 0;
+  }
+
+  .demo-topnav a {
+    min-width: 50px;
+    padding-inline: 8px;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1000px) {
+  .demo-head {
+    height: auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding-block: 12px;
+  }
+
+  .demo-topnav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: center;
+  }
+
+  .demo-account {
+    grid-column: 2;
+    grid-row: 1;
+  }
 }
 
 @media (max-width: 1100px) {
-  .quiz-course-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .range-card-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .practice-layout {
-    grid-template-columns: 96px minmax(288px, 300px) minmax(0, 1fr);
+    grid-template-columns: 96px 270px minmax(0, 1fr);
+  }
+
+  .quiz-course-content {
+    padding: 24px;
+  }
+
+  .quiz-practice-layout {
+    grid-template-columns: 250px minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .practice-question {
+    padding: 20px;
   }
 }
 
@@ -1778,7 +1314,7 @@ html[data-theme="dark"] .quiz-market-tabs button:hover {
   }
 
   .demo-brand span {
-    font-size: 19px;
+    font-size: 21px;
   }
 
   .demo-topnav {
@@ -1791,42 +1327,81 @@ html[data-theme="dark"] .quiz-market-tabs button:hover {
 
   .demo-topnav a {
     min-width: 0;
-    height: 36px;
+    padding: 6px 4px;
+    min-height: 36px;
+  }
+
+  .demo-account {
+    gap: 10px;
   }
 
   .demo-user-chip {
-    grid-column: 2;
-    grid-row: 1;
-    padding: 7px 12px;
+    max-width: 100px;
+    padding: 6px 8px;
+  }
+
+  .quiz-main {
+    padding: 24px 18px;
   }
 
   .quiz-demo,
-  .practice-layout,
-  .quiz-course-app,
-  .quiz-practice-layout,
-  .molecular-quiz-app,
-  .molecular-practice-layout,
-  .botany-quiz-app,
-  .botany-practice-layout,
-  .microbiology-quiz-app,
-  .microbiology-practice-layout {
+    .practice-layout,
+    .quiz-range-shell,
+    .quiz-course-app,
+    .quiz-practice-layout,
+    .molecular-quiz-app,
+    .molecular-practice-layout,
+    .botany-quiz-app,
+    .botany-practice-layout,
+    .microbiology-quiz-app,
+    .microbiology-practice-layout {
     grid-template-columns: 1fr;
   }
 
-  .quiz-course-grid {
+  .quiz-course-grid,
+    .range-card-grid {
     grid-template-columns: 1fr;
   }
 
-  .range-card-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .practice-menu,
-  .question-jump,
-  .molecular-quiz-nav,
-  .botany-quiz-nav,
-  .microbiology-quiz-nav {
+  .quiz-course-nav,
+    .molecular-quiz-nav,
+    .botany-quiz-nav,
+    .microbiology-quiz-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 12px 16px;
     border-right: 0;
-    border-bottom: 1px solid #e3e7ed;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .quiz-course-nav strong {
+    flex-basis: 100%;
+    margin: 4px 10px;
+  }
+
+  .quiz-course-content {
+    padding: 24px 18px;
+  }
+
+  .question-jump {
+    border-right: 0;
+  }
+
+  .question-jump-grid {
+    grid-template-columns: repeat(auto-fill, 40px);
+  }
+
+  .practice-menu {
+    border-right: 0;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .range-panel__head,
+    .molecular-category-group__head {
+    flex-wrap: wrap;
+  }
+
+  .result-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

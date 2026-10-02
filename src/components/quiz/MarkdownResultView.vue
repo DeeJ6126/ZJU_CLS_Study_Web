@@ -41,7 +41,7 @@ const label = computed(() => {
 </script>
 
 <template>
-  <div v-if="result" class="practice-result">
+  <div v-if="result" class="practice-result" :class="{ 'is-correct': result.isCorrect === true, 'is-incorrect': result.isCorrect === false }">
     <strong>{{ label }}</strong>
     <div v-if="answerBlocks.length" class="markdown-answer">
       <template v-for="(block, blockIndex) in answerBlocks" :key="blockIndex">

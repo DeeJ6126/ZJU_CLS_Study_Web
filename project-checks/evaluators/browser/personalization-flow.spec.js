@@ -103,6 +103,8 @@ test('last guest practice resumes and login/logout keeps account and guest prefe
   await page.locator('.auth-dialog').getByRole('button', { name: '登录', exact: true }).click();
   await expect(page.locator('.demo-user-chip')).toContainText('测试同学');
   await expect(page.locator('.home-study__term')).toContainText('生态学');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.account-popover')).toHaveCount(0);
   expect(writes.some((path) => path.includes('/merge') || path.includes('/claim') || path.includes('/favorites/'))).toBe(false);
   await page.getByRole('button', { name: '修改专业与年级' }).click();
   await page.locator('.home-study__setup').getByRole('combobox', { name: '专业', exact: true }).selectOption('biology-qiushi');

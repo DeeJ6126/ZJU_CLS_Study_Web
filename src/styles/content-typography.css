@@ -1,0 +1,161 @@
+/* Shared reader defaults; inline author colors, sizes and alignment stay intact. */
+html :is(.article-detail-card, .comment-item, .notice-detail, .notice-admin, .about-page, .practice-result) :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) {
+  min-width: 0;
+  max-width: 880px;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.8;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+html :is(.article-detail-card, .comment-item, .notice-detail, .notice-admin, .about-page, .practice-result) :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) :is(h1, h2, h3, h4, h5, h6) {
+  max-width: 100%;
+  margin: 28px 0 12px;
+  color: inherit;
+  font-family: var(--font-heading);
+  font-size: var(--reader-heading-size, 18px);
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) h1 { --reader-heading-size: 26px; }
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) h2 { --reader-heading-size: 23px; }
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) h3 { --reader-heading-size: 20px; }
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) h4 { --reader-heading-size: 18px; }
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) :is(h5, h6) { --reader-heading-size: 16px; }
+
+html :is(.article-detail-card, .comment-item, .notice-detail, .notice-admin, .about-page, .practice-result) :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) :is(p, ul, ol, dl, blockquote, pre, table) {
+  max-width: 100%;
+  margin: 0 0 16px;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+html :is(.article-detail-card, .comment-item, .notice-detail, .notice-admin, .about-page, .practice-result) :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) p {
+  color: inherit;
+}
+
+html :is(.article-detail-card, .comment-item, .notice-detail, .notice-admin, .about-page, .practice-result) :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) :is(ul, ol) {
+  padding-left: 26px;
+}
+
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) li {
+  margin: 5px 0;
+  padding-left: 2px;
+}
+
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) li :is(ul, ol) {
+  margin: 6px 0;
+}
+
+html :is(.article-detail-card, .comment-item, .notice-detail, .notice-admin, .about-page, .practice-result) :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) a:hover {
+  text-decoration-thickness: 2px;
+}
+
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) a:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+html :is(.article-detail-card, .comment-item, .notice-detail, .notice-admin, .about-page, .practice-result) :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) blockquote {
+  padding: 12px 18px;
+  border: 0;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0;
+  background: var(--color-soft);
+  color: var(--color-muted);
+}
+
+html :is(.article-detail-card, .comment-item, .notice-detail, .notice-admin, .about-page, .practice-result) :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) pre {
+  padding: 14px 16px;
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  background: var(--color-soft);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre;
+  overflow: auto;
+  overflow-wrap: normal;
+}
+
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) :not(pre) > code {
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: var(--color-soft);
+}
+
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) pre code {
+  font: inherit;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+}
+
+html :is(.article-detail-card, .comment-item, .notice-detail, .notice-admin, .about-page, .practice-result) :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) table {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+html :is(.article-detail-card, .comment-item, .notice-detail, .notice-admin, .about-page, .practice-result) :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) :is(th, td) {
+  padding: 9px 12px;
+  border: 1px solid var(--color-line);
+  vertical-align: top;
+}
+
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) th {
+  background: var(--color-soft);
+  font-weight: 600;
+}
+
+html :is(.article-detail-card, .comment-item, .notice-detail, .notice-admin, .about-page, .practice-result) :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 16px 0;
+  border-radius: 4px;
+}
+
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) hr {
+  margin: 28px 0;
+  border: 0;
+  border-top: 1px solid var(--color-line);
+}
+
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) > :first-child { margin-top: 0; }
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) > :last-child { margin-bottom: 0; }
+
+html :is(.article-body, .comment-body) .ubb-align { display: block; margin: 0 0 16px; }
+html :is(.article-body, .comment-body) .ubb-smiley { display: inline-block; padding: 0 2px; }
+html :is(.article-body, .comment-body) .ubb-align[style="text-align:center"] img { margin-inline: auto; }
+html :is(.article-body, .comment-body) .ubb-align[style="text-align:right"] img { margin-left: auto; }
+html :is(.article-body, .comment-body) .ubb-size-1 { font-size: 0.75em; }
+html :is(.article-body, .comment-body) .ubb-size-2 { font-size: 0.875em; }
+html :is(.article-body, .comment-body) .ubb-size-3 { font-size: 1em; }
+html :is(.article-body, .comment-body) .ubb-size-4 { font-size: 1.125em; }
+html :is(.article-body, .comment-body) .ubb-size-5 { font-size: 1.25em; }
+html :is(.article-body, .comment-body) .ubb-size-6 { font-size: 1.5em; }
+html :is(.article-body, .comment-body) .ubb-size-7 { font-size: 1.75em; }

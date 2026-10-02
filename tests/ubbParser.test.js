@@ -92,6 +92,26 @@ test('[color] tag accepts hex and named colors', () => {
   assert.equal(name.includes('color:red'), true);
 });
 
+test('legacy black and white UBB editor ink follows the active theme', () => {
+  for (const color of ['black', 'WHITE', '#000', '#000000', '#fff', '#FFFFFF']) {
+    assert.equal(ubbToHtml(`[color=${color}]neutral[/color]`),
+      '<p><span class="ubb-color" style="color:var(--color-ink)">neutral</span></p>');
+  }
+});
+
+test('theme adaptation preserves authored emphasis, alignment, size and image links', () => {
+  const body = '[align=center][size=5][color=#14768a][b]emphasis[/b][/color][/size][/align]\n\n[url=https://www.cc98.org/topic/123][img]https://img.example/legacy.png?a=1&b=2[/img][/url]';
+  const html = ubbToHtml(body);
+  assert.match(html, /style="text-align:center"/);
+  assert.match(html, /ubb-size-5/);
+  assert.match(html, /style="color:#14768a"/);
+  assert.match(html, /<strong>emphasis<\/strong>/);
+  assert.match(html, /href="https:\/\/www.cc98.org\/topic\/123"/);
+  assert.match(html, /src="https:\/\/img.example\/legacy.png\?a=1&amp;b=2"/);
+  assert.equal(html.includes('&amp;amp;'), false);
+  assert.equal(body.includes('var(--color-ink)'), false);
+});
+
 test('[align] tag outputs text-align style', () => {
   const result = ubbToHtml('[align=center]中[/align]');
   assert.equal(result.includes('text-align:center'), true);

@@ -43,6 +43,7 @@ function optionClass(optionKey, selectedKey, result) {
       type="button"
       :class="optionClass(option.key, selectedKey, result)"
       :disabled="locked || vocabularyEnabled"
+      :aria-pressed="selectedKey === option.key"
       @click="emit('select', option.key)"
     >
       <strong>{{ option.key }}</strong>
