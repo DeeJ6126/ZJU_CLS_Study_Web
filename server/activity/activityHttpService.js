@@ -1,6 +1,7 @@
 import {
   archiveActivity,
   createActivity,
+  isSupportedActivityProgram,
   publishActivity,
   toPublicActivity,
   updateActivity,
@@ -32,6 +33,8 @@ export async function handleActivityHttpRequest({
   if (request.method === 'GET' && url.pathname === '/api/activities') {
     const activities = contentStore
       .listPublishedActivities()
+      .filter((activity) => isSupportedActivityProgram(activity.programId))
+      .filter((activity) => url.searchParams.get('home') !== '1' || activity.featured)
       .map(toPublicActivity);
     sendJson(response, 200, { activities });
     return true;
@@ -40,7 +43,7 @@ export async function handleActivityHttpRequest({
   const publicMatch = url.pathname.match(/^\/api\/activities\/([^/]+)$/);
   if (request.method === 'GET' && publicMatch) {
     const activity = contentStore.findActivityBySlug(decodeURIComponent(publicMatch[1]));
-    if (!activity || activity.status !== 'published' || !activity.externalUrl) {
+    if (!activity || activity.status !== 'published' || !activity.externalUrl || !isSupportedActivityProgram(activity.programId)) {
       sendJson(response, 404, { message: '活动不存在。' });
       return true;
     }

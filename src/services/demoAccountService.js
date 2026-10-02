@@ -623,7 +623,7 @@ export function createDemoAccountService({
         if (!program) return { ok: false, message: '请选择有效的活动板块。' };
         const createdAt = now();
         const activity = {
-          id: nextId('activity'), slug: nextId('activity-post'), status: 'published', featured: true,
+          id: nextId('activity'), slug: nextId('activity-post'), status: 'published', featured: false,
           category: program.category, imageAlt: `${input.title}封面`, createdAt, updatedAt: createdAt,
           ...clone(input),
         };
@@ -663,7 +663,7 @@ export function createDemoAccountService({
     return {
       async fetchActivities() {
         const activities = (await ensureActivities())
-          .filter((item) => item.status === 'published' && item.externalUrl && item.programId)
+          .filter((item) => item.status === 'published' && item.externalUrl && activityProgram(item.programId))
           .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
         return { ok: true, activities: clone(activities) };
       },

@@ -190,6 +190,9 @@
   }
 }
 
+.admin-editor__form .admin-activity-featured { display: flex; align-items: center; gap: 10px; }
+.admin-activity-featured input[type="checkbox"] { width: 16px; min-height: 16px; height: 16px; padding: 0; accent-color: var(--color-primary); }
+
 .admin-activity-programs {
   display: flex;
   gap: 0;

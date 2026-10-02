@@ -221,7 +221,7 @@ async function closeConsultation() {
 
 function emptyActivityForm() {
   return {
-    title: '', programId: activityProgramId.value, imageUrl: '', externalUrl: '',
+    title: '', programId: activityProgramId.value, imageUrl: '', externalUrl: '', featured: false,
   };
 }
 
@@ -515,6 +515,7 @@ async function saveActivity() {
     programId: activityForm.programId,
     imageUrl: activityForm.imageUrl,
     externalUrl: activityForm.externalUrl,
+    featured: activityForm.featured,
   };
   const result = editingActivityId.value
     ? await activeApiClient.value.updateActivity(editingActivityId.value, input)
@@ -1045,6 +1046,10 @@ onMounted(initialize);
               <span>推文链接</span>
               <input v-model.trim="activityForm.externalUrl" required type="url" placeholder="https://mp.weixin.qq.com/s/...">
             </label>
+            <label class="admin-editor__wide admin-activity-featured">
+              <input v-model="activityForm.featured" type="checkbox">
+              <span>在首页“近期活动”展示</span>
+            </label>
             <footer class="admin-editor__actions">
               <button type="button" @click="closeActivityEditor">放弃修改</button>
               <button class="admin-primary-action" type="submit" :disabled="actionBusy">
@@ -1081,7 +1086,7 @@ onMounted(initialize);
             <article v-for="activity in activities" :key="activity.id" class="admin-content-table__row" role="row">
               <div class="admin-activity-title">
                 <img :src="activityImage(activity.imageUrl)" alt="">
-                <strong>{{ activity.title }}</strong>
+                <div><strong>{{ activity.title }}</strong><small v-if="activity.featured">首页展示</small></div>
               </div>
               <span>{{ activityProgramLabel(activity.programId) }}</span>
               <time :datetime="activity.createdAt">{{ formattedTime(activity.createdAt) }}</time>

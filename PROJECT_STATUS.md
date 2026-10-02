@@ -21,6 +21,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 
 ## Recently Completed
 
+- Removed the academic-voyage activity program. Homepage recent activities now require an explicit administrator recommendation; new/seeded records default off, offline fallbacks never recommend records, and the release clears previous recommendations once without deleting posts. The activity editor supports enabling/disabling homepage display. Homepage search now aligns with the full My Courses content width.
 - Merged the `activity` and `about` branches and applied the approved Minimal professional presentation to all public, account, administrator, quiz and course-content pages. The site now shares neutral surfaces, teal accents, 4px controls, locally bundled Outfit/Space Grotesk fonts and light/dark tokens. The animated ThemeSwitch remains unchanged. Homepage search, My Courses, last practice and activity links remain functional; Markdown/UBB readers share typography while preserving author formatting. Browser acceptance also caught and fixed missing activity-search and activity-detail imports.
 - Homepage and personal workspace now share one editable My Courses list. First setup seeds current-term professional/foundation curriculum sections; optional electives remain searchable in the full course picker. Guests persist locally and verified accounts persist in auth SQLite with an initialization marker so removing all courses never silently reseeds them. Existing imported lists are preserved; explicit preset reset requires confirmation. Course favorites remain separate.
 - Added administrator-maintained public notices with category/major/cohort/deadline filters, pagination, pinned ordering, safe Markdown details, source links and PDF/DOCX/XLSX attachments. Drafts and archived content remain private; no application, comment or submission workflow is exposed. Notice data and files reuse existing production backup coverage.
@@ -72,6 +73,8 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 ## Known Good Verification
 
 Current known verification:
+
+The follow-up activity/homepage update passed 503 Node tests, all 34 production-preview browser cases, the build and project checks. Administrator recommendation/withdrawal and the initially empty homepage feed are covered with isolated fixtures.
 
 The 2026-10-02 full-site theme work passed all 502 Node tests, the production build, project checks and all 34 browser tests against the production preview locally. Its 18 new desktop light/dark cases cover homepage/overview, Markdown/UBB articles and contribution forms, administrator review/directories, all three quiz experiences, activity/about, profile/auth, notices and consultation. Existing course/personalization/teacher/notice regressions and production no-demo checks also passed. Browser fixtures use intercepted APIs or isolated in-memory SQLite/temp files; no synthetic content is seeded online.
 

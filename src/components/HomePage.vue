@@ -76,7 +76,10 @@ const searchIndex = computed(() => buildHomeSearchIndex({
 
 const searchResults = computed(() => searchHomeIndex(searchIndex.value, query.value, activeKind.value));
 const hasQuery = computed(() => Boolean(query.value.trim()));
-const recentActivities = computed(() => activities.value.slice(0, 3));
+const recentActivities = computed(() => activities.value
+  .filter((item) => item.featured === true)
+  .sort((a, b) => (a.displayOrder ?? 100) - (b.displayOrder ?? 100))
+  .slice(0, 3));
 const resourcePageCount = computed(() => Math.max(1, Math.ceil(resourceTotal.value / resourcePageSize)));
 const hasStudyProfile = computed(() => Boolean(props.studyProfile.majorId && props.studyProfile.cohortYear));
 const semesterOverview = computed(() => currentSemesterCourses({

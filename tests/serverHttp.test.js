@@ -748,11 +748,23 @@ test('activity HTTP API exposes only administrator-managed push-article entries'
     assert.equal(publishedCreated.externalUrl, 'https://mp.weixin.qq.com/s/http-test-lab');
     assert.equal(publishedCreated.status, undefined);
 
+    assert.deepEqual((await (await fetch(`${baseUrl}/api/activities?home=1`)).json()).activities, []);
+    const recommend = await fetch(`${baseUrl}/api/admin/activities/${created.activity.id}`, {
+      method: 'PATCH', headers: { 'content-type': 'application/json', cookie },
+      body: JSON.stringify({ featured: true }),
+    });
+    assert.equal(recommend.status, 200);
+    const home = await (await fetch(`${baseUrl}/api/activities?home=1`)).json();
+    assert.equal(home.activities.length, 1);
+    assert.equal(home.activities[0].id, created.activity.id);
+    assert.equal(home.activities[0].featured, true);
+
     const archive = await fetch(`${baseUrl}/api/admin/activities/${created.activity.id}/archive`, {
       method: 'POST', headers: { 'content-type': 'application/json', cookie }, body: '{}',
     });
     assert.equal(archive.status, 200);
     assert.equal((await fetch(`${baseUrl}/api/activities/${created.activity.slug}`)).status, 404);
+    assert.deepEqual((await (await fetch(`${baseUrl}/api/activities?home=1`)).json()).activities, []);
   } finally {
     server.close();
   }

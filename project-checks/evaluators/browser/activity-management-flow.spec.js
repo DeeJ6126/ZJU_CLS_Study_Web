@@ -44,7 +44,8 @@ async function activityFixture(page, user = guest) {
 test('activity directory links its source-backed articles and current program details', async ({ page }) => {
   const state = await activityFixture(page);
   await page.goto('/#activities');
-  await expect(page.locator('.activity-program')).toHaveCount(6);
+  await expect(page.locator('.activity-program')).toHaveCount(5);
+  await expect(page.getByRole('link', { name: '学业领航', exact: true })).toHaveCount(0);
   const program = page.locator('#activity-program-laboratory-open-day');
   const article = catalog.articles[0];
   const articleLink = program.locator('.activity-directory__list a').filter({ hasText: article.title });
@@ -66,6 +67,8 @@ test('activity directory links its source-backed articles and current program de
 
 test('administrator creates and edits categorized activity articles using isolated API mocks', async ({ page }) => {
   const state = await activityFixture(page, admin);
+  await page.goto('/');
+  await expect(page.locator('.home-activity-grid article')).toHaveCount(0);
   await page.goto('/#admin');
   await page.locator('.admin-page__nav').getByRole('button', { name: '活动管理', exact: true }).click();
   await page.locator('.admin-activity-programs').getByRole('button', { name: '实验室开放日', exact: true }).click();
@@ -74,8 +77,10 @@ test('administrator creates and edits categorized activity articles using isolat
   await row.getByRole('button', { name: '编辑' }).click();
   const editor = page.getByRole('region', { name: '活动编辑器', exact: true });
   await expect(editor.getByRole('combobox', { name: '封面', exact: true })).toHaveValue(catalog.articles[0].imageUrl);
-  await expect(editor.getByRole('checkbox')).toHaveCount(0);
-  const edited = { title: '实验室开放日｜阅读回归', programId: 'laboratory-open-day', imageUrl: '/assets/activities/laboratory-open-day.webp', externalUrl: 'https://mp.weixin.qq.com/s/test-laboratory' };
+  const featured = editor.getByRole('checkbox', { name: '在首页“近期活动”展示', exact: true });
+  await expect(featured).not.toBeChecked();
+  await featured.check();
+  const edited = { title: '实验室开放日｜阅读回归', programId: 'laboratory-open-day', imageUrl: '/assets/activities/laboratory-open-day.webp', externalUrl: 'https://mp.weixin.qq.com/s/test-laboratory', featured: true };
   await editor.getByRole('textbox', { name: '标题', exact: true }).fill(edited.title);
   await editor.getByRole('textbox', { name: '推文链接', exact: true }).fill(edited.externalUrl);
   await editor.getByRole('button', { name: '保存修改', exact: true }).click();
@@ -83,9 +88,16 @@ test('administrator creates and edits categorized activity articles using isolat
   await expect(page.locator('.admin-content-table__row').filter({ hasText: edited.title })).toBeVisible();
   expect(state.writes[0]).toEqual({ method: 'PATCH', path: `/api/admin/activities/${catalog.articles[0].id}`, input: edited });
 
+  await page.goto('/');
+  await expect(page.locator('.home-activity-grid article')).toHaveCount(1);
+  await expect(page.locator('.home-activity-grid')).toContainText(edited.title);
+  await page.goto('/#admin');
+  await page.locator('.admin-page__nav').getByRole('button', { name: '活动管理', exact: true }).click();
+
   await page.locator('.admin-activity-programs').getByRole('button', { name: '朋辈辅学', exact: true }).click();
   await page.getByRole('button', { name: '新增推文', exact: true }).click();
-  const created = { title: '朋辈辅学｜课程交流', programId: 'peer-learning', imageUrl: '/assets/activities/peer-learning.webp', externalUrl: 'https://mp.weixin.qq.com/s/test-peer-learning' };
+  await expect(featured).not.toBeChecked();
+  const created = { title: '朋辈辅学｜课程交流', programId: 'peer-learning', imageUrl: '/assets/activities/peer-learning.webp', externalUrl: 'https://mp.weixin.qq.com/s/test-peer-learning', featured: false };
   await editor.getByRole('textbox', { name: '标题', exact: true }).fill(created.title);
   await editor.getByRole('combobox', { name: '封面', exact: true }).fill(created.imageUrl);
   await editor.getByRole('textbox', { name: '推文链接', exact: true }).fill(created.externalUrl);
@@ -96,4 +108,16 @@ test('administrator creates and edits categorized activity articles using isolat
   expect(state.unexpectedWrites).toEqual([]);
   await page.goto('/#activities');
   await expect(page.locator('#activity-program-peer-learning .activity-directory__list a').filter({ hasText: created.title })).toHaveAttribute('href', created.externalUrl);
+  await page.goto('/#admin');
+  await page.locator('.admin-page__nav').getByRole('button', { name: '活动管理', exact: true }).click();
+  await page.locator('.admin-content-table__row').filter({ hasText: edited.title }).getByRole('button', { name: '编辑', exact: true }).click();
+  await expect(featured).toBeChecked();
+  await featured.uncheck();
+  await editor.getByRole('button', { name: '保存修改', exact: true }).click();
+  expect(state.writes[2].input.featured).toBe(false);
+  await Promise.all([
+    page.waitForResponse((response) => new URL(response.url()).pathname.endsWith('/api/activities')),
+    page.locator('.demo-topnav').getByRole('link', { name: '首页', exact: true }).click(),
+  ]);
+  await expect(page.locator('.home-activity-grid article')).toHaveCount(0);
 });

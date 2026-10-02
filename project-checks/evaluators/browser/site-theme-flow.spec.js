@@ -45,7 +45,7 @@ async function fixture(page, role = 'guest') {
     if (path === '/api/consultation/status' || path === '/api/admin/consultation/status') payload = { open: false, isMentor: false };
     if (path === '/api/quiz/recent') payload = { recent: null };
     if (path === '/api/account/courses') payload = { courses: [{ courseCode: 'BIO2011F', courseName: '生物化学（甲）', catalogMatched: true }], initialized: true };
-    if (path === '/api/activities' || path === '/api/admin/activities') payload = { activities: catalog.articles.slice(0, 3) };
+    if (path === '/api/activities' || path === '/api/admin/activities') payload = { activities: catalog.articles.slice(0, 3).map((item) => ({ ...item, featured: true })) };
     if (path.startsWith('/api/course-favorite-counts/')) payload = { count: 2 };
     if (path.startsWith('/api/content/courses/')) payload = { items: path.endsWith('/BIO2011F') ? posts : [] };
     if (path === '/api/search/resources') {
@@ -90,6 +90,10 @@ for (const mode of ['light', 'dark']) {
     await page.goto('/');
     await setTheme(page, mode);
     await expect(page.locator('.home-study .my-course-card')).toHaveCount(2);
+    const searchBounds = await page.locator('.home-search').boundingBox();
+    const courseBounds = await page.locator('.home-study').boundingBox();
+    expect(Math.abs(searchBounds.x - courseBounds.x)).toBeLessThan(1);
+    expect(Math.abs(searchBounds.width - courseBounds.width)).toBeLessThan(1);
     await expect(page.locator('.home-activity-grid article')).toHaveCount(3);
     for (const image of await page.locator('.home-activity-card__image img').all()) await expect.poll(() => image.evaluate((el) => el.complete && el.naturalWidth > 0)).toBe(true);
     await expect(page.getByText('同学主页', { exact: true })).toHaveCount(0);
@@ -235,7 +239,7 @@ for (const mode of ['light', 'dark']) {
     await readable(page, '.admin-editor label > span, .admin-editor__actions button', `admin-content-${mode}`);
     await page.getByRole('button', { name: '关闭', exact: true }).click();
     await page.locator('.admin-page__nav').getByRole('button', { name: '活动管理', exact: true }).click();
-    await expect(page.locator('.admin-activity-programs button')).toHaveCount(6);
+    await expect(page.locator('.admin-activity-programs button')).toHaveCount(5);
     await page.getByRole('button', { name: '新增推文', exact: true }).click();
     await expect(page.getByRole('textbox', { name: '推文链接', exact: true })).toBeVisible();
     await readable(page, '.admin-editor label > span, .admin-editor__actions button', `admin-activity-${mode}`);

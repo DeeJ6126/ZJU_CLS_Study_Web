@@ -1,13 +1,16 @@
 import { randomUUID } from 'node:crypto';
 
 const programs = new Map([
-  ['academic-voyage', 'frontier'],
   ['laboratory-open-day', 'frontier'],
   ['major-festival', 'learning'],
   ['peer-learning', 'learning'],
   ['beautiful-trio', 'community'],
   ['joint-activities', 'exchange'],
 ]);
+
+export function isSupportedActivityProgram(programId) {
+  return programs.has(programId);
+}
 
 function clean(value) {
   return String(value ?? '').trim();
@@ -44,6 +47,9 @@ export function validateActivityInput(input, { partial = false, current = null }
   if (!isHttpUrl(externalUrl)) {
     return { ok: false, status: 400, message: '请填写有效的推文链接。' };
   }
+  if (data.featured != null && typeof data.featured !== 'boolean') {
+    return { ok: false, status: 400, message: '首页展示设置必须为勾选或取消。' };
+  }
 
   return {
     ok: true,
@@ -57,8 +63,8 @@ export function validateActivityInput(input, { partial = false, current = null }
       externalUrl,
       summary: '',
       body: '',
-      featured: true,
-      displayOrder: 100,
+      featured: data.featured === true,
+      displayOrder: Number.isInteger(data.displayOrder) ? data.displayOrder : 100,
     },
   };
 }
@@ -73,6 +79,8 @@ export function toPublicActivity(activity) {
     imageUrl: activity.imageUrl,
     imageAlt: activity.imageAlt,
     externalUrl: activity.externalUrl,
+    featured: activity.featured === true,
+    displayOrder: activity.displayOrder,
     createdAt: activity.createdAt,
     updatedAt: activity.updatedAt,
   };
@@ -132,7 +140,7 @@ export function seedActivityCatalog(store, activities = []) {
     if (store.findActivityById(activity.id) || store.findActivityBySlug(activity.slug)) continue;
     const validation = validateActivityInput(activity);
     if (!validation.ok) continue;
-    store.createActivity({ ...validation.value, id: activity.id, status: 'published' });
+    store.createActivity({ ...validation.value, featured: false, id: activity.id, status: 'published' });
     created += 1;
   }
   return created;

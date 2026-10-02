@@ -50,7 +50,7 @@ onMounted(async () => {
         <p>Academic Department</p>
         <h1>活动</h1>
       </div>
-      <p>按六个长期板块整理学院活动。目录收录对应公众号推文，点击标题即可阅读原文。</p>
+      <p>按五个长期板块整理学院活动。目录收录对应公众号推文，点击标题即可阅读原文。</p>
     </header>
 
     <nav class="activities-jump" aria-label="活动板块">

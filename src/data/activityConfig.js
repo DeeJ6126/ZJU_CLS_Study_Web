@@ -1,13 +1,5 @@
 export const activityPrograms = [
   {
-    id: 'academic-voyage',
-    label: '学业领航',
-    category: 'frontier',
-    imageUrl: '/assets/activities/academic-voyage-lectures.webp',
-    imageAlt: '学业领航系列讲座往期海报合集',
-    summary: '聚焦学术前沿、科研路径与成长经验的系列分享。',
-  },
-  {
     id: 'laboratory-open-day',
     label: '实验室开放日',
     category: 'frontier',
@@ -52,7 +44,6 @@ export const activityPrograms = [
 export const activityProgramIds = new Set(activityPrograms.map((program) => program.id));
 
 export const activityImageOptions = [
-  { value: '/assets/activities/academic-voyage-lectures.webp', label: '学业领航讲座海报' },
   { value: '/assets/activities/laboratory-open-day.webp', label: '实验室开放日合影' },
   { value: '/assets/activities/major-festival.webp', label: '专业节宣讲现场' },
   { value: '/assets/activities/peer-learning.webp', label: '朋辈辅学现场' },

@@ -41,8 +41,9 @@ test('demo shell exposes the requested top-level pages and sparse home search', 
   assert.match(home, /@submit.prevent="submitSearch"/);
   assert.match(app, /activePage === 'activities'/);
   assert.match(app, /<ActivityPage[\s\S]*v-else-if="activePage === 'activities'"/);
-  assert.equal(declarationsFor(homeCss, '.home-search')['max-width'], '940px');
-  assert.equal(declarationsFor(homeCss, '.home-search').margin, '0 auto 30px');
+  assert.equal(declarationsFor(homeCss, '.home-search').width, '100%');
+  assert.equal(declarationsFor(homeCss, '.home-search').margin, '0 0 30px');
+  assert.equal(declarationsFor(homeCss, '.home-search')['padding-top'], '24px');
   assert.equal(declarationsFor(overviewCss, '.overview-page')['max-width'], '1320px');
   assert.match(declarationsFor(overviewCss, '.overview-course-grid')['grid-template-columns'], /^repeat\(auto-fit,/);
   assert.equal(declarationsFor(overviewCss, '.overview-section__body').padding, '18px 0 24px');

@@ -11,12 +11,12 @@ test('nested activity routes stay on the activity page and expose the selected s
   assert.equal(getActivitySlugFromHash('#activities'), '');
 });
 
-test('activity page renders six source-backed programs with external push-article directories', () => {
+test('activity page renders five source-backed programs without the removed academic voyage', () => {
   const component = readFileSync('src/components/ActivityPage.vue', 'utf8');
   const config = readFileSync('src/data/activityConfig.js', 'utf8');
   const css = readFileSync('src/styles/activities.css', 'utf8');
   assert.match(component, /activeActivityClient\.value\.fetchActivities/);
-  assert.match(config, /学业领航/);
+  assert.doesNotMatch(config, /学业领航|academic-voyage/);
   assert.match(config, /实验室开放日/);
   assert.match(config, /专业节宣讲/);
   assert.match(config, /朋辈辅学/);
@@ -36,6 +36,7 @@ test('homepage recent activities come from the shared activity client while popu
   const data = readFileSync('src/data/homeContent.js', 'utf8');
   assert.match(home, /activeActivityClient\.value\.fetchActivities/);
   assert.match(home, /recentActivities/);
+  assert.match(home, /item\.featured === true/);
   assert.match(home, /activity\.externalUrl/);
   assert.match(home, /href="#activities"/);
   assert.match(data, /homePopularResources/);

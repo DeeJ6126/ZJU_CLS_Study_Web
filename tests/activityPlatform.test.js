@@ -8,6 +8,7 @@ import {
   createActivity,
   publishActivity,
   seedActivityCatalog,
+  toPublicActivity,
   updateActivity,
   validateActivityInput,
 } from '../server/activity/activityService.js';
@@ -24,17 +25,34 @@ function memoryStore() {
 test('activity validation requires factual public fields and safe images', () => {
   assert.equal(validateActivityInput({ title: '' }).ok, false);
   assert.equal(validateActivityInput({
-    title: '推文', programId: 'academic-voyage', imageUrl: 'javascript:alert(1)',
+    title: '推文', programId: 'laboratory-open-day', imageUrl: 'javascript:alert(1)',
     externalUrl: 'https://mp.weixin.qq.com/s/example',
   }).ok, false);
   assert.equal(validateActivityInput({
-    title: '推文', programId: 'academic-voyage', imageUrl: '/assets/activities/test.jpg',
+    title: '推文', programId: 'laboratory-open-day', imageUrl: '/assets/activities/test.jpg',
     externalUrl: 'https://mp.weixin.qq.com/s/example',
   }).ok, true);
   assert.equal(validateActivityInput({
     title: '推文', programId: 'unknown', imageUrl: '/assets/activities/test.jpg',
     externalUrl: 'https://mp.weixin.qq.com/s/example',
   }).ok, false);
+});
+
+test('homepage recommendation is opt-in, editable, and preserved by ordinary edits', () => {
+  const store = memoryStore();
+  seedActivityCatalog(store, catalog.articles.map((item) => ({ ...item, featured: true })));
+  assert.ok(store.listPublishedActivities().every((item) => !item.featured));
+  const input = { title: '推荐测试', programId: 'peer-learning', imageUrl: '/assets/activities/peer-learning.webp', externalUrl: 'https://mp.weixin.qq.com/s/home-test' };
+  const created = createActivity(store, input, 7);
+  assert.equal(created.activity.featured, false);
+  assert.equal(validateActivityInput({ ...input, featured: 'true' }).ok, false);
+  assert.equal(validateActivityInput({ ...input, programId: 'academic-voyage' }).ok, false);
+  const recommended = updateActivity(store, created.activity.id, { featured: true }, 7);
+  assert.equal(toPublicActivity(recommended.activity).featured, true);
+  assert.equal(updateActivity(store, created.activity.id, { title: '普通编辑' }, 7).activity.featured, true);
+  seedActivityCatalog(store, catalog.articles);
+  assert.equal(store.findActivityById(created.activity.id).featured, true);
+  assert.equal(updateActivity(store, created.activity.id, { featured: false }, 7).activity.featured, false);
 });
 
 test('descriptive program catalog is not mistaken for a directory entry', () => {
@@ -82,4 +100,5 @@ test('public activity client keeps successful empty API responses and falls back
   assert.equal(fallback.ok, true);
   assert.equal(fallback.fallback, true);
   assert.equal(fallback.activities.length, 12);
+  assert.ok(fallback.activities.every((activity) => !activity.featured));
 });

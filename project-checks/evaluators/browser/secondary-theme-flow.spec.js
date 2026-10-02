@@ -43,6 +43,7 @@ async function fixture(page, { role = 'guest', mentor = false, consultationOpen 
 }
 
 async function theme(page, mode) {
+  await expect(page.locator('.theme-switch')).toBeVisible();
   if ((await page.locator('html').getAttribute('data-theme') === 'dark') !== (mode === 'dark')) await page.locator('.theme-switch').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', mode);
 }
@@ -84,9 +85,9 @@ test('about sections and source-backed activities remain readable in desktop lig
     await expect(page.locator('.about-page__status')).toHaveCount(0);
     await expect(page.locator('.about-page__body')).toBeEmpty();
     await page.goto('/#activities');
-    await expect(page.locator('.activity-program')).toHaveCount(6);
+    await expect(page.locator('.activity-program')).toHaveCount(5);
     await expect(page.locator('.activity-directory__list a').first()).toBeVisible();
-    await expect(page.locator('.activity-program__intro figure img')).toHaveCount(6);
+    await expect(page.locator('.activity-program__intro figure img')).toHaveCount(5);
     for (const image of await page.locator('.activities-page img').all()) {
       await image.scrollIntoViewIfNeeded();
       await expect.poll(() => image.evaluate((element) => element.complete && element.naturalWidth > 0), { timeout: 15_000 }).toBe(true);
