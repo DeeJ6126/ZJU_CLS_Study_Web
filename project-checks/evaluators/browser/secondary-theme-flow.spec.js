@@ -46,6 +46,7 @@ async function theme(page, mode) {
   await expect(page.locator('.theme-switch')).toBeVisible();
   if ((await page.locator('html').getAttribute('data-theme') === 'dark') !== (mode === 'dark')) await page.locator('.theme-switch').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', mode);
+  await expect(page.locator('html')).not.toHaveClass(/theme-transitioning/);
 }
 
 async function checkView(page, name, textSelector) {
@@ -136,7 +137,7 @@ test('owner profile sections remain usable without API writes in both themes', a
     await theme(page, mode);
     await page.locator('.profile-sidebar').getByRole('button', { name: '账号资料', exact: true }).click();
     await expect(page.locator('.profile-identity h1')).toHaveText(student.nickname);
-    await checkView(page, `profile-${mode}`, '.profile-identity p, .profile-nickname-form label, .profile-grade-form button');
+    await checkView(page, `profile-${mode}`, '.profile-identity p, .profile-cohort strong, .profile-account-footer button');
     for (const label of ['我的课程', '我的收藏', '我的帖子', '我的评论']) {
       await page.locator('.profile-sidebar').getByRole('button', { name: label, exact: true }).click();
       await checkView(page, `profile-${label}-${mode}`, '.profile-management h1, .profile-posts h2');

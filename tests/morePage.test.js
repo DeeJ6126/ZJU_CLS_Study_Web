@@ -5,10 +5,9 @@ import { parse, compileScript, compileTemplate } from '@vue/compiler-sfc';
 import { demoTopPages } from '../src/data/quizDemo.js';
 import { getDemoPageFromHash } from '../src/services/demoNavigationService.js';
 
-test('more is placed after about and supports direct navigation', () => {
-  const about = demoTopPages.findIndex((page) => page.id === 'about');
-  assert.equal(demoTopPages[about + 1].id, 'more');
-  assert.equal(demoTopPages[about + 1].label, '更多');
+test('more supports direct navigation while about is the last page', () => {
+  assert.equal(demoTopPages.at(-1).id, 'about');
+  assert.equal(demoTopPages.find((page) => page.id === 'more').label, '更多');
   assert.equal(getDemoPageFromHash('#more', demoTopPages), 'more');
   assert.equal(getDemoPageFromHash('#more?section=homepages', demoTopPages), 'more');
 });

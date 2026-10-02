@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
+import { gradeFromStudentId } from './studentGrade.js';
 
 function normalizeIdentity(provider, value) {
   const clean = String(value ?? '').trim();
@@ -32,7 +33,7 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
       publicId: row.publicId,
       avatarStoredName: row.avatarStoredName ?? '',
       avatarMimeType: row.avatarMimeType ?? '',
-      grade: row.grade ?? null,
+      grade: email ? gradeFromStudentId(email.displayValue.split('@')[0]) : row.grade ?? null,
       majorId: row.majorId ?? '',
       cc98Name: cc98?.displayValue ?? '',
       email: email?.displayValue ?? '',

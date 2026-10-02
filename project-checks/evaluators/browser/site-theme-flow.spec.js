@@ -65,6 +65,7 @@ async function fixture(page, role = 'guest') {
 async function setTheme(page, mode) {
   if ((await page.locator('html').getAttribute('data-theme') === 'dark') !== (mode === 'dark')) await page.locator('.theme-switch').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', mode);
+  await expect(page.locator('html')).not.toHaveClass(/theme-transitioning/);
 }
 
 async function readable(page, selector, name) {

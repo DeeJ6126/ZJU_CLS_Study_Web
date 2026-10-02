@@ -154,7 +154,6 @@ import {
   deleteMySubmission,
   resubmitMySubmission,
   submitPostRevision,
-  updateMyGrade,
   updateMyStudyProfile,
   updateMyNickname,
   updateMySubmission,
@@ -332,7 +331,10 @@ const profileView = ref({ profile: null, posts: [], submissions: [], comments: [
 const profileLoading = ref(false);
 const profileError = ref('');
 const profileNotice = ref('');
+const profileNicknameEditing = ref(false);
+const profileNicknameSaving = ref(false);
 const activeProfilePublicId = ref('');
+watch(activeProfilePublicId, () => { profileNicknameEditing.value = false; });
 const accountCourses = ref([]);
 const coursePickerCatalog = ref([]);
 const courseCatalogError = ref('');
@@ -1765,6 +1767,7 @@ function applyLocalWorkspaceChange(result) {
 
 async function saveStudyProfile({ majorId, cohortYear }) {
   if (studySaving.value || courseListBusy.value) return;
+  if (!viewerIsGuest.value) cohortYear = viewer.value.grade ?? null;
   const changed = studyProfile.value.majorId !== majorId || Number(studyProfile.value.cohortYear) !== Number(cohortYear);
   const preset = courseListPreset({ majorId, cohortYear, courses: coursePickerCatalog.value });
   if (changed && myCourses.value.length && preset.status === 'ready'
@@ -2723,32 +2726,21 @@ function openOwnProfile() {
 }
 
 async function saveProfileNickname(nickname) {
+  if (profileNicknameSaving.value) return;
+  profileNicknameSaving.value = true;
   profileNotice.value = '正在保存昵称...';
   const result = isDemoAccount.value
     ? demoAccountService.updateNickname(activeDemoAccountId.value, nickname)
     : await updateMyNickname(nickname);
+  profileNicknameSaving.value = false;
   if (!result.ok) {
     profileNotice.value = result.message;
     return;
   }
   if (isDemoAccount.value) demoDataVersion.value += 1;
   else studentViewer.value = result.user;
+  profileNicknameEditing.value = false;
   profileNotice.value = mutationNotice(result, '昵称已保存。');
-  await loadActiveProfile();
-}
-
-async function saveProfileGrade(grade) {
-  profileNotice.value = '正在保存年级...';
-  const result = isDemoAccount.value
-    ? demoAccountService.updateGrade(activeDemoAccountId.value, grade)
-    : await updateMyGrade(grade);
-  if (!result.ok) {
-    profileNotice.value = result.message;
-    return;
-  }
-  if (isDemoAccount.value) demoDataVersion.value += 1;
-  else studentViewer.value = result.user;
-  profileNotice.value = mutationNotice(result, '年级已保存。');
   await loadActiveProfile();
 }
 
@@ -2937,6 +2929,7 @@ onBeforeUnmount(() => {
         v-if="activePage === 'home'"
         :activity-client="demoIdentityId ? demoActivityPublicClient : null"
         :study-profile="studyProfile"
+        :grade-locked="!viewerIsGuest"
         :last-quiz="lastQuiz"
         :study-notice="studyNotice"
         :study-saving="studySaving"
@@ -3021,10 +3014,13 @@ onBeforeUnmount(() => {
         :is-demo="isDemoAccount"
         :can-open-admin="viewerIsAdministrator"
         :logout-busy="authBusy"
+        :nickname-editing="profileNicknameEditing"
+        :nickname-saving="profileNicknameSaving"
+        @edit-nickname="profileNicknameEditing = true"
+        @cancel-nickname="profileNicknameEditing = false"
         @open-admin="openAdminPage"
         @logout="handleLogout"
         @save-nickname="saveProfileNickname"
-        @save-grade="saveProfileGrade"
         @upload-avatar="uploadProfileAvatar"
         @remove-avatar="removeProfileAvatar"
         @archive-post="archiveProfilePost"

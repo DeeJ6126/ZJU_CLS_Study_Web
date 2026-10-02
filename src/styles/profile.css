@@ -54,9 +54,14 @@
   min-width: 0;
 }
 
-.profile-account-footer { margin-top: 36px; padding-top: 22px; border-top: 1px solid var(--color-line); display: flex; justify-content: flex-end; }
+.profile-account-footer { margin-top: 36px; padding-top: 22px; border-top: 1px solid var(--color-line); display: flex; justify-content: flex-end; align-items: end; flex-wrap: wrap; gap: 12px; }
 .profile-account-footer button { min-width: 120px; min-height: 38px; padding: 7px 16px; border: 1px solid var(--color-line); border-radius: 4px; background: var(--color-surface); color: var(--color-negative); }
 .profile-account-footer button:disabled { opacity: .5; cursor: default; }
+.profile-account-footer .profile-edit-nickname { color: var(--color-primary); }
+.profile-account-footer .profile-nickname-form { margin: 0; flex-wrap: wrap; }
+.profile-account-footer .profile-nickname-form label { min-width: 200px; }
+.profile-cohort { margin-top: 20px !important; color: var(--color-muted); }
+.profile-cohort strong { margin-left: 12px; color: var(--color-ink); font-weight: 500; }
 .profile-sidebar .profile-admin-shortcut { color: var(--color-primary); border: 1px solid var(--color-line); margin-bottom: 8px; }
 
 .profile-identity {
@@ -90,8 +95,16 @@
   gap: 9px;
 }
 
-.profile-avatar-block > img,
-.profile-avatar-block > span {
+.profile-avatar {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.profile-avatar > img,
+.profile-avatar-placeholder {
   width: 112px;
   height: 112px;
   object-fit: cover;
@@ -102,6 +115,13 @@
   background: var(--demo-primary);
   border-radius: 4px;
 }
+
+.profile-avatar-upload { position: absolute; inset: 0; cursor: pointer; }
+.profile-avatar-upload > span { display: grid; place-items: center; width: 100%; height: 100%; background: var(--color-media-overlay); color: var(--color-on-overlay); font-size: 14px; font-weight: 600; opacity: 0; transition: opacity 160ms ease; }
+.profile-avatar-upload input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.profile-avatar:hover .profile-avatar-upload > span,
+.profile-avatar:focus-within .profile-avatar-upload > span { opacity: 1; }
+.profile-avatar:focus-within { outline: 2px solid var(--color-accent); outline-offset: 3px; }
 
 .profile-file-button,
 .profile-text-button,
@@ -454,12 +474,9 @@
 .profile-post-row h3 { font-size: 17px; font-weight: 600; line-height: 1.6; overflow-wrap: anywhere; }
 .profile-post-row span { font-size: 13px; }
 .profile-post-row a:hover { color: var(--demo-primary); }
-.profile-grade-form { display: flex; align-items: end; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
-.profile-grade-form label { display: grid; gap: 6px; color: var(--color-muted); font-size: 14px; font-weight: 600; }
-.profile-grade-form select, .profile-post-row textarea { min-width: 0; padding: 10px 12px; color: var(--color-ink); border: 1px solid var(--color-input-border); border-radius: 4px; background: var(--color-input); font: inherit; }
+.profile-post-row textarea { min-width: 0; padding: 10px 12px; color: var(--color-ink); border: 1px solid var(--color-input-border); border-radius: 4px; background: var(--color-input); font: inherit; }
 .profile-post-row textarea { width: 100%; resize: vertical; }
-.profile-grade-form button, .profile-confirm button { min-height: 42px; padding: 8px 14px; border: 1px solid var(--color-line); border-radius: 4px; background: var(--color-surface); color: var(--color-ink); font: inherit; font-size: 14px; cursor: pointer; }
-.profile-grade-form button { border-color: var(--demo-primary); background: var(--demo-primary); color: var(--color-on-primary); }
+.profile-confirm button { min-height: 42px; padding: 8px 14px; border: 1px solid var(--color-line); border-radius: 4px; background: var(--color-surface); color: var(--color-ink); font: inherit; font-size: 14px; cursor: pointer; }
 .profile-confirm { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 14px; border: 1px solid var(--color-negative); background: var(--color-negative-soft); }
 .profile-confirm p { margin: 0 auto 0 0; color: var(--color-negative); font-size: 14px; }
 .profile-confirm button:first-of-type { border-color: var(--color-negative); color: var(--color-negative); }

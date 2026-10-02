@@ -37,9 +37,22 @@ function writeStoredTheme(value) {
   }
 }
 
+let themeTransitionTimer;
+
 function applyTheme(value) {
   if (typeof document === 'undefined') return;
-  document.documentElement.setAttribute('data-theme', value);
+  const root = document.documentElement;
+  const previous = root.getAttribute('data-theme');
+  if (previous === value) return;
+  clearTimeout(themeTransitionTimer);
+  root.classList.remove('theme-transitioning');
+  if (previous && document.body && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+    root.classList.add('theme-transitioning');
+    // Commit the old palette with transitions enabled before changing tokens.
+    window.getComputedStyle(document.body).backgroundColor;
+    themeTransitionTimer = window.setTimeout(() => root.classList.remove('theme-transitioning'), 750);
+  }
+  root.setAttribute('data-theme', value);
 }
 
 const initialTheme = readStoredTheme() ?? systemTheme();

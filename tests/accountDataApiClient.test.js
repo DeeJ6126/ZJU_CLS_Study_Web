@@ -26,4 +26,8 @@ test('account data client manages courses, favorites, and notifications below th
   assert.equal(requests[2].options.method, 'PUT');
   assert.equal(requests[6].options.method, 'PUT');
   assert.equal(requests[10].path, '/zjubio/api/account/notifications/read-all');
+  for (const index of [9, 10]) {
+    assert.equal(requests[index].options.headers['content-type'], 'application/json');
+    assert.equal(requests[index].options.body, '{}');
+  }
 });

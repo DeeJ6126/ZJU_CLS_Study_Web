@@ -199,4 +199,8 @@ Impact: do not restore the homepage student directory or remove its retained inf
 
 ### 26. Supplementary showcases belong in More
 
-`#more` sits after About and before the personal workspace in the top navigation. It initially contains only the existing student-homepage directory and submission form. Administrator homepage maintenance/review is nested under More rather than remaining a separate top-level management category. Extend this area only when the user identifies another supplementary category; reuse the existing homepage data and permission boundaries.
+`#more` sits before the personal workspace in the top navigation, while About is the last entry. It initially contains only the existing student-homepage directory and submission form. Administrator homepage maintenance/review is nested under More rather than remaining a separate top-level management category. Extend this area only when the user identifies another supplementary category; reuse the existing homepage data and permission boundaries.
+
+### 27. Verified account cohorts follow student IDs
+
+The account cohort is derived from the verified student email by the shared `studentGrade.js` mapping, including accounts with older manually stored grades. Account profile APIs cannot change it; study preferences only allow changing the major. Unrecognized student IDs return no cohort rather than guessing. Guests retain browser-local major/cohort selection.

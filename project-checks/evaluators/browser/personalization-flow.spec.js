@@ -18,6 +18,7 @@ async function mockApi(page) {
     else if (path === '/api/auth/login/email') { signedIn = true; payload = { user }; }
     else if (path === '/api/auth/logout') { signedIn = false; payload = { ok: true }; }
     else if (path === '/api/account/profile/study') { user = { ...user, ...request.postDataJSON() }; payload = { user }; }
+    else if (path === '/api/account/profile') payload = { user, posts: [], submissions: [], comments: [] };
     else if (path === '/api/account/courses') payload = { courses: [] };
     else if (path === '/api/account/course-favorites') payload = { courseCodes: [] };
     else if (path === '/api/account/favorites') payload = { favorites: [] };
@@ -105,9 +106,10 @@ test('last guest practice resumes and login/logout keeps account and guest prefe
   await page.keyboard.press('Escape');
   await expect(page.locator('.account-popover')).toHaveCount(0);
   expect(writes.some((path) => path.includes('/merge') || path.includes('/claim') || path.includes('/favorites/'))).toBe(false);
-  await page.getByRole('button', { name: '修改专业与年级' }).click();
+  await page.getByRole('button', { name: '修改专业', exact: true }).click();
   await page.locator('.home-study__setup').getByRole('combobox', { name: '专业', exact: true }).selectOption('biology-qiushi');
-  await page.locator('.home-study__setup').getByRole('combobox', { name: '入学年级', exact: true }).selectOption('2026');
+  await expect(page.locator('.home-study__setup')).toContainText('2024 级');
+  await expect(page.locator('.home-study__setup').getByRole('combobox')).toHaveCount(1);
   await page.locator('.home-study__setup').getByRole('button', { name: '保存', exact: true }).click();
   await page.reload();
   await expect(page.locator('.home-study__term')).toContainText('求是科学班');

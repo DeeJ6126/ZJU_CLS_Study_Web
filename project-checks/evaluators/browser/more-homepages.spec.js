@@ -52,7 +52,8 @@ test('guest reads external homepages in More, retries failures and uses the shar
   state.failRead();
   await page.goto('/');
   const labels = await page.locator('.demo-topnav a').allTextContents();
-  expect(labels.indexOf('更多')).toBe(labels.indexOf('关于') + 1);
+  expect(labels.at(-1)).toBe('关于');
+  expect(labels.indexOf('更多')).toBeLessThan(labels.indexOf('个人'));
   await page.locator('.demo-topnav').getByRole('link', { name: '更多', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('测试读取失败');
   await page.getByRole('button', { name: '重试', exact: true }).click();
@@ -64,6 +65,7 @@ test('guest reads external homepages in More, retries failures and uses the shar
   for (const mode of ['light', 'dark']) {
     if ((await page.locator('html').getAttribute('data-theme') === 'dark') !== (mode === 'dark')) await page.locator('.theme-switch').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', mode);
+    await expect(page.locator('html')).not.toHaveClass(/theme-transitioning/);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
     await page.screenshot({ path: `project-checks/artifacts/more-homepages-${mode}.png`, fullPage: true });
   }

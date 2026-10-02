@@ -310,7 +310,7 @@ test('binding an email on a grade-less account fills the grade from the new stud
   store.close();
 });
 
-test('binding an email does not overwrite an existing grade on the account', async () => {
+test('binding an email derives the cohort even if an older stored grade differs', async () => {
   const store = createTestStore();
   await registerCc98(store, { code: 'bio-cc98', password: '12345678' });
   const login = await loginCc98(store, { cc98Name: 'cc98_bio_visitor', password: '12345678' });
@@ -323,6 +323,6 @@ test('binding an email does not overwrite an existing grade on the account', asy
     studentId: '3250999', code: '123456',
   }, mail.options);
   assert.equal(bound.ok, true);
-  assert.equal(bound.user.grade, 2024);
+  assert.equal(bound.user.grade, 2025);
   store.close();
 });

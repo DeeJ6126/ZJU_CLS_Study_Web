@@ -6,6 +6,7 @@ import { createQuizStore } from '../server/quiz/quizStore.js';
 import { createContentStore } from '../server/content/contentStore.js';
 import { createStudentHomepageStore } from '../server/studentHomepage/studentHomepageStore.js';
 import { createConsultationStore } from '../server/consultation/consultationStore.js';
+import { createAccountDataApiClient } from '../src/services/accountDataApiClient.js';
 
 // Stores these tests do not exercise directly. Without them createAuthServer
 // falls back to its production file paths (server/data/*.sqlite), so test
@@ -70,11 +71,23 @@ test('account APIs keep courses and favorites private and expose notification re
     assert.equal(notificationBody.unreadCount, 1);
     assert.equal(notificationBody.notifications[0].target.courseCode, 'BIO2110F');
     assert.equal(notificationBody.notifications[0].target.routeId, 'content-1');
-    const read = await fetch(`${baseUrl}/api/account/notifications/${notificationBody.notifications[0].id}/read`, {
-      method: 'POST', headers: { 'content-type': 'application/json', cookie }, body: '{}',
+    const client = createAccountDataApiClient((path, options) => fetch(`${baseUrl}${path.replace('/zjubio', '')}`, {
+      ...options, headers: { ...options.headers, cookie },
+    }));
+    const read = await client.markNotificationRead(notificationBody.notifications[0].id);
+    assert.equal(read.ok, true);
+    assert.equal(read.unreadCount, 0);
+    const otherUser = store.createUser({ email: '3250100000@zju.edu.cn', nickname: '另一同学', passwordHash: 'hash' });
+    for (const userId of [user.id, user.id, otherUser.id]) store.createNotification({
+      userId, type: 'submission.approved', title: '审核通过', body: '新消息',
     });
-    assert.equal(read.status, 200);
-    assert.equal((await read.json()).unreadCount, 0);
+    const allRead = await client.markAllNotificationsRead();
+    assert.equal(allRead.ok, true);
+    assert.equal(allRead.unreadCount, 0);
+    const refreshed = await client.fetchNotifications();
+    assert.equal(refreshed.unreadCount, 0);
+    assert.ok(refreshed.notifications.every((item) => item.readAt));
+    assert.equal(store.countUnreadNotifications(otherUser.id), 1);
   } finally {
     server.close();
   }

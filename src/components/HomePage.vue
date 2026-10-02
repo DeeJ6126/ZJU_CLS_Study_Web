@@ -24,6 +24,7 @@ const props = defineProps({
   lastQuiz: { type: Object, default: null },
   studyNotice: { type: String, default: '' },
   studySaving: { type: Boolean, default: false },
+  gradeLocked: { type: Boolean, default: false },
   myCourses: { type: Array, default: () => [] },
   coursesBusy: { type: Boolean, default: false },
   courseNotice: { type: String, default: '' },
@@ -96,8 +97,9 @@ watch(() => [props.studyProfile.majorId, props.studyProfile.cohortYear], ([major
 }, { immediate: true });
 
 function saveStudyProfile() {
-  if (!studyDraft.majorId || !studyDraft.cohortYear) return;
-  emit('save-study-profile', { majorId: studyDraft.majorId, cohortYear: Number(studyDraft.cohortYear) });
+  const cohortYear = props.gradeLocked ? props.studyProfile.cohortYear : Number(studyDraft.cohortYear);
+  if (!studyDraft.majorId || (!props.gradeLocked && !cohortYear)) return;
+  emit('save-study-profile', { majorId: studyDraft.majorId, cohortYear });
 }
 
 async function loadResourceResults() {
@@ -289,7 +291,7 @@ onMounted(async () => {
             <h2 id="home-study-title">我的课程</h2>
           </div>
           <a href="#my-courses">管理课程</a>
-          <button v-if="hasStudyProfile && !showStudyForm" type="button" @click="editingStudyProfile = true">修改专业与年级</button>
+          <button v-if="hasStudyProfile && !showStudyForm" type="button" @click="editingStudyProfile = true">{{ gradeLocked ? '修改专业' : '修改专业与年级' }}</button>
         </header>
 
         <form v-if="showStudyForm" class="home-study__setup" @submit.prevent="saveStudyProfile">
@@ -299,12 +301,13 @@ onMounted(async () => {
               <option v-for="major in availableMajors" :key="major.id" :value="major.id">{{ major.label }}</option>
             </select>
           </label>
-          <label>入学年级
+          <label v-if="!gradeLocked">入学年级
             <select v-model="studyDraft.cohortYear" required>
               <option value="">选择年级</option>
               <option v-for="year in cohortYears" :key="year" :value="String(year)">{{ year }} 级</option>
             </select>
           </label>
+          <p v-else class="home-study__cohort">入学年级：{{ studyProfile.cohortYear == null ? '未识别' : `${studyProfile.cohortYear} 级` }}</p>
           <div class="home-study__setup-actions">
             <button type="submit" :disabled="studySaving">{{ studySaving ? '正在保存...' : '保存' }}</button>
             <button v-if="!hasStudyProfile" type="button" @click="emit('dismiss-study-setup'); editingStudyProfile = false">稍后设置</button>
@@ -316,7 +319,7 @@ onMounted(async () => {
           <p class="home-study__term" hidden>{{ semesterOverview.label }} · {{ availableMajors.find((major) => major.id === studyProfile.majorId)?.label }}</p>
         </template>
         <p v-else-if="hasStudyProfile && semesterOverview.status === 'no-program'" class="home-study__empty">这一年级的培养方案暂未收录，课程建议无法准确生成。</p>
-        <button v-else type="button" class="home-study__set-later" @click="editingStudyProfile = true">设置专业与入学年级</button>
+        <button v-else type="button" class="home-study__set-later" @click="editingStudyProfile = true">{{ gradeLocked ? '设置专业' : '设置专业与入学年级' }}</button>
         <MyCourseGrid v-if="myCourses.length" class="home-study__courses" :courses="myCourses" :busy="coursesBusy" @remove-course="emit('remove-course', $event)" />
         <p v-else-if="!studySaving" class="home-study__empty">暂无课程。</p>
         <p v-if="courseNotice" class="home-study__course-notice" role="status">{{ courseNotice }}</p>

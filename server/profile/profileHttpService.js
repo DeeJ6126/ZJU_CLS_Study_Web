@@ -6,7 +6,7 @@ import {
   updateSubmission,
 } from '../content/submissionService.js';
 import { removeStoredFile } from '../content/contentFileService.js';
-import { ALLOWED_GRADES } from '../studentGrade.js';
+import { gradeFromStudentId } from '../studentGrade.js';
 import { publicApiPath } from '../publicApiPath.js';
 import { majorOptions } from '../../src/data/courses/programCatalog.js';
 
@@ -127,12 +127,14 @@ export async function handleProfileHttpRequest({
       return true;
     }
     const body = await readJsonBody(request);
-    const grade = body?.grade == null || body.grade === '' ? null : Number(body.grade);
+    const grade = gradeFromStudentId(authStore.findUserById(userId).email.split('@')[0]);
     const majorId = String(body?.majorId ?? '').trim();
-    if (!Object.hasOwn(body ?? {}, 'grade') || !Object.hasOwn(body ?? {}, 'majorId')
-      || (grade !== null && !ALLOWED_GRADES.includes(grade))
-      || (majorId && !allowedMajorIds.has(majorId))) {
+    if (!Object.hasOwn(body ?? {}, 'majorId') || (majorId && !allowedMajorIds.has(majorId))) {
       sendJson(response, 400, { message: '请选择有效的专业和入学年级。' });
+      return true;
+    }
+    if (Object.hasOwn(body ?? {}, 'grade') && body.grade !== grade) {
+      sendJson(response, 403, { message: '入学年级根据学号自动识别，不能手动修改。' });
       return true;
     }
     const updated = authStore.updateStudyProfile(userId, { grade, majorId });
@@ -141,23 +143,7 @@ export async function handleProfileHttpRequest({
   }
 
   if (request.method === 'PATCH' && url.pathname === '/api/account/profile/grade') {
-    if (!String(request.headers['content-type'] ?? '').toLowerCase().startsWith('application/json')) {
-      sendJson(response, 415, { message: '年级修改请求格式无效。' });
-      return true;
-    }
-    const body = await readJsonBody(request);
-    const rawGrade = body.grade;
-    let nextGrade = null;
-    if (rawGrade !== null && rawGrade !== undefined && rawGrade !== '') {
-      const numericGrade = Number(rawGrade);
-      if (!ALLOWED_GRADES.includes(numericGrade)) {
-        sendJson(response, 400, { message: '请选择有效的入学年级。' });
-        return true;
-      }
-      nextGrade = numericGrade;
-    }
-    const updated = authStore.updateGrade(userId, nextGrade);
-    sendJson(response, 200, { user: publicUser(updated) });
+    sendJson(response, 403, { message: '入学年级根据学号自动识别，不能手动修改。' });
     return true;
   }
 

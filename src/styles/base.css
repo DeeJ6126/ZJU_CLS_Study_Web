@@ -29,6 +29,8 @@
   --color-primary: #14768a;
   --color-primary-strong: #0f6474;
   --color-on-primary: #ffffff;
+  --color-on-overlay: #ffffff;
+  --color-media-overlay: rgb(0 0 0 / 58%);
   --color-accent: #14768a;
   --color-lab: #e8f3f5;
   --color-input: #ffffff;
@@ -100,6 +102,8 @@ html[data-theme="dark"] {
   --color-primary: #84cbda;
   --color-primary-strong: #b2dee7;
   --color-on-primary: #171c1e;
+  --color-on-overlay: #ffffff;
+  --color-media-overlay: rgb(0 0 0 / 58%);
   --color-accent: #84cbda;
   --color-lab: #2b4046;
   --color-input: #22292c;
@@ -172,6 +176,8 @@ html[data-theme="plant-green"] {
   --color-primary: #14768a;
   --color-primary-strong: #0f6474;
   --color-on-primary: #ffffff;
+  --color-on-overlay: #ffffff;
+  --color-media-overlay: rgb(0 0 0 / 58%);
   --color-accent: #14768a;
   --color-lab: #e8f3f5;
   --color-input: #ffffff;
@@ -243,6 +249,8 @@ html[data-theme="life-blue"] {
   --color-primary: #14768a;
   --color-primary-strong: #0f6474;
   --color-on-primary: #ffffff;
+  --color-on-overlay: #ffffff;
+  --color-media-overlay: rgb(0 0 0 / 58%);
   --color-accent: #14768a;
   --color-lab: #e8f3f5;
   --color-input: #ffffff;
@@ -314,6 +322,8 @@ html[data-theme="silent-black"] {
   --color-primary: #84cbda;
   --color-primary-strong: #b2dee7;
   --color-on-primary: #171c1e;
+  --color-on-overlay: #ffffff;
+  --color-media-overlay: rgb(0 0 0 / 58%);
   --color-accent: #84cbda;
   --color-lab: #2b4046;
   --color-input: #22292c;
@@ -385,6 +395,8 @@ html[data-theme="tech-innovation"] {
   --color-primary: #84cbda;
   --color-primary-strong: #b2dee7;
   --color-on-primary: #171c1e;
+  --color-on-overlay: #ffffff;
+  --color-media-overlay: rgb(0 0 0 / 58%);
   --color-accent: #84cbda;
   --color-lab: #2b4046;
   --color-input: #22292c;
@@ -452,6 +464,47 @@ input, select, textarea { accent-color: var(--color-primary); }
 :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
 code, pre { font-family: var(--font-mono); }
 kbd { font-family: var(--font-code); }
+/* Interpolate the palette once, avoiding chained transitions of inherited text. */
+@property --color-ink { syntax: '<color>'; inherits: true; initial-value: #213139; }
+@property --color-muted { syntax: '<color>'; inherits: true; initial-value: #586971; }
+@property --color-soft { syntax: '<color>'; inherits: true; initial-value: #f5f8f9; }
+@property --color-surface { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
+@property --color-surface-translucent { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
+@property --color-sidebar { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
+@property --color-sidebar-raised { syntax: '<color>'; inherits: true; initial-value: #eef4f5; }
+@property --color-sidebar-text { syntax: '<color>'; inherits: true; initial-value: #213139; }
+@property --color-sidebar-muted { syntax: '<color>'; inherits: true; initial-value: #586971; }
+@property --color-line { syntax: '<color>'; inherits: true; initial-value: #d7e3e6; }
+@property --color-primary { syntax: '<color>'; inherits: true; initial-value: #14768a; }
+@property --color-primary-strong { syntax: '<color>'; inherits: true; initial-value: #0f6474; }
+@property --color-on-primary { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
+@property --color-accent { syntax: '<color>'; inherits: true; initial-value: #14768a; }
+@property --color-lab { syntax: '<color>'; inherits: true; initial-value: #e8f3f5; }
+@property --color-input { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
+@property --color-input-border { syntax: '<color>'; inherits: true; initial-value: #bdd3d9; }
+@property --color-avatar-text { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
+@property --color-theme-option { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
+@property --color-theme-option-active { syntax: '<color>'; inherits: true; initial-value: #e8f3f5; }
+@property --color-positive { syntax: '<color>'; inherits: true; initial-value: #286b4a; }
+@property --color-positive-soft { syntax: '<color>'; inherits: true; initial-value: #edf6ef; }
+@property --color-negative { syntax: '<color>'; inherits: true; initial-value: #ba3030; }
+@property --color-negative-soft { syntax: '<color>'; inherits: true; initial-value: #fbeeed; }
+@property --color-warning { syntax: '<color>'; inherits: true; initial-value: #8f6310; }
+@property --color-warning-soft { syntax: '<color>'; inherits: true; initial-value: #faf3df; }
+
+html.theme-transitioning {
+  transition: --color-ink 650ms ease, --color-muted 650ms ease, --color-soft 650ms ease,
+    --color-surface 650ms ease, --color-surface-translucent 650ms ease,
+    --color-sidebar 650ms ease, --color-sidebar-raised 650ms ease,
+    --color-sidebar-text 650ms ease, --color-sidebar-muted 650ms ease,
+    --color-line 650ms ease, --color-primary 650ms ease, --color-primary-strong 650ms ease,
+    --color-on-primary 650ms ease, --color-accent 650ms ease, --color-lab 650ms ease,
+    --color-input 650ms ease, --color-input-border 650ms ease, --color-avatar-text 650ms ease,
+    --color-theme-option 650ms ease, --color-theme-option-active 650ms ease,
+    --color-positive 650ms ease, --color-positive-soft 650ms ease,
+    --color-negative 650ms ease, --color-negative-soft 650ms ease,
+    --color-warning 650ms ease, --color-warning-soft 650ms ease;
+}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }

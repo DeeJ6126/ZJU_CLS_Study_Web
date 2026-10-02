@@ -23,10 +23,12 @@ const props = defineProps({
   isDemo: { type: Boolean, default: false },
   canOpenAdmin: { type: Boolean, default: false },
   logoutBusy: { type: Boolean, default: false },
+  nicknameEditing: { type: Boolean, default: false },
+  nicknameSaving: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
-  'save-nickname', 'save-grade', 'upload-avatar', 'remove-avatar', 'archive-post', 'submit-revision',
+  'save-nickname', 'edit-nickname', 'cancel-nickname', 'upload-avatar', 'remove-avatar', 'archive-post', 'submit-revision',
   'resubmit', 'preview-course-schedule', 'replace-courses', 'remove-course',
   'remove-favorite', 'edit-comment', 'delete-comment', 'edit-submission', 'withdraw-submission',
   'delete-submission',
@@ -35,7 +37,6 @@ const emit = defineEmits([
 ]);
 const activeSection = ref('profile');
 const nickname = ref('');
-const grade = ref('');
 const editingPostId = ref('');
 const editingCommentId = ref('');
 const editingCommentBody = ref('');
@@ -44,21 +45,15 @@ const revision = ref({ title: '', summary: '', body: '' });
 const editingSubmissionId = ref('');
 const submissionDraft = ref({ title: '', summary: '', body: '' });
 
-const GRADE_OPTIONS = [
-  { value: '', label: '未设置' },
-  { value: '2023', label: '2023 级' },
-  { value: '2024', label: '2024 级' },
-  { value: '2025', label: '2025 级' },
-  { value: '2026', label: '2026 级' },
-];
-
 const visiblePosts = computed(() => props.posts.filter((post) => (
   props.isOwn || post.status === 'published' || !post.status
 )));
 watch(() => props.profile?.nickname, (value) => { nickname.value = value ?? ''; }, { immediate: true });
-watch(() => props.grade, (value) => {
-  grade.value = value == null ? '' : String(value);
-}, { immediate: true });
+
+function editNickname() {
+  nickname.value = props.profile?.nickname ?? '';
+  emit('edit-nickname');
+}
 
 function startCommentEdit(comment) {
   editingCommentId.value = comment.id;
@@ -113,10 +108,6 @@ function saveSubmission(submission) {
   emit(event, { submission, changes: { ...submissionDraft.value } });
   editingSubmissionId.value = '';
 }
-function saveGrade() {
-  const next = grade.value === '' ? null : Number(grade.value);
-  emit('save-grade', next);
-}
 function contentHref(item) {
   const tab = { experience: 'experiences', material: 'materials', paper: 'papers' }[item.type];
   return buildCourseRoute(item.courseCode, tab, item.routeId || item.id);
@@ -148,26 +139,19 @@ function statusLabel(status) {
         <p v-if="notice" class="profile-notice">{{ notice }}</p>
         <section v-if="!isOwn || activeSection === 'profile'" class="profile-identity">
           <div class="profile-avatar-block">
-            <img v-if="profile.avatarUrl" :src="profile.avatarUrl" :alt="`${profile.nickname}的头像`" />
-            <span v-else>{{ profile.nickname?.slice(0, 1) || '学' }}</span>
-            <label v-if="isOwn" class="profile-file-button">上传头像<input type="file" accept="image/jpeg,image/png,image/webp" @change="chooseAvatar" /></label>
+            <div class="profile-avatar">
+              <img v-if="profile.avatarUrl" :src="profile.avatarUrl" :alt="`${profile.nickname}的头像`" />
+              <span v-else class="profile-avatar-placeholder">{{ profile.nickname?.slice(0, 1) || '学' }}</span>
+              <label v-if="isOwn" class="profile-avatar-upload">
+                <span aria-hidden="true">上传头像</span>
+                <input type="file" aria-label="上传头像" accept="image/jpeg,image/png,image/webp" @change="chooseAvatar" />
+              </label>
+            </div>
             <button v-if="isOwn && profile.avatarUrl" type="button" class="profile-text-button" @click="emit('remove-avatar')">移除头像</button>
           </div>
           <div>
             <p>生科智学用户</p><h1>{{ profile.nickname }}</h1>
-            <form v-if="isOwn" class="profile-nickname-form" @submit.prevent="emit('save-nickname', nickname)">
-              <label><span>昵称</span><input v-model.trim="nickname" minlength="2" maxlength="20" required /></label>
-              <button type="submit">保存昵称</button>
-            </form>
-            <form v-if="isOwn" class="profile-grade-form" @submit.prevent="saveGrade">
-              <label>
-                <span>入学年级</span>
-                <select v-model="grade">
-                  <option v-for="option in GRADE_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
-                </select>
-              </label>
-              <button type="submit">保存年级</button>
-            </form>
+            <p v-if="isOwn" class="profile-cohort">入学年级 <strong>{{ grade == null ? '未识别' : `${grade} 级` }}</strong></p>
           </div>
         </section>
 
@@ -253,7 +237,15 @@ function statusLabel(status) {
           </article>
         </section>
       </template>
-      <footer v-if="isOwn" class="profile-account-footer"><button type="button" :disabled="logoutBusy" @click="emit('logout')">{{ logoutBusy ? '正在退出...' : '退出登录' }}</button></footer>
+      <footer v-if="isOwn" class="profile-account-footer">
+        <form v-if="nicknameEditing && profile && activeSection === 'profile'" class="profile-nickname-form" @submit.prevent="emit('save-nickname', nickname)">
+          <label><span>新昵称</span><input v-model.trim="nickname" minlength="2" maxlength="20" required :disabled="nicknameSaving" /></label>
+          <button type="submit" :disabled="nicknameSaving">{{ nicknameSaving ? '正在保存...' : '保存昵称' }}</button>
+          <button type="button" :disabled="nicknameSaving" @click="emit('cancel-nickname')">取消</button>
+        </form>
+        <button v-else-if="profile && activeSection === 'profile'" type="button" class="profile-edit-nickname" @click="editNickname">修改昵称</button>
+        <button type="button" :disabled="logoutBusy || nicknameSaving" @click="emit('logout')">{{ logoutBusy ? '正在退出...' : '退出登录' }}</button>
+      </footer>
     </main>
   </article>
 </template>

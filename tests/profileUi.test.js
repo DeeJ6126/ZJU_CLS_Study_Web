@@ -26,6 +26,9 @@ test('profile page separates public posts from owner management controls', () =>
   assert.match(profileSource, /我的收藏/);
   assert.match(profileSource, /我的评论/);
   assert.match(profileSource, /演示数据仅保存在当前浏览器/);
+  assert.match(profileSource, /v-if="nicknameEditing && profile && activeSection === 'profile'"/);
+  assert.match(profileSource, /profile-account-footer[\s\S]*修改昵称/);
+  assert.doesNotMatch(profileSource, /save-grade|GRADE_OPTIONS|保存年级|v-model="grade"/);
 });
 
 test('identified comments and notifications expose profile links and owner actions', () => {

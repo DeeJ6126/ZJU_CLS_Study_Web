@@ -188,7 +188,7 @@ test('profile HTTP API keeps email private and lets only the owner archive a pos
   }
 });
 
-test('logged-in users can update their own grade through the profile API', async () => {
+test('account cohort follows the student id and cannot be changed through either profile API', async () => {
   const authStore = createAuthStore({ filename: ':memory:' });
   const contentStore = createContentStore({ filename: ':memory:' });
   const quizStore = createQuizStore({ filename: ':memory:' });
@@ -198,7 +198,7 @@ test('logged-in users can update their own grade through the profile API', async
     email: '3240123@zju.edu.cn',
     nickname: '年级同学',
     passwordHash: await hashPassword('12345678'),
-    grade: 2024,
+    grade: 2026,
   });
   authStore.createSession({ id: 'grade-session', userId: user.id });
   const { server } = createAuthServer({
@@ -212,7 +212,7 @@ test('logged-in users can update their own grade through the profile API', async
     const invalid = await fetch(`${baseUrl}/api/account/profile/grade`, {
       method: 'PATCH', headers, body: JSON.stringify({ grade: 2022 }),
     });
-    assert.equal(invalid.status, 400);
+    assert.equal(invalid.status, 403);
 
     const me = await fetch(`${baseUrl}/api/auth/me`, { headers });
     const meBody = await me.json();
@@ -221,24 +221,26 @@ test('logged-in users can update their own grade through the profile API', async
     const update = await fetch(`${baseUrl}/api/account/profile/grade`, {
       method: 'PATCH', headers, body: JSON.stringify({ grade: 2026 }),
     });
-    const updateBody = await update.json();
-    assert.equal(update.status, 200);
-    assert.equal(updateBody.user.grade, 2026);
-    assert.equal(authStore.findUserById(user.id).grade, 2026);
+    assert.equal(update.status, 403);
+    assert.equal(authStore.findUserById(user.id).grade, 2024);
 
     const clear = await fetch(`${baseUrl}/api/account/profile/grade`, {
       method: 'PATCH', headers, body: JSON.stringify({ grade: null }),
     });
-    const clearBody = await clear.json();
-    assert.equal(clear.status, 200);
-    assert.equal(clearBody.user.grade, null);
+    assert.equal(clear.status, 403);
 
     const study = await fetch(`${baseUrl}/api/account/profile/study`, {
       method: 'PATCH', headers, body: JSON.stringify({ grade: 2023, majorId: 'biology-qiangji' }),
     });
-    const studyBody = await study.json();
-    assert.equal(study.status, 200);
-    assert.equal(studyBody.user.grade, 2023);
+    assert.equal(study.status, 403);
+    assert.equal(authStore.findUserById(user.id).majorId, '');
+
+    const validStudy = await fetch(`${baseUrl}/api/account/profile/study`, {
+      method: 'PATCH', headers, body: JSON.stringify({ majorId: 'biology-qiangji' }),
+    });
+    const studyBody = await validStudy.json();
+    assert.equal(validStudy.status, 200);
+    assert.equal(studyBody.user.grade, 2024);
     assert.equal(studyBody.user.majorId, 'biology-qiangji');
     assert.equal(authStore.findUserById(user.id).majorId, 'biology-qiangji');
 

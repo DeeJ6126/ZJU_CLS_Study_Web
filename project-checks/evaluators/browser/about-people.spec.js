@@ -18,6 +18,7 @@ test('about contact and ordered GitHub contributors remain readable in both them
     await page.goto('/#about?section=about-us');
     await expect(page.locator('.about-contact')).toBeVisible();
     if ((await page.locator('html').getAttribute('data-theme') === 'dark') !== (mode === 'dark')) await page.locator('.theme-switch').click();
+    await expect(page.locator('html')).not.toHaveClass(/theme-transitioning/);
     const contact = page.locator('.about-contact');
     await expect(contact.locator('strong')).toHaveText('主要负责人');
     await expect(contact.getByRole('link')).toHaveText('3240105782@zju.edu.cn');

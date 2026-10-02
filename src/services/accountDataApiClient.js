@@ -38,8 +38,8 @@ export function createAccountDataApiClient(fetchImpl = fetch) {
     addFavorite: (contentId) => request(`api/account/favorites/${encodeURIComponent(contentId)}`, json('PUT')),
     removeFavorite: (contentId) => request(`api/account/favorites/${encodeURIComponent(contentId)}`, { method: 'DELETE' }),
     fetchNotifications: () => request('api/account/notifications'),
-    markNotificationRead: (id) => request(`api/account/notifications/${encodeURIComponent(id)}/read`, json('POST')),
-    markAllNotificationsRead: () => request('api/account/notifications/read-all', json('POST')),
+    markNotificationRead: (id) => request(`api/account/notifications/${encodeURIComponent(id)}/read`, json('POST', {})),
+    markAllNotificationsRead: () => request('api/account/notifications/read-all', json('POST', {})),
   };
 }
 

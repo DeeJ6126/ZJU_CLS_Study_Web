@@ -48,8 +48,8 @@ const fixtures = {
   },
 };
 const palettes = {
-  light: { ground: 'rgb(245, 248, 249)', surface: 'rgb(255, 255, 255)', ink: 'rgb(33, 49, 57)', primary: '#14768a' },
-  dark: { ground: 'rgb(23, 28, 30)', surface: 'rgb(34, 41, 44)', ink: 'rgb(241, 245, 246)', primary: '#84cbda' },
+  light: { ground: 'rgb(245, 248, 249)', surface: 'rgb(255, 255, 255)', ink: 'rgb(33, 49, 57)', primary: 'rgb(20, 118, 138)' },
+  dark: { ground: 'rgb(23, 28, 30)', surface: 'rgb(34, 41, 44)', ink: 'rgb(241, 245, 246)', primary: 'rgb(132, 203, 218)' },
 };
 
 async function mockQuizApi(page) {
@@ -186,9 +186,8 @@ async function checkFeedbackColors(page) {
     const incorrect = getComputedStyle(document.querySelector('.practice-options button.is-incorrect'));
     return { positive: variables.getPropertyValue('--color-positive').trim(), negative: variables.getPropertyValue('--color-negative').trim(), correct: correct.color, incorrect: incorrect.color, correctOpacity: correct.opacity, incorrectOpacity: incorrect.opacity };
   });
-  const rgb = (hex) => `rgb(${[1, 3, 5].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16)).join(', ')})`;
-  expect(colors.correct).toBe(rgb(colors.positive));
-  expect(colors.incorrect).toBe(rgb(colors.negative));
+  expect(colors.correct).toBe(colors.positive);
+  expect(colors.incorrect).toBe(colors.negative);
   expect(colors.correctOpacity).toBe('1');
   expect(colors.incorrectOpacity).toBe('1');
 }
@@ -367,6 +366,7 @@ for (const theme of ['light', 'dark']) {
       await expect(page.locator('.theme-switch .ts-moon')).toHaveCount(3);
       if (theme === 'dark') await page.locator('.theme-switch .ts-components').click();
       await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+      await expect(page.locator('html')).not.toHaveClass(/theme-transitioning/);
       await checkSurface(page, theme, '.quiz-main');
       await page.locator('.quiz-course-card').filter({ hasText: courseCode }).getByRole('button', { name: '选择课程', exact: true }).click();
       await expect(page.locator('.quiz-course-nav strong')).toContainText(fixtures[courseCode].title);
