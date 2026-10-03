@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import {
   buildAllCourseSections,
   buildProgramOutline,
+  buildProgramOutlineNavigation,
   buildProgramSemesterSections,
   filterCoursesByProgram,
 } from '../src/services/overviewCatalogService.js';
-import { findCurriculumProgram, flattenProgram } from '../src/data/courses/programCatalog.js';
+import { curriculumPrograms, findCurriculumProgram, flattenProgram } from '../src/data/courses/programCatalog.js';
 import { parseCourseCsv } from '../src/data/courses/resourceCatalog.js';
 import { readFileSync } from 'node:fs';
 
@@ -83,6 +84,44 @@ test('outline drops prose-only sections but keeps ones that do list courses', ()
   const selfDirected = ecology.find((row) => row.tag === '3)学生自主修读模块');
   assert.ok(selfDirected, '2026 级生态学的学生自主修读模块有课程，不应被过滤');
   assert.ok(selfDirected.courses.length > 0);
+});
+
+test('outline navigation includes nested requirements and directions, but not repeated A/B course leaves', () => {
+  const rows = buildProgramOutline(catalogCourses, findCurriculumProgram('biology', '2024'));
+  const navigation = buildProgramOutlineNavigation(rows);
+  assert.ok(navigation.some((item) => item.title === '(1)专业必修课程' && item.depth === 1));
+  assert.ok(navigation.some((item) => item.title === '1)生物科学方向' && item.depth === 2));
+  assert.ok(navigation.some((item) => item.title === 'A.生物科学方向' && item.depth === 2));
+  assert.ok(!navigation.some((item) => ['A.必修课程', 'B.选修课程'].includes(item.title)));
+  assert.ok(rows.some((row) => row.tag === 'A.必修课程' && row.courses.length));
+});
+
+test('all curriculum navigation anchors refer to their original rendered row indices', () => {
+  const programs = Object.values(curriculumPrograms).flatMap(Object.values);
+  for (const program of programs) {
+    const rows = buildProgramOutline(catalogCourses, program);
+    const navigation = buildProgramOutlineNavigation(rows);
+    assert.equal(new Set(navigation.map((item) => item.id)).size, navigation.length);
+    for (const item of navigation) {
+      const index = Number(item.id.replace('overview-outline-', ''));
+      assert.equal(item.title, rows[index].tag, program.id);
+      assert.equal(item.depth, rows[index].depth, program.id);
+    }
+  }
+  const ecology = buildProgramOutlineNavigation(buildProgramOutline(catalogCourses, findCurriculumProgram('ecology-qiangji', '2025')));
+  assert.ok(ecology.some((item) => item.title === 'A.环境科学' && item.depth === 3));
+});
+
+test('outline navigation follows selected modules and resource filtering without stale entries', () => {
+  const program = findCurriculumProgram('biology-qiangji', '2024');
+  const first = buildProgramOutlineNavigation(buildProgramOutline(catalogCourses, program));
+  const second = buildProgramOutlineNavigation(buildProgramOutline(catalogCourses, program, ['2)神经生物学模块']));
+  assert.ok(first.some((item) => item.title === '1)生物科学模块'));
+  assert.ok(!second.some((item) => item.title === '1)生物科学模块'));
+  assert.ok(second.some((item) => item.title === '2)神经生物学模块'));
+  const filtered = buildProgramOutlineNavigation(buildProgramOutline(catalogCourses.filter((course) => course.code === 'BIO2085M'), findCurriculumProgram('biology', '2024')));
+  assert.deepEqual(filtered.map((item) => item.title), ['3.专业课程', '(2)实践教学环节', '1)生物科学方向']);
+  assert.deepEqual(buildProgramOutlineNavigation([]), []);
 });
 
 test('program semester view shows only periods that contain courses', () => {

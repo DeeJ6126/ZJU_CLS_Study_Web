@@ -118,6 +118,14 @@ export function buildProgramOutline(courses, program, chosen = []) {
   return rows;
 }
 
+export function buildProgramOutlineNavigation(rows) {
+  return rows.flatMap((row, index) => (
+    /^[A-Z][.．、]\s*(必修|选修)课程$/i.test(row.tag.trim())
+      ? []
+      : [{ id: `overview-outline-${index}`, title: row.tag, depth: row.depth }]
+  ));
+}
+
 export function buildProgramSemesterSections(courses, program, chosen = []) {
   const { courseCodes, semesterByCourse } = flattenProgram(program, chosen);
   const byCode = new Map(courses.map((course) => [course.code, course]));

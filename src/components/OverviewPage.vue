@@ -14,6 +14,7 @@ import { loadCourseAvailability } from '../services/courseContentApiClient.js';
 import {
   buildAllCourseSections,
   buildProgramOutline,
+  buildProgramOutlineNavigation,
   buildProgramSemesterSections,
 } from '../services/overviewCatalogService.js';
 import {
@@ -197,8 +198,7 @@ const visibleCourseCount = computed(() => {
 
 const overviewNavigation = computed(() => (
   groupingMode.value === 'outline' && isProgramSelected.value
-    ? outlineRows.value.flatMap((row, index) => row.depth === 0
-      ? [{ id: `overview-outline-${index}`, title: row.tag }] : [])
+    ? buildProgramOutlineNavigation(outlineRows.value)
     : sections.value.map((section, index) => ({ id: `overview-section-${index}`, title: section.title }))
 ));
 
@@ -334,7 +334,7 @@ onMounted(async () => {
     <div v-else-if="groupingMode === 'outline' && isProgramSelected" class="overview-content-layout">
       <nav class="overview-contents" aria-label="培养方案目录">
         <strong>目录</strong>
-        <button v-for="item in overviewNavigation" :key="item.id" type="button" @click="jumpToOverviewSection(item.id)">{{ item.title }}</button>
+        <button v-for="item in overviewNavigation" :key="item.id" type="button" :class="{ 'is-top-level': item.depth === 0 }" :style="{ '--outline-depth': item.depth }" @click="jumpToOverviewSection(item.id)">{{ item.title }}</button>
       </nav>
       <div class="overview-outline">
       <section
