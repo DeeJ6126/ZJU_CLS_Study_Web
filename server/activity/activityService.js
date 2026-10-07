@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 const programs = new Map([
+  ['major-zero-distance', 'learning'],
   ['laboratory-open-day', 'frontier'],
   ['major-festival', 'learning'],
   ['peer-learning', 'learning'],

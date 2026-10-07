@@ -13,6 +13,7 @@ import {
   validateActivityInput,
 } from '../server/activity/activityService.js';
 import { createActivityApiClient } from '../src/services/activityApiClient.js';
+import { activityPrograms } from '../src/data/activityConfig.js';
 
 const catalog = JSON.parse(readFileSync('public/content/activities/catalog.json', 'utf8'));
 
@@ -53,6 +54,23 @@ test('homepage recommendation is opt-in, editable, and preserved by ordinary edi
   seedActivityCatalog(store, catalog.articles);
   assert.equal(store.findActivityById(created.activity.id).featured, true);
   assert.equal(updateActivity(store, created.activity.id, { featured: false }, 7).activity.featured, false);
+});
+
+test('the new program uses existing article management without seeding placeholder posts', () => {
+  const store = memoryStore();
+  try {
+    seedActivityCatalog(store, catalog.articles);
+    assert.equal(store.listPublishedActivities().filter((item) => item.programId === activityPrograms[0].id).length, 0);
+    const created = createActivity(store, {
+      title: '第一期分享', programId: activityPrograms[0].id,
+      imageUrl: activityPrograms[0].imageUrl, externalUrl: 'https://mp.weixin.qq.com/s/test-major-zero-distance',
+    }, 7);
+    assert.equal(created.ok, true);
+    assert.equal(created.activity.category, 'learning');
+    assert.equal(created.activity.featured, false);
+    assert.equal(updateActivity(store, created.activity.id, { title: '第一期回顾' }, 7).activity.title, '第一期回顾');
+    assert.equal(archiveActivity(store, created.activity.id, 7).activity.status, 'archived');
+  } finally { store.close(); }
 });
 
 test('descriptive program catalog is not mistaken for a directory entry', () => {

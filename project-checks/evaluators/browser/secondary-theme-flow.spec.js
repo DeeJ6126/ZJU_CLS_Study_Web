@@ -86,9 +86,9 @@ test('about sections and source-backed activities remain readable in desktop lig
     await expect(page.locator('.about-page__status')).toHaveCount(0);
     await expect(page.locator('.about-contributor strong')).toHaveText(['DeeJ6126', 'somnis7', 'serashikan']);
     await page.goto('/#activities');
-    await expect(page.locator('.activity-program')).toHaveCount(5);
+    await expect(page.locator('.activity-program')).toHaveCount(6);
     await expect(page.locator('.activity-directory__list a').first()).toBeVisible();
-    await expect(page.locator('.activity-program__intro figure img')).toHaveCount(5);
+    await expect(page.locator('.activity-program__intro figure img')).toHaveCount(6);
     for (const image of await page.locator('.activities-page img').all()) {
       await image.scrollIntoViewIfNeeded();
       await expect.poll(() => image.evaluate((element) => element.complete && element.naturalWidth > 0), { timeout: 15_000 }).toBe(true);

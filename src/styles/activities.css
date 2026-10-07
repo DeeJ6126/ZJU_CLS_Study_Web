@@ -176,6 +176,7 @@
 }
 
 .activity-directory__list span { color: var(--demo-primary); font-weight: 600; }
+.activity-directory__placeholder p { margin: 6px 0 0; color: var(--color-muted); font-size: 14px; }
 
 .activity-directory__empty {
   margin: 0;
@@ -223,6 +224,7 @@
 .activity-detail-page__articles li span { grid-column: 1; color: var(--color-muted); font-size: 14px; line-height: 1.8; }
 .activity-detail-page__articles em { grid-column: 2; grid-row: 1; color: var(--demo-primary); font-style: normal; }
 .activity-detail-page__placeholder { padding: 24px 0; color: var(--color-muted); line-height: 1.8; }
+.activity-detail-page__placeholder h2 { margin: 0; color: var(--color-ink); font-size: 22px; font-weight: 600; }
 
 @media (max-width: 800px) {
   .activities-page { padding: 24px 16px 56px; }

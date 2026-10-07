@@ -240,7 +240,7 @@ for (const mode of ['light', 'dark']) {
     await readable(page, '.admin-editor label > span, .admin-editor__actions button', `admin-content-${mode}`);
     await page.getByRole('button', { name: '关闭', exact: true }).click();
     await page.locator('.admin-page__nav').getByRole('button', { name: '活动管理', exact: true }).click();
-    await expect(page.locator('.admin-activity-programs button')).toHaveCount(5);
+    await expect(page.locator('.admin-activity-programs button')).toHaveCount(6);
     await page.getByRole('button', { name: '新增推文', exact: true }).click();
     await expect(page.getByRole('textbox', { name: '推文链接', exact: true })).toBeVisible();
     await readable(page, '.admin-editor label > span, .admin-editor__actions button', `admin-activity-${mode}`);

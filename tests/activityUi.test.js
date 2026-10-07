@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs';
 
 import { getActivitySlugFromHash, getDemoPageFromHash } from '../src/services/demoNavigationService.js';
 import { demoTopPages } from '../src/data/quizDemo.js';
+import { activityPrograms, activityImageOptions } from '../src/data/activityConfig.js';
+import { existsSync } from 'node:fs';
 
 test('nested activity routes stay on the activity page and expose the selected slug', () => {
   assert.equal(getDemoPageFromHash('#activities/lab-open-day', demoTopPages), 'activities');
@@ -11,7 +13,7 @@ test('nested activity routes stay on the activity page and expose the selected s
   assert.equal(getActivitySlugFromHash('#activities'), '');
 });
 
-test('activity page renders five source-backed programs without the removed academic voyage', () => {
+test('activity page retains source-backed programs without the removed academic voyage', () => {
   const component = readFileSync('src/components/ActivityPage.vue', 'utf8');
   const config = readFileSync('src/data/activityConfig.js', 'utf8');
   const css = readFileSync('src/styles/activities.css', 'utf8');
@@ -29,6 +31,21 @@ test('activity page renders five source-backed programs without the removed acad
   assert.doesNotMatch(component, /selectedParagraphs|activity\.body/);
   assert.match(css, /grid-template-columns/);
   assert.match(css, /@media\s*\(max-width:\s*800px\)/);
+});
+
+test('major zero distance is first with a first-session placeholder and the supplied cover', () => {
+  const program = activityPrograms[0];
+  assert.equal(activityPrograms.length, 6);
+  assert.equal(program.id, 'major-zero-distance');
+  assert.equal(program.label, '专业零距离');
+  assert.deepEqual(program.placeholder, { title: '第一期', message: '活动尚未开始' });
+  assert.ok(existsSync(`public${program.imageUrl}`));
+  assert.ok(activityImageOptions.some((item) => item.value === program.imageUrl));
+  const page = readFileSync('src/components/ActivityPage.vue', 'utf8');
+  const detail = readFileSync('src/components/ActivityDetailPage.vue', 'utf8');
+  assert.match(page, /v-else-if="program.placeholder"/);
+  assert.match(detail, /item\.programId === program\.value\.id/);
+  assert.match(detail, /program\.placeholder\.message/);
 });
 
 test('homepage recent activities come from the shared activity client while popular resources remain static', () => {

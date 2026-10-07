@@ -99,6 +99,7 @@ const pendingHomepages = computed(() => homepageApplications.value.some((item) =
 let badgeTimer, badgeSequence = 0, feedbackSequence = 0, feedbackCountSequence = 0;
 const activities = ref([]);
 const activityProgramId = ref(activityPrograms[0].id);
+const activityCurrentProgram = computed(() => activityPrograms.find((program) => program.id === activityProgramId.value));
 const activityQuery = ref('');
 const activityEditorOpen = ref(false);
 const editingActivityId = ref('');
@@ -1131,6 +1132,7 @@ onBeforeUnmount(() => { clearInterval(badgeTimer); ++badgeSequence; ++feedbackSe
             </label>
           </div>
           <p v-if="listBusy" class="admin-list__empty">正在读取推文...</p>
+          <p v-else-if="!activities.length && !activityQuery && activityCurrentProgram?.placeholder" class="admin-list__empty">{{ activityCurrentProgram.placeholder.title }} · {{ activityCurrentProgram.placeholder.message }}</p>
           <p v-else-if="!activities.length" class="admin-list__empty">“{{ activityProgramLabel(activityProgramId) }}”暂未添加推文。</p>
           <div v-else class="admin-content-table" role="table" aria-label="活动内容">
             <div class="admin-content-table__head" role="row">

@@ -50,7 +50,7 @@ onMounted(async () => {
         <p>Academic Department</p>
         <h1>活动</h1>
       </div>
-      <p>按五个长期板块整理学院活动。目录收录对应公众号推文，点击标题即可阅读原文。</p>
+      <p>收录学院活动与相关分享。</p>
     </header>
 
     <nav class="activities-jump" aria-label="活动板块">
@@ -92,7 +92,7 @@ onMounted(async () => {
               <p>Articles</p>
               <h3>活动目录</h3>
             </div>
-            <span>{{ activitiesByProgram.get(program.id)?.length ?? 0 }} 篇</span>
+            <span v-if="activitiesByProgram.get(program.id)?.length || !program.placeholder">{{ activitiesByProgram.get(program.id)?.length ?? 0 }} 篇</span>
           </header>
 
           <div v-if="activitiesByProgram.get(program.id)?.length" class="activity-directory__list">
@@ -106,6 +106,13 @@ onMounted(async () => {
               <img :src="activityImage(activity.imageUrl)" :alt="activity.imageAlt">
               <strong>{{ activity.title }}</strong>
               <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+          <div v-else-if="program.placeholder" class="activity-directory__list activity-directory__placeholder">
+            <a :href="programDetailHref(program.id)">
+              <img :src="activityImage(program.imageUrl)" :alt="program.imageAlt">
+              <div><strong>{{ program.placeholder.title }}</strong><p>{{ program.placeholder.message }}</p></div>
+              <span aria-hidden="true">→</span>
             </a>
           </div>
           <p v-else class="activity-directory__empty">暂无收录推文</p>

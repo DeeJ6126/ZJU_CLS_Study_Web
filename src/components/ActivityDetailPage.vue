@@ -19,8 +19,7 @@ const message = ref('');
 
 const programArticles = computed(() => {
   if (!program.value) return [];
-  const target = program.value.category;
-  return activities.value.filter((item) => item.category === target);
+  return activities.value.filter((item) => item.programId === program.value.id);
 });
 
 function imageSrc(path) {
@@ -86,6 +85,10 @@ onMounted(async () => {
         <p>{{ message }}</p>
       </section>
 
+      <section v-else-if="program.placeholder" class="activity-detail-page__placeholder" :aria-label="program.placeholder.title">
+        <h2>{{ program.placeholder.title }}</h2>
+        <p>{{ program.placeholder.message }}</p>
+      </section>
       <section v-else class="activity-detail-page__placeholder" aria-label="本板块说明">
         <p>{{ program.label }} 板块目前没有可展示的推文。回到活动页面可查看其他板块。</p>
       </section>

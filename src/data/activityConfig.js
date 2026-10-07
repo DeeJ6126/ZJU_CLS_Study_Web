@@ -1,5 +1,14 @@
 export const activityPrograms = [
   {
+    id: 'major-zero-distance',
+    label: '专业零距离',
+    category: 'learning',
+    imageUrl: '/assets/activities/major-zero-distance.png',
+    imageAlt: '同学们在展板前交流',
+    summary: '学长学姐的专业学习经验与分享资料。',
+    placeholder: { title: '第一期', message: '活动尚未开始' },
+  },
+  {
     id: 'laboratory-open-day',
     label: '实验室开放日',
     category: 'frontier',
@@ -44,6 +53,7 @@ export const activityPrograms = [
 export const activityProgramIds = new Set(activityPrograms.map((program) => program.id));
 
 export const activityImageOptions = [
+  { value: '/assets/activities/major-zero-distance.png', label: '专业零距离交流场景' },
   { value: '/assets/activities/laboratory-open-day.webp', label: '实验室开放日合影' },
   { value: '/assets/activities/major-festival.webp', label: '专业节宣讲现场' },
   { value: '/assets/activities/peer-learning.webp', label: '朋辈辅学现场' },

@@ -41,10 +41,52 @@ async function activityFixture(page, user = guest) {
   return { activities, writes, unexpectedWrites };
 }
 
+test('major zero distance is the first program with a first-session placeholder in both themes', async ({ page }) => {
+  const state = await activityFixture(page);
+  for (const mode of ['light', 'dark']) {
+    await page.goto('/#activities');
+    if ((await page.locator('html').getAttribute('data-theme') === 'dark') !== (mode === 'dark')) await page.locator('.theme-switch').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', mode);
+    await expect(page.locator('html')).not.toHaveClass(/theme-transitioning/);
+    await expect(page.locator('.activities-jump a').first()).toHaveText('专业零距离');
+    const first = page.locator('.activity-program').first();
+    await expect(first).toHaveAttribute('id', 'activity-program-major-zero-distance');
+    await expect(first.locator('.activity-directory__placeholder strong')).toHaveText('第一期');
+    await expect(first.locator('.activity-directory__placeholder p')).toHaveText('活动尚未开始');
+    await expect.poll(() => first.locator('.activity-program__intro img').evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
+    await page.screenshot({ path: `project-checks/artifacts/major-zero-distance-${mode}.png` });
+    await first.locator('.activity-directory__placeholder a').click();
+    await expect(page).toHaveURL(/#activity\/major-zero-distance$/);
+    await expect(page.locator('.activity-detail-page__head h1')).toHaveText('专业零距离');
+    await expect(page.locator('.activity-detail-page__placeholder')).toContainText('第一期');
+    await expect(page.locator('.activity-detail-page__placeholder')).toContainText('活动尚未开始');
+    await expect(page.locator('.activity-detail-page__articles')).toHaveCount(0);
+  }
+  await page.goto('/');
+  await expect(page.locator('.home-activity-grid article')).toHaveCount(0);
+  expect(state.writes).toEqual([]);
+  expect(state.unexpectedWrites).toEqual([]);
+});
+
+test('administrator sees the new program first without a fake published placeholder or upload feature', async ({ page }) => {
+  const state = await activityFixture(page, admin);
+  await page.goto('/#admin');
+  await page.locator('.admin-page__nav').getByRole('button', { name: '活动管理', exact: true }).click();
+  await expect(page.locator('.admin-activity-programs button').first()).toHaveText('专业零距离');
+  await expect(page.locator('.admin-list__empty')).toContainText('第一期 · 活动尚未开始');
+  await page.getByRole('button', { name: '新增推文', exact: true }).click();
+  const editor = page.getByRole('region', { name: '活动编辑器', exact: true });
+  await expect(editor.locator('.admin-editor__head')).toContainText('专业零距离');
+  await expect(editor.locator('#activity-image-options option').first()).toHaveAttribute('value', '/assets/activities/major-zero-distance.png');
+  await expect(editor.locator('input[type="file"]')).toHaveCount(0);
+  expect(state.writes).toEqual([]);
+  expect(state.unexpectedWrites).toEqual([]);
+});
+
 test('activity directory links its source-backed articles and current program details', async ({ page }) => {
   const state = await activityFixture(page);
   await page.goto('/#activities');
-  await expect(page.locator('.activity-program')).toHaveCount(5);
+  await expect(page.locator('.activity-program')).toHaveCount(6);
   await expect(page.getByRole('link', { name: '学业领航', exact: true })).toHaveCount(0);
   const program = page.locator('#activity-program-laboratory-open-day');
   const article = catalog.articles[0];
@@ -110,6 +152,7 @@ test('administrator creates and edits categorized activity articles using isolat
   await expect(page.locator('#activity-program-peer-learning .activity-directory__list a').filter({ hasText: created.title })).toHaveAttribute('href', created.externalUrl);
   await page.goto('/#admin');
   await page.locator('.admin-page__nav').getByRole('button', { name: '活动管理', exact: true }).click();
+  await page.locator('.admin-activity-programs').getByRole('button', { name: '实验室开放日', exact: true }).click();
   await page.locator('.admin-content-table__row').filter({ hasText: edited.title }).getByRole('button', { name: '编辑', exact: true }).click();
   await expect(featured).toBeChecked();
   await featured.uncheck();
