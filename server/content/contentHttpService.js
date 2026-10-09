@@ -41,7 +41,7 @@ function sendResult(sendJson, response, result) {
     sendJson(response, result.status, { message: result.message });
     return;
   }
-  sendJson(response, result.status, { item: result.item });
+  sendJson(response, result.status, { item: result.item, ...(result.replayed ? { replayed: true } : {}) });
 }
 
 function authorizeAdmin(sendJson, response, user) {
@@ -392,7 +392,7 @@ export async function handleContentHttpRequest({
 
   if (request.method === 'POST' && url.pathname === '/api/admin/content') {
     const result = createContentItem(contentStore, await readJsonBody(request), userId);
-    if (result.ok) logAdminAction(contentStore, 'content.create', result.item, actor, '新建内容草稿');
+    if (result.ok && !result.replayed) logAdminAction(contentStore, 'content.create', result.item, actor, '新建内容草稿');
     sendResult(sendJson, response, result);
     return true;
   }

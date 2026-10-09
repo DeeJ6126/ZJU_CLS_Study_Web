@@ -21,6 +21,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 
 ## Recently Completed
 
+- Improved manual administrator entry with publish-and-next, retaining major/course/type/source platform while clearing each post's fields. General original-source metadata supports CC98, duoduo and other forums, preserves original authors and old CC98 links, and records the acting administrator separately. Account-scoped browser drafts autosave and recover unfinished forms; PDF reloads retain the filename and request reselecting it. Sticky actions, request-ID creation retries, version-checked edits and busy navigation guards prevent duplicate entries or lost input after upload/publication failures. Verified with 539 Node tests, 60 production-preview browser cases, build and project checks; test records stay isolated from production.
 - Published 30 existing DOCX resource-tower experience bodies across 26 site course codes on 2026-10-09: updated 10 existing imported records in place and added 20, with uniform Resource Tower titles, floor summaries, original author/teacher metadata, Markdown bodies and corrected CC98 pagination links. The field-trip section contains only reference links and remains deferred, as do 3 out-of-catalog notes. Extraction/publication tools support read-only planning, concurrent-edit fingerprints, atomic rollback and idempotent reruns; publication records administrator review/publish audit entries without assigning original authors to administrator profiles.
 - Added Professional Zero Distance as the first public/admin activity program, using the supplied photo and a First Session / not-yet-started placeholder. The placeholder is display metadata, not a seeded post or homepage recommendation; future material uploads and richer article/session management are intentionally deferred. Program details now filter by program ID rather than the shared broad category, preventing unrelated learning articles from filling the new placeholder.
 - Overview outline navigation now follows the rendered curriculum hierarchy, including professional requirements, modules and directions with indented labels. Repeated A/B required/elective course leaf labels remain in the main content but not the sidebar. Directory anchors stay aligned with module choices, available-course filtering and the semester view.
@@ -81,6 +82,8 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 ## Known Good Verification
 
 Current known verification:
+
+The 2026-10-09 administrator-entry update passed 539 Node tests, all 60 browser cases against the local production preview, the build and project checks. The new browser fixtures cover continuous entry, immediate reload recovery, empty-draft removal, lost-response replay, PDF/publication failure retries, conflict cancellation, storage errors, busy navigation locks, original-source links and desktop light/dark sticky actions. All mutation fixtures use intercepted APIs or isolated databases/files.
 
 The More/student-homepage release passed all 506 Node tests, 36 production-preview browser tests, the build and project checks. The new flows cover guest login entry, safe external links, avatar processing, failed-submission retention, administrator creation, approval and rejection.
 

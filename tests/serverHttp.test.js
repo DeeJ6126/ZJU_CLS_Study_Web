@@ -582,10 +582,27 @@ test('content admin API protects writes and publishes content to the public cour
       body: JSON.stringify({
         courseCode: 'BIO2110F', type: 'experience', title: '管理员新增心得',
         summary: '测试发布闭环。', author: '学术部', body: '这是一条由管理平台维护的内容。',
+        sourcePlatform: 'duoduo', sourceUrl: 'https://duoduo.example/topic/1', requestId: 'draft-request-123456',
       }),
     });
     const createdBody = await create.json();
     assert.equal(create.status, 201);
+    assert.equal(createdBody.item.sourcePlatform, 'duoduo');
+    assert.equal(createdBody.item.cc98Url, '');
+    const replay = await fetch(`${baseUrl}/api/admin/content`, {
+      method: 'POST', headers: { 'content-type': 'application/json', cookie: adminCookie },
+      body: JSON.stringify({ requestId: 'draft-request-123456' }),
+    });
+    const replayBody = await replay.json();
+    assert.equal(replay.status, 200);
+    assert.equal(replayBody.item.id, createdBody.item.id);
+    assert.equal(replayBody.replayed, true);
+    assert.equal(contentStore.listAuditLogs({ action: 'content.create' }).filter((entry) => entry.entityId === createdBody.item.id).length, 1);
+    const conflict = await fetch(`${baseUrl}/api/admin/content/${createdBody.item.id}`, {
+      method: 'PATCH', headers: { 'content-type': 'application/json', cookie: adminCookie },
+      body: JSON.stringify({ title: 'Overwrite', expectedUpdatedAt: 'stale' }),
+    });
+    assert.equal(conflict.status, 409);
 
     const beforeItems = (await (await fetch(`${baseUrl}/api/content/courses/BIO2110F`)).json()).items;
     assert.equal(beforeItems.some((item) => item.id === createdBody.item.id), false);
@@ -596,6 +613,8 @@ test('content admin API protects writes and publishes content to the public cour
     assert.equal(publish.status, 200);
     const afterItems = (await (await fetch(`${baseUrl}/api/content/courses/BIO2110F`)).json()).items;
     assert.equal(afterItems.some((item) => item.id === createdBody.item.id), true);
+    assert.equal(afterItems.find((item) => item.id === createdBody.item.id).sourceUrl, 'https://duoduo.example/topic/1');
+    assert.equal(afterItems.find((item) => item.id === createdBody.item.id).owner, null);
 
     const archive = await fetch(`${baseUrl}/api/admin/content/${createdBody.item.id}/archive`, {
       method: 'POST', headers: { 'content-type': 'application/json', cookie: adminCookie }, body: '{}',

@@ -102,6 +102,13 @@ favorites, comments, submissions, profile changes, account synchronization, and
 student-homepage applications require a verified student ID (or administrator).
 Administrator content and moderation mutations are recorded in the operation log.
 
+Manual administrator entries preserve the original author separately from the recording
+administrator. Course content and submissions accept `sourcePlatform` (`cc98`, `duoduo`,
+`other`) and an optional HTTP(S) `sourceUrl`; existing `cc98Url` records remain compatible.
+Administrator create requests may include an account-scoped `requestId` to safely retry
+a lost response. Updates may include `expectedUpdatedAt` and return 409 when the record
+has changed. Automatic browser drafts never publish content on their own.
+
 Activity records use a separate `activity_items` table in the content database.
 `public/content/activities/catalog.json` is imported idempotently on startup;
 later administrator edits are not overwritten by normal startup seeding.

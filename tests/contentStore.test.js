@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { DatabaseSync } from 'node:sqlite';
 
 import { createContentStore } from '../server/content/contentStore.js';
 import {
@@ -8,6 +12,7 @@ import {
   createContentItem,
   publishContentItem,
   updateContentItem,
+  toPublicContentItem,
 } from '../server/content/contentService.js';
 import { importStaticCourseContent } from '../server/content/contentImportService.js';
 
@@ -100,4 +105,81 @@ test('static course import is idempotent and keeps existing microbiology resourc
   );
   assert.match(items.find((item) => item.type === 'paper').file.url, /25-26-midterm-lv\.pdf$/);
   store.close();
+});
+
+test('administrator sources retain original authors and survive edit and publication', () => {
+  const store = createTestStore();
+  try {
+    const legacy = createContentItem(store, {
+      courseCode: 'BIO2110F', type: 'experience', title: 'Legacy', body: 'Notes', cc98Url: 'https://www.cc98.org/topic/1',
+    }, 9).item;
+    assert.equal(legacy.sourcePlatform, 'cc98');
+    assert.equal(legacy.sourceUrl, legacy.cc98Url);
+    const created = createContentItem(store, {
+      courseCode: 'BIO2110F', type: 'experience', title: 'Imported', author: 'Original author', body: 'Notes',
+      sourcePlatform: 'duoduo', sourceUrl: 'https://duoduo.example/topic/1',
+    }, 9).item;
+    assert.equal(created.ownerId, null);
+    assert.equal(created.createdBy, 9);
+    assert.equal(created.cc98Url, '');
+    const edited = updateContentItem(store, created.id, { summary: 'Updated' }, 10).item;
+    assert.equal(edited.sourceUrl, created.sourceUrl);
+    assert.equal(edited.sourcePlatform, 'duoduo');
+    assert.equal(edited.author, 'Original author');
+    const published = publishContentItem(store, created.id, 10).item;
+    assert.equal(toPublicContentItem(published).sourceUrl, created.sourceUrl);
+    assert.equal(toPublicContentItem(published).owner, null);
+    assert.equal(updateContentItem(store, created.id, { sourceUrl: 'javascript:alert(1)' }, 10).status, 400);
+    assert.equal(updateContentItem(store, created.id, { sourcePlatform: 'unknown' }, 10).status, 400);
+  } finally { store.close(); }
+});
+
+test('administrator create retries are actor-scoped and stale updates are rejected', () => {
+  const store = createTestStore();
+  try {
+    const input = { courseCode: 'BIO2110F', type: 'experience', title: 'Imported', body: 'Notes', requestId: 'draft-request-123456' };
+    const created = createContentItem(store, input, 9);
+    const retry = createContentItem(store, input, 9);
+    assert.equal(created.status, 201);
+    assert.equal(retry.status, 200);
+    assert.equal(retry.replayed, true);
+    assert.equal(retry.item.id, created.item.id);
+    assert.notEqual(createContentItem(store, input, 10).item.id, created.item.id);
+    assert.equal(createContentItem(store, { ...input, requestId: 'invalid' }, 9).status, 400);
+    assert.equal(store.listAdmin({}).length, 2);
+    assert.equal(updateContentItem(store, created.item.id, { title: 'Overwrite', expectedUpdatedAt: 'stale' }, 9).status, 409);
+    assert.equal(store.findById(created.item.id).title, 'Imported');
+    assert.equal(updateContentItem(store, created.item.id, { title: 'Valid', expectedUpdatedAt: created.item.updatedAt }, 9).ok, true);
+  } finally { store.close(); }
+});
+
+test('source schema upgrade preserves legacy data without assigning an administrator owner', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'study-content-source-'));
+  const filename = join(directory, 'content.sqlite');
+  let store = createContentStore({ filename });
+  try {
+    store.initialize();
+    const legacy = store.createItem({ courseCode: 'BIO2110F', type: 'experience', title: 'Legacy',
+      author: 'Original author', body: 'Notes', status: 'published', cc98Url: 'https://www.cc98.org/topic/1', createdBy: 9 });
+    store.close();
+    const db = new DatabaseSync(filename);
+    try {
+      db.exec('drop index content_create_request_idx');
+      for (const column of ['source_platform', 'source_url', 'create_request_id']) db.exec(`alter table content_items drop column ${column}`);
+      for (const column of ['source_platform', 'source_url']) db.exec(`alter table content_submissions drop column ${column}`);
+    } finally { db.close(); }
+    store = createContentStore({ filename });
+    store.initialize();
+    store.initialize();
+    const upgraded = store.findById(legacy.id);
+    assert.equal(upgraded.sourcePlatform, 'cc98');
+    assert.equal(upgraded.sourceUrl, legacy.cc98Url);
+    assert.equal(upgraded.ownerId, null);
+    assert.equal(upgraded.author, 'Original author');
+    assert.equal(upgraded.status, 'published');
+    assert.equal(upgraded.routeId, legacy.routeId);
+  } finally {
+    store.close();
+    rmSync(directory, { recursive: true, force: true });
+  }
 });

@@ -1,4 +1,5 @@
 import { publicApiPath } from '../publicApiPath.js';
+import { normalizeContentSource, validateContentSource } from '../../src/services/contentSourceService.js';
 
 const contentTypes = new Set(['experience', 'material', 'paper']);
 
@@ -27,7 +28,9 @@ export function validateContentInput(input, { partial = false, current = null } 
   const body = clean(data.body);
   const bodyFormat = clean(data.bodyFormat || 'markdown');
   const externalUrl = clean(data.externalUrl);
-  const cc98Url = clean(data.cc98Url);
+  const source = validateContentSource(input, partial ? current : {});
+  if (!source.ok) return source;
+  const { sourcePlatform, sourceUrl, cc98Url } = source.value;
   const gpa = clean(data.gpa);
   const gradePercentage = clean(data.gradePercentage);
   const year = clean(data.year);
@@ -63,7 +66,7 @@ export function validateContentInput(input, { partial = false, current = null } 
 
   return {
     ok: true,
-    value: { courseCode, type, title, summary, author, body, bodyFormat, externalUrl, cc98Url, gpa, gradePercentage, year, teacher },
+    value: { courseCode, type, title, summary, author, body, bodyFormat, externalUrl, sourcePlatform, sourceUrl, cc98Url, gpa, gradePercentage, year, teacher },
   };
 }
 
@@ -89,7 +92,7 @@ export function toPublicContentItem(item, likeState = {}, owner = null) {
     body: item.body,
     bodyFormat: item.bodyFormat,
     externalUrl: item.externalUrl,
-    cc98Url: item.cc98Url,
+    ...normalizeContentSource(item),
     gpa: item.gpa,
     gradePercentage: item.gradePercentage,
     year: item.year,
@@ -113,6 +116,14 @@ export function toPublicContentItem(item, likeState = {}, owner = null) {
 }
 
 export function createContentItem(store, input, userId) {
+  const requestId = clean(input.requestId);
+  if (requestId && !/^[a-zA-Z0-9_-]{16,100}$/.test(requestId)) {
+    return { ok: false, status: 400, message: '草稿请求标识无效。' };
+  }
+  if (requestId) {
+    const existing = store.findByCreateRequest(userId, requestId);
+    if (existing) return { ok: true, status: 200, item: existing, replayed: true };
+  }
   const validation = validateContentInput(input);
   if (!validation.ok) {
     return validation;
@@ -120,7 +131,7 @@ export function createContentItem(store, input, userId) {
   return {
     ok: true,
     status: 201,
-    item: store.createItem({ ...validation.value, status: 'draft', createdBy: userId, updatedBy: userId }),
+    item: store.createItem({ ...validation.value, requestId, status: 'draft', createdBy: userId, updatedBy: userId }),
   };
 }
 
@@ -128,6 +139,9 @@ export function updateContentItem(store, id, changes, userId) {
   const current = store.findById(id);
   if (!current) {
     return { ok: false, status: 404, message: '内容不存在。' };
+  }
+  if (changes.expectedUpdatedAt !== undefined && changes.expectedUpdatedAt !== current.updatedAt) {
+    return { ok: false, status: 409, message: '这条内容已被更新，请重新打开后核对修改。' };
   }
   const validation = validateContentInput(changes, { partial: true, current });
   if (!validation.ok) {

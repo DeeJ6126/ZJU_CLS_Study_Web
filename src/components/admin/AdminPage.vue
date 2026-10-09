@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 
 import {
   fetchCurrentUser,
@@ -22,6 +22,8 @@ import { publicAssetPath } from '../../utils/publicPath.js';
 import { imageFileToAvatarDataUrl } from '../../services/studentHomepageApiClient.js';
 import AdminCourseCombobox from './AdminCourseCombobox.vue';
 import NoticeAdminPanel from './NoticeAdminPanel.vue';
+import { readAdminDrafts, saveAdminDraft, removeAdminDraft, hasAdminDraftContent } from '../../services/adminDraftService.js';
+import { normalizeContentSource } from '../../services/contentSourceService.js';
 
 const props = defineProps({
   initialUser: { type: Object, default: null },
@@ -89,6 +91,15 @@ const dirty = ref(false);
 const pendingFile = ref(null);
 const fileInput = ref(null);
 const form = reactive(emptyForm());
+const editorItemSnapshot = ref(null);
+const activeDraftKey = ref('');
+const activeDraftRevision = ref('');
+const editorRequestId = ref('');
+const editorBaseUpdatedAt = ref('');
+const rememberedFileName = ref('');
+const localDrafts = ref([]);
+const draftStatus = ref('');
+let draftTimer, hydratingForm = false, disposed = false;
 const homepages = ref([]);
 const homepageApplications = ref([]);
 const homepageEditorOpen = ref(false);
@@ -115,7 +126,10 @@ const consultationForm = reactive({ startsAt: '', endsAt: '' });
 
 const isAdmin = computed(() => isAdministrator(currentUser.value));
 const majorCourses = computed(() => filterAdminCoursesToOverview(courses.value, selectedMajorId.value));
-const editingItem = computed(() => items.value.find((item) => item.id === editingId.value) ?? null);
+const editingItem = computed(() => editorItemSnapshot.value?.id === editingId.value
+  ? editorItemSnapshot.value : items.value.find((item) => item.id === editingId.value) ?? null);
+const draftScope = computed(() => isAdmin.value && (currentUser.value?.publicId || currentUser.value?.id)
+  ? `${props.isDemo ? 'demo' : 'real'}:${currentUser.value.publicId || currentUser.value.id}` : '');
 const selectedTypeLabel = computed(() => contentTypes.find((type) => type.id === selectedType.value)?.label ?? '内容');
 const pendingCourseCodes = computed(() => pendingCourseOrder(submissions.value, selectedType.value));
 const allPendingCourseCodes = computed(() => [...new Set(submissions.value.filter((item) => item.status === 'pending' && !item.withdrawnAt).map((item) => item.courseCode))]);
@@ -251,8 +265,11 @@ function emptyForm() {
     summary: '',
     author: '',
     body: '',
+    bodyFormat: 'markdown',
     externalUrl: '',
     cc98Url: '',
+    sourcePlatform: 'cc98',
+    sourceUrl: '',
     gpa: '',
     year: '',
     teacher: '',
@@ -260,15 +277,162 @@ function emptyForm() {
 }
 
 function setForm(input = {}) {
-  Object.assign(form, emptyForm(), input, {
+  hydratingForm = true;
+  clearTimeout(draftTimer);
+  const next = { ...emptyForm(), ...input, ...normalizeContentSource(input),
     courseCode: input.courseCode ?? selectedCourseCode.value,
     type: input.type ?? selectedType.value,
-  });
+  };
+  for (const key of Object.keys(emptyForm())) form[key] = next[key];
+  editorItemSnapshot.value = input.id ? { ...input } : null;
+  editorBaseUpdatedAt.value = input.updatedAt ?? '';
   pendingFile.value = null;
+  rememberedFileName.value = '';
   if (fileInput.value) {
     fileInput.value.value = '';
   }
   dirty.value = false;
+  hydratingForm = false;
+}
+
+function draftSnapshot() {
+  return {
+    key: activeDraftKey.value, majorId: selectedMajorId.value, editingId: editingId.value,
+    requestId: editorRequestId.value, baseUpdatedAt: editorBaseUpdatedAt.value,
+    form: { ...form }, pendingFileName: pendingFile.value?.name || rememberedFileName.value,
+    savedFile: editingItem.value?.file ?? null,
+  };
+}
+
+function refreshLocalDrafts() {
+  const result = readAdminDrafts(draftScope.value);
+  localDrafts.value = result.drafts;
+  if (!result.ok) draftStatus.value = result.message;
+}
+
+function persistDraft() {
+  clearTimeout(draftTimer);
+  if (!draftScope.value || !editorOpen.value || !activeDraftKey.value || !dirty.value || hydratingForm) return true;
+  const snapshot = draftSnapshot();
+  if (!hasAdminDraftContent(snapshot.form, snapshot.pendingFileName)) {
+    const removed = removeAdminDraft(draftScope.value, snapshot.key, undefined, activeDraftRevision.value);
+    if (removed.ok && !removed.skipped) {
+      activeDraftRevision.value = '';
+      localDrafts.value = removed.drafts;
+      draftStatus.value = '';
+      return true;
+    }
+    draftStatus.value = removed.message || '此草稿已在另一窗口修改，请重新恢复草稿。';
+    return false;
+  }
+  const result = saveAdminDraft(draftScope.value, snapshot, undefined, activeDraftRevision.value);
+  if (result.ok) {
+    activeDraftRevision.value = result.draft.revision;
+    localDrafts.value = result.drafts;
+    draftStatus.value = '草稿已自动保存';
+  } else draftStatus.value = result.message;
+  return result.ok;
+}
+
+function beginDraftContext() {
+  activeDraftKey.value = `editor:${crypto.randomUUID()}`;
+  activeDraftRevision.value = '';
+  editorRequestId.value = crypto.randomUUID();
+  draftStatus.value = '';
+}
+
+function preserveEditorBeforeLeaving() {
+  if (actionBusy.value) return false;
+  if (!editorOpen.value || !dirty.value || persistDraft()) return true;
+  return window.confirm('草稿尚未保存，确定离开编辑器吗？');
+}
+
+async function restoreLocalDraft(draft) {
+  if (actionBusy.value || !preserveEditorBeforeLeaving()) return;
+  const latest = readAdminDrafts(draftScope.value);
+  if (!latest.ok) { notice.value = latest.message; return; }
+  localDrafts.value = latest.drafts;
+  draft = latest.drafts.find((entry) => entry.key === draft.key);
+  if (!draft) { notice.value = '这份本机草稿已被移除。'; return; }
+  if (!majorOptions.some((major) => major.id === draft.majorId)) {
+    notice.value = '草稿的专业信息无效。'; return;
+  }
+  const scope = draftScope.value;
+  actionBusy.value = true;
+  try {
+    let item = null;
+    if (draft.editingId) {
+      const result = await activeApiClient.value.fetchContent({ courseCode: draft.form.courseCode, type: draft.form.type, status: '' });
+      if (disposed || draftScope.value !== scope) return;
+      if (!result.ok) { notice.value = result.message; return; }
+      item = result.items?.find((entry) => entry.id === draft.editingId);
+      if (!item) { notice.value = '原内容已不存在，请核对后再恢复。'; return; }
+      if (draft.baseUpdatedAt && item.updatedAt !== draft.baseUpdatedAt
+        && !window.confirm('服务器内容已更新。确定载入本机草稿继续编辑吗？')) return;
+    }
+    selectedMajorId.value = draft.majorId;
+    selectedCourseCode.value = draft.form.courseCode;
+    selectedType.value = draft.form.type;
+    selectedStatus.value = '';
+    setForm(draft.form);
+    editingId.value = draft.editingId;
+    editorItemSnapshot.value = item;
+    editorBaseUpdatedAt.value = item?.updatedAt ?? '';
+    activeDraftKey.value = draft.key;
+    activeDraftRevision.value = draft.revision;
+    editorRequestId.value = draft.requestId || crypto.randomUUID();
+    rememberedFileName.value = draft.pendingFileName;
+    editorOpen.value = true;
+    submissionEditorOpen.value = false;
+    dirty.value = true;
+    draftStatus.value = '已恢复本机草稿';
+    notice.value = '';
+  } catch (error) {
+    if (!disposed && draftScope.value === scope) notice.value = error.message || '草稿恢复失败，请重试。';
+  } finally {
+    if (!disposed && draftScope.value === scope) actionBusy.value = false;
+  }
+}
+
+function discardLocalDraft(draft) {
+  if (actionBusy.value || !window.confirm(`删除本机草稿“${draft.form.title || '未命名'}”吗？`)) return;
+  const result = removeAdminDraft(draftScope.value, draft.key, undefined, draft.revision);
+  if (result.ok) localDrafts.value = result.drafts;
+  else notice.value = result.message;
+}
+
+watch(draftScope, () => {
+  clearTimeout(draftTimer);
+  editorOpen.value = false;
+  editingId.value = '';
+  activeDraftKey.value = '';
+  activeDraftRevision.value = '';
+  editorRequestId.value = '';
+  setForm();
+  actionBusy.value = false;
+  localDrafts.value = [];
+  draftStatus.value = '';
+  refreshLocalDrafts();
+}, { flush: 'sync' });
+watch(() => form.type, (type) => {
+  if (hydratingForm || type !== 'experience') return;
+  pendingFile.value = null;
+  rememberedFileName.value = '';
+  if (fileInput.value) fileInput.value.value = '';
+}, { flush: 'sync' });
+watch([form, pendingFile], () => {
+  if (hydratingForm || !editorOpen.value || selectedView.value !== 'content' || !draftScope.value) return;
+  dirty.value = true;
+  draftStatus.value = '正在自动保存...';
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(persistDraft, 300);
+}, { deep: true, flush: 'sync' });
+
+function onPageHide() { persistDraft(); }
+function onBeforeUnload(event) {
+  if (actionBusy.value || (editorOpen.value && dirty.value && !persistDraft())) {
+    event.preventDefault(); event.returnValue = '';
+  }
 }
 
 async function loadCourses() {
@@ -512,9 +676,10 @@ async function requestAdminEmailCode() {
 }
 
 function changeView(view, type = '') {
+  if (actionBusy.value) return;
   if (view === 'notices' && selectedView.value === 'notices') return;
   if (selectedView.value === 'notices' && !noticePanel.value?.canLeave()) return;
-  if (dirty.value && !window.confirm('当前修改尚未保存，确定放弃吗？')) return;
+  if (editorOpen.value ? !preserveEditorBeforeLeaving() : dirty.value && !window.confirm('当前修改尚未保存，确定放弃吗？')) return;
   if (view !== 'feedback') { ++feedbackSequence; feedbackBusy.value = false; }
   selectedView.value = view;
   editorOpen.value = false;
@@ -593,6 +758,7 @@ async function archiveManagedActivity(activity) {
 }
 
 async function logout() {
+  if (!preserveEditorBeforeLeaving()) return;
   if (selectedView.value === 'notices' && !noticePanel.value?.canLeave()) return;
   if (props.initialUser) {
     authNotice.value = '请从右上角身份菜单切换演示身份。';
@@ -617,6 +783,7 @@ function changeMajor() {
 }
 
 function changeFilters() {
+  if (actionBusy.value || !preserveEditorBeforeLeaving()) return;
   editorOpen.value = false;
   submissionEditorOpen.value = false;
   editingId.value = '';
@@ -628,29 +795,32 @@ function selectCourseForReview(code) {
   changeFilters();
 }
 
-function startNew() {
+function startNew(defaults = {}) {
+  if (actionBusy.value || !preserveEditorBeforeLeaving()) return;
   submissionEditorOpen.value = false;
   editingId.value = '';
-  setForm({ courseCode: selectedCourseCode.value, type: selectedType.value });
+  setForm({ courseCode: selectedCourseCode.value, type: selectedType.value, ...defaults });
+  beginDraftContext();
   editorOpen.value = true;
   notice.value = '';
 }
 
 function editItem(item) {
+  if (actionBusy.value || !preserveEditorBeforeLeaving()) return;
   submissionEditorOpen.value = false;
   editingId.value = item.id;
   setForm(item);
+  beginDraftContext();
   editorOpen.value = true;
   notice.value = '';
 }
 
 function closeEditor() {
-  if (dirty.value && !window.confirm('当前修改尚未保存，确定放弃吗？')) {
-    return;
-  }
+  if (!preserveEditorBeforeLeaving()) return;
   editorOpen.value = false;
   editingId.value = '';
   dirty.value = false;
+  clearTimeout(draftTimer);
 }
 
 function selectPdf(event) {
@@ -658,42 +828,116 @@ function selectPdf(event) {
   dirty.value = true;
 }
 
-async function saveDraft() {
+async function saveContent(mode = 'draft') {
+  if (actionBusy.value || !isAdmin.value) return;
   if (!form.courseCode) {
     notice.value = '请先从搜索结果中选择课程。';
     return;
   }
+  if (!form.title.trim() || (mode !== 'draft' && form.type === 'experience' && !form.body.trim())) {
+    notice.value = '请填写标题和心得正文。'; return;
+  }
+  if (rememberedFileName.value && !pendingFile.value) {
+    notice.value = `请重新选择 PDF：${rememberedFileName.value}`; return;
+  }
+  persistDraft();
+  const scope = draftScope.value;
+  const snapshot = draftSnapshot();
+  const file = pendingFile.value;
+  const input = { ...snapshot.form, cc98Url: snapshot.form.sourcePlatform === 'cc98' ? snapshot.form.sourceUrl : '' };
+  const stillCurrent = () => !disposed && draftScope.value === scope && activeDraftKey.value === snapshot.key;
   actionBusy.value = true;
   notice.value = editingId.value ? '正在保存修改...' : '正在保存草稿...';
-  let result = editingId.value
-    ? await activeApiClient.value.updateContent(editingId.value, { ...form })
-    : await activeApiClient.value.createContent({ ...form });
-
-  if (result.ok && pendingFile.value) {
-    notice.value = '正在上传 PDF...';
-    result = await activeApiClient.value.uploadPdf(result.item.id, pendingFile.value);
-  }
-
-  if (!result.ok) {
-    notice.value = result.message;
-    actionBusy.value = false;
-    return;
-  }
-
-  editingId.value = result.item.id;
-  pendingFile.value = null;
-  dirty.value = false;
-  notice.value = result.persistenceWarning || (result.item.status === 'draft' ? '草稿已保存。' : '修改已保存。');
-  await refreshItems();
-  editorOpen.value = false;
-  editingId.value = '';
-  actionBusy.value = false;
+  try {
+    let result = snapshot.editingId
+      ? await activeApiClient.value.updateContent(snapshot.editingId, { ...input, expectedUpdatedAt: snapshot.baseUpdatedAt })
+      : await activeApiClient.value.createContent({ ...input, requestId: snapshot.requestId });
+    if (!result.ok) throw new Error(result.message || '保存失败，请重试。');
+    if (result.replayed && (result.item.status !== 'draft' || result.item.updatedAt !== result.item.createdAt)
+      && !window.confirm('此前录入已保存，且服务器内容已有后续更新。确定用当前输入继续更新吗？')) {
+      throw new Error('已保留当前输入，请核对服务器内容后再继续。');
+    }
+    // Retain the server identity before upload/publish can fail.
+    snapshot.editingId = result.item.id;
+    snapshot.baseUpdatedAt = result.item.updatedAt ?? '';
+    snapshot.savedFile = result.item.file ?? null;
+    let revision = activeDraftRevision.value;
+    const saveProgress = () => {
+      const cached = saveAdminDraft(scope, snapshot, undefined, revision);
+      if (cached.ok) {
+        revision = cached.draft.revision;
+        if (stillCurrent()) { activeDraftRevision.value = revision; localDrafts.value = cached.drafts; }
+      } else if (stillCurrent()) draftStatus.value = cached.message;
+    };
+    saveProgress();
+    if (stillCurrent()) {
+      editingId.value = result.item.id;
+      editorItemSnapshot.value = result.item;
+      editorBaseUpdatedAt.value = snapshot.baseUpdatedAt;
+    }
+    if (result.replayed) {
+      result = await activeApiClient.value.updateContent(snapshot.editingId, { ...input, expectedUpdatedAt: snapshot.baseUpdatedAt });
+      if (!result.ok) throw new Error(result.message || '保存失败，请重试。');
+      snapshot.baseUpdatedAt = result.item.updatedAt ?? '';
+      saveProgress();
+      if (stillCurrent()) { editorItemSnapshot.value = result.item; editorBaseUpdatedAt.value = snapshot.baseUpdatedAt; }
+    }
+    if (file) {
+      if (stillCurrent()) notice.value = '正在上传 PDF...';
+      result = await activeApiClient.value.uploadPdf(snapshot.editingId, file);
+      if (!result.ok) throw new Error(result.message || 'PDF 上传失败，请重试。');
+      snapshot.pendingFileName = '';
+      snapshot.savedFile = result.item.file ?? null;
+      snapshot.baseUpdatedAt = result.item.updatedAt ?? snapshot.baseUpdatedAt;
+      if (stillCurrent()) {
+        hydratingForm = true; pendingFile.value = null; hydratingForm = false;
+        rememberedFileName.value = '';
+        editorItemSnapshot.value = result.item;
+        editorBaseUpdatedAt.value = snapshot.baseUpdatedAt;
+      }
+      saveProgress();
+    }
+    if (mode !== 'draft') {
+      if (stillCurrent()) notice.value = '正在发布...';
+      result = await activeApiClient.value.publishContent(snapshot.editingId);
+      if (!result.ok) throw new Error(result.message || '发布失败，请重试。');
+    }
+    clearTimeout(draftTimer);
+    const removed = removeAdminDraft(scope, snapshot.key, undefined, revision);
+    if (!stillCurrent()) return;
+    if (removed.ok) localDrafts.value = removed.drafts;
+    draftStatus.value = removed.ok ? '' : removed.message;
+    dirty.value = false;
+    activeDraftKey.value = '';
+    if (mode === 'publish-next') {
+      selectedCourseCode.value = snapshot.form.courseCode;
+      selectedType.value = snapshot.form.type;
+      setForm({ courseCode: snapshot.form.courseCode, type: snapshot.form.type,
+        sourcePlatform: snapshot.form.sourcePlatform, bodyFormat: snapshot.form.bodyFormat });
+      editingId.value = '';
+      beginDraftContext();
+      editorOpen.value = true;
+      notice.value = result.persistenceWarning || '已发布，可以录入下一条。';
+    } else {
+      editorOpen.value = false;
+      editingId.value = '';
+      notice.value = result.persistenceWarning || (mode === 'draft' ? '内容已保存。' : '内容已发布。');
+    }
+    // A refresh error must not undo a completed publication or reset the next entry.
+    const refreshed = await activeApiClient.value.fetchContent({ courseCode: snapshot.form.courseCode, type: snapshot.form.type, status: '' });
+    if (refreshed.ok && !disposed && draftScope.value === scope) items.value = refreshed.items ?? [];
+  } catch (error) {
+    if (stillCurrent()) { notice.value = error.message || '处理失败，请重试。'; dirty.value = true; persistDraft(); }
+  } finally { if (!disposed && draftScope.value === scope) actionBusy.value = false; }
 }
 
+async function saveDraft() { return saveContent('draft'); }
+
 function editSubmission(item) {
+  if (actionBusy.value || !preserveEditorBeforeLeaving()) return;
   editorOpen.value = false;
   editingSubmissionId.value = item.id;
-  Object.assign(submissionForm, emptyForm(), item);
+  Object.assign(submissionForm, emptyForm(), item, normalizeContentSource(item));
   rejectionNote.value = item.reviewNote ?? '';
   submissionEditorOpen.value = true;
   notice.value = '';
@@ -744,53 +988,43 @@ function submissionFileUrl(item) {
 }
 
 async function publishItem() {
-  if (!editingId.value || dirty.value) {
-    notice.value = '请先保存当前修改，再发布内容。';
-    return;
-  }
-  actionBusy.value = true;
-  const result = await activeApiClient.value.publishContent(editingId.value);
-  notice.value = mutationNotice(result, '内容已发布，课程详情页会立即显示。');
-  await refreshItems();
-  actionBusy.value = false;
+  return saveContent('publish');
 }
 
 async function archiveItem(item = editingItem.value) {
-  if (!item || !window.confirm(`确定下架“${item.title}”吗？`)) {
+  if (actionBusy.value || !item || !preserveEditorBeforeLeaving() || !window.confirm(`确定下架“${item.title}”吗？`)) {
     return;
   }
   actionBusy.value = true;
   const result = await activeApiClient.value.archiveContent(item.id);
   notice.value = mutationNotice(result, '内容已下架。');
-  await refreshItems();
-  if (editorOpen.value && editingId.value === item.id) {
-    const refreshed = items.value.find((entry) => entry.id === item.id);
-    if (refreshed) {
-      setForm(refreshed);
-      editingId.value = refreshed.id;
-    }
+  if (result.ok && editorOpen.value && editingId.value === item.id) {
+    editorItemSnapshot.value = result.item;
+    editorBaseUpdatedAt.value = result.item.updatedAt ?? '';
+    persistDraft();
   }
+  await refreshItems();
   actionBusy.value = false;
 }
 
 async function removePdf() {
-  if (!editingId.value || !window.confirm('确定移除当前 PDF 吗？')) {
+  if (actionBusy.value || !editingId.value || !window.confirm('确定移除当前 PDF 吗？')) {
     return;
   }
   actionBusy.value = true;
   const result = await activeApiClient.value.removePdf(editingId.value);
   notice.value = mutationNotice(result, 'PDF 已移除。');
-  await refreshItems();
-  const refreshed = items.value.find((item) => item.id === editingId.value);
-  if (refreshed) {
-    setForm(refreshed);
-    editingId.value = refreshed.id;
+  if (result.ok) {
+    editorItemSnapshot.value = result.item;
+    editorBaseUpdatedAt.value = result.item.updatedAt ?? '';
+    persistDraft();
   }
+  await refreshItems();
   actionBusy.value = false;
 }
 
 function formattedTime(value) {
-  if (!value) {
+  if (!value || Number.isNaN(new Date(value).getTime())) {
     return '';
   }
   return new Intl.DateTimeFormat('zh-CN', {
@@ -798,9 +1032,9 @@ function formattedTime(value) {
   }).format(new Date(value));
 }
 
-defineExpose({ canLeave: () => selectedView.value !== 'notices' || (noticePanel.value?.canLeave() ?? true) });
-onMounted(() => { initialize(); badgeTimer = setInterval(refreshPendingBadges, 30000); document.addEventListener('visibilitychange', refreshPendingBadges); });
-onBeforeUnmount(() => { clearInterval(badgeTimer); ++badgeSequence; ++feedbackSequence; ++feedbackCountSequence; document.removeEventListener('visibilitychange', refreshPendingBadges); });
+defineExpose({ canLeave: () => actionBusy.value ? false : selectedView.value === 'notices' ? (noticePanel.value?.canLeave() ?? true) : preserveEditorBeforeLeaving() });
+onMounted(() => { initialize(); badgeTimer = setInterval(refreshPendingBadges, 30000); document.addEventListener('visibilitychange', refreshPendingBadges); window.addEventListener('pagehide', onPageHide); window.addEventListener('beforeunload', onBeforeUnload); });
+onBeforeUnmount(() => { persistDraft(); disposed = true; clearTimeout(draftTimer); clearInterval(badgeTimer); ++badgeSequence; ++feedbackSequence; ++feedbackCountSequence; document.removeEventListener('visibilitychange', refreshPendingBadges); window.removeEventListener('pagehide', onPageHide); window.removeEventListener('beforeunload', onBeforeUnload); });
 </script>
 
 <template>
@@ -885,16 +1119,18 @@ onBeforeUnmount(() => { clearInterval(badgeTimer); ++badgeSequence; ++feedbackSe
 
         <p v-if="notice" class="admin-notice" role="status">{{ notice }}</p>
 
-        <section v-if="selectedView === 'content' && editorOpen" class="admin-editor" aria-label="内容编辑器">
+        <section v-if="selectedView === 'content' && editorOpen" class="admin-editor admin-course-editor" aria-label="内容编辑器">
           <header class="admin-editor__head">
             <div>
               <span>{{ editingId ? '编辑内容' : '新建草稿' }}</span>
               <strong>{{ form.title || selectedTypeLabel }}</strong>
+              <small>操作管理员：{{ currentUser.nickname }}</small>
             </div>
-            <button type="button" @click="closeEditor">关闭</button>
+            <button type="button" :disabled="actionBusy" @click="closeEditor">关闭</button>
           </header>
 
-          <form class="admin-editor__form" @input="dirty = true" @submit.prevent="saveDraft">
+          <form class="admin-editor__form" @submit.prevent="saveContent($event.submitter?.value || 'draft')">
+            <fieldset class="admin-entry-fields" :disabled="actionBusy">
             <label>
               <span>专业</span>
               <select v-model="selectedMajorId" :disabled="Boolean(editingId)" @change="changeMajor">
@@ -926,13 +1162,17 @@ onBeforeUnmount(() => { clearInterval(badgeTimer); ++badgeSequence; ++feedbackSe
               <span>摘要</span>
               <textarea v-model.trim="form.summary" rows="2" maxlength="200"></textarea>
             </label>
-            <label v-if="form.type !== 'paper'">
+            <label>
               <span>作者或整理者</span>
               <input v-model.trim="form.author" maxlength="40">
             </label>
-            <label v-if="form.type === 'experience'">
-              <span>CC98 链接（选填）</span>
-              <input v-model.trim="form.cc98Url" type="url" placeholder="https://www.cc98.org/">
+            <label>
+              <span>来源平台</span>
+              <select v-model="form.sourcePlatform"><option value="cc98">CC98</option><option value="duoduo">朵朵</option><option value="other">其他</option></select>
+            </label>
+            <label>
+              <span>原帖链接（选填）</span>
+              <input v-model.trim="form.sourceUrl" type="url" placeholder="https://">
             </label>
             <label v-if="form.type === 'experience'">
               <span>绩点（选填）</span>
@@ -952,29 +1192,32 @@ onBeforeUnmount(() => { clearInterval(badgeTimer); ++badgeSequence; ++feedbackSe
             </label>
             <label class="admin-editor__wide">
               <span>正文</span>
-              <textarea v-model="form.body" rows="10" maxlength="100000"></textarea>
+              <select v-model="form.bodyFormat" aria-label="内容格式"><option value="markdown">Markdown</option><option value="ubb">UBB</option></select>
+              <textarea v-model="form.body" aria-label="正文" rows="10" maxlength="100000"></textarea>
             </label>
             <label v-if="['material', 'paper'].includes(form.type)" class="admin-editor__wide admin-file-field">
               <span>PDF 文件</span>
               <input ref="fileInput" type="file" accept="application/pdf,.pdf" @change="selectPdf">
               <small v-if="pendingFile">待上传：{{ pendingFile.name }}</small>
+              <small v-else-if="rememberedFileName">请重新选择：{{ rememberedFileName }}</small>
               <span v-else-if="editingItem?.file" class="admin-file-field__current">
                 <a :href="editingItem.file.url" target="_blank" rel="noreferrer">{{ editingItem.file.fileName }}</a>
                 <button type="button" :disabled="actionBusy" @click="removePdf">移除 PDF</button>
               </span>
             </label>
 
+            </fieldset>
             <footer class="admin-editor__actions">
-              <button type="button" @click="closeEditor">放弃修改</button>
-              <button class="admin-primary-action" type="submit" :disabled="actionBusy">{{ editingId ? '保存修改' : '保存草稿' }}</button>
+              <span v-if="draftStatus" class="admin-draft-status" role="status">{{ draftStatus }}</span>
+              <button type="button" :disabled="actionBusy" @click="closeEditor">返回列表</button>
+              <button type="submit" value="draft" :disabled="actionBusy">{{ editingId ? '保存修改' : '保存草稿' }}</button>
               <button
-                v-if="editingId && editingItem?.status !== 'published'"
-                type="button"
-                :disabled="actionBusy || dirty"
-                @click="publishItem"
+                v-if="editingItem?.status !== 'published'"
+                class="admin-primary-action" type="submit" value="publish" :disabled="actionBusy"
               >
                 发布
               </button>
+              <button type="submit" value="publish-next" class="admin-primary-action" :disabled="actionBusy">发布并录入下一条</button>
               <button
                 v-if="editingId && editingItem?.status === 'published'"
                 class="admin-danger-action"
@@ -1004,7 +1247,8 @@ onBeforeUnmount(() => { clearInterval(badgeTimer); ++badgeSequence; ++feedbackSe
             </template>
             <label><span>老师姓名（选填）</span><TeacherNameInput v-model="submissionForm.teacher" :names="courseTeacherNames(submissionForm.courseCode)" :readonly="submissionForm.status !== 'pending'" /></label>
             <label><span>名称（选填）</span><input v-model.trim="submissionForm.author" maxlength="40" :readonly="submissionForm.status !== 'pending'"></label>
-            <label><span>CC98 链接（选填）</span><input v-model.trim="submissionForm.cc98Url" type="url" :readonly="submissionForm.status !== 'pending'"></label>
+            <label><span>来源平台</span><select v-model="submissionForm.sourcePlatform" :disabled="submissionForm.status !== 'pending'"><option value="cc98">CC98</option><option value="duoduo">朵朵</option><option value="other">其他</option></select></label>
+            <label><span>原帖链接（选填）</span><input v-model.trim="submissionForm.sourceUrl" type="url" :readonly="submissionForm.status !== 'pending'"></label>
             <label v-if="submissionForm.type === 'experience'"><span>成绩百分制（选填）</span><input v-model.trim="submissionForm.gradePercentage" type="number" min="0" max="100" :readonly="submissionForm.status !== 'pending'"></label>
             <label v-if="submissionForm.type === 'material'"><span>资料链接（选填）</span><input v-model.trim="submissionForm.externalUrl" type="url" :readonly="submissionForm.status !== 'pending'"></label>
             <template v-if="submissionForm.type !== 'paper'">
@@ -1025,6 +1269,14 @@ onBeforeUnmount(() => { clearInterval(badgeTimer); ++badgeSequence; ++feedbackSe
         </section>
 
         <section v-else-if="selectedView === 'content'" class="admin-list" aria-label="课程内容列表">
+          <section v-if="localDrafts.length" class="admin-local-drafts" aria-label="本机未完成草稿">
+            <h2>未完成草稿 <span>{{ localDrafts.length }}</span></h2>
+            <div v-for="draft in localDrafts" :key="draft.key" class="admin-local-draft-row">
+              <div><strong>{{ draft.form.title || '未命名内容' }}</strong><small>{{ draft.form.courseCode }} · {{ contentTypes.find((type) => type.id === draft.form.type)?.label }} · {{ formattedTime(draft.updatedAt) }}</small></div>
+              <button type="button" :disabled="actionBusy" @click="restoreLocalDraft(draft)">继续录入</button>
+              <button type="button" :disabled="actionBusy" @click="discardLocalDraft(draft)">删除草稿</button>
+            </div>
+          </section>
           <div class="admin-list__filters admin-list__filters--course">
             <label>
               <span>专业</span>

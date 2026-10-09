@@ -61,3 +61,19 @@ test('course content client falls back to static markdown only when the API is u
   assert.equal(result.experiences[0].title, '静态心得');
   assert.equal(calls.length, 2);
 });
+
+test('course content client keeps legacy CC98 sources and generic forum links separate', async () => {
+  const result = await loadCourseContent(course, {
+    fetchImpl: async () => ({ ok: true, json: async () => ({ items: [
+      { id: 'legacy', type: 'experience', cc98Url: 'https://www.cc98.org/topic/1' },
+      { id: 'generic', type: 'experience', sourcePlatform: 'duoduo', sourceUrl: 'https://duoduo.example/topic/2' },
+      { id: 'unsafe', type: 'experience', sourcePlatform: 'other', sourceUrl: 'javascript:alert(1)' },
+    ] }) }),
+  });
+  assert.equal(result.experiences[0].sourcePlatform, 'cc98');
+  assert.equal(result.experiences[0].sourceUrl, 'https://www.cc98.org/topic/1');
+  assert.equal(result.experiences[1].sourcePlatform, 'duoduo');
+  assert.equal(result.experiences[1].cc98Url, '');
+  assert.equal(result.experiences[1].sourceUrl, 'https://duoduo.example/topic/2');
+  assert.equal(result.experiences[2].sourceUrl, '');
+});

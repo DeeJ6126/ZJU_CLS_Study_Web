@@ -5,6 +5,7 @@ import { createContentStore } from '../server/content/contentStore.js';
 import {
   approveSubmission,
   createSubmission,
+  createRevisionSubmission,
   rejectSubmission,
   updateSubmission,
 } from '../server/content/submissionService.js';
@@ -116,4 +117,27 @@ test('content likes toggle once per authenticated identity and are included in p
   assert.equal(store.getLikeState(item.id, 'visitor-b').liked, true);
   assert.equal(store.getLikeState(item.id, 'visitor-a').liked, false);
   store.close();
+});
+
+test('non-CC98 source metadata survives moderation and legacy student revision fields', () => {
+  const store = createTestStore();
+  const author = { id: 7, nickname: 'submitter', verifications: { email: true } };
+  const admin = { id: 9, nickname: 'admin' };
+  try {
+    const submitted = createSubmission(store, {
+      courseCode: 'BIO2110F', type: 'experience', title: 'Original', body: 'Notes',
+      sourcePlatform: 'other', sourceUrl: 'https://forum.example/topic/1',
+    }, author).submission;
+    const edited = updateSubmission(store, submitted.id, { title: 'Reviewed' }, admin).submission;
+    assert.equal(edited.sourcePlatform, 'other');
+    assert.equal(edited.sourceUrl, submitted.sourceUrl);
+    const item = approveSubmission(store, submitted.id, admin).item;
+    const revision = createRevisionSubmission(store, item.id, { title: 'Revised', cc98Url: '' }, author).submission;
+    assert.equal(revision.sourceUrl, submitted.sourceUrl);
+    const revised = approveSubmission(store, revision.id, admin).item;
+    assert.equal(revised.id, item.id);
+    assert.equal(revised.sourcePlatform, 'other');
+    assert.equal(revised.sourceUrl, submitted.sourceUrl);
+    assert.equal(revised.cc98Url, '');
+  } finally { store.close(); }
 });

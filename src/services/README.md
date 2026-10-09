@@ -29,6 +29,8 @@ Shared business logic and API clients.
 - `overviewCatalogService.js`: overview filtering, category grouping, semester grouping, and unique course counts.
 - `courseContentApiClient.js`: published course content with static Markdown fallback only when the API is unavailable.
 - `adminApiClient.js`: administrator content CRUD, status changes, and raw PDF upload requests.
+- `adminDraftService.js`: account-scoped local administrator drafts, field whitelisting and revision-checked recovery/removal. PDF bytes stay outside drafts; unfinished uploads require reselecting the file after reload.
+- `contentSourceService.js`: shared CC98/duoduo/other source-platform normalization, HTTP(S) original-link validation, and legacy `cc98Url` compatibility.
 - `submissionApiClient.js`: student-ID-authenticated submission creation, submission PDF upload, and like toggling.
 - `accountDataApiClient.js`: private course lists, XLSX import preview, favorites, and notification read state.
 - `commentApiClient.js`: identified comment/reply create, edit, delete, and public listing calls.

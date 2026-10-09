@@ -1,6 +1,7 @@
 import { validateContentInput } from './contentService.js';
 import { canLeaveSiteTrace } from '../authService.js';
 import { publicApiPath } from '../publicApiPath.js';
+import { normalizeContentSource } from '../../src/services/contentSourceService.js';
 
 const GRADE_TABLE = [
   { min: 95, max: 100, score: 5.0 },
@@ -61,7 +62,7 @@ function submissionInput(input, fallback = {}) {
     body: input.body ?? fallback.body,
     bodyFormat: input.bodyFormat ?? fallback.bodyFormat ?? 'markdown',
     externalUrl: input.externalUrl ?? fallback.externalUrl,
-    cc98Url: input.cc98Url ?? fallback.cc98Url,
+    ...normalizeContentSource(input, fallback),
     gpa,
     gradePercentage,
     year: input.year ?? fallback.year,
@@ -182,6 +183,8 @@ export function approveSubmission(store, id, actor) {
     bodyFormat: submission.bodyFormat,
     externalUrl: submission.externalUrl,
     cc98Url: submission.cc98Url,
+    sourcePlatform: submission.sourcePlatform,
+    sourceUrl: submission.sourceUrl,
     gpa: submission.gpa,
     gradePercentage: submission.gradePercentage,
     year: submission.year,

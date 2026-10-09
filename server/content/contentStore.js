@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
+import { normalizeContentSource } from '../../src/services/contentSourceService.js';
 
 function mapItem(row) {
   if (!row) {
@@ -20,6 +21,9 @@ function mapItem(row) {
     bodyFormat: row.bodyFormat ?? 'markdown',
     externalUrl: row.externalUrl,
     cc98Url: row.cc98Url,
+    sourcePlatform: row.sourcePlatform || 'cc98',
+    sourceUrl: (!row.sourcePlatform || row.sourcePlatform === 'cc98')
+      ? row.cc98Url || row.sourceUrl || '' : row.sourceUrl || '',
     gpa: row.gpa,
     gradePercentage: row.gradePercentage ?? '',
     year: row.year,
@@ -90,6 +94,8 @@ const selectColumns = `
   body_format as bodyFormat,
   external_url as externalUrl,
   cc98_url as cc98Url,
+  source_platform as sourcePlatform,
+  source_url as sourceUrl,
   gpa,
   grade_percentage as gradePercentage,
   academic_year as year,
@@ -303,6 +309,13 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
       if (!columns.some((column) => column.name === 'cc98_url')) {
         db.exec("alter table content_items add column cc98_url text not null default ''");
       }
+      for (const name of ['source_platform', 'source_url', 'create_request_id']) {
+        if (!columns.some((column) => column.name === name)) {
+          db.exec(`alter table content_items add column ${name} text not null default ''`);
+        }
+      }
+      db.exec(`create unique index if not exists content_create_request_idx
+        on content_items(created_by, create_request_id) where create_request_id <> ''`);
       if (!columns.some((column) => column.name === 'gpa')) {
         db.exec("alter table content_items add column gpa text not null default ''");
       }
@@ -323,6 +336,11 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
           db.exec("alter table activity_items add column external_url text not null default ''");
         }
       const submissionColumns = db.prepare('pragma table_info(content_submissions)').all();
+      for (const name of ['source_platform', 'source_url']) {
+        if (!submissionColumns.some((column) => column.name === name)) {
+          db.exec(`alter table content_submissions add column ${name} text not null default ''`);
+        }
+      }
       if (!submissionColumns.some((column) => column.name === 'submission_kind')) {
         db.exec("alter table content_submissions add column submission_kind text not null default 'create'");
       }
@@ -358,20 +376,23 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
     createItem(input) {
       const id = input.id ?? randomUUID();
       const now = input.createdAt ?? new Date().toISOString();
+      const source = normalizeContentSource(input);
       db.prepare(`
         insert into content_items (
           id, route_id, course_code, type, title, summary, author, body, body_format, external_url, cc98_url, gpa,
           grade_percentage, academic_year, teacher, status, source_path, owner_id, created_by, updated_by,
-          created_at, updated_at, file_name, stored_name, mime_type, file_size, file_url
-        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          created_at, updated_at, file_name, stored_name, mime_type, file_size, file_url,
+          source_platform, source_url, create_request_id
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         id, input.routeId ?? id, input.courseCode, input.type, input.title, input.summary ?? '', input.author ?? '',
-        input.body ?? '', input.bodyFormat ?? 'markdown', input.externalUrl ?? '', input.cc98Url ?? '',
+        input.body ?? '', input.bodyFormat ?? 'markdown', input.externalUrl ?? '', source.cc98Url,
         input.gpa ?? '', input.gradePercentage ?? '', input.year ?? '', input.teacher ?? '',
         input.status ?? 'draft', input.sourcePath ?? null, input.ownerId ?? null, input.createdBy ?? null,
         input.updatedBy ?? input.createdBy ?? null, now, input.updatedAt ?? now,
         input.file?.fileName ?? '', input.file?.storedName ?? '', input.file?.mimeType ?? '',
         input.file?.size ?? 0, input.file?.url ?? '',
+        source.sourcePlatform, source.sourceUrl, input.requestId ?? '',
       );
       return this.findById(id);
       return this.findById(id);
@@ -379,6 +400,11 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
 
     findById(id) {
       return mapItem(db.prepare(`select ${selectColumns} from content_items where id = ?`).get(id));
+    },
+
+    findByCreateRequest(userId, requestId) {
+      return mapItem(db.prepare(`select ${selectColumns} from content_items
+        where created_by = ? and create_request_id = ?`).get(userId, requestId));
     },
 
     findBySourcePath(sourcePath) {
@@ -410,15 +436,17 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
       if (!current) {
         return null;
       }
-      const next = { ...current, ...changes, updatedAt: new Date().toISOString() };
+      const next = { ...current, ...changes, ...normalizeContentSource(changes, current), updatedAt: new Date().toISOString() };
       db.prepare(`
         update content_items set
           title = ?, summary = ?, author = ?, body = ?, body_format = ?, external_url = ?, cc98_url = ?, gpa = ?,
-          grade_percentage = ?, academic_year = ?, teacher = ?, updated_by = ?, updated_at = ?
+          grade_percentage = ?, academic_year = ?, teacher = ?, updated_by = ?, updated_at = ?,
+          source_platform = ?, source_url = ?
         where id = ?
       `).run(
         next.title, next.summary, next.author, next.body, next.bodyFormat, next.externalUrl, next.cc98Url, next.gpa,
-        next.gradePercentage, next.year, next.teacher, next.updatedBy ?? null, next.updatedAt, id,
+        next.gradePercentage, next.year, next.teacher, next.updatedBy ?? null, next.updatedAt,
+        next.sourcePlatform, next.sourceUrl, id,
       );
       return this.findById(id);
     },
@@ -707,20 +735,22 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
     createSubmission(input) {
       const id = input.id ?? randomUUID();
       const now = input.createdAt ?? new Date().toISOString();
+      const source = normalizeContentSource(input);
       db.prepare(`
         insert into content_submissions (
           id, course_code, type, title, summary, author, body, body_format, external_url, cc98_url, gpa,
           grade_percentage, academic_year, teacher, image_name, status, submitter_id, submitter_name,
           submission_kind, target_content_id, base_target_updated_at, created_at, updated_at,
-          file_name, stored_name, mime_type, file_size
-        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          file_name, stored_name, mime_type, file_size, source_platform, source_url
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         id, input.courseCode, input.type, input.title, input.summary ?? '', input.author ?? '',
-        input.body ?? '', input.bodyFormat ?? 'markdown', input.externalUrl ?? '', input.cc98Url ?? '',
+        input.body ?? '', input.bodyFormat ?? 'markdown', input.externalUrl ?? '', source.cc98Url,
         input.gpa ?? '', input.gradePercentage ?? '', input.year ?? '',
         input.teacher ?? '', input.imageName ?? '', input.submitterId, input.submitterName ?? '',
         input.submissionKind ?? 'create', input.targetContentId ?? '', input.baseTargetUpdatedAt ?? '', now, now,
         input.file?.fileName ?? '', input.file?.storedName ?? '', input.file?.mimeType ?? '', input.file?.size ?? 0,
+        source.sourcePlatform, source.sourceUrl,
       );
       return this.findSubmissionById(id);
     },
@@ -729,6 +759,7 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
       const row = db.prepare(`
         select id, course_code as courseCode, type, title, summary, author, body,
           body_format as bodyFormat, external_url as externalUrl, cc98_url as cc98Url, gpa,
+          source_platform as sourcePlatform, source_url as sourceUrl,
           grade_percentage as gradePercentage, academic_year as year,
           teacher, image_name as imageName, status, submitter_id as submitterId,
           submitter_name as submitterName, reviewed_by as reviewedBy,
@@ -744,6 +775,9 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
       if (!row) return null;
       return {
         ...row,
+        sourcePlatform: row.sourcePlatform || 'cc98',
+        sourceUrl: (!row.sourcePlatform || row.sourcePlatform === 'cc98')
+          ? row.cc98Url || row.sourceUrl || '' : row.sourceUrl || '',
         status: row.withdrawnAt && row.status === 'pending' ? 'withdrawn' : row.status,
         file: row.storedName ? {
           fileName: row.fileName, storedName: row.storedName, mimeType: row.mimeType, size: row.fileSize,
@@ -754,14 +788,16 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
     updateSubmission(id, changes) {
       const current = this.findSubmissionById(id);
       if (!current) return null;
-      const next = { ...current, ...changes };
+      const next = { ...current, ...changes, ...normalizeContentSource(changes, current) };
       db.prepare(`
         update content_submissions set title = ?, summary = ?, author = ?, body = ?, body_format = ?, external_url = ?,
-          cc98_url = ?, gpa = ?, grade_percentage = ?, academic_year = ?, teacher = ?, image_name = ?, updated_at = ?
+          cc98_url = ?, gpa = ?, grade_percentage = ?, academic_year = ?, teacher = ?, image_name = ?, updated_at = ?,
+          source_platform = ?, source_url = ?
         where id = ?
       `).run(
         next.title, next.summary, next.author, next.body, next.bodyFormat, next.externalUrl, next.cc98Url, next.gpa,
-        next.gradePercentage, next.year, next.teacher, next.imageName, new Date().toISOString(), id,
+        next.gradePercentage, next.year, next.teacher, next.imageName, new Date().toISOString(),
+        next.sourcePlatform, next.sourceUrl, id,
       );
       return this.findSubmissionById(id);
     },

@@ -6,7 +6,8 @@ import FavoriteButton from './FavoriteButton.vue';
 import { buildCourseRoute, courseDetailTabs } from '../data/courses/resourcePaths.js';
 import { getProfileHref } from '../services/demoNavigationService.js';
 import { formatGrade } from '../utils/gradeConversion.js';
-import { thumbsUpPaths } from '../utils/vendor/lucidePaths.js';
+import { linkPaths, thumbsUpPaths } from '../utils/vendor/lucidePaths.js';
+import { validateContentSource } from '../services/contentSourceService.js';
 import { renderCourseMarkdown } from '../utils/renderCourseMarkdown.js';
 import { isUbbFormat, ubbToHtml } from '../utils/ubbParser.js';
 
@@ -92,6 +93,8 @@ const activeCollection = computed(() => (
   Array.isArray(props.course[activeTab.value.id]) ? props.course[activeTab.value.id] : []
 ));
 const activeItem = computed(() => activeCollection.value.find((item) => item.id === props.activeItemId) ?? null);
+const activeItemSource = computed(() => validateContentSource(activeItem.value ?? {}).value ?? {});
+const sourceLinkTitle = computed(() => ({ cc98: '查看作者的 CC98 帖子', duoduo: '查看作者的朵朵帖子', other: '查看原帖' }[activeItemSource.value.sourcePlatform] ?? '查看原帖'));
 const favoriteCountLabel = computed(() => {
   const count = Number(props.favoriteCount) || 0;
   return `${count} 人收藏`;
@@ -242,14 +245,16 @@ function emitContribution(payload) {
               <a v-if="activeItem.owner" class="article-author-link" :href="getProfileHref(activeItem.owner.publicId)">{{ activeItem.owner.nickname }}</a>
               <strong v-else>{{ activeItem.author }}</strong>
               <a
-                v-if="activeItem.cc98Url"
+                v-if="activeItemSource.sourceUrl"
                 class="article-cc98-badge"
-                :href="activeItem.cc98Url"
+                :href="activeItemSource.sourceUrl"
                 target="_blank"
                 rel="noopener noreferrer"
-                title="查看作者的 CC98 帖子"
+                :title="sourceLinkTitle"
+                :aria-label="sourceLinkTitle"
               >
-                <img class="cc98-icon" :src="cc98IconUrl" alt="CC98" />
+                <img v-if="activeItemSource.sourcePlatform === 'cc98'" class="cc98-icon" :src="cc98IconUrl" alt="CC98" />
+                <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path v-for="path in linkPaths" :key="path" :d="path" /></svg>
               </a>
             </div>
           </div>
@@ -339,14 +344,16 @@ function emitContribution(payload) {
               <a v-if="activeItem.owner" class="article-author-link" :href="getProfileHref(activeItem.owner.publicId)">{{ activeItem.owner.nickname }}</a>
               <strong v-else>{{ activeItem.author }}</strong>
               <a
-                v-if="activeItem.cc98Url"
+                v-if="activeItemSource.sourceUrl"
                 class="article-cc98-badge"
-                :href="activeItem.cc98Url"
+                :href="activeItemSource.sourceUrl"
                 target="_blank"
                 rel="noopener noreferrer"
-                title="查看作者的 CC98 帖子"
+                :title="sourceLinkTitle"
+                :aria-label="sourceLinkTitle"
               >
-                <img class="cc98-icon" :src="cc98IconUrl" alt="CC98" />
+                <img v-if="activeItemSource.sourcePlatform === 'cc98'" class="cc98-icon" :src="cc98IconUrl" alt="CC98" />
+                <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path v-for="path in linkPaths" :key="path" :d="path" /></svg>
               </a>
             </div>
           </div>
@@ -438,6 +445,10 @@ function emitContribution(payload) {
             <div class="paper-actions">
               <a v-if="activeItem.file" :href="activeItem.file.url" target="_blank" rel="noreferrer">打开 PDF</a>
               <a v-if="activeItem.file" :href="activeItem.file.url" :download="activeItem.file.fileName">下载 PDF</a>
+              <a v-if="activeItemSource.sourceUrl" class="article-cc98-badge" :href="activeItemSource.sourceUrl" target="_blank" rel="noopener noreferrer" :title="sourceLinkTitle" :aria-label="sourceLinkTitle">
+                <img v-if="activeItemSource.sourcePlatform === 'cc98'" class="cc98-icon" :src="cc98IconUrl" alt="CC98" />
+                <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path v-for="path in linkPaths" :key="path" :d="path" /></svg>
+              </a>
               <FavoriteButton
                 :active="favoriteKeys.includes(activeItemFavoriteKey)"
                 :disabled="!canFavorite"

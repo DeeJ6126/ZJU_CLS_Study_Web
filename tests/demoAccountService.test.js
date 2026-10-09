@@ -198,6 +198,50 @@ test('storage failures keep demo mode usable for the current session', () => {
   assert.match(mutation.persistenceWarning, /存储空间不足/);
 });
 
+test('demo administrator imports retain sources, authors, create retries and update conflicts', async () => {
+  const service = createDemoAccountService({ storage: createMemoryStorage() });
+  const client = service.createAdminClient();
+  const input = {
+    courseCode: 'BIO2110F', type: 'experience', title: 'Imported', body: 'Notes', author: 'Original author',
+    sourcePlatform: 'duoduo', sourceUrl: 'https://duoduo.example/topic/1', requestId: 'draft-request-123456',
+  };
+  const created = await client.createContent(input);
+  const retry = await client.createContent(input);
+  assert.equal(retry.item.id, created.item.id);
+  assert.equal(retry.replayed, true);
+  const conflict = await client.updateContent(created.item.id, { title: 'Overwrite', expectedUpdatedAt: 'stale' });
+  assert.equal(conflict.status, 409);
+  const edited = await client.updateContent(created.item.id, { summary: 'Checked', expectedUpdatedAt: created.item.updatedAt });
+  assert.equal(edited.item.sourceUrl, input.sourceUrl);
+  assert.equal(edited.item.cc98Url, '');
+  await client.publishContent(created.item.id);
+  const grouped = service.getPublishedCourseContent('BIO2110F');
+  const item = grouped.experiences.find((entry) => entry.contentId === created.item.id);
+  assert.equal(item.owner, null);
+  assert.equal(item.author, 'Original author');
+  assert.equal(item.sourcePlatform, 'duoduo');
+  assert.equal((await client.createContent({ ...input, requestId: 'draft-request-789012', sourceUrl: 'javascript:alert(1)' })).ok, false);
+});
+
+test('demo administrator PDF uploads persist for save-upload-publish recovery', async () => {
+  const storage = createMemoryStorage();
+  const service = createDemoAccountService({ storage });
+  const client = service.createAdminClient();
+  const item = (await client.createContent({ courseCode: 'BIO2110F', type: 'paper', title: 'Paper' })).item;
+  assert.equal((await client.publishContent(item.id)).ok, false);
+  assert.equal((await client.uploadPdf(item.id, new File(['not PDF'], 'paper.pdf', { type: 'application/pdf' }))).ok, false);
+  const uploaded = await client.uploadPdf(item.id, new File(['%PDF-1.7\ntest'], 'paper.pdf', { type: 'application/pdf' }));
+  assert.equal(uploaded.ok, true);
+  assert.equal(uploaded.item.file.fileName, 'paper.pdf');
+  assert.match(uploaded.item.file.url, /^data:application\/pdf;base64,/);
+  const reloaded = createDemoAccountService({ storage }).createAdminClient();
+  assert.equal((await reloaded.fetchContent()).items.find((entry) => entry.id === item.id).file.fileName, 'paper.pdf');
+  assert.equal((await reloaded.publishContent(item.id)).ok, true);
+  assert.equal((await reloaded.removePdf(item.id)).ok, false);
+  await reloaded.archiveContent(item.id);
+  assert.equal((await reloaded.removePdf(item.id)).item.file, null);
+});
+
 test('demo administrator manages the same browser-local activities shown on public pages', async () => {
   const catalog = JSON.parse(readFileSync('public/content/activities/catalog.json', 'utf8'));
   const service = createDemoAccountService({

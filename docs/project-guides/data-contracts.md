@@ -81,6 +81,17 @@ server/data/content-uploads/
 学习心得和复习资料可附带选填的 `cc98Url` 与 `gpa`。公开内容同时返回
 `likeCount` 与当前匿名浏览器的 `viewerLiked` 状态；绩点是否展开只属于前端显示状态。
 
+所有课程内容和投稿支持 `sourcePlatform`（`cc98 / duoduo / other`）及选填的
+HTTP(S) `sourceUrl`。CC98 来源镜像 `cc98Url`；其他来源不冒用 CC98 图标，旧记录
+仍可由 `cc98Url` 读取。人工录入的 `author` 是原作者或整理者，录入管理员留在
+操作日志中，不会成为原作者的公开主页归属。
+
+管理员连续录入通过 `requestId` 防止创建请求重试产生重复记录，通过
+`expectedUpdatedAt` 检查编辑冲突。本机未完成草稿按真实/演示身份及稳定用户 ID
+隔离，键前缀为 `zjubio:admin-drafts:v1:`；仅保存表单字段及文件元数据，上传中的
+PDF 在刷新后需要重新选择。发布并录入下一条保留专业、课程、类型和来源平台，
+清空原作者、标题、正文及附件等本条内容。
+
 投稿先进入 `content_submissions`，管理员通过后转换为共享 `content_items` 记录并立即发布。
 审核、内容发布、编辑、下架和文件变更写入 `audit_logs`。
 

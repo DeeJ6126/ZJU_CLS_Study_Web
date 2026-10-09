@@ -4,6 +4,7 @@ import { activityProgram } from '../data/activityConfig.js';
 import { bodyToParagraphs } from '../utils/markdownContent.js';
 import { percentageToGPA } from '../utils/gradeConversion.js';
 import { normalizeCourseScheduleRows } from './courseScheduleService.js';
+import { normalizeContentSource, validateContentSource } from './contentSourceService.js';
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const maxAvatarBytes = 2 * 1024 * 1024;
@@ -354,7 +355,9 @@ export function createDemoAccountService({
     if (!String(input?.title ?? '').trim() || (!isPaper && !String(input?.body ?? '').trim())) return { ok: false, message: isPaper ? '请填写年份并上传 PDF。' : '请填写标题和正文。' };
     if (isPaper && !String(input?.year ?? '').trim()) return { ok: false, message: '请填写年份。' };
     if (isPaper && !input?.file) return { ok: false, message: '请上传 PDF 文件。' };
-    const normalized = clone(input);
+    const source = validateContentSource(input);
+    if (!source.ok) return source;
+    const normalized = { ...clone(input), ...source.value };
     if ((normalized.gradePercentage ?? '') !== '' && !normalized.gpa) {
       const num = Number(normalized.gradePercentage);
       if (Number.isFinite(num)) {
@@ -379,14 +382,16 @@ export function createDemoAccountService({
     const owner = account(identityId);
     const postItem = owner?.posts.find((item) => item.id === id);
     if (!postItem) return { ok: false, message: '没有找到这篇帖子。' };
-    return createSubmission(identityId, { ...postItem, ...clone(changes), id: undefined, submissionKind: 'revision', targetContentId: id });
+    return createSubmission(identityId, { ...postItem, ...clone(changes), ...normalizeContentSource(changes, postItem), id: undefined, submissionKind: 'revision', targetContentId: id });
   }
 
   function updateSubmission(identityId, id, changes, allowRejected = false) {
     const item = account(identityId)?.submissions.find((entry) => entry.id === id);
     if (!item) return { ok: false, message: '没有找到这条投稿。' };
     if (item.status !== 'pending' && !(allowRejected && item.status === 'rejected')) return { ok: false, message: '当前状态不能修改。' };
-    Object.assign(item, clone(changes), allowRejected ? { status: 'pending', reviewNote: '' } : {});
+    const source = validateContentSource(changes, item);
+    if (!source.ok) return source;
+    Object.assign(item, clone(changes), source.value, allowRejected ? { status: 'pending', reviewNote: '' } : {});
     return persist({ ok: true, submission: clone(item) });
   }
 
@@ -519,7 +524,7 @@ export function createDemoAccountService({
     if (status === 'approved') {
       if (found.item.submissionKind === 'revision') {
         const target = found.owner.posts.find((item) => item.id === found.item.targetContentId);
-        if (target) Object.assign(target, { title: found.item.title, summary: found.item.summary, body: found.item.body, status: 'published' });
+        if (target) Object.assign(target, { title: found.item.title, summary: found.item.summary, body: found.item.body, ...normalizeContentSource(found.item), status: 'published' });
       } else {
         const contentId = nextId('content');
         found.item.routeId = contentId;
@@ -606,14 +611,54 @@ export function createDemoAccountService({
         return persist({ ok: true, application: clone(application) });
       },
       fetchContent: async (filters = {}) => ({ ok: true, items: clone(read().adminContent.filter((item) => (!filters.courseCode || item.courseCode === filters.courseCode) && (!filters.type || item.type === filters.type) && (!filters.status || item.status === filters.status))) }),
-      createContent: async (input) => { const item = { id: nextId('admin-content'), status: 'draft', ...clone(input) }; read().adminContent.unshift(item); return persist({ ok: true, item: clone(item) }); },
-      updateContent: async (id, input) => { const item = read().adminContent.find((entry) => entry.id === id); if (!item) return { ok: false, message: '内容不存在。' }; Object.assign(item, clone(input)); return persist({ ok: true, item: clone(item) }); },
-      publishContent: async (id) => { const item = read().adminContent.find((entry) => entry.id === id); if (!item) return { ok: false, message: '内容不存在。' }; item.status = 'published'; return persist({ ok: true, item: clone(item) }); },
-      archiveContent: async (id) => { const item = read().adminContent.find((entry) => entry.id === id); if (!item) return { ok: false, message: '内容不存在。' }; item.status = 'archived'; return persist({ ok: true, item: clone(item) }); },
-      uploadPdf: async (id, file) => ({ ok: Boolean(file), item: clone(read().adminContent.find((entry) => entry.id === id)), message: file ? '' : '请选择 PDF。' }),
-      removePdf: async (id) => ({ ok: true, item: clone(read().adminContent.find((entry) => entry.id === id)) }),
+      createContent: async (input) => {
+        if (input.requestId && !/^[a-zA-Z0-9_-]{16,100}$/.test(input.requestId)) return { ok: false, message: '草稿请求标识无效。' };
+        const existing = input.requestId && read().adminContent.find((item) => item.requestId === input.requestId);
+        if (existing) return { ok: true, item: clone(existing), replayed: true };
+        const source = validateContentSource(input);
+        if (!source.ok) return source;
+        const item = { id: nextId('admin-content'), status: 'draft', createdAt: now(), updatedAt: now(), ...clone(input), ...source.value };
+        read().adminContent.unshift(item);
+        return persist({ ok: true, item: clone(item) });
+      },
+      updateContent: async (id, input) => {
+        const item = read().adminContent.find((entry) => entry.id === id);
+        if (!item) return { ok: false, message: '内容不存在。' };
+        if (input.expectedUpdatedAt !== undefined && input.expectedUpdatedAt !== item.updatedAt) return { ok: false, status: 409, message: '这条内容已被更新，请重新打开后核对修改。' };
+        const source = validateContentSource(input, item);
+        if (!source.ok) return source;
+        const { expectedUpdatedAt, ...fields } = clone(input);
+        Object.assign(item, fields, source.value, { updatedAt: now() });
+        return persist({ ok: true, item: clone(item) });
+      },
+      publishContent: async (id) => { const item = read().adminContent.find((entry) => entry.id === id); if (!item) return { ok: false, message: '内容不存在。' }; if (item.type === 'paper' && !item.file) return { ok: false, message: '历年试卷上传 PDF 后才能发布。' }; item.status = 'published'; item.updatedAt = now(); return persist({ ok: true, item: clone(item) }); },
+      archiveContent: async (id) => { const item = read().adminContent.find((entry) => entry.id === id); if (!item) return { ok: false, message: '内容不存在。' }; item.status = 'archived'; item.updatedAt = now(); return persist({ ok: true, item: clone(item) }); },
+      uploadPdf: async (id, file) => {
+        const item = read().adminContent.find((entry) => entry.id === id);
+        if (!item) return { ok: false, message: '内容不存在。' };
+        if (!file || file.type !== 'application/pdf' || file.size > 25 * 1024 * 1024) return { ok: false, message: '请选择不超过 25 MB 的 PDF 文件。' };
+        try {
+          const bytes = new Uint8Array(await file.arrayBuffer());
+          if (String.fromCharCode(...bytes.slice(0, 5)) !== '%PDF-') return { ok: false, message: 'PDF 文件格式无效。' };
+          let binary = '';
+          for (let offset = 0; offset < bytes.length; offset += 32768) binary += String.fromCharCode(...bytes.subarray(offset, offset + 32768));
+          item.file = { fileName: file.name, mimeType: 'application/pdf', size: bytes.length, url: `data:application/pdf;base64,${btoa(binary)}` };
+          item.updatedAt = now();
+          return persist({ ok: true, item: clone(item) });
+        } catch {
+          return { ok: false, message: 'PDF 文件无法读取。' };
+        }
+      },
+      removePdf: async (id) => {
+        const item = read().adminContent.find((entry) => entry.id === id);
+        if (!item) return { ok: false, message: '内容不存在。' };
+        if (item.type === 'paper' && item.status === 'published') return { ok: false, message: '历年试卷下架后才能移除 PDF。' };
+        item.file = null;
+        item.updatedAt = now();
+        return persist({ ok: true, item: clone(item) });
+      },
       fetchSubmissions: async (filters = {}) => { const all = Object.values(read().accounts).flatMap((owner) => owner.submissions); const submissions = all.filter((item) => (!filters.courseCode || item.courseCode === filters.courseCode) && (!filters.status || item.status === filters.status) && (!filters.query || JSON.stringify(item).toLowerCase().includes(String(filters.query).toLowerCase()))); const pending = all.filter((item) => item.status === 'pending'); const pendingCourseCounts = pending.reduce((counts, item) => { counts[item.courseCode] = (counts[item.courseCode] ?? 0) + 1; return counts; }, {}); return { ok: true, submissions: clone(submissions), pendingCount: pending.length, pendingCourseCounts }; },
-      updateSubmission: async (id, input) => { const found = findSubmission(id); if (!found) return { ok: false, message: '投稿不存在。' }; Object.assign(found.item, clone(input)); return persist({ ok: true, submission: clone(found.item) }); },
+      updateSubmission: async (id, input) => { const found = findSubmission(id); if (!found) return { ok: false, message: '投稿不存在。' }; const source = validateContentSource(input, found.item); if (!source.ok) return source; Object.assign(found.item, clone(input), source.value); return persist({ ok: true, submission: clone(found.item) }); },
       approveSubmission: async (id) => reviewSubmission(id, 'approved'),
       rejectSubmission: async (id, note) => reviewSubmission(id, 'rejected', note),
       fetchFeedback: async (page = 1) => ({ ok: true, items: clone((read().feedback ?? []).slice((page - 1) * 50, page * 50)), total: (read().feedback ?? []).length, unreadCount: (read().feedback ?? []).filter((item) => !item.readAt).length, pageSize: 50 }),
@@ -711,7 +756,7 @@ export function createDemoAccountService({
         contentId: item.id,
         routeId: item.routeId ?? item.id,
         author: item.author || account('admin').user.nickname,
-        owner: publicOwner(account('admin').user),
+        owner: null,
         likeCount: item.likeCount ?? 0,
         viewerLiked: false,
         href: buildCourseRoute(item.courseCode, collection, item.routeId ?? item.id),

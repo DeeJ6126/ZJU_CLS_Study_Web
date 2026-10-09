@@ -518,6 +518,19 @@
   padding: 20px 0;
 }
 
+.admin-entry-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; grid-column: 1 / -1; margin: 0; padding: 0; border: 0; min-width: 0; }
+.admin-course-editor .admin-editor__actions { position: sticky; bottom: 0; z-index: 6; flex-wrap: wrap; align-items: center; padding: 14px 0; background: var(--color-surface); }
+.admin-editor__head small { display: block; margin-top: 5px; font-size: 12px; color: var(--color-muted); }
+.admin-draft-status { margin-right: auto; color: var(--color-muted); font-size: 13px; }
+.admin-local-drafts { margin: 20px 0; padding: 0 0 18px; border-bottom: 1px solid var(--color-line); }
+.admin-local-drafts h2 { margin: 0 0 12px; font-size: 17px; }
+.admin-local-drafts h2 span { font-size: 13px; font-weight: 400; color: var(--color-muted); }
+.admin-local-draft-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--color-line); }
+.admin-local-draft-row > div { flex: 1; min-width: 0; }
+.admin-local-draft-row strong { display: block; overflow-wrap: anywhere; font-size: 15px; }
+.admin-local-draft-row small { color: var(--color-muted); font-size: 12px; }
+.admin-local-draft-row button { min-height: 34px; padding: 6px 10px; border: 1px solid var(--color-line); border-radius: 4px; color: var(--color-ink); background: var(--color-surface); font: inherit; font-size: 13px; }
+
 .admin-editor__wide,
 .admin-editor__actions {
   grid-column: 1 / -1;
@@ -722,7 +735,8 @@
 
   .admin-list__filters,
   .admin-list__filters--wide,
-  .admin-editor__form {
+  .admin-editor__form,
+  .admin-entry-fields {
     grid-template-columns: 1fr;
   }
 

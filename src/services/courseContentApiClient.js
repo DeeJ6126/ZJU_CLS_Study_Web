@@ -3,6 +3,7 @@ import { getCourseDetail } from '../data/courses/courseDetails.js';
 import { bodyToParagraphs, parseMarkdownDocument } from '../utils/markdownContent.js';
 import { publicAssetPath } from '../utils/publicPath.js';
 import { createRawClient } from './apiClient.js';
+import { validateContentSource } from './contentSourceService.js';
 
 const tabByType = {
   experience: 'experiences',
@@ -18,6 +19,7 @@ function normalizeItem(item, courseCode, tabId) {
   const routeId = String(item.routeId || item.id);
   return {
     ...item,
+    ...(validateContentSource(item).value ?? { sourcePlatform: 'other', sourceUrl: '', cc98Url: '' }),
     contentId: String(item.id),
     id: routeId,
     href: buildCourseRoute(courseCode, tabId, routeId),
