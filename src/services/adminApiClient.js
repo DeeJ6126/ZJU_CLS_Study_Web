@@ -15,6 +15,18 @@ export function createAdminApiClient(fetchImpl = fetch) {
   const { request } = createRequestClient({ name: 'admin', fetchImpl, networkErrorMessage: '管理服务暂时无法连接。' });
 
   return {
+    previewContentBatch(document) {
+      return request('api/admin/content-batch/preview', { method: 'POST', body: { document } });
+    },
+    importContentBatch(document, { fingerprint, requestId }) {
+      return request('api/admin/content-batch/import', { method: 'POST', body: { document, fingerprint, requestId } });
+    },
+    fetchBatchCatalog(type = '') {
+      return request(`api/admin/content-batch/catalog${queryString({ type })}`);
+    },
+    exportContentBatch({ courseCodes, type = '' }) {
+      return request('api/admin/content-batch/export', { method: 'POST', body: { courseCodes, type } });
+    },
     fetchFeedback(page = 1) { return request(`api/admin/feedback?page=${page}`); },
     fetchFeedbackCount() { return request('api/admin/feedback/count'); },
     markFeedbackRead(ids) { return request('api/admin/feedback/read', { method: 'POST', body: { ids } }); },

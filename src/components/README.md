@@ -14,6 +14,7 @@ Components should render props, hold local UI state, and emit events upward. Kee
 - `MorePage.vue`: supplementary public directory at `#more`, initially containing student homepages and their authenticated submission form. Management and moderation remain in the administrator More workspace.
 - `OverviewPage.vue`: course catalog, curriculum selector, category grouping, and semester grouping.
 - `admin/AdminPage.vue`: hidden-route administrator login plus course-content, moderation, audit-log, and activity maintenance UI.
+- `admin/AdminContentBatchPanel.vue`: administrator JSON preview/confirmation and course/type-filtered exports, sharing the main workspace theme and navigation guards.
 - `ConsultationPage.vue`: visitor and mentor chat views for scheduled consultation sessions.
 - `NoticePage.vue`: public notice search, filters and details; `admin/NoticeAdminPanel.vue` maintains drafts, published notices and downloadable attachments.
 - `ContributionBox.vue`: authenticated course submission form that sends review-ready fields upward.

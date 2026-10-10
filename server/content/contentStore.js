@@ -143,6 +143,14 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
   return {
     initialize() {
       db.exec(`
+        create table if not exists content_batch_requests (
+          actor_id integer not null,
+          request_id text not null,
+          fingerprint text not null,
+          result_items text not null,
+          created_at text not null,
+          primary key (actor_id, request_id)
+        );
         create table if not exists private_feedback (
           id text primary key,
           body text not null,
@@ -405,6 +413,44 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
     findByCreateRequest(userId, requestId) {
       return mapItem(db.prepare(`select ${selectColumns} from content_items
         where created_by = ? and create_request_id = ?`).get(userId, requestId));
+    },
+
+    findContentBatchRequest(actorId, requestId) {
+      const row = db.prepare(`select fingerprint, result_items as resultItems
+        from content_batch_requests where actor_id = ? and request_id = ?`).get(actorId, requestId);
+      return row ? { fingerprint: row.fingerprint, items: JSON.parse(row.resultItems) } : null;
+    },
+
+    createContentBatch({ items, fingerprint, requestId, actor }) {
+      db.exec('begin immediate');
+      try {
+        const previous = this.findContentBatchRequest(actor.id, requestId);
+        if (previous) {
+          db.exec('commit');
+          return previous.fingerprint === fingerprint
+            ? { items: previous.items, replayed: true } : { conflict: true };
+        }
+        const created = items.map((value) => {
+          const item = this.createItem({ ...value, status: 'draft', ownerId: null,
+            createdBy: actor.id, updatedBy: actor.id });
+          this.createAuditLog({
+            action: 'content.create', entityType: 'content', entityId: item.id,
+            targetTitle: item.title, courseCode: item.courseCode,
+            actorId: actor.id, actorName: actor.nickname || actor.cc98Nickname || '',
+            detail: '批量导入内容草稿',
+          });
+          return { id: item.id, courseCode: item.courseCode, type: item.type,
+            title: item.title, status: item.status };
+        });
+        db.prepare(`insert into content_batch_requests
+          (actor_id, request_id, fingerprint, result_items, created_at) values (?, ?, ?, ?, ?)`)
+          .run(actor.id, requestId, fingerprint, JSON.stringify(created), new Date().toISOString());
+        db.exec('commit');
+        return { items: created, replayed: false };
+      } catch (error) {
+        db.exec('rollback');
+        throw error;
+      }
     },
 
     findBySourcePath(sourcePath) {

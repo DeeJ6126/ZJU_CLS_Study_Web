@@ -22,8 +22,10 @@ import { publicAssetPath } from '../../utils/publicPath.js';
 import { imageFileToAvatarDataUrl } from '../../services/studentHomepageApiClient.js';
 import AdminCourseCombobox from './AdminCourseCombobox.vue';
 import NoticeAdminPanel from './NoticeAdminPanel.vue';
+import AdminContentBatchPanel from './AdminContentBatchPanel.vue';
 import { readAdminDrafts, saveAdminDraft, removeAdminDraft, hasAdminDraftContent } from '../../services/adminDraftService.js';
 import { normalizeContentSource } from '../../services/contentSourceService.js';
+import { uploadPaths, downloadPaths } from '../../utils/vendor/lucidePaths.js';
 
 const props = defineProps({
   initialUser: { type: Object, default: null },
@@ -72,6 +74,7 @@ const selectedType = ref('experience');
 const selectedStatus = ref('');
 const selectedView = ref('content');
 const noticePanel = ref(null);
+const batchMode = ref(''), batchPanel = ref(null);
 const contentQuery = ref('');
 const items = ref([]);
 const submissions = ref([]);
@@ -404,6 +407,7 @@ function discardLocalDraft(draft) {
 watch(draftScope, () => {
   clearTimeout(draftTimer);
   editorOpen.value = false;
+  batchMode.value = '';
   editingId.value = '';
   activeDraftKey.value = '';
   activeDraftRevision.value = '';
@@ -430,7 +434,7 @@ watch([form, pendingFile], () => {
 
 function onPageHide() { persistDraft(); }
 function onBeforeUnload(event) {
-  if (actionBusy.value || (editorOpen.value && dirty.value && !persistDraft())) {
+  if (actionBusy.value || batchPanel.value?.shouldBlockUnload() || (editorOpen.value && dirty.value && !persistDraft())) {
     event.preventDefault(); event.returnValue = '';
   }
 }
@@ -677,11 +681,13 @@ async function requestAdminEmailCode() {
 
 function changeView(view, type = '') {
   if (actionBusy.value) return;
+  if (batchMode.value && batchPanel.value?.canLeave() === false) return;
   if (view === 'notices' && selectedView.value === 'notices') return;
   if (selectedView.value === 'notices' && !noticePanel.value?.canLeave()) return;
   if (editorOpen.value ? !preserveEditorBeforeLeaving() : dirty.value && !window.confirm('当前修改尚未保存，确定放弃吗？')) return;
   if (view !== 'feedback') { ++feedbackSequence; feedbackBusy.value = false; }
   selectedView.value = view;
+  batchMode.value = '';
   editorOpen.value = false;
   submissionEditorOpen.value = false;
   activityEditorOpen.value = false;
@@ -758,6 +764,7 @@ async function archiveManagedActivity(activity) {
 }
 
 async function logout() {
+  if (batchMode.value && batchPanel.value?.canLeave() === false) return;
   if (!preserveEditorBeforeLeaving()) return;
   if (selectedView.value === 'notices' && !noticePanel.value?.canLeave()) return;
   if (props.initialUser) {
@@ -783,8 +790,10 @@ function changeMajor() {
 }
 
 function changeFilters() {
+  if (batchMode.value && batchPanel.value?.canLeave() === false) return;
   if (actionBusy.value || !preserveEditorBeforeLeaving()) return;
   editorOpen.value = false;
+  batchMode.value = '';
   submissionEditorOpen.value = false;
   editingId.value = '';
   refreshItems();
@@ -796,8 +805,10 @@ function selectCourseForReview(code) {
 }
 
 function startNew(defaults = {}) {
+  if (batchMode.value && batchPanel.value?.canLeave() === false) return;
   if (actionBusy.value || !preserveEditorBeforeLeaving()) return;
   submissionEditorOpen.value = false;
+  batchMode.value = '';
   editingId.value = '';
   setForm({ courseCode: selectedCourseCode.value, type: selectedType.value, ...defaults });
   beginDraftContext();
@@ -821,6 +832,29 @@ function closeEditor() {
   editingId.value = '';
   dirty.value = false;
   clearTimeout(draftTimer);
+}
+
+function openBatch(mode) {
+  if (batchMode.value === mode) return;
+  if (actionBusy.value || !preserveEditorBeforeLeaving()) return;
+  if (batchMode.value && batchPanel.value?.canLeave() === false) return;
+  editorOpen.value = false;
+  submissionEditorOpen.value = false;
+  dirty.value = false;
+  notice.value = '';
+  batchMode.value = mode;
+}
+
+function onBatchImported(result) {
+  const first = result.items?.[0];
+  if (first) {
+    selectedCourseCode.value = first.courseCode;
+    selectedType.value = first.type;
+    selectedStatus.value = 'draft';
+    const major = majorOptions.find((entry) => filterAdminCoursesToOverview(courses.value, entry.id).some(course => course.code === first.courseCode));
+    if (major) selectedMajorId.value = major.id;
+  }
+  refreshItems();
 }
 
 function selectPdf(event) {
@@ -1032,7 +1066,7 @@ function formattedTime(value) {
   }).format(new Date(value));
 }
 
-defineExpose({ canLeave: () => actionBusy.value ? false : selectedView.value === 'notices' ? (noticePanel.value?.canLeave() ?? true) : preserveEditorBeforeLeaving() });
+defineExpose({ canLeave: () => actionBusy.value ? false : batchMode.value ? (batchPanel.value?.canLeave() ?? true) : selectedView.value === 'notices' ? (noticePanel.value?.canLeave() ?? true) : preserveEditorBeforeLeaving() });
 onMounted(() => { initialize(); badgeTimer = setInterval(refreshPendingBadges, 30000); document.addEventListener('visibilitychange', refreshPendingBadges); window.addEventListener('pagehide', onPageHide); window.addEventListener('beforeunload', onBeforeUnload); });
 onBeforeUnmount(() => { persistDraft(); disposed = true; clearTimeout(draftTimer); clearInterval(badgeTimer); ++badgeSequence; ++feedbackSequence; ++feedbackCountSequence; document.removeEventListener('visibilitychange', refreshPendingBadges); window.removeEventListener('pagehide', onPageHide); window.removeEventListener('beforeunload', onBeforeUnload); });
 </script>
@@ -1112,14 +1146,19 @@ onBeforeUnmount(() => { persistDraft(); disposed = true; clearTimeout(draftTimer
             <p class="admin-page__eyebrow">{{ selectedView === 'notices' ? '通知内容运营' : selectedView === 'more' ? '更多内容' : '课程内容运营' }}</p>
             <h1 id="admin-title">{{ pageTitle }}</h1>
           </div>
-          <button v-if="selectedView === 'content' && !editorOpen && !submissionEditorOpen" class="admin-primary-action" type="button" @click="startNew">新增内容</button>
+          <div v-if="selectedView === 'content'" class="admin-page__tools">
+            <button v-if="!editorOpen && !submissionEditorOpen && !batchMode" class="admin-primary-action" type="button" @click="startNew">新增内容</button>
+            <button type="button" :disabled="actionBusy" :aria-pressed="batchMode === 'import'" @click="openBatch('import')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path v-for="path in uploadPaths" :key="path" :d="path" /></svg>批量导入</button>
+            <button type="button" :disabled="actionBusy" :aria-pressed="batchMode === 'export'" @click="openBatch('export')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path v-for="path in downloadPaths" :key="path" :d="path" /></svg>批量导出</button>
+          </div>
           <button v-if="selectedView === 'activities' && !activityEditorOpen" class="admin-primary-action" type="button" @click="startActivity()">新增推文</button>
           <button v-if="selectedView === 'more' && !homepageEditorOpen" class="admin-primary-action" type="button" @click="startHomepage()">新增主页</button>
         </header>
 
         <p v-if="notice" class="admin-notice" role="status">{{ notice }}</p>
 
-        <section v-if="selectedView === 'content' && editorOpen" class="admin-editor admin-course-editor" aria-label="内容编辑器">
+        <AdminContentBatchPanel v-if="selectedView === 'content' && batchMode" :key="batchMode" ref="batchPanel" :mode="batchMode" :api-client="activeApiClient" :scope="draftScope" :is-demo="isDemo" @close="batchMode = ''" @imported="onBatchImported" />
+        <section v-else-if="selectedView === 'content' && editorOpen" class="admin-editor admin-course-editor" aria-label="内容编辑器">
           <header class="admin-editor__head">
             <div>
               <span>{{ editingId ? '编辑内容' : '新建草稿' }}</span>

@@ -18,6 +18,10 @@ import {
   updateSubmission,
 } from './submissionService.js';
 import { createComment, deleteComment, updateComment } from './commentService.js';
+import {
+  exportContentBatch, importContentBatch, listContentBatchCourses,
+  MAX_BATCH_BYTES, previewContentBatch,
+} from './contentBatchService.js';
 
 async function readBuffer(request, limit) {
   const declaredLength = Number(request.headers['content-length'] ?? 0);
@@ -122,6 +126,7 @@ export async function handleContentHttpRequest({
   user,
   userId,
   contentStore,
+  courseCatalog,
   authStore,
   uploadDirectory,
   sendJson,
@@ -339,6 +344,50 @@ export async function handleContentHttpRequest({
     return false;
   }
   if (!authorizeAdmin(sendJson, response, user)) {
+    return true;
+  }
+
+  const batchMatch = url.pathname.match(/^\/api\/admin\/content-batch\/(preview|import|catalog|export)$/);
+  if (batchMatch) {
+    const operation = batchMatch[1];
+    if (request.method === 'GET' && operation === 'catalog') {
+      const result = listContentBatchCourses(contentStore, url.searchParams.get('type') ?? '', courseCatalog);
+      sendJson(response, result.status, result.ok
+        ? { courses: result.courses, total: result.total } : { message: result.message });
+      return true;
+    }
+    if (request.method !== 'POST' || operation === 'catalog') {
+      sendJson(response, 405, { message: '批量操作的请求方法无效。' });
+      return true;
+    }
+    if (!acceptsAdminMutation(request)) {
+      sendJson(response, 415, { message: '批量操作需要 application/json 请求。' });
+      return true;
+    }
+    // Reserve envelope space; the batch service still limits the document to 8 MiB.
+    const buffer = await readBuffer(request, MAX_BATCH_BYTES + 16 * 1024);
+    if (!buffer.ok) {
+      sendJson(response, buffer.status, { message: '每批 JSON 最大 8 MiB，请拆分文件。' });
+      return true;
+    }
+    let body;
+    try {
+      body = JSON.parse(buffer.buffer.toString('utf8').replace(/^\uFEFF/, ''));
+    } catch {
+      sendJson(response, 400, { message: 'JSON 文件无法解析，请检查格式。' });
+      return true;
+    }
+    const result = operation === 'preview'
+      ? previewContentBatch(contentStore, body?.document, courseCatalog)
+      : operation === 'import'
+        ? importContentBatch(contentStore, body, actor, courseCatalog)
+        : exportContentBatch(contentStore, body, courseCatalog);
+    const payload = result.ok
+      ? operation === 'preview' ? { preview: result.preview }
+        : operation === 'import' ? { result: result.result }
+          : { document: result.document, count: result.count }
+      : { message: result.message };
+    sendJson(response, result.status, payload);
     return true;
   }
 

@@ -129,6 +129,49 @@
   letter-spacing: 0;
 }
 
+.admin-page__tools { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.admin-page__tools button, .admin-batch-selection button {
+  min-height: 38px; padding: 0 14px; border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-ink);
+  font: inherit; font-weight: 600; cursor: pointer;
+}
+.admin-page__tools button[aria-pressed="true"] { color: var(--admin-primary); border-color: var(--admin-primary); background: var(--admin-primary-soft); }
+.admin-page__tools button { display: inline-flex; align-items: center; gap: 7px; }
+.admin-page__tools .admin-primary-action { background: var(--admin-primary); color: var(--color-on-primary); border-color: var(--admin-primary); }
+.admin-batch-panel { margin-top: 22px; min-width: 0; }
+.admin-batch-upload { display: flex; align-items: end; flex-wrap: wrap; gap: 16px; padding: 22px 0; }
+.admin-batch-upload label { display: grid; flex: 1; min-width: 280px; gap: 10px; }
+.admin-batch-upload input[type="file"] { padding: 12px; border: 1px dashed var(--color-input-border); background: var(--color-soft); border-radius: var(--radius-sm); width: 100%; }
+.admin-batch-upload label > span, .admin-batch-export-filters label > span { font-size: 14px; font-weight: 600; }
+.admin-batch-error { color: var(--color-negative); font-size: 14px; overflow-wrap: anywhere; }
+.admin-batch-summary { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin: 8px 0 14px; }
+.admin-batch-summary strong { overflow-wrap: anywhere; }
+.admin-batch-summary > span { color: var(--color-muted); font-size: 14px; }
+.admin-batch-table-wrap { overflow-x: auto; max-height: 540px; }
+.admin-batch-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.admin-batch-table th, .admin-batch-table td { padding: 12px 10px; border-bottom: 1px solid var(--color-line); text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+.admin-batch-table th { position: sticky; top: 0; background: var(--color-soft); color: var(--color-muted); font-weight: 600; }
+.admin-batch-table th:first-child { width: 52px; }
+.admin-batch-table th:nth-child(2) { width: 25%; }
+.admin-batch-table th:nth-child(3) { width: 90px; }
+.admin-batch-table th:nth-child(5) { width: 28%; }
+.admin-batch-table small { display: block; margin-top: 4px; color: var(--color-muted); }
+.admin-batch-table p { margin: 0 0 4px; color: var(--color-negative); }
+.admin-batch-table .has-error { background: var(--color-negative-soft); }
+.admin-batch-valid { color: var(--color-positive); }
+.admin-batch-export-filters { display: grid; grid-template-columns: minmax(170px, 240px) minmax(250px, 1fr); gap: 16px; padding: 22px 0 18px; }
+.admin-batch-export-filters label { display: grid; gap: 10px; }
+.admin-batch-export-filters input, .admin-batch-export-filters select { min-height: 42px; min-width: 0; width: 100%; padding: 8px 12px; color: var(--color-ink); background: var(--color-surface); border: 1px solid var(--color-input-border); border-radius: var(--radius-sm); }
+.admin-batch-selection { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.admin-batch-selection > span { margin-right: auto; color: var(--color-muted); font-size: 14px; }
+.admin-batch-selection button { font-size: 13px; min-height: 32px; }
+.admin-batch-courses { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 22px; min-width: 0; max-height: 500px; overflow-y: auto; border: 0; padding: 0; margin: 0 0 20px; }
+.admin-batch-courses label { display: flex; align-items: center; gap: 10px; padding: 15px 4px; border-bottom: 1px solid var(--color-line); cursor: pointer; min-width: 0; }
+.admin-batch-courses label span { overflow-wrap: anywhere; font-size: 15px; }
+.admin-batch-courses input { width: 17px; height: 17px; flex-shrink: 0; accent-color: var(--admin-primary); }
+.admin-batch-actions { position: sticky; bottom: 0; z-index: 5; background: var(--color-surface); padding: 14px 0; flex-wrap: wrap; }
+.admin-batch-actions > span { margin-right: auto; font-size: 14px; color: var(--color-muted); }
+
 .admin-primary-action,
 .admin-editor__actions button,
 .admin-content-table__actions button,

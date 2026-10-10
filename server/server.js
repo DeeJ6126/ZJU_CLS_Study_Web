@@ -582,6 +582,7 @@ export function createAuthServer({
         user: currentUser,
         userId: quizUserId,
         contentStore,
+        courseCatalog,
         authStore: store,
         uploadDirectory,
         sendJson,

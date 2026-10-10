@@ -7,6 +7,7 @@ This directory owns the first-phase course-content administration backend.
 - Private plain-text feedback, including guest submissions, rate/duplicate limits and administrator-only unread/read state. Feedback stays out of published course content and search.
 
 - SQLite records for learning experiences, review materials, and past papers.
+- Administrator JSON batch preview/import and filtered export of published experiences/materials. Batches are limited to 200 items and 8 MiB; creation plus audit entries is transactional, request IDs are administrator-scoped, and imports always create unowned drafts. See `docs/content-batch-json.md`.
 - Idempotent import from `public/resource/courses/`.
 - Draft, published, and archived status transitions.
 - PDF validation and storage outside the frontend build.
