@@ -22,7 +22,7 @@ function logActivityAction(store, action, activity, user, userId) {
     entityId: activity.id,
     targetTitle: activity.title,
     actorId: userId,
-    actorName: user?.cc98Nickname ?? user?.nickname ?? '',
+    actorName: user?.nickname || user?.cc98Nickname || '',
     detail: activity.programId,
   });
 }

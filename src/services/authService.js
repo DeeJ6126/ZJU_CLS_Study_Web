@@ -55,6 +55,10 @@ export function isAdministrator(user) {
   return Boolean(user && user.role === 'admin');
 }
 
+export function canManageAdministrators(user) {
+  return isAdministrator(user) && user.canManageAdministrators === true;
+}
+
 /**
  * Only student-ID verified users and administrators can leave persistent
  * traces such as likes, favorites, comments, submissions, or profile edits.

@@ -20,7 +20,7 @@ function logHomepageAction(store, action, homepage, user, userId) {
     entityId: homepage.id,
     targetTitle: homepage.name,
     actorId: userId,
-    actorName: user?.cc98Nickname ?? user?.nickname ?? '',
+    actorName: user?.nickname || user?.cc98Nickname || '',
     detail: homepage.href,
   });
 }
@@ -33,7 +33,7 @@ function logApplicationAction(store, action, application, user, userId) {
     entityId: application.id,
     targetTitle: application.name,
     actorId: userId,
-    actorName: user?.cc98Nickname ?? user?.nickname ?? '',
+    actorName: user?.nickname || user?.cc98Nickname || '',
     detail: application.href,
   });
 }

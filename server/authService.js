@@ -103,6 +103,7 @@ export function publicUser(user) {
   return {
     id: `${user.cc98Name ? 'cc98' : 'email'}-${user.id}`,
     role: user.role ?? 'student',
+    canManageAdministrators: canManageAdministrators(user),
     nickname: user.nickname,
     publicId: user.publicId,
     grade: user.grade ?? null,
@@ -119,6 +120,11 @@ export function publicUser(user) {
       email: Boolean(user.email),
     },
   };
+}
+
+export function canManageAdministrators(user) {
+  return user?.role === 'admin' && Boolean(user.identities?.some(identity =>
+    identity.provider === 'email' && identity.identifier === '3240105782@zju.edu.cn' && identity.verifiedAt));
 }
 
 /**

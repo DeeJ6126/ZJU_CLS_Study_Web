@@ -231,6 +231,11 @@
   grid-template-columns: minmax(170px, 210px) minmax(220px, 1.2fr) minmax(130px, 170px) minmax(180px, 1fr);
 }
 
+.admin-list__filters--audit { grid-template-columns: minmax(145px, .85fr) minmax(210px, 1.25fr) minmax(130px, .8fr) minmax(140px, .9fr) minmax(140px, .9fr); }
+.admin-grant-form { display: flex; flex-wrap: wrap; align-items: end; gap: 14px; padding: 26px 0 8px; }
+.admin-grant-form label { display: grid; gap: 10px; width: min(360px, 100%); font-weight: 600; }
+.admin-grant-form input { width: 100%; min-height: 42px; padding: 10px 12px; border: 1px solid var(--color-input-border); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-ink); }
+
 @media (max-width: 1160px) {
   .admin-list__filters--course {
     grid-template-columns: repeat(2, minmax(0, 1fr));

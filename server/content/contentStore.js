@@ -1000,11 +1000,16 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
       return id;
     },
 
-    listAuditLogs({ action = '', courseCode = '', query = '', limit = 200 } = {}) {
+    listAuditLogs({ action = '', courseCode = '', query = '', actorName = '', actorIds = [], limit = 200 } = {}) {
       const clauses = [];
       const values = [];
       if (action) { clauses.push('action = ?'); values.push(action); }
       if (courseCode) { clauses.push('course_code = ?'); values.push(courseCode); }
+      if (actorName) {
+        const pattern = `%${actorName.replace(/[\\%_]/g, character => `\\${character}`)}%`;
+        clauses.push(`(actor_name like ? escape '\\'${actorIds.length ? ` or actor_id in (${actorIds.map(() => '?').join(',')})` : ''})`);
+        values.push(pattern, ...actorIds);
+      }
       if (query) {
         clauses.push('(target_title like ? or actor_name like ? or detail like ?)');
         const pattern = `%${query}%`;

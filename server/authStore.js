@@ -44,6 +44,12 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
   return {
     initialize() {
       db.exec(`
+        create table if not exists administrator_grants (
+          student_id text primary key,
+          created_by integer not null,
+          creator_name text not null,
+          created_at text not null
+        );
         create table if not exists users (
           id integer primary key autoincrement,
           cc98_name text unique not null,
@@ -191,6 +197,11 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
         create unique index if not exists users_public_id_unique on users(public_id);
         create unique index if not exists users_nickname_unique on users(nickname_normalized);
       `);
+      db.exec(`update users set role = 'admin' where id in (
+        select i.user_id from user_identities i join administrator_grants g
+          on i.identifier = g.student_id || '@zju.edu.cn'
+        where i.provider = 'email' and i.verified_at <> ''
+      )`);
     },
 
     seedVerificationCodes(codes) {
@@ -331,7 +342,41 @@ export function createAuthStore({ filename = 'server/data/auth.sqlite' } = {}) {
         insert into user_identities (user_id, provider, identifier, display_value, verified_at)
         values (?, ?, ?, ?, ?)
       `).run(userId, provider, normalizeIdentity(provider, displayValue), String(displayValue).trim(), new Date().toISOString());
+      if (provider === 'email') {
+        const studentId = normalizeIdentity(provider, displayValue).match(/^(\d+)@zju\.edu\.cn$/)?.[1];
+        if (studentId && this.hasAdministratorGrant(studentId)) {
+          db.prepare("update users set role = 'admin' where id = ?").run(userId);
+        }
+      }
       return this.findUserById(userId);
+    },
+
+    hasAdministratorGrant(studentId) {
+      return Boolean(db.prepare('select 1 from administrator_grants where student_id = ?').get(studentId));
+    },
+
+    grantAdministrator(studentId, actor) {
+      db.exec('begin immediate');
+      try {
+        const added = db.prepare(`insert into administrator_grants(student_id, created_by, creator_name, created_at)
+          values (?, ?, ?, ?) on conflict(student_id) do nothing`)
+          .run(studentId, actor.id, actor.nickname, new Date().toISOString());
+        const user = this.findUserByEmail(`${studentId}@zju.edu.cn`);
+        if (user?.identities.some(identity => identity.provider === 'email' && identity.verifiedAt)) {
+          db.prepare("update users set role = 'admin' where id = ?").run(user.id);
+        }
+        db.exec('commit');
+        return { added: Number(added.changes) === 1, user: user ? this.findUserById(user.id) : null };
+      } catch (error) {
+        db.exec('rollback');
+        throw error;
+      }
+    },
+
+    findAuditActors(query) {
+      const normalized = String(query ?? '').trim().toLocaleLowerCase('zh-CN');
+      return db.prepare("select id, nickname from users where role = 'admin'").all()
+        .filter(user => user.nickname.toLocaleLowerCase('zh-CN').includes(normalized));
     },
 
     replaceCc98Identity(userId, cc98Name, verificationCode) {

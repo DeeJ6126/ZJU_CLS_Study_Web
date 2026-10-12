@@ -10,7 +10,7 @@ import {
 } from '../../services/authApiClient.js';
 import { adminApiClient as defaultAdminApiClient } from '../../services/adminApiClient.js';
 import { consultationApiClient } from '../../services/consultationApiClient.js';
-import { isAdministrator } from '../../services/authService.js';
+import { isAdministrator, canManageAdministrators } from '../../services/authService.js';
 import { loadResourceCatalog } from '../../data/courses/resourceData.js';
 import TeacherNameInput from '../TeacherNameInput.vue';
 import { courseTeacherNames } from '../../services/teacherSuggestionService.js';
@@ -60,6 +60,7 @@ const auditActionLabels = {
   'notice.file.add': '上传通知附件', 'notice.file.upload': '上传通知附件', 'notice.file.remove': '移除通知附件',
   'student_homepage.create': '新增同学主页', 'student_homepage.update': '编辑同学主页', 'student_homepage.delete': '移除同学主页',
   'student_homepage_application.create': '投稿同学主页', 'student_homepage_application.approve': '通过主页投稿', 'student_homepage_application.reject': '拒绝主页投稿',
+  'administrator.add': '增加管理员',
 };
 
 const currentUser = ref(null);
@@ -85,6 +86,8 @@ const rejectionNote = ref('');
 const auditLogs = ref([]);
 const auditAction = ref('');
 const auditQuery = ref('');
+const auditActorName = ref(''), administratorStudentId = ref(''), administratorNotice = ref('');
+let auditSequence = 0, auditRefreshTimer;
 const listBusy = ref(false);
 const actionBusy = ref(false);
 const notice = ref('');
@@ -128,6 +131,7 @@ const selectedMentor = ref(null);
 const consultationForm = reactive({ startsAt: '', endsAt: '' });
 
 const isAdmin = computed(() => isAdministrator(currentUser.value));
+const canAddAdministrators = computed(() => !props.isDemo && canManageAdministrators(currentUser.value));
 const majorCourses = computed(() => filterAdminCoursesToOverview(courses.value, selectedMajorId.value));
 const editingItem = computed(() => editorItemSnapshot.value?.id === editingId.value
   ? editorItemSnapshot.value : items.value.find((item) => item.id === editingId.value) ?? null);
@@ -151,6 +155,7 @@ const filteredRows = computed(() => {
   return [...reviews, ...content];
 });
 const pageTitle = computed(() => {
+  if (selectedView.value === 'administrators') return '增加管理员';
   if (selectedView.value === 'notices') return '通知管理';
   if (selectedView.value === 'activities') return '活动管理';
   if (selectedView.value === 'more') return '更多';
@@ -405,6 +410,9 @@ function discardLocalDraft(draft) {
 }
 
 watch(draftScope, () => {
+  ++auditSequence;
+  auditLogs.value = []; auditActorName.value = ''; administratorStudentId.value = ''; administratorNotice.value = '';
+  clearTimeout(auditRefreshTimer);
   clearTimeout(draftTimer);
   editorOpen.value = false;
   batchMode.value = '';
@@ -481,15 +489,40 @@ async function refreshSubmissions() {
 
 async function refreshAuditLogs() {
   if (!isAdmin.value) return;
+  clearTimeout(auditRefreshTimer);
+  const token = ++auditSequence, scope = draftScope.value;
   listBusy.value = true;
   const result = await activeApiClient.value.fetchAuditLogs({
     courseCode: selectedCourseCode.value,
     action: auditAction.value,
     query: auditQuery.value,
+    actorName: auditActorName.value,
   });
+  if (disposed || token !== auditSequence || scope !== draftScope.value || selectedView.value !== 'logs') return;
   if (result.ok) auditLogs.value = result.logs ?? [];
   else notice.value = result.message;
   listBusy.value = false;
+}
+
+function queueAuditRefresh() {
+  clearTimeout(auditRefreshTimer);
+  auditRefreshTimer = setTimeout(refreshAuditLogs, 250);
+}
+
+async function addAdministrator() {
+  if (actionBusy.value || !canAddAdministrators.value) return;
+  const studentId = administratorStudentId.value.trim();
+  if (!/^\d{5,20}$/.test(studentId)) { administratorNotice.value = '请输入 5 到 20 位纯数字学号。'; return; }
+  const scope = draftScope.value;
+  actionBusy.value = true;
+  administratorNotice.value = '';
+  try {
+    const result = await activeApiClient.value.addAdministrator(studentId);
+    if (disposed || scope !== draftScope.value) return;
+    administratorNotice.value = result.persistenceWarning || result.message || (result.ok ? '管理员已增加。' : '增加失败，请重试。');
+    if (result.ok) administratorStudentId.value = '';
+  } catch { if (!disposed && scope === draftScope.value) administratorNotice.value = '增加失败，请重试。'; }
+  finally { if (!disposed && scope === draftScope.value) actionBusy.value = false; }
 }
 
 async function refreshHomepages() {
@@ -687,6 +720,7 @@ function changeView(view, type = '') {
   if (editorOpen.value ? !preserveEditorBeforeLeaving() : dirty.value && !window.confirm('当前修改尚未保存，确定放弃吗？')) return;
   if (view !== 'feedback') { ++feedbackSequence; feedbackBusy.value = false; }
   selectedView.value = view;
+  if (view !== 'logs') { ++auditSequence; clearTimeout(auditRefreshTimer); }
   batchMode.value = '';
   editorOpen.value = false;
   submissionEditorOpen.value = false;
@@ -1068,7 +1102,7 @@ function formattedTime(value) {
 
 defineExpose({ canLeave: () => actionBusy.value ? false : batchMode.value ? (batchPanel.value?.canLeave() ?? true) : selectedView.value === 'notices' ? (noticePanel.value?.canLeave() ?? true) : preserveEditorBeforeLeaving() });
 onMounted(() => { initialize(); badgeTimer = setInterval(refreshPendingBadges, 30000); document.addEventListener('visibilitychange', refreshPendingBadges); window.addEventListener('pagehide', onPageHide); window.addEventListener('beforeunload', onBeforeUnload); });
-onBeforeUnmount(() => { persistDraft(); disposed = true; clearTimeout(draftTimer); clearInterval(badgeTimer); ++badgeSequence; ++feedbackSequence; ++feedbackCountSequence; document.removeEventListener('visibilitychange', refreshPendingBadges); window.removeEventListener('pagehide', onPageHide); window.removeEventListener('beforeunload', onBeforeUnload); });
+onBeforeUnmount(() => { persistDraft(); disposed = true; ++auditSequence; clearTimeout(auditRefreshTimer); clearTimeout(draftTimer); clearInterval(badgeTimer); ++badgeSequence; ++feedbackSequence; ++feedbackCountSequence; document.removeEventListener('visibilitychange', refreshPendingBadges); window.removeEventListener('pagehide', onPageHide); window.removeEventListener('beforeunload', onBeforeUnload); });
 </script>
 
 <template>
@@ -1094,6 +1128,7 @@ onBeforeUnmount(() => { persistDraft(); disposed = true; clearTimeout(draftTimer
         <button type="button" :class="{ 'is-active': selectedView === 'feedback' }" @click="changeView('feedback')">意见反馈<span v-if="feedbackUnread" class="admin-pending-dot admin-sidebar-dot" title="有未读意见反馈" aria-hidden="true"></span></button>
         <button type="button" :class="{ 'is-active': selectedView === 'consultation' }" @click="changeView('consultation')">咨询室</button>
         <button type="button" :class="{ 'is-active': selectedView === 'logs' }" @click="changeView('logs')">操作日志</button>
+        <button v-if="canAddAdministrators" type="button" :class="{ 'is-active': selectedView === 'administrators' }" @click="changeView('administrators')">增加管理员</button>
       </nav>
       <button v-if="currentUser" class="admin-page__logout" type="button" @click="logout">退出登录</button>
     </aside>
@@ -1549,8 +1584,15 @@ onBeforeUnmount(() => { persistDraft(); disposed = true; clearTimeout(draftTimer
           </template>
         </section>
 
+        <section v-else-if="selectedView === 'administrators' && canAddAdministrators" class="admin-list" aria-label="增加管理员">
+          <form class="admin-grant-form" @submit.prevent="addAdministrator">
+            <label><span>学号</span><input v-model.trim="administratorStudentId" inputmode="numeric" autocomplete="off" maxlength="20" required :disabled="actionBusy" placeholder="输入学号"></label>
+            <button type="submit" class="admin-primary-action" :disabled="actionBusy">{{ actionBusy ? '正在增加...' : '确认增加管理员' }}</button>
+          </form>
+          <p v-if="administratorNotice" class="admin-notice" role="status">{{ administratorNotice }}</p>
+        </section>
         <section v-else class="admin-list" aria-label="操作日志">
-          <div class="admin-list__filters admin-list__filters--wide admin-list__filters--course">
+          <div class="admin-list__filters admin-list__filters--wide admin-list__filters--course admin-list__filters--audit">
             <label>
               <span>专业</span>
               <select v-model="selectedMajorId" @change="changeMajor">
@@ -1568,14 +1610,15 @@ onBeforeUnmount(() => { persistDraft(); disposed = true; clearTimeout(draftTimer
               />
             </label>
             <label><span>操作类型</span><select v-model="auditAction" @change="refreshAuditLogs"><option value="">全部操作</option><option v-for="(label, action) in auditActionLabels" :key="action" :value="action">{{ label }}</option></select></label>
-            <label><span>日志搜索</span><input v-model.trim="auditQuery" type="search" placeholder="内容标题、管理员或说明" @change="refreshAuditLogs"></label>
+            <label><span>管理员昵称</span><input v-model.trim="auditActorName" type="search" maxlength="40" placeholder="输入管理员昵称" @input="queueAuditRefresh" @keydown.enter.prevent="refreshAuditLogs"></label>
+            <label><span>日志搜索</span><input v-model.trim="auditQuery" type="search" placeholder="内容标题或说明" @change="refreshAuditLogs"></label>
           </div>
           <p v-if="listBusy" class="admin-list__empty">正在读取日志...</p>
           <p v-else-if="!auditLogs.length" class="admin-list__empty">当前筛选条件下暂无操作记录。</p>
           <div v-else class="admin-audit-list">
             <article v-for="entry in auditLogs" :key="entry.id" class="admin-audit-row">
               <span class="admin-status">{{ auditActionLabels[entry.action] || entry.action }}</span>
-              <div><strong>{{ entry.targetTitle || '未命名内容' }}</strong><small>{{ entry.courseCode }} · {{ entry.actorName || '系统' }}<template v-if="entry.detail"> · {{ entry.detail }}</template></small></div>
+              <div><strong>{{ entry.targetTitle || '未命名内容' }}</strong><small><template v-if="entry.courseCode">{{ entry.courseCode }} · </template>操作者：{{ entry.actorName || (entry.actorId ? '未知操作者' : '系统') }}<template v-if="entry.detail"> · {{ entry.detail }}</template></small></div>
               <time :datetime="entry.createdAt">{{ formattedTime(entry.createdAt) }}</time>
             </article>
           </div>

@@ -18,6 +18,7 @@ import {
   updateSubmission,
 } from './submissionService.js';
 import { createComment, deleteComment, updateComment } from './commentService.js';
+import { addAdministrator } from '../administratorService.js';
 import {
   exportContentBatch, importContentBatch, listContentBatchCourses,
   MAX_BATCH_BYTES, previewContentBatch,
@@ -114,7 +115,7 @@ function logAdminAction(store, action, item, actor, detail = '') {
     targetTitle: item.title,
     courseCode: item.courseCode,
     actorId: actor.id,
-    actorName: actor.cc98Nickname,
+    actorName: actor.nickname || actor.cc98Nickname || '',
     detail,
   });
 }
@@ -340,7 +341,8 @@ export async function handleContentHttpRequest({
 
   if (!url.pathname.startsWith('/api/admin/content')
     && !url.pathname.startsWith('/api/admin/submissions')
-    && url.pathname !== '/api/admin/audit-logs') {
+    && url.pathname !== '/api/admin/audit-logs'
+    && url.pathname !== '/api/admin/administrators') {
     return false;
   }
   if (!authorizeAdmin(sendJson, response, user)) {
@@ -413,13 +415,30 @@ export async function handleContentHttpRequest({
   }
 
   if (request.method === 'GET' && url.pathname === '/api/admin/audit-logs') {
+    const actorName = (url.searchParams.get('actorName') ?? '').trim();
+    if (actorName.length > 40) { sendJson(response, 400, { message: '管理员昵称筛选不能超过 40 个字符。' }); return true; }
+    const actorIds = actorName ? authStore.findAuditActors(actorName).map(actor => actor.id) : [];
     sendJson(response, 200, {
       logs: contentStore.listAuditLogs({
         action: url.searchParams.get('action') ?? '',
         courseCode: url.searchParams.get('courseCode') ?? '',
         query: url.searchParams.get('query') ?? '',
+        actorName, actorIds,
+      }).map(entry => {
+        const actor = entry.actorId ? authStore.findUserById(entry.actorId) : null;
+        return { ...entry, actorName: entry.actorName && entry.actorName !== '未绑定' ? entry.actorName : actor?.nickname || (entry.actorId ? '未知操作者' : '系统') };
       }),
     });
+    return true;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/admin/administrators') {
+    if (!acceptsAdminMutation(request)) {
+      sendJson(response, 415, { message: '管理写操作的请求格式无效。' }); return true;
+    }
+    const result = addAdministrator(authStore, contentStore, userId, await readJsonBody(request));
+    sendJson(response, result.status, result.ok ? { message: result.message, registered: result.registered,
+      studentId: result.studentId, nickname: result.nickname, persistenceWarning: result.persistenceWarning } : { message: result.message });
     return true;
   }
 

@@ -30,7 +30,7 @@ function percentageToGPA(percentage) {
 function actorFields(actor) {
   return {
     actorId: actor?.id ?? null,
-    actorName: actor?.cc98Nickname ?? '',
+    actorName: actor?.nickname || actor?.cc98Nickname || '',
   };
 }
 

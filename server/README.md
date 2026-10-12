@@ -82,6 +82,13 @@ promoted on server startup. The management page is available at `#admin` and is
 intentionally absent from student navigation. `ADMIN_CC98_NAMES` and
 `ADMIN_INVITE_TOKEN` remain available only for legacy backend provisioning.
 
+The verified owner administrator `3240105782@zju.edu.cn` can add numeric student
+IDs through `POST /api/admin/administrators`. Durable qualifications live in
+`administrator_grants` in auth SQLite. Existing verified accounts are promoted
+immediately; future registration or email binding applies the qualification only
+after mailbox verification. Other administrators cannot use this endpoint.
+Grant creator/time metadata and a content audit entry record the operation.
+
 Optional persistent-path settings:
 
 ```powershell

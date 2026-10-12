@@ -15,6 +15,9 @@ export function createAdminApiClient(fetchImpl = fetch) {
   const { request } = createRequestClient({ name: 'admin', fetchImpl, networkErrorMessage: '管理服务暂时无法连接。' });
 
   return {
+    addAdministrator(studentId) {
+      return request('api/admin/administrators', { method: 'POST', body: { studentId } });
+    },
     previewContentBatch(document) {
       return request('api/admin/content-batch/preview', { method: 'POST', body: { document } });
     },

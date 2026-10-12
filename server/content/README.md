@@ -14,6 +14,7 @@ This directory owns the first-phase course-content administration backend.
 - Public read models that omit internal storage metadata.
 - Pending student submissions and administrator review decisions.
 - Anonymous like state and administrator operation logs.
+- Audit entries retain actor IDs and nickname snapshots. The administrator API resolves older empty/unbound names through auth identities and supports a separate nickname filter before row limits, including historical records for renamed administrators.
 - A separate activity table used by the public activity page and homepage featured feed.
 
 ## Activity management
