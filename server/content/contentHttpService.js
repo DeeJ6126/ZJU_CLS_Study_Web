@@ -417,13 +417,17 @@ export async function handleContentHttpRequest({
   if (request.method === 'GET' && url.pathname === '/api/admin/audit-logs') {
     const actorName = (url.searchParams.get('actorName') ?? '').trim();
     if (actorName.length > 40) { sendJson(response, 400, { message: '管理员昵称筛选不能超过 40 个字符。' }); return true; }
+    const actorIdText = url.searchParams.get('actorId') ?? '';
+    if (actorIdText && (!/^\d+$/.test(actorIdText) || !Number.isSafeInteger(Number(actorIdText)) || Number(actorIdText) < 1)) { sendJson(response, 400, { message: '操作者筛选无效。' }); return true; }
     const actorIds = actorName ? authStore.findAuditActors(actorName).map(actor => actor.id) : [];
+    const administrators = authStore.findAuditActors('');
     sendJson(response, 200, {
+      administrators, administratorNames: administrators.map(actor => actor.nickname),
       logs: contentStore.listAuditLogs({
         action: url.searchParams.get('action') ?? '',
         courseCode: url.searchParams.get('courseCode') ?? '',
         query: url.searchParams.get('query') ?? '',
-        actorName, actorIds,
+        actorName, actorIds, actorId: actorIdText ? Number(actorIdText) : null,
       }).map(entry => {
         const actor = entry.actorId ? authStore.findUserById(entry.actorId) : null;
         return { ...entry, actorName: entry.actorName && entry.actorName !== '未绑定' ? entry.actorName : actor?.nickname || (entry.actorId ? '未知操作者' : '系统') };

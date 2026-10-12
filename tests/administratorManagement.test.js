@@ -95,6 +95,8 @@ test('audit operator filtering combines nickname snapshots and current identity 
   content.createAuditLog({ action: 'content.publish', entityType: 'content', entityId: 'owner-post', targetTitle: '心得', courseCode: 'BIO2011F', actorId: owner.id, actorName: '', createdAt: '2020-01-01T00:00:00.000Z' });
   const result = content.listAuditLogs({ actorName: 'Dee', actorIds: [owner.id], action: 'content.publish', courseCode: 'BIO2011F', limit: 1 });
   assert.equal(result.length, 1); assert.equal(result[0].actorId, owner.id);
+  const selected = content.listAuditLogs({ actorName: 'Dee', actorIds: [owner.id, other.id], actorId: owner.id });
+  assert.equal(selected.length, 1); assert.equal(selected[0].actorId, owner.id);
   assert.equal(content.listAuditLogs({ actorName: '%' }).length, 0);
 });
 
@@ -120,7 +122,9 @@ test('HTTP enforces owner authorization and resolves old empty audit names', asy
   content.createAuditLog({ action: 'content.update', entityType: 'content', entityId: 'old', targetTitle: '旧日志', actorId: owner.id, actorName: '未绑定' });
   const response = await fetch(`${base}/api/admin/audit-logs?actorName=Dee`, { headers: { cookie: cookies.other } });
   assert.equal(response.status, 200);
-  const logs = (await response.json()).logs;
+  const payload = await response.json();
+  assert.deepEqual(payload.administratorNames.sort(), ['Dee', 'OtherAdmin']);
+  const logs = payload.logs;
   assert.ok(logs.some(log => log.targetTitle === '旧日志' && log.actorName === 'Dee'));
   assert.ok(logs.every(log => log.actorId === owner.id));
   store.updateProfile(owner.id, { nickname: 'RenamedOwner' });

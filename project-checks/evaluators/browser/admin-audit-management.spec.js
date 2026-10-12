@@ -15,7 +15,7 @@ async function fixture(page, owner = false) {
     if (path === '/api/consultation/status') result = { open: false, isMentor: false };
     if (path === '/api/admin/audit-logs') {
       state.queries.push(url.searchParams.get('actorName'));
-      result = { logs: logs.filter(log => !url.searchParams.get('actorName') || log.actorName.includes(url.searchParams.get('actorName'))) };
+      result = { administrators: [{ id: 1, nickname: 'Dee' }, { id: 2, nickname: '另一管理员' }], administratorNames: ['Dee', '另一管理员'], logs: logs.filter(log => (!url.searchParams.get('actorId') || log.actorId === Number(url.searchParams.get('actorId'))) && (!url.searchParams.get('actorName') || log.actorName.includes(url.searchParams.get('actorName')))) };
     }
     if (path === '/api/admin/administrators') {
       state.grants.push(request.postDataJSON());
@@ -34,10 +34,25 @@ test('audit logs show the acting nickname and narrow results using the separate 
   await expect(page.locator('.admin-audit-list')).toContainText('操作者：Dee');
   await expect(page.locator('.admin-audit-list')).toContainText('操作者：另一管理员');
   await expect(page.getByRole('button', { name: '增加管理员', exact: true })).toHaveCount(0);
-  await page.getByRole('searchbox', { name: '管理员昵称', exact: true }).fill('Dee');
+  const picker = page.getByRole('combobox', { name: '管理员昵称', exact: true });
+  await picker.click();
+  await expect(page.getByRole('option', { name: 'Dee', exact: true })).toBeVisible();
+  await picker.fill('D');
+  await expect(page.getByRole('option', { name: '另一管理员', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('option', { name: 'Dee', exact: true }).locator('strong')).toHaveText('D');
+  await page.getByRole('option', { name: 'Dee', exact: true }).click();
   await expect(page.locator('.admin-audit-row')).toHaveCount(1);
   await expect(page.locator('.admin-audit-row')).toContainText('管理员甲修改的资料');
   expect(state.queries).toContain('Dee');
+  await picker.click();
+  await page.getByRole('option', { name: '全部管理员', exact: true }).click();
+  await expect(page.locator('.admin-audit-row')).toHaveCount(2);
+  await picker.fill('D');
+  await picker.press('ArrowDown');
+  await picker.press('ArrowDown');
+  await picker.press('Enter');
+  await expect(picker).toHaveValue('Dee');
+  await expect(page.locator('.admin-audit-row')).toHaveCount(1);
   expect(state.errors).toEqual([]);
   expect(state.grants).toEqual([]);
 });
@@ -49,7 +64,7 @@ for (const theme of ['light', 'dark']) {
     await page.goto('/#admin');
     if (await page.locator('html').getAttribute('data-theme') !== theme) await page.locator('.theme-switch').click();
     await page.getByRole('button', { name: '操作日志', exact: true }).click();
-    await expect(page.getByRole('searchbox', { name: '管理员昵称', exact: true })).toBeVisible();
+    await expect(page.getByRole('combobox', { name: '管理员昵称', exact: true })).toBeVisible();
     await page.screenshot({ path: `project-checks/artifacts/admin-audit-${theme}.png` });
     await page.getByRole('button', { name: '增加管理员', exact: true }).click();
     const panel = page.getByRole('region', { name: '增加管理员', exact: true });

@@ -87,6 +87,8 @@ const auditLogs = ref([]);
 const auditAction = ref('');
 const auditQuery = ref('');
 const auditActorName = ref(''), administratorStudentId = ref(''), administratorNotice = ref('');
+const auditAdministratorNames = ref([]);
+const auditAdministrators = ref([]), auditSelectedActorId = ref('');
 let auditSequence = 0, auditRefreshTimer;
 const listBusy = ref(false);
 const actionBusy = ref(false);
@@ -411,7 +413,8 @@ function discardLocalDraft(draft) {
 
 watch(draftScope, () => {
   ++auditSequence;
-  auditLogs.value = []; auditActorName.value = ''; administratorStudentId.value = ''; administratorNotice.value = '';
+  auditLogs.value = []; auditActorName.value = ''; auditAdministratorNames.value = []; administratorStudentId.value = ''; administratorNotice.value = '';
+  auditAdministrators.value = []; auditSelectedActorId.value = '';
   clearTimeout(auditRefreshTimer);
   clearTimeout(draftTimer);
   editorOpen.value = false;
@@ -497,9 +500,15 @@ async function refreshAuditLogs() {
     action: auditAction.value,
     query: auditQuery.value,
     actorName: auditActorName.value,
+    actorId: auditSelectedActorId.value,
   });
   if (disposed || token !== auditSequence || scope !== draftScope.value || selectedView.value !== 'logs') return;
-  if (result.ok) auditLogs.value = result.logs ?? [];
+  if (result.ok) {
+    auditLogs.value = result.logs ?? [];
+    auditAdministrators.value = result.administrators ?? [];
+    const names = result.administratorNames ?? [];
+    if (names.length !== auditAdministratorNames.value.length || names.some((name, index) => name !== auditAdministratorNames.value[index])) auditAdministratorNames.value = names;
+  }
   else notice.value = result.message;
   listBusy.value = false;
 }
@@ -507,6 +516,12 @@ async function refreshAuditLogs() {
 function queueAuditRefresh() {
   clearTimeout(auditRefreshTimer);
   auditRefreshTimer = setTimeout(refreshAuditLogs, 250);
+}
+
+function typeAuditActor() { auditSelectedActorId.value = ''; queueAuditRefresh(); }
+function selectAuditActor(name) {
+  auditSelectedActorId.value = auditAdministrators.value.find(actor => actor.nickname === name)?.id ?? '';
+  refreshAuditLogs();
 }
 
 async function addAdministrator() {
@@ -1610,7 +1625,7 @@ onBeforeUnmount(() => { persistDraft(); disposed = true; ++auditSequence; clearT
               />
             </label>
             <label><span>操作类型</span><select v-model="auditAction" @change="refreshAuditLogs"><option value="">全部操作</option><option v-for="(label, action) in auditActionLabels" :key="action" :value="action">{{ label }}</option></select></label>
-            <label><span>管理员昵称</span><input v-model.trim="auditActorName" type="search" maxlength="40" placeholder="输入管理员昵称" @input="queueAuditRefresh" @keydown.enter.prevent="refreshAuditLogs"></label>
+            <label><span>管理员昵称</span><TeacherNameInput v-model="auditActorName" :names="auditAdministratorNames" input-label="管理员昵称" list-label="管理员名单" all-label="全部管理员" placeholder="全部管理员（可输入筛选）" @update:modelValue="typeAuditActor" @select="selectAuditActor" /></label>
             <label><span>日志搜索</span><input v-model.trim="auditQuery" type="search" placeholder="内容标题或说明" @change="refreshAuditLogs"></label>
           </div>
           <p v-if="listBusy" class="admin-list__empty">正在读取日志...</p>
