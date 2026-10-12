@@ -1,5 +1,5 @@
 import { noticeListOptions, toPublicNotice, validateNoticeInput } from './noticeService.js';
-import { maxNoticeAttachmentBytes, readNoticeAttachment, removeNoticeAttachment, saveNoticeAttachment } from './noticeFileService.js';
+import { maxNoticeAttachmentBytes, maxNoticeImageBytes, readNoticeAttachment, removeNoticeAttachment, saveNoticeAttachment, saveNoticeImage } from './noticeFileService.js';
 
 function acceptsSameOrigin(request) {
   if (request.headers['sec-fetch-site'] === 'cross-site') return false;
@@ -48,7 +48,7 @@ export async function handleNoticeHttpRequest({ request, response, url, user, us
     const buffer = attachment && readNoticeAttachment(uploadDirectory, attachment.storedName);
     if (!buffer) return sendError(404, '附件不存在。');
     response.writeHead(200, { 'content-type': attachment.mimeType, 'content-length': buffer.length,
-      'content-disposition': `attachment; filename*=UTF-8''${encodeURIComponent(attachment.fileName).replace(/'/g, '%27')}`,
+      'content-disposition': `${attachment.mimeType === 'image/webp' ? 'inline' : 'attachment'}; filename*=UTF-8''${encodeURIComponent(attachment.fileName).replace(/'/g, '%27')}`,
       'x-content-type-options': 'nosniff', 'cache-control': 'private, no-store' });
     response.end(buffer);
     return true;
@@ -60,18 +60,19 @@ export async function handleNoticeHttpRequest({ request, response, url, user, us
     return sendNotice(notice);
   }
   if (!adminRoot) return sendError(404, '通知接口不存在。');
-  const uploadMatch = url.pathname.match(/^\/api\/admin\/notices\/([^/]+)\/attachments$/);
+  const uploadMatch = url.pathname.match(/^\/api\/admin\/notices\/([^/]+)\/(attachments|images)$/);
   if (request.method === 'POST' && uploadMatch) {
     const notice = contentStore.findNoticeById(decodeURIComponent(uploadMatch[1]));
     if (!notice) return sendError(404, '通知不存在。');
     if (notice.attachments.length >= 20) return sendError(400, '每条通知最多上传 20 个附件。');
-    if (request.headers['x-notice-upload'] !== 'notice-attachment') return sendError(415, '附件上传请求格式无效。');
+    const isImage = uploadMatch[2] === 'images';
+    if (request.headers['x-notice-upload'] !== (isImage ? 'notice-image' : 'notice-attachment')) return sendError(415, '文件上传请求格式无效。');
     let fileName;
     try { fileName = decodeURIComponent(request.headers['x-file-name'] ?? ''); }
     catch { return sendError(400, '附件文件名无效。'); }
-    const buffer = await readBinaryBody(request, maxNoticeAttachmentBytes);
-    if (!buffer) return sendError(413, '附件不能超过 25 MB。');
-    const saved = await saveNoticeAttachment({ buffer, fileName, mimeType: request.headers['content-type'], uploadDirectory });
+    const buffer = await readBinaryBody(request, isImage ? maxNoticeImageBytes : maxNoticeAttachmentBytes);
+    if (!buffer) return sendError(413, isImage ? '图片不能超过 10 MB。' : '附件不能超过 25 MB。');
+    const saved = await (isImage ? saveNoticeImage : saveNoticeAttachment)({ buffer, fileName, mimeType: request.headers['content-type'], uploadDirectory });
     if (!saved.ok) return sendError(saved.status, saved.message);
     let next;
     try {
@@ -95,7 +96,8 @@ export async function handleNoticeHttpRequest({ request, response, url, user, us
     const notice = contentStore.findNoticeById(decodeURIComponent(deleteMatch[1]));
     const attachment = notice?.attachments.find((item) => item.id === decodeURIComponent(deleteMatch[2]));
     if (!attachment) return sendError(404, '附件不存在。');
-    if (notice.status === 'published' && !notice.body && !notice.sourceUrl && notice.attachments.length === 1) {
+    if (notice.status === 'published' && !notice.body && !notice.sourceUrl
+      && attachment.mimeType !== 'image/webp' && notice.attachments.filter(file => file.mimeType !== 'image/webp').length === 1) {
       return sendError(400, '请先下架通知，再删除唯一的正文附件。');
     }
     if (!removeNoticeAttachment(uploadDirectory, attachment.storedName)) return sendError(500, '附件移除失败，记录未改变。');

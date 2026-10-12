@@ -147,6 +147,14 @@ expose only the avatar, nickname, and published posts. Authors can archive their
 published posts immediately; edits create a moderation submission and leave the
 current published version visible until approval.
 
+Notice body images use administrator-only `POST /api/admin/notices/:id/images`.
+Static PNG/JPEG/WebP uploads are bounded to 10 MiB and 20 million decoded pixels,
+re-encoded as metadata-free WebP and stored alongside notice attachments. Images
+and documents share the 20-file-per-notice limit. Public image reads use the notice
+attachment route with inline disposition, and require a published parent notice;
+administrators can preview private images. They appear as `images` in notice JSON,
+not in the downloadable document list.
+
 ## Account data and timetable imports
 
 Student-ID-verified account endpoints manage private courses, favorites,

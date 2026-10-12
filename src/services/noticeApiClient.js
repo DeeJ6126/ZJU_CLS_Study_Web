@@ -21,6 +21,12 @@ export function createNoticeApiClient(fetchImpl = fetch) {
     update: (id, input) => request(itemPath(id), { method: 'PATCH', body: input }),
     publish: (id) => request(`${itemPath(id)}/publish`, { method: 'POST', body: {} }),
     archive: (id) => request(`${itemPath(id)}/archive`, { method: 'POST', body: {} }),
+    uploadImage: (id, file) => request(`${itemPath(id)}/images`, {
+      method: 'POST', body: file, headers: {
+        'content-type': file.type || 'application/octet-stream',
+        'x-file-name': encodeURIComponent(file.name), 'x-notice-upload': 'notice-image',
+      },
+    }),
     uploadAttachment: (id, file) => request(`${itemPath(id)}/attachments`, {
       method: 'POST', body: file, headers: {
         'content-type': file.type || ({ pdf: 'application/pdf', docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }[file.name.split('.').at(-1).toLowerCase()] ?? 'application/octet-stream'),

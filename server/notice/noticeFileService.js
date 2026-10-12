@@ -2,8 +2,10 @@ import { randomUUID } from 'node:crypto';
 import { lstatSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { extname, join, resolve } from 'node:path';
 import { Open } from 'unzipper-esm';
+import sharp from 'sharp';
 
 export const maxNoticeAttachmentBytes = 25 * 1024 * 1024;
+export const maxNoticeImageBytes = 10 * 1024 * 1024;
 const maxExpandedBytes = 100 * 1024 * 1024;
 const types = {
   '.pdf': 'application/pdf',
@@ -81,7 +83,7 @@ export async function validateNoticeAttachment({ buffer, fileName, mimeType }) {
 }
 
 function attachmentPath(uploadDirectory, storedName) {
-  if (!/^[a-f0-9-]{36}\.(pdf|docx|xlsx)$/.test(String(storedName ?? ''))) return null;
+  if (!/^[a-f0-9-]{36}\.(pdf|docx|xlsx|webp)$/.test(String(storedName ?? ''))) return null;
   const directory = resolve(uploadDirectory, 'notice-attachments');
   return join(directory, storedName);
 }
@@ -94,6 +96,24 @@ export async function saveNoticeAttachment(input) {
   writeFileSync(attachmentPath(input.uploadDirectory, storedName), input.buffer, { flag: 'wx' });
   return { ok: true, file: { id: randomUUID(), fileName: input.fileName, storedName,
     mimeType: input.mimeType, size: input.buffer.length } };
+}
+
+export async function saveNoticeImage({ buffer, fileName, uploadDirectory }) {
+  if (!Buffer.isBuffer(buffer) || !buffer.length || buffer.length > maxNoticeImageBytes) return fail('图片不能为空且不能超过 10 MB。', 413);
+  if (typeof fileName !== 'string' || fileName.length > 180 || /[\\/\u0000-\u001f\u007f<>:"|?*]/.test(fileName)
+    || !/\.(png|jpe?g|webp)$/i.test(fileName)) return fail('请选择 PNG、JPEG 或 WebP 图片。');
+  let output;
+  try {
+    const image = sharp(buffer, { failOn: 'error', limitInputPixels: 20_000_000 });
+    const metadata = await image.metadata();
+    if (!['png', 'jpeg', 'webp'].includes(metadata.format) || (metadata.pages ?? 1) > 1) return fail('请选择静态 PNG、JPEG 或 WebP 图片。');
+    output = await image.rotate().webp({ quality: 90 }).toBuffer();
+    if (output.length > maxNoticeImageBytes) return fail('图片不能超过 10 MB。', 413);
+  } catch { return fail('图片无法读取，请重新选择有效的图片。'); }
+  const storedName = `${randomUUID()}.webp`;
+  mkdirSync(resolve(uploadDirectory, 'notice-attachments'), { recursive: true });
+  writeFileSync(attachmentPath(uploadDirectory, storedName), output, { flag: 'wx' });
+  return { ok: true, file: { id: randomUUID(), fileName, storedName, mimeType: 'image/webp', size: output.length } };
 }
 
 export function readNoticeAttachment(uploadDirectory, storedName) {

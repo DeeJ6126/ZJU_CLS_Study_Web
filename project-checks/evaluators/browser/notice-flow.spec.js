@@ -3,6 +3,7 @@ import { createServer } from 'node:http';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import sharp from 'sharp';
 import { createContentStore } from '../../../server/content/contentStore.js';
 import { handleNoticeHttpRequest } from '../../../server/notice/noticeHttpService.js';
 
@@ -167,12 +168,9 @@ test('administrator saves previews uploads publishes and archives notices using 
   } finally { await fixture.close(); }
 });
 
-test('notice Markdown toolbar formats selections and publishes safe inline images', async ({ page }) => {
+test('notice Markdown toolbar formats selections and uploads local inline images', async ({ page }) => {
   const fixture = await noticeFixture(page, true);
   try {
-    await page.route('https://images.example.test/**', route => route.fulfill({
-      contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/l9sAAAAASUVORK5CYII=', 'base64'),
-    }));
     await page.goto(`${fixture.baseUrl}/#admin`);
     await page.locator('.admin-page__nav').getByRole('button', { name: '通知', exact: true }).click();
     const panel = page.locator('.notice-admin');
@@ -200,22 +198,25 @@ test('notice Markdown toolbar formats selections and publishes safe inline image
       await panel.getByRole('button', { name: '插入', exact: true }).click();
       await expect(body).toHaveValue(expected);
     }
-    await panel.getByRole('button', { name: '插入图片', exact: true }).click();
+    await panel.getByRole('button', { name: '插入链接', exact: true }).click();
     await panel.locator('.notice-admin__link-input input').press('Escape');
     await expect(panel.locator('.notice-admin__link-input')).toHaveCount(0);
     await panel.locator('#notice-admin-edit-view').screenshot({ path: 'project-checks/artifacts/notice-markdown-toolbar.png' });
     await body.fill('图片说明');
     await body.evaluate(element => element.setSelectionRange(0, element.value.length));
-    await panel.getByRole('button', { name: '插入图片', exact: true }).click();
-    await panel.getByRole('textbox', { name: '请输入图片地址', exact: true }).fill('javascript:alert(1)');
-    await panel.getByRole('button', { name: '插入', exact: true }).click();
-    await expect(panel.getByRole('alert')).toContainText('请输入有效的 HTTP 或 HTTPS 地址');
-    await expect(body).toHaveValue('图片说明');
-    await panel.getByRole('textbox', { name: '请输入图片地址', exact: true }).fill('https://images.example.test/photo(1).png');
-    await panel.getByRole('textbox', { name: '请输入图片地址', exact: true }).press('Enter');
-    await expect(body).toHaveValue('![图片说明](https://images.example.test/photo%281%29.png)');
     await panel.getByRole('textbox', { name: '标题', exact: true }).fill('图片通知');
     await panel.getByRole('textbox', { name: '摘要', exact: true }).fill('图片摘要');
+    const chooser = page.waitForEvent('filechooser');
+    await panel.getByRole('button', { name: '插入图片', exact: true }).click();
+    await (await chooser).setFiles({ name: 'wrong.png', mimeType: 'image/png', buffer: Buffer.from('<script>alert(1)</script>') });
+    await expect(panel.getByRole('alert')).toContainText('图片无法读取');
+    await expect(body).toHaveValue('图片说明');
+    const png = await sharp({ create: { width: 120, height: 60, channels: 3, background: '#14768a' } }).png().toBuffer();
+    await panel.getByLabel('选择正文图片').setInputFiles({ name: 'photo.png', mimeType: 'image/png', buffer: png });
+    await expect(panel.getByText('图片已插入正文，保存后生效。', { exact: true })).toBeVisible();
+    const inserted = await body.inputValue();
+    expect(inserted).toMatch(/^!\[图片说明\]\(\/zjubio\/api\/notices\/[^/]+\/attachments\/[^/]+\)$/);
+    expect(fixture.store.listNotices({}).total).toBe(1);
     await panel.getByRole('tab', { name: '预览', exact: true }).click();
     const image = panel.locator('.notice-admin__markdown img');
     await expect(image).toHaveAttribute('alt', '图片说明');
@@ -225,7 +226,7 @@ test('notice Markdown toolbar formats selections and publishes safe inline image
     await expect(panel.getByText('通知已发布。', { exact: true })).toBeVisible();
     const saved = fixture.store.listNotices({ publicOnly: true }).items[0];
     await page.goto(`${fixture.baseUrl}/#notices/${saved.id}`);
-    await expect(page.locator('.notice-body img')).toHaveAttribute('src', 'https://images.example.test/photo%281%29.png');
+    await expect(page.locator('.notice-body img')).toHaveAttribute('src', `/zjubio/api/notices/${saved.id}/attachments/${saved.attachments[0].id}`);
     await page.locator('.theme-switch').click();
     await expect.poll(() => page.locator('.notice-body img').evaluate(element => element.naturalWidth)).toBeGreaterThan(0);
     expect(fixture.errors).toEqual([]);

@@ -56,7 +56,7 @@ export function validateNoticeInput(input, { current = null, publish = false } =
   value.majorIds = [...new Set(data.majorIds ?? [])];
   value.cohortYears = [...new Set(data.cohortYears ?? [])];
   if ((publish || current?.status === 'published') && (!value.summary
-    || (!value.body && !value.sourceUrl && !current?.attachments?.length))) {
+    || (!value.body && !value.sourceUrl && !current?.attachments?.some(file => file.mimeType !== 'image/webp')))) {
     return failure('发布通知需要摘要，以及正文、原文链接或附件。');
   }
   return { ok: true, value };
@@ -67,7 +67,10 @@ export function toPublicNotice(notice) {
     publishedDate, deadline, pinned, status, createdAt, updatedAt } = notice;
   return { id, title, summary, body, category, publisher, sourceUrl, audience, majorIds, cohortYears,
     publishedDate, deadline, pinned, status, createdAt, updatedAt,
-    attachments: notice.attachments.map(({ id, fileName, mimeType, size }) => ({
+    images: notice.attachments.filter(file => file.mimeType === 'image/webp').map(({ id, fileName }) => ({
+      id, fileName, url: publicApiPath(`/api/notices/${encodeURIComponent(notice.id)}/attachments/${encodeURIComponent(id)}`),
+    })),
+    attachments: notice.attachments.filter(file => file.mimeType !== 'image/webp').map(({ id, fileName, mimeType, size }) => ({
     id, fileName, mimeType, size,
     url: publicApiPath(`/api/notices/${encodeURIComponent(notice.id)}/attachments/${encodeURIComponent(id)}`),
   })) };

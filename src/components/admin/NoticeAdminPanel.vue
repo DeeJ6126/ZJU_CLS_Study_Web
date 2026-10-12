@@ -31,12 +31,13 @@ const fileInput = ref(null);
 const baseline = ref('');
 const form = reactive(emptyForm());
 const bodyTextarea = ref(null);
+const imageInput = ref(null);
 const promptInput = ref(null);
 const pendingAction = ref(null);
 const toolbarUrl = ref('');
 const toolbarError = ref('');
 let bodySelection = { start: 0, end: 0 };
-const bodyTools = [...markdownToolbar, { id: 'image', title: '插入图片', prompt: '请输入图片地址' }];
+const bodyTools = [...markdownToolbar, { id: 'image', title: '插入图片' }];
 const toolIcons = { link: linkPaths, file: downloadPaths, image: imagePaths };
 const dirty = computed(() => editorOpen.value && JSON.stringify(form) !== baseline.value);
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / pageSize)));
@@ -73,6 +74,7 @@ function applyBodyTool(action) {
   if (actionBusy.value) return;
   bodySelection = { start: bodyTextarea.value?.selectionStart ?? form.body.length, end: bodyTextarea.value?.selectionEnd ?? form.body.length };
   cancelToolbarPrompt();
+  if (action.id === 'image') { imageInput.value?.click(); return; }
   if (action.prompt) {
     pendingAction.value = action;
     nextTick(() => promptInput.value?.focus());
@@ -86,14 +88,48 @@ function applyBodyTool(action) {
   } else replaceBodySelection(...action.wrap);
 }
 
+async function uploadBodyImage(event) {
+  const file = event.target.files?.[0];
+  event.target.value = '';
+  if (!file || actionBusy.value || props.isDemo) return;
+  if (!/\.(png|jpe?g|webp)$/i.test(file.name) || !file.size || file.size > 10 * 1024 * 1024) {
+    toolbarError.value = '请选择不超过 10 MB 的 PNG、JPEG 或 WebP 图片。'; return;
+  }
+  toolbarError.value = '';
+  let input;
+  if (!currentNotice.value?.id) {
+    try { input = inputData(false); if (!input) return; }
+    catch (failure) { toolbarError.value = failure.message; return; }
+  }
+  actionBusy.value = true;
+  try {
+    // A new notice needs a private draft to own its uploaded images.
+    if (!currentNotice.value?.id) {
+      const created = await client.value.create(input);
+      if (!created.ok || !created.notice?.id) throw new Error(created.message || '草稿保存失败。');
+      currentNotice.value = created.notice;
+      baseline.value = JSON.stringify(form);
+    }
+    const result = await client.value.uploadImage(currentNotice.value.id, file);
+    if (!result.ok || !result.notice) throw new Error(result.message || '图片上传失败。');
+    const oldIds = new Set((currentNotice.value.images ?? []).map(image => image.id));
+    const uploaded = result.notice.images?.find(image => !oldIds.has(image.id));
+    if (!uploaded || !/^\/(?!\/)/.test(uploaded.url)) throw new Error('图片上传结果无效。');
+    currentNotice.value = result.notice;
+    const alt = file.name.replace(/[\[\]\\\r\n]/g, '').replace(/\.[^.]+$/, '');
+    if (replaceBodySelection('![', `](${uploaded.url})`, alt || '图片')) feedback.value = '图片已插入正文，保存后生效。';
+  } catch (failure) { toolbarError.value = failure.message || '图片上传失败，请重试。'; }
+  finally { actionBusy.value = false; }
+}
+
 function insertToolbarUrl() {
   if (actionBusy.value || !pendingAction.value) return;
   const safe = safeAttachmentUrl(toolbarUrl.value);
   if (!safe) { toolbarError.value = '请输入有效的 HTTP 或 HTTPS 地址。'; return; }
   const url = safe.replace(/[()[\]\x22]/g, character => `%${character.charCodeAt(0).toString(16).toUpperCase()}`);
   const action = pendingAction.value.id;
-  const inserted = replaceBodySelection(action === 'image' ? '![' : '[',
-    `](${url}${action === 'file' ? ' "attachment"' : ''})`, action === 'image' ? '图片' : action === 'file' ? '附件' : '链接');
+  const inserted = replaceBodySelection('[',
+    `](${url}${action === 'file' ? ' "attachment"' : ''})`, action === 'file' ? '附件' : '链接');
   if (inserted) cancelToolbarPrompt();
 }
 
@@ -411,6 +447,7 @@ onBeforeUnmount(() => {
                   <template v-else>{{ tool.label }}</template>
                 </button>
               </div>
+              <input ref="imageInput" class="notice-admin__sr-only" type="file" accept="image/png,image/jpeg,image/webp" aria-label="选择正文图片" :disabled="actionBusy" @change="uploadBodyImage">
               <div v-if="pendingAction" class="notice-admin__link-input">
                 <input ref="promptInput" v-model="toolbarUrl" :aria-label="pendingAction.prompt" :placeholder="pendingAction.prompt" :disabled="actionBusy" @keydown.enter.prevent="insertToolbarUrl" @keydown.esc.prevent="cancelToolbarPrompt">
                 <button type="button" :disabled="actionBusy" @click="insertToolbarUrl">插入</button>
