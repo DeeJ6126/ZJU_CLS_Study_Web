@@ -392,12 +392,34 @@
   font-weight: 600;
 }
 
-.auth-dialog__text-action {
-  justify-self: start;
-  min-height: auto;
-  padding: 2px 0;
+.auth-dialog__secondary-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 2px;
+}
+
+.auth-dialog .auth-dialog__text-action {
+  min-height: 32px;
+  padding: 4px 0;
   border: 0;
   background: transparent;
+  color: var(--color-primary-strong);
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.auth-dialog .auth-dialog__text-action:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.auth-dialog .auth-dialog__text-action:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
 }
 
 .auth-dialog__body button[type="submit"],

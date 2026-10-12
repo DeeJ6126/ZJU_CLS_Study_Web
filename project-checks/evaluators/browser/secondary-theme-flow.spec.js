@@ -122,6 +122,20 @@ test('direct login and all auth modes keep desktop dialogs centered in both them
       const position = await page.locator('.auth-dialog').evaluate((element) => { const rect = element.getBoundingClientRect(); return { x: Math.abs(rect.x + rect.width / 2 - innerWidth / 2), y: Math.abs(rect.y + rect.height / 2 - innerHeight / 2) }; });
       expect(position.x).toBeLessThan(2);
       expect(position.y).toBeLessThan(2);
+      const secondary = await page.locator('.auth-dialog__text-action').evaluateAll(elements => elements.map(element => {
+        const style = getComputedStyle(element);
+        return { border: style.borderTopWidth, background: style.backgroundColor,
+          fontSize: style.fontSize, top: element.getBoundingClientRect().top };
+      }));
+      for (const action of secondary) {
+        expect(action.border).toBe('0px');
+        expect(action.background).toBe('rgba(0, 0, 0, 0)');
+        expect(action.fontSize).toBe('14px');
+      }
+      if (authMode === 'login') {
+        expect(secondary).toHaveLength(2);
+        expect(Math.abs(secondary[0].top - secondary[1].top)).toBeLessThan(1);
+      }
       await checkView(page, `auth-${authMode}-${mode}`, '.auth-dialog label span:not(.auth-dialog__email-field), .auth-dialog button');
     }
     await page.getByRole('button', { name: '关闭登录对话框' }).click();
