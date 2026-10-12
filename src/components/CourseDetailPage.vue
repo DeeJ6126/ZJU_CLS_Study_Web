@@ -10,6 +10,7 @@ import { linkPaths, thumbsUpPaths } from '../utils/vendor/lucidePaths.js';
 import { validateContentSource } from '../services/contentSourceService.js';
 import { renderCourseMarkdown } from '../utils/renderCourseMarkdown.js';
 import { isUbbFormat, ubbToHtml } from '../utils/ubbParser.js';
+import { renderLegacyResourceLink } from '../utils/attachmentLinks.js';
 
 const props = defineProps({
   course: {
@@ -109,9 +110,10 @@ const activeItemBody = computed(() => {
   if (!item) return { html: '', isUbb: false };
   const body = String(item.body ?? '');
   const isUbb = isUbbFormat(item.bodyFormat)
-    || (!item.bodyFormat && /\[\/?(b|i|u|s|del|url|img|size|color|quote|code|smiley|align)\b/i.test(body));
+    || (!item.bodyFormat && /\[\/?(b|i|u|s|del|url|img|size|color|quote|code|smiley|align|upload)\b/i.test(body));
+  const legacyLink = renderLegacyResourceLink(item.externalUrl);
   return {
-    html: isUbb ? ubbToHtml(body) : renderCourseMarkdown(body),
+    html: (isUbb ? ubbToHtml(body) : renderCourseMarkdown(body)) + (legacyLink ? `<p>${legacyLink}</p>` : ''),
     isUbb,
   };
 });
@@ -364,9 +366,6 @@ function emitContribution(payload) {
             :class="activeItemBody.isUbb ? 'article-body--ubb' : 'article-body--markdown'"
             v-html="activeItemBody.html"
           ></div>
-          <a v-if="activeItem.externalUrl" class="course-action-link" :href="activeItem.externalUrl" target="_blank" rel="noreferrer">
-            打开刷题网站
-          </a>
           <div class="article-detail-card__actions">
             <button
               v-if="activeItemGradeLabel"

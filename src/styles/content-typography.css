@@ -159,3 +159,12 @@ html :is(.article-body, .comment-body) .ubb-size-4 { font-size: 1.125em; }
 html :is(.article-body, .comment-body) .ubb-size-5 { font-size: 1.25em; }
 html :is(.article-body, .comment-body) .ubb-size-6 { font-size: 1.5em; }
 html :is(.article-body, .comment-body) .ubb-size-7 { font-size: 1.75em; }
+
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown) a.content-file-link,
+html .article-body a.course-action-link {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 40px;
+  padding: 0 14px; margin: 4px 0; border: 1px solid var(--detail-border-strong);
+  border-radius: var(--radius-sm); background: var(--detail-action-bg);
+  color: var(--detail-action-text); font-weight: 600; text-decoration: none; vertical-align: middle;
+}
+.content-file-caption { margin-right: 8px; }

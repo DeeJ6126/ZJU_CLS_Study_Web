@@ -1217,10 +1217,6 @@ onBeforeUnmount(() => { persistDraft(); disposed = true; clearTimeout(draftTimer
               <span>绩点（选填）</span>
               <input v-model.trim="form.gpa" inputmode="decimal" placeholder="0.00 - 5.00">
             </label>
-            <label v-if="form.type === 'material'">
-              <span>外部链接</span>
-              <input v-model.trim="form.externalUrl" type="url" placeholder="https://">
-            </label>
             <label v-if="form.type === 'paper'">
               <span>学年</span>
               <input v-model.trim="form.year" maxlength="20" placeholder="2025-2026">
@@ -1289,7 +1285,6 @@ onBeforeUnmount(() => { persistDraft(); disposed = true; clearTimeout(draftTimer
             <label><span>来源平台</span><select v-model="submissionForm.sourcePlatform" :disabled="submissionForm.status !== 'pending'"><option value="cc98">CC98</option><option value="duoduo">朵朵</option><option value="other">其他</option></select></label>
             <label><span>原帖链接（选填）</span><input v-model.trim="submissionForm.sourceUrl" type="url" :readonly="submissionForm.status !== 'pending'"></label>
             <label v-if="submissionForm.type === 'experience'"><span>成绩百分制（选填）</span><input v-model.trim="submissionForm.gradePercentage" type="number" min="0" max="100" :readonly="submissionForm.status !== 'pending'"></label>
-            <label v-if="submissionForm.type === 'material'"><span>资料链接（选填）</span><input v-model.trim="submissionForm.externalUrl" type="url" :readonly="submissionForm.status !== 'pending'"></label>
             <template v-if="submissionForm.type !== 'paper'">
               <label><span>内容格式</span><select v-model="submissionForm.bodyFormat" :disabled="submissionForm.status !== 'pending'"><option value="markdown">Markdown</option><option value="ubb">UBB</option></select></label>
               <label class="admin-editor__wide"><span>内容</span><textarea v-model="submissionForm.body" rows="10" :readonly="submissionForm.status !== 'pending'"></textarea></label>

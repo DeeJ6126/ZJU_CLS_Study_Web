@@ -1,10 +1,11 @@
 // UBB (CC98-style) → HTML renderer for 学习心得/帖子正文.
 //
 // Implements the common CC98 editor tags (B / I / U / S, URL, IMG, SIZE, COLOR,
-// ALIGN, QUOTE, CODE, SMILEY). Unknown tags are kept as plain text so embeds
+// ALIGN, QUOTE, CODE, SMILEY, UPLOAD). Unknown tags are kept as plain text so embeds
 // like [bilibili] / [audio] / [file] / [table] still render as their raw
 // token rather than disappearing. Output is HTML-safe: source text is escaped
 // first, then UBB tags are mapped to a constrained tag allowlist.
+import { renderAttachmentLink } from './attachmentLinks.js';
 
 /**
  * Escape characters that have HTML semantics. Used as the first pass before
@@ -51,14 +52,6 @@ function unescapeHtml(text) {
 function applyReplacements(input) {
   let text = input;
 
-  // [code]...[/code] — strip the outer escape so inner content is shown
-  // verbatim, then re-escape the inner. The outer escape would otherwise
-  // double-escape our entities.
-  text = text.replace(/\[code\]([\s\S]*?)\[\/code\]/g, (_, inner) => {
-    const raw = unescapeHtml(inner);
-    const safe = escapeHtml(raw);
-    return `<pre class="ubb-code"><code>${safe}</code></pre>`;
-  });
 
   // [quote]...[/quote]
   text = text.replace(/\[quote\]([\s\S]*?)\[\/quote\]/g, (_, inner) => {
@@ -122,6 +115,10 @@ function applyReplacements(input) {
   text = text.replace(/\[u\]([\s\S]*?)\[\/u\]/g, '<u>$1</u>');
   text = text.replace(/\[(s|del)\]([\s\S]*?)\[\/\1\]/g, '<s>$2</s>');
 
+  text = text.replace(/\[upload\]([\s\S]*?)\[\/upload\]/gi, (_, value) => {
+    return renderAttachmentLink(unescapeHtml(value), { force: true }) || value;
+  });
+
   return text;
 }
 
@@ -150,8 +147,14 @@ export function ubbToHtml(input) {
   const text = String(input ?? '');
   if (!text) return '';
   const escaped = escapeHtml(text);
-  const withTags = applyReplacements(escaped);
-  return paragraphsToHtml(withTags);
+  let html = '', offset = 0;
+  // Render code separately so examples cannot become active attachment links.
+  for (const match of escaped.matchAll(/\[code\]([\s\S]*?)\[\/code\]/gi)) {
+    html += paragraphsToHtml(applyReplacements(escaped.slice(offset, match.index)));
+    html += `<pre class="ubb-code"><code>${match[1]}</code></pre>`;
+    offset = match.index + match[0].length;
+  }
+  return html + paragraphsToHtml(applyReplacements(escaped.slice(offset)));
 }
 
 /**

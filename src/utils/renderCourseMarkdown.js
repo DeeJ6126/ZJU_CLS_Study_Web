@@ -1,4 +1,5 @@
 import { Marked } from './vendor/marked.esm.js';
+import { renderAttachmentLink, safeAttachmentUrl } from './attachmentLinks.js';
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (character) => ({
@@ -13,12 +14,7 @@ function escapeHtml(value) {
 function safeUrl(value) {
   const url = String(value ?? '').trim();
   if (/^https?:\/\//i.test(url)) {
-    try {
-      const parsed = new URL(url);
-      return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : '';
-    } catch {
-      return '';
-    }
+    return safeAttachmentUrl(url);
   }
   if (/^(?:\/(?!\/)|\.\.?\/|#)/.test(url)) return url;
   return '';
@@ -35,6 +31,12 @@ const markdown = new Marked({
       const label = this.parser.parseInline(tokens);
       const url = safeUrl(href);
       if (!url) return label;
+      const file = renderAttachmentLink(url, { force: title === 'attachment' || label === '附件' });
+      if (file) {
+        const caption = label !== '附件' && label !== escapeHtml(href) && label !== escapeHtml(url)
+          && !['点击查看PDF', '点击下载文件'].includes(label) ? `<span class="content-file-caption">${label}</span> ` : '';
+        return caption + file;
+      }
       const titleAttribute = title ? ` title="${escapeHtml(title)}"` : '';
       return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"${titleAttribute}>${label}</a>`;
     },

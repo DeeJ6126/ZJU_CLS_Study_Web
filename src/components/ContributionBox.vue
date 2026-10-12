@@ -1,7 +1,8 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import TeacherNameInput from './TeacherNameInput.vue';
-import { linkPaths } from '../utils/vendor/lucidePaths.js';
+import { linkPaths, downloadPaths } from '../utils/vendor/lucidePaths.js';
+import { safeAttachmentUrl } from '../utils/attachmentLinks.js';
 
 const props = defineProps({
   teacherNames: { type: Array, default: () => [] },
@@ -152,6 +153,11 @@ function confirmPrompt() {
     cancelPrompt();
     return;
   }
+  if (action.id === 'file' && !safeAttachmentUrl(value)) {
+    notice.value = '文件地址需要使用有效的 HTTP 或 HTTPS 链接。';
+    return;
+  }
+  notice.value = '';
   applyPromptedUbbTag(action, value);
   cancelPrompt();
 }
@@ -159,14 +165,19 @@ function confirmPrompt() {
 function applyPromptedUbbTag(action, value) {
   if (action.id === 'link' && action.format === 'ubb') wrapSelection(`[url=${value}]`, '[/url]');
   if (action.id === 'link' && action.format === 'markdown') wrapSelection('[', `](${value})`);
+  if (action.id === 'file') {
+    const url = safeAttachmentUrl(value).replace(/[()[\]\x22]/g, character => `%${character.charCodeAt(0).toString(16).toUpperCase()}`);
+    if (action.format === 'ubb') wrapSelection('', `[upload]${url}[/upload]`);
+    else wrapSelection('[', `](${url} "attachment")`, '附件');
+  }
 }
-function wrapSelection(openTag, closeTag) {
+function wrapSelection(openTag, closeTag, fallbackSelection = '') {
   const textarea = bodyTextarea.value;
   if (!textarea) return;
   const start = textarea.selectionStart ?? form.body.length;
   const end = textarea.selectionEnd ?? form.body.length;
   const before = form.body.slice(0, start);
-  const selected = form.body.slice(start, end);
+  const selected = form.body.slice(start, end) || fallbackSelection;
   const after = form.body.slice(end);
   form.body = `${before}${openTag}${selected}${closeTag}${after}`;
   nextTick(() => {
@@ -199,6 +210,7 @@ const markdownToolbar = [
   { id: 'italic', label: 'I', title: '斜体', wrap: ['*', '*'] },
   { id: 'strike', label: 'S', title: '删除线', wrap: ['~~', '~~'] },
   { id: 'link', title: '插入链接', format: 'markdown', prompt: '请输入链接地址' },
+  { id: 'file', title: '插入文件', format: 'markdown', prompt: '请输入文件地址' },
   { id: 'quote', label: '❞', title: '引用块', prefix: '> ' },
   { id: 'code', label: '</>', title: '代码块', wrap: ['\n```\n', '\n```\n'] },
   { id: 'list', label: '•', title: '无序列表', prefix: '- ' },
@@ -214,6 +226,7 @@ const ubbToolbar = [
   { id: 'right', label: '≡', title: '靠右', wrap: ['[align=right]', '[/align]'] },
 ];
 const ubbLinkAction = { id: 'link', title: '插入链接', format: 'ubb', prompt: '请输入链接地址' };
+const ubbFileAction = { id: 'file', title: '插入文件', format: 'ubb', prompt: '请输入文件地址' };
 
 function applyToolbarAction(action) {
   if (action.prompt) openPrompt(action);
@@ -420,8 +433,8 @@ async function submitContribution() {
                   :aria-label="action.title"
                   @click="applyToolbarAction(action)"
                 >
-                  <svg v-if="action.id === 'link'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path v-for="path in linkPaths" :key="path" :d="path" />
+                  <svg v-if="['link', 'file'].includes(action.id)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path v-for="path in action.id === 'file' ? downloadPaths : linkPaths" :key="path" :d="path" />
                   </svg>
                   <template v-else>{{ action.label }}</template>
                 </button>
@@ -446,6 +459,9 @@ async function submitContribution() {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path v-for="path in linkPaths" :key="path" :d="path" />
                   </svg>
+                </button>
+                <button type="button" class="contribution-form__tool-button" title="插入文件" aria-label="插入文件" @click="applyToolbarAction(ubbFileAction)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path v-for="path in downloadPaths" :key="path" :d="path" /></svg>
                 </button>
               </div>
               <div v-if="pendingPrompt" class="contribution-form__ubb-prompt" role="dialog" aria-label="链接地址输入">
