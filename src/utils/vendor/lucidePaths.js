@@ -20,3 +20,5 @@ export const bellPaths = [
 // Lucide upload/download icons (ISC), from lucide-icons/lucide icons/*.svg.
 export const uploadPaths = ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm17 8-5-5-5 5', 'M12 3v12'];
 export const downloadPaths = ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm7 10 5 5 5-5', 'M12 15V3'];
+// Lucide image icon (ISC), from lucide-icons/lucide icons/image.svg.
+export const imagePaths = ['M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z', 'M10 8a2 2 0 1 1-4 0 2 2 0 0 1 4 0', 'm21 15-5-5L5 21'];

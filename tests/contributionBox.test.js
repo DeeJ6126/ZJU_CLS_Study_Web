@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { markdownToolbar } from '../src/utils/markdownToolbar.js';
 
 const contributionBox = readFileSync(new URL('../src/components/ContributionBox.vue', import.meta.url), 'utf8');
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8');
@@ -49,9 +50,10 @@ test('teacher name is forwarded from every course submission to the content API'
 });
 
 test('Markdown and UBB toolbars expose only the requested insertion tools', () => {
-  for (const token of ['markdownToolbar', 'ubbToolbar', '## ', '**', '~~', '> ', '- ', '[del]', '[align=left]', '[align=center]', '[align=right]', '[size=', '[color=', '[url=']) {
+  for (const token of ['markdownToolbar', 'ubbToolbar', '[del]', '[align=left]', '[align=center]', '[align=right]', '[size=', '[color=', '[url=']) {
     assert.ok(contributionBox.includes(token), `missing ${token}`);
   }
+  assert.deepEqual(markdownToolbar.map(action => action.id), ['heading', 'bold', 'italic', 'strike', 'link', 'file', 'quote', 'code', 'list']);
   assert.match(contributionBox, /type="color"/);
   assert.doesNotMatch(contributionBox, /id: 'image'|title: '插入图片'/);
 });

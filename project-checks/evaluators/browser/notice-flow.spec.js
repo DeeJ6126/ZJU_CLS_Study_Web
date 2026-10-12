@@ -167,6 +167,71 @@ test('administrator saves previews uploads publishes and archives notices using 
   } finally { await fixture.close(); }
 });
 
+test('notice Markdown toolbar formats selections and publishes safe inline images', async ({ page }) => {
+  const fixture = await noticeFixture(page, true);
+  try {
+    await page.route('https://images.example.test/**', route => route.fulfill({
+      contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/l9sAAAAASUVORK5CYII=', 'base64'),
+    }));
+    await page.goto(`${fixture.baseUrl}/#admin`);
+    await page.locator('.admin-page__nav').getByRole('button', { name: '通知', exact: true }).click();
+    const panel = page.locator('.notice-admin');
+    await panel.getByRole('button', { name: '新建通知', exact: true }).click();
+    await expect(panel.getByText('正文（Markdown）', { exact: true })).toBeVisible();
+    const body = panel.getByRole('textbox', { name: '通知正文', exact: true });
+    for (const [name, expected] of [['加粗', '**文字**'], ['斜体', '*文字*'], ['删除线', '~~文字~~'], ['代码块', '\n```\n文字\n```\n'], ['标题', '## 文字'], ['引用块', '> 文字'], ['无序列表', '- 文字']]) {
+      await body.fill('文字');
+      await body.evaluate(element => element.setSelectionRange(0, 2));
+      await panel.getByRole('button', { name, exact: true }).click();
+      await expect(body).toHaveValue(expected);
+    }
+    await body.fill('第一行\n第二行');
+    await body.evaluate(element => element.setSelectionRange(0, element.value.length));
+    await panel.getByRole('button', { name: '无序列表', exact: true }).click();
+    await expect(body).toHaveValue('- 第一行\n- 第二行');
+    for (const [name, address, expected] of [
+      ['插入链接', 'https://www.zju.edu.cn/', '[文字](https://www.zju.edu.cn/)'],
+      ['插入文件', 'https://file.cc98.org/report.pdf', '[文字](https://file.cc98.org/report.pdf "attachment")'],
+    ]) {
+      await body.fill('文字');
+      await body.evaluate(element => element.setSelectionRange(0, element.value.length));
+      await panel.getByRole('button', { name, exact: true }).click();
+      await panel.locator('.notice-admin__link-input input').fill(address);
+      await panel.getByRole('button', { name: '插入', exact: true }).click();
+      await expect(body).toHaveValue(expected);
+    }
+    await panel.getByRole('button', { name: '插入图片', exact: true }).click();
+    await panel.locator('.notice-admin__link-input input').press('Escape');
+    await expect(panel.locator('.notice-admin__link-input')).toHaveCount(0);
+    await panel.locator('#notice-admin-edit-view').screenshot({ path: 'project-checks/artifacts/notice-markdown-toolbar.png' });
+    await body.fill('图片说明');
+    await body.evaluate(element => element.setSelectionRange(0, element.value.length));
+    await panel.getByRole('button', { name: '插入图片', exact: true }).click();
+    await panel.getByRole('textbox', { name: '请输入图片地址', exact: true }).fill('javascript:alert(1)');
+    await panel.getByRole('button', { name: '插入', exact: true }).click();
+    await expect(panel.getByRole('alert')).toContainText('请输入有效的 HTTP 或 HTTPS 地址');
+    await expect(body).toHaveValue('图片说明');
+    await panel.getByRole('textbox', { name: '请输入图片地址', exact: true }).fill('https://images.example.test/photo(1).png');
+    await panel.getByRole('textbox', { name: '请输入图片地址', exact: true }).press('Enter');
+    await expect(body).toHaveValue('![图片说明](https://images.example.test/photo%281%29.png)');
+    await panel.getByRole('textbox', { name: '标题', exact: true }).fill('图片通知');
+    await panel.getByRole('textbox', { name: '摘要', exact: true }).fill('图片摘要');
+    await panel.getByRole('tab', { name: '预览', exact: true }).click();
+    const image = panel.locator('.notice-admin__markdown img');
+    await expect(image).toHaveAttribute('alt', '图片说明');
+    await expect.poll(() => image.evaluate(element => element.naturalWidth)).toBeGreaterThan(0);
+    await page.screenshot({ path: 'project-checks/artifacts/notice-image-preview.png', fullPage: true });
+    await panel.getByRole('button', { name: '保存并发布', exact: true }).click();
+    await expect(panel.getByText('通知已发布。', { exact: true })).toBeVisible();
+    const saved = fixture.store.listNotices({ publicOnly: true }).items[0];
+    await page.goto(`${fixture.baseUrl}/#notices/${saved.id}`);
+    await expect(page.locator('.notice-body img')).toHaveAttribute('src', 'https://images.example.test/photo%281%29.png');
+    await page.locator('.theme-switch').click();
+    await expect.poll(() => page.locator('.notice-body img').evaluate(element => element.naturalWidth)).toBeGreaterThan(0);
+    expect(fixture.errors).toEqual([]);
+  } finally { await fixture.close(); }
+});
+
 test('link-only notices publish and public error retries remain usable', async ({ page }) => {
   const fixture = await noticeFixture(page, true);
   try {

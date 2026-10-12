@@ -1,10 +1,13 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 
 import { noticeCategories, noticeCategoryLabel, noticeStatusLabels } from '../../data/noticeConfig.js';
 import { majorOptions } from '../../data/courses/programCatalog.js';
 import { noticeApiClient } from '../../services/noticeApiClient.js';
 import { renderCourseMarkdown } from '../../utils/renderCourseMarkdown.js';
+import { markdownToolbar } from '../../utils/markdownToolbar.js';
+import { safeAttachmentUrl } from '../../utils/attachmentLinks.js';
+import { downloadPaths, imagePaths, linkPaths } from '../../utils/vendor/lucidePaths.js';
 
 const props = defineProps({
   apiClient: { type: Object, default: null },
@@ -27,6 +30,14 @@ const formElement = ref(null);
 const fileInput = ref(null);
 const baseline = ref('');
 const form = reactive(emptyForm());
+const bodyTextarea = ref(null);
+const promptInput = ref(null);
+const pendingAction = ref(null);
+const toolbarUrl = ref('');
+const toolbarError = ref('');
+let bodySelection = { start: 0, end: 0 };
+const bodyTools = [...markdownToolbar, { id: 'image', title: '插入图片', prompt: '请输入图片地址' }];
+const toolIcons = { link: linkPaths, file: downloadPaths, image: imagePaths };
 const dirty = computed(() => editorOpen.value && JSON.stringify(form) !== baseline.value);
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / pageSize)));
 const previewBody = computed(() => renderCourseMarkdown(form.body));
@@ -38,6 +49,53 @@ const majorsText = computed(() => form.majorIds.length
   : '全部专业');
 let listRequest = 0;
 let disposed = false;
+
+function cancelToolbarPrompt() {
+  pendingAction.value = null;
+  toolbarUrl.value = '';
+  toolbarError.value = '';
+}
+
+function replaceBodySelection(open, close, fallback = '', replacement = null) {
+  const { start, end } = bodySelection;
+  const selected = replacement ?? (form.body.slice(start, end) || fallback);
+  const value = form.body.slice(0, start) + open + selected + close + form.body.slice(end);
+  if (value.length > 100000) { toolbarError.value = '正文不能超过 100000 字符。'; return false; }
+  form.body = value;
+  nextTick(() => {
+    bodyTextarea.value?.focus();
+    bodyTextarea.value?.setSelectionRange(start + open.length, start + open.length + selected.length);
+  });
+  return true;
+}
+
+function applyBodyTool(action) {
+  if (actionBusy.value) return;
+  bodySelection = { start: bodyTextarea.value?.selectionStart ?? form.body.length, end: bodyTextarea.value?.selectionEnd ?? form.body.length };
+  cancelToolbarPrompt();
+  if (action.prompt) {
+    pendingAction.value = action;
+    nextTick(() => promptInput.value?.focus());
+  } else if (action.prefix) {
+    const start = form.body.lastIndexOf('\n', bodySelection.start - 1) + 1;
+    const nextBreak = form.body.indexOf('\n', bodySelection.end);
+    const end = nextBreak < 0 ? form.body.length : nextBreak;
+    bodySelection = { start, end };
+    const text = form.body.slice(start, end).split('\n').map(line => action.prefix + line).join('\n');
+    replaceBodySelection('', '', '', text);
+  } else replaceBodySelection(...action.wrap);
+}
+
+function insertToolbarUrl() {
+  if (actionBusy.value || !pendingAction.value) return;
+  const safe = safeAttachmentUrl(toolbarUrl.value);
+  if (!safe) { toolbarError.value = '请输入有效的 HTTP 或 HTTPS 地址。'; return; }
+  const url = safe.replace(/[()[\]\x22]/g, character => `%${character.charCodeAt(0).toString(16).toUpperCase()}`);
+  const action = pendingAction.value.id;
+  const inserted = replaceBodySelection(action === 'image' ? '![' : '[',
+    `](${url}${action === 'file' ? ' "attachment"' : ''})`, action === 'image' ? '图片' : action === 'file' ? '附件' : '链接');
+  if (inserted) cancelToolbarPrompt();
+}
 
 function shanghaiDate(value = new Date()) {
   const parts = new Intl.DateTimeFormat('en-CA', {
@@ -104,6 +162,7 @@ function canLeave() {
 }
 
 function setEditor(item = null) {
+  cancelToolbarPrompt();
   currentNotice.value = item;
   Object.assign(form, emptyForm(), item ? {
     title: item.title ?? '', summary: item.summary ?? '', body: item.body ?? '',
@@ -339,14 +398,26 @@ onBeforeUnmount(() => {
             <label class="notice-admin__wide"><span>原文链接（选填）</span><input v-model="form.sourceUrl" type="url" maxlength="2000" placeholder="https://"></label>
             <label class="notice-admin__check notice-admin__wide"><input v-model="form.pinned" type="checkbox"><span>置顶</span></label>
             <div class="notice-admin__wide notice-admin__body-toolbar">
-              <label for="notice-admin-body">正文</label>
+              <label for="notice-admin-body">正文（Markdown）</label>
               <div class="notice-admin__tabs" role="tablist" aria-label="正文视图">
                 <button id="notice-admin-edit-tab" type="button" role="tab" :aria-selected="!previewOpen" aria-controls="notice-admin-edit-view" :class="{ 'is-active': !previewOpen }" @click="previewOpen = false">编辑</button>
                 <button id="notice-admin-preview-tab" type="button" role="tab" :aria-selected="previewOpen" aria-controls="notice-admin-preview-view" :class="{ 'is-active': previewOpen }" @click="previewOpen = true">预览</button>
               </div>
             </div>
             <div v-show="!previewOpen" id="notice-admin-edit-view" class="notice-admin__wide" role="tabpanel" aria-labelledby="notice-admin-edit-tab">
-              <textarea id="notice-admin-body" v-model="form.body" rows="16" maxlength="100000" class="notice-admin__body" aria-label="通知正文"></textarea>
+              <div class="notice-admin__format-tools" aria-label="Markdown 工具栏">
+                <button v-for="tool in bodyTools" :key="tool.id" type="button" :disabled="actionBusy" :title="tool.title" :aria-label="tool.title" :class="{ 'is-italic': tool.id === 'italic', 'is-strike': tool.id === 'strike' }" @click="applyBodyTool(tool)">
+                  <svg v-if="toolIcons[tool.id]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path v-for="path in toolIcons[tool.id]" :key="path" :d="path" /></svg>
+                  <template v-else>{{ tool.label }}</template>
+                </button>
+              </div>
+              <div v-if="pendingAction" class="notice-admin__link-input">
+                <input ref="promptInput" v-model="toolbarUrl" :aria-label="pendingAction.prompt" :placeholder="pendingAction.prompt" :disabled="actionBusy" @keydown.enter.prevent="insertToolbarUrl" @keydown.esc.prevent="cancelToolbarPrompt">
+                <button type="button" :disabled="actionBusy" @click="insertToolbarUrl">插入</button>
+                <button type="button" :disabled="actionBusy" @click="cancelToolbarPrompt">取消</button>
+              </div>
+              <p v-if="toolbarError" class="notice-admin__message notice-admin__message--error" role="alert">{{ toolbarError }}</p>
+              <textarea id="notice-admin-body" ref="bodyTextarea" v-model="form.body" :disabled="actionBusy" rows="16" maxlength="100000" class="notice-admin__body" aria-label="通知正文"></textarea>
             </div>
             <article v-if="previewOpen" id="notice-admin-preview-view" class="notice-admin__preview notice-admin__wide" role="tabpanel" aria-labelledby="notice-admin-preview-tab">
               <div class="notice-admin__preview-meta"><span>{{ noticeCategoryLabel(form.category) }}</span><time :datetime="form.publishedDate">{{ form.publishedDate }}</time><span v-if="form.publisher">{{ form.publisher }}</span><span v-if="form.pinned">置顶</span></div>
@@ -467,6 +538,14 @@ onBeforeUnmount(() => {
 .notice-admin__tabs button + button { border-left: 0; }
 .notice-admin__tabs button.is-active { background: var(--admin-primary-soft); color: var(--admin-primary); }
 .notice-admin__body { min-height: 320px; font-family: var(--font-body); }
+.notice-admin__format-tools { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px; border: 1px solid var(--color-line); background: var(--color-soft); margin-bottom: 10px; }
+.notice-admin__format-tools button { width: 36px; height: 36px; padding: 0; background: transparent; border-color: transparent; color: var(--color-ink); font-weight: 700; }
+.notice-admin__format-tools button:hover { background: var(--color-surface); border-color: var(--color-line); }
+.notice-admin__format-tools svg { width: 18px; height: 18px; vertical-align: middle; }
+.notice-admin__format-tools .is-italic { font-style: italic; }
+.notice-admin__format-tools .is-strike { text-decoration: line-through; }
+.notice-admin__link-input { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.notice-admin__link-input input { flex: 1; }
 .notice-admin__preview { padding: 24px; border: 1px solid var(--color-line); min-height: 320px; background: var(--color-surface); }
 .notice-admin__preview-meta { display: flex; flex-wrap: wrap; gap: 8px 16px; color: var(--color-muted); font-size: 12px; }
 .notice-admin__preview h2 { font-size: 24px; font-family: var(--font-heading); line-height: 1.5; margin: 12px 0; overflow-wrap: anywhere; }

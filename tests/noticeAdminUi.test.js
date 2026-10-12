@@ -1,12 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { computed, reactive, ref } from 'vue';
+import { computed, nextTick, reactive, ref } from 'vue';
 import { compileScript, compileStyle, compileTemplate, parse } from '@vue/compiler-sfc';
 
 import { noticeCategories, noticeCategoryLabel, noticeStatusLabels } from '../src/data/noticeConfig.js';
 import { majorOptions } from '../src/data/courses/programCatalog.js';
 import { renderCourseMarkdown } from '../src/utils/renderCourseMarkdown.js';
+import { markdownToolbar } from '../src/utils/markdownToolbar.js';
+import { safeAttachmentUrl } from '../src/utils/attachmentLinks.js';
+import { downloadPaths, imagePaths, linkPaths } from '../src/utils/vendor/lucidePaths.js';
 
 const filename = 'src/components/admin/NoticeAdminPanel.vue';
 const source = readFileSync(filename, 'utf8');
@@ -18,7 +21,8 @@ const setupSource = descriptor.scriptSetup.content
   .replace(/const props = defineProps\([\s\S]*?\n\}\);/, '');
 const createSetup = new Function('props', 'window', 'dependencies', `
   const { computed, reactive, ref, noticeCategories, noticeCategoryLabel, noticeStatusLabels,
-    majorOptions, renderCourseMarkdown } = dependencies;
+    majorOptions, renderCourseMarkdown, nextTick, markdownToolbar, safeAttachmentUrl,
+    downloadPaths, imagePaths, linkPaths } = dependencies;
   const onMounted = () => {};
   const onBeforeUnmount = () => {};
   const defineExpose = () => {};
@@ -70,7 +74,8 @@ function harness({ isDemo = false, confirm = true, overrides = {} } = {}) {
   const panel = createSetup({ apiClient, isDemo }, {
     confirm: (message) => { confirmations.push(message); return confirm; },
   }, { computed, reactive, ref, noticeCategories, noticeCategoryLabel, noticeStatusLabels,
-    majorOptions, renderCourseMarkdown });
+    majorOptions, renderCourseMarkdown, nextTick, markdownToolbar, safeAttachmentUrl,
+    downloadPaths, imagePaths, linkPaths });
   panel.formElement.value = { reportValidity: () => true };
   return { panel, calls, confirmations, apiClient };
 }
