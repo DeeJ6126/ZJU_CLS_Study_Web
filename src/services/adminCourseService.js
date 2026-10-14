@@ -57,3 +57,12 @@ export function pendingCourseOrder(submissions, type) {
   }
   return [...earliest].sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0])).map(([code]) => code);
 }
+
+export function nextAdminDraft(items, currentId, { courseCode, type }) {
+  const index = items.findIndex(item => item.id === currentId);
+  for (let offset = 1; offset <= items.length; offset++) {
+    const item = items[(index + offset) % items.length];
+    if (item.id !== currentId && item.status === 'draft' && item.courseCode === courseCode && item.type === type) return item;
+  }
+  return null;
+}

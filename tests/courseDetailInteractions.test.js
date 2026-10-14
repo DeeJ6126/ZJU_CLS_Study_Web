@@ -18,6 +18,7 @@ test('article details render Markdown or UBB and keep grades concealed by defaul
   assert.match(courseDetail, /const gradeVisible = ref\(false\)/);
   assert.match(courseDetail, /:aria-expanded="gradeVisible"/);
   assert.match(courseDetail, /gradeVisible \? `成绩 \$\{activeItemGradeLabel\}` : '查看成绩'/);
+  assert.doesNotMatch(courseDetail, /暂无成绩/);
 });
 
 test('resource lists and details distinguish teacher and publication date', () => {

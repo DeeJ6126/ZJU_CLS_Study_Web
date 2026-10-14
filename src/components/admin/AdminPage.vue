@@ -15,7 +15,7 @@ import { loadResourceCatalog } from '../../data/courses/resourceData.js';
 import TeacherNameInput from '../TeacherNameInput.vue';
 import { courseTeacherNames } from '../../services/teacherSuggestionService.js';
 import { majorOptions } from '../../data/courses/programCatalog.js';
-import { filterAdminCoursesToOverview, pendingCourseOrder } from '../../services/adminCourseService.js';
+import { filterAdminCoursesToOverview, pendingCourseOrder, nextAdminDraft } from '../../services/adminCourseService.js';
 import { publicApiPath } from '../../services/apiClient.js';
 import { activityImageOptions, activityPrograms, activityProgramLabel } from '../../data/activityConfig.js';
 import { publicAssetPath } from '../../utils/publicPath.js';
@@ -137,6 +137,8 @@ const canAddAdministrators = computed(() => !props.isDemo && canManageAdministra
 const majorCourses = computed(() => filterAdminCoursesToOverview(courses.value, selectedMajorId.value));
 const editingItem = computed(() => editorItemSnapshot.value?.id === editingId.value
   ? editorItemSnapshot.value : items.value.find((item) => item.id === editingId.value) ?? null);
+const nextReviewDraft = computed(() => editingId.value && editingItem.value?.status === 'draft'
+  ? nextAdminDraft(items.value, editingId.value, form) : null);
 const draftScope = computed(() => isAdmin.value && (currentUser.value?.publicId || currentUser.value?.id)
   ? `${props.isDemo ? 'demo' : 'real'}:${currentUser.value.publicId || currentUser.value.id}` : '');
 const selectedTypeLabel = computed(() => contentTypes.find((type) => type.id === selectedType.value)?.label ?? '内容');
@@ -876,6 +878,42 @@ function editItem(item) {
   notice.value = '';
 }
 
+function openReviewDraft(item) {
+  const cached = localDrafts.value.find(draft => draft.editingId === item.id && draft.baseUpdatedAt === item.updatedAt);
+  editingId.value = item.id;
+  setForm(cached ? { ...item, ...cached.form } : item);
+  beginDraftContext();
+  if (cached) {
+    activeDraftKey.value = cached.key;
+    activeDraftRevision.value = cached.revision;
+    editorRequestId.value = cached.requestId;
+    rememberedFileName.value = cached.pendingFileName;
+    dirty.value = true;
+    draftStatus.value = '已恢复本机草稿';
+  }
+  editorOpen.value = true;
+}
+
+async function skipReviewDraft() {
+  if (!nextReviewDraft.value || !preserveEditorBeforeLeaving()) return;
+  const scope = draftScope.value;
+  const currentId = editingId.value;
+  const preferred = nextReviewDraft.value.id;
+  const filters = { courseCode: form.courseCode, type: form.type, status: '' };
+  actionBusy.value = true;
+  try {
+    const result = await activeApiClient.value.fetchContent(filters);
+    if (disposed || draftScope.value !== scope) return;
+    if (!result.ok) { notice.value = result.message; return; }
+    items.value = result.items ?? [];
+    const next = items.value.find(item => item.id === preferred && item.status === 'draft' && item.courseCode === filters.courseCode && item.type === filters.type)
+      ?? nextAdminDraft(items.value, currentId, filters);
+    if (next) { openReviewDraft(next); notice.value = '已跳过，当前草稿未发布。'; }
+    else notice.value = '没有其他待审核草稿。';
+  } catch (error) { if (!disposed && draftScope.value === scope) notice.value = error.message || '草稿列表读取失败，请重试。'; }
+  finally { if (!disposed && draftScope.value === scope) actionBusy.value = false; }
+}
+
 function closeEditor() {
   if (!preserveEditorBeforeLeaving()) return;
   editorOpen.value = false;
@@ -927,6 +965,7 @@ async function saveContent(mode = 'draft') {
   persistDraft();
   const scope = draftScope.value;
   const snapshot = draftSnapshot();
+  const preferredReviewId = mode === 'publish-review-next' ? nextReviewDraft.value?.id : '';
   const file = pendingFile.value;
   const input = { ...snapshot.form, cc98Url: snapshot.form.sourcePlatform === 'cc98' ? snapshot.form.sourceUrl : '' };
   const stillCurrent = () => !disposed && draftScope.value === scope && activeDraftKey.value === snapshot.key;
@@ -993,7 +1032,11 @@ async function saveContent(mode = 'draft') {
     draftStatus.value = removed.ok ? '' : removed.message;
     dirty.value = false;
     activeDraftKey.value = '';
-    if (mode === 'publish-next') {
+    if (mode === 'publish-review-next') {
+      editorOpen.value = false;
+      editingId.value = '';
+      notice.value = result.persistenceWarning || '内容已发布。';
+    } else if (mode === 'publish-next') {
       selectedCourseCode.value = snapshot.form.courseCode;
       selectedType.value = snapshot.form.type;
       setForm({ courseCode: snapshot.form.courseCode, type: snapshot.form.type,
@@ -1009,7 +1052,15 @@ async function saveContent(mode = 'draft') {
     }
     // A refresh error must not undo a completed publication or reset the next entry.
     const refreshed = await activeApiClient.value.fetchContent({ courseCode: snapshot.form.courseCode, type: snapshot.form.type, status: '' });
-    if (refreshed.ok && !disposed && draftScope.value === scope) items.value = refreshed.items ?? [];
+    if (refreshed.ok && !disposed && draftScope.value === scope) {
+      items.value = refreshed.items ?? [];
+      if (mode === 'publish-review-next') {
+        const next = items.value.find(item => item.id === preferredReviewId && item.status === 'draft' && item.courseCode === snapshot.form.courseCode && item.type === snapshot.form.type)
+          ?? nextAdminDraft(items.value, snapshot.editingId, snapshot.form);
+        if (next) { openReviewDraft(next); notice.value = result.persistenceWarning || '已发布，已打开下一条草稿。'; }
+        else notice.value = result.persistenceWarning || '已发布，当前课程没有其他待审核草稿。';
+      }
+    } else if (mode === 'publish-review-next' && !disposed && draftScope.value === scope) notice.value = `已发布，但草稿列表刷新失败：${refreshed.message || '请返回列表重试。'}`;
   } catch (error) {
     if (stillCurrent()) { notice.value = error.message || '处理失败，请重试。'; dirty.value = true; persistDraft(); }
   } finally { if (!disposed && draftScope.value === scope) actionBusy.value = false; }
@@ -1307,7 +1358,8 @@ onBeforeUnmount(() => { persistDraft(); disposed = true; ++auditSequence; clearT
               >
                 发布
               </button>
-              <button type="submit" value="publish-next" class="admin-primary-action" :disabled="actionBusy">发布并录入下一条</button>
+              <button type="submit" :value="nextReviewDraft ? 'publish-review-next' : 'publish-next'" class="admin-primary-action" :disabled="actionBusy">{{ nextReviewDraft ? '发布并审核下一条草稿' : '发布并录入下一条' }}</button>
+              <button v-if="nextReviewDraft" type="button" :disabled="actionBusy" @click="skipReviewDraft">跳过</button>
               <button
                 v-if="editingId && editingItem?.status === 'published'"
                 class="admin-danger-action"

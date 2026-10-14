@@ -5,7 +5,7 @@ const base = 'https://file.cc98.org/v4-upload/d/2025/0922/';
 const pdf = `${base}fmejnx4u.pdf`, md = `${base}fnelypkx.md`;
 const posts = [
   { id: 'ubb-files', routeId: 'ubb-files', courseCode: 'BIO2110F', type: 'material', title: '附件资料', author: '整理者', sourcePublishedDate: '2024-11-06', bodyFormat: 'ubb', body: `报告[upload]${pdf}[/upload]\nMarkdown源码[upload]${md}[/upload]\n\n[url=https://www.cc98.org/topic/6028874/1#2][b]原帖补充：闽山苍翠 · 2L[/b][/url]\n\n[code][upload]${md}[/upload][/code]`, externalUrl: 'https://example.org/legacy.pdf' },
-  { id: 'md-files', routeId: 'md-files', courseCode: 'BIO2110F', type: 'experience', title: '心得附件', author: '分享者', bodyFormat: 'markdown', body: `[生态学笔记](${md})\n\n[PDF版](${pdf})\n\n[原帖](https://www.cc98.org/topic/123)\n\n\`[文件](${md})\`` },
+  { id: 'md-files', routeId: 'md-files', courseCode: 'BIO2110F', type: 'experience', title: '心得附件', author: '分享者', bodyFormat: 'markdown', body: `[生态学笔记](${md})\n\n[PDF版](${pdf})\n\n[原帖](https://www.cc98.org/topic/123)\n\n[百度网盘](https://pan.baidu.com/s/abcd?pwd=1234)\n\n[浙大云盘](https://pan.zju.edu.cn/share/abcd)\n\n\`[文件](${md})\`` },
 ];
 
 async function fixture(page, role = 'student') {
@@ -65,6 +65,12 @@ for (const theme of ['light', 'dark']) {
     await expect(body.getByRole('link', { name: '点击查看PDF', exact: true })).toHaveCount(1);
     await expect(body.getByRole('link', { name: '点击下载文件', exact: true })).toHaveCount(1);
     await expect(body.getByRole('link', { name: '原帖', exact: true })).toHaveAttribute('href', 'https://www.cc98.org/topic/123');
+    await expect(page.getByText('暂无成绩', { exact: true })).toHaveCount(0);
+    for (const name of ['百度网盘', '浙大云盘']) {
+      const link = body.getByRole('link', { name, exact: true });
+      await expect(link.locator('img.content-cloud-icon')).toHaveCount(1);
+      await expect.poll(() => link.locator('img').evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
+    }
     await expect(body.locator('code')).toContainText('[文件]');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect(await body.locator('.content-file-link').first().evaluate(el => getComputedStyle(el).borderRadius)).toBe('4px');

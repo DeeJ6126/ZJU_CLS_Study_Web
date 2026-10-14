@@ -6,7 +6,7 @@ const admin = { id: 18, publicId: 'draft-safety-admin', role: 'admin', nickname:
 const draftPrefix = 'zjubio:admin-drafts:v1:';
 
 async function fixture(page) {
-  const state = { items: [], writes: [], errors: [], holdCreate: false, releaseCreate: null, version: 0 };
+  const state = { items: [], writes: [], errors: [], holdCreate: false, releaseCreate: null, version: 0, failPublish: false };
   const stamp = () => `2026-10-09T02:00:${String(++state.version).padStart(2, '0')}.000Z`;
   page.on('pageerror', (error) => state.errors.push(error.message));
   await page.route('**/api/**', async (route) => {
@@ -32,6 +32,7 @@ async function fixture(page) {
     if (match && method !== 'GET') {
       const item = state.items.find((entry) => entry.id === match[1]);
       if (!item) { await route.fulfill({ status: 404, json: { message: '测试内容不存在' } }); return; }
+      if (match[2] === 'publish' && state.failPublish) { await route.fulfill({ status: 503, json: { message: '模拟发布失败' } }); return; }
       if (match[2] === 'file' && !['paper', 'material'].includes(item.type)) {
         await route.fulfill({ status: 404, json: { message: '心得不能上传 PDF' } }); return;
       }
@@ -61,6 +62,58 @@ async function localDraftCount(page) {
   return page.evaluate((prefix) => Object.keys(localStorage).filter((key) => key.startsWith(prefix))
     .reduce((count, key) => count + JSON.parse(localStorage.getItem(key)).length, 0), draftPrefix);
 }
+
+async function reviewFixture(page) {
+  const state = await fixture(page);
+  state.items = ['A', 'B', 'C'].map((name, index) => ({ id: `review-${name}`, courseCode: 'BIO2110F', type: 'experience',
+    title: `审核草稿${name}`, body: `原始正文${name}`, bodyFormat: 'markdown', sourcePlatform: 'cc98', sourceUrl: '',
+    status: 'draft', createdAt: `2026-10-14T01:00:0${index}.000Z`, updatedAt: `2026-10-14T01:00:0${index}.000Z`, file: null }));
+  await page.goto('/#admin');
+  await page.locator('.admin-list__filters--course .admin-course-combobox input').fill('BIO2110F');
+  await page.getByRole('option').filter({ hasText: 'BIO2110F' }).click();
+  await page.getByRole('row').filter({ hasText: '审核草稿A' }).getByRole('button', { name: '编辑', exact: true }).click();
+  return { state, editor: page.getByRole('region', { name: '内容编辑器', exact: true }) };
+}
+
+test('draft review skips without publishing, restores edits and publishes into the next existing draft', async ({ page }) => {
+  const { state, editor } = await reviewFixture(page);
+  const title = editor.getByRole('textbox', { name: '标题', exact: true });
+  await editor.locator('.admin-editor__actions').screenshot({ path: 'project-checks/artifacts/admin-review-actions.png' });
+  await editor.getByRole('textbox', { name: '正文', exact: true }).fill('未发布的修改');
+  await editor.getByRole('button', { name: '跳过', exact: true }).click();
+  await expect(title).toHaveValue('审核草稿B');
+  expect(state.writes).toEqual([]);
+  await editor.getByRole('button', { name: '跳过', exact: true }).click();
+  await expect(title).toHaveValue('审核草稿C');
+  await editor.getByRole('button', { name: '跳过', exact: true }).click();
+  await expect(title).toHaveValue('审核草稿A');
+  await expect(editor.getByRole('textbox', { name: '正文', exact: true })).toHaveValue('未发布的修改');
+  await editor.getByRole('button', { name: '发布并审核下一条草稿', exact: true }).click();
+  await expect(title).toHaveValue('审核草稿B');
+  expect(state.items[0].status).toBe('published');
+  expect(state.items[0].body).toBe('未发布的修改');
+  await editor.getByRole('button', { name: '发布并审核下一条草稿', exact: true }).click();
+  await expect(title).toHaveValue('审核草稿C');
+  await expect(editor.getByRole('button', { name: '跳过', exact: true })).toHaveCount(0);
+  expect(state.items).toHaveLength(3);
+  expect(state.writes.filter(write => write.method === 'POST' && write.path === '/api/admin/content')).toHaveLength(0);
+  expect(state.errors).toEqual([]);
+});
+
+test('failed publication retains the current draft instead of advancing review', async ({ page }) => {
+  const { state, editor } = await reviewFixture(page);
+  state.failPublish = true;
+  await editor.getByRole('button', { name: '发布并审核下一条草稿', exact: true }).click();
+  await expect(page.locator('.admin-notice')).toContainText('模拟发布失败');
+  await expect(editor.getByRole('textbox', { name: '标题', exact: true })).toHaveValue('审核草稿A');
+  expect(state.items.every(item => item.status === 'draft')).toBe(true);
+  state.failPublish = false;
+  state.items[1].status = 'published';
+  await editor.getByRole('button', { name: '发布并审核下一条草稿', exact: true }).click();
+  await expect(editor.getByRole('textbox', { name: '标题', exact: true })).toHaveValue('审核草稿C');
+  expect(state.items).toHaveLength(3);
+  expect(state.errors).toEqual([]);
+});
 
 test('clearing all content removes the previously autosaved local draft', async ({ page }) => {
   const state = await fixture(page);

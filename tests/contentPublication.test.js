@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { formatContentPublicationDate } from '../src/utils/contentPublicationDate.js';
 import { renderCourseMarkdown } from '../src/utils/renderCourseMarkdown.js';
 import { ubbToHtml } from '../src/utils/ubbParser.js';
+import { nextAdminDraft } from '../src/services/adminCourseService.js';
 import { createContentStore } from '../server/content/contentStore.js';
 import { validateContentInput, toPublicContentItem } from '../server/content/contentService.js';
 import { exportContentBatch, importContentBatch, previewContentBatch } from '../server/content/contentBatchService.js';
@@ -11,6 +12,31 @@ test('publication date uses original source date and Shanghai site creation fall
   assert.equal(formatContentPublicationDate({ sourcePublishedDate: '2024-11-06', createdAt: '2026-10-14T00:00:00Z' }), '2024-11-06');
   assert.equal(formatContentPublicationDate({ createdAt: '2026-10-13T20:00:00Z' }), '2026-10-14');
   assert.equal(formatContentPublicationDate({}), '未注明');
+});
+
+test('cloud links are clickable and use local provider icons without changing access codes', () => {
+  for (const [url, icon] of [['https://pan.baidu.com/s/abcd?pwd=1234', 'baidu-pan.ico'], ['https://pan.zju.edu.cn/share/abcd', 'zju-cloud.png']]) {
+    for (const html of [renderCourseMarkdown(`[资料](${url})`), ubbToHtml(`链接：${url} 提取码：1234`), ubbToHtml(`[url=${url}]资料[/url]`)]) {
+      assert.ok(html.includes(icon));
+      assert.ok(html.includes(`href="${url}"`));
+    }
+    assert.doesNotMatch(ubbToHtml(`[code]${url}[/code]`), /content-cloud-icon/);
+  }
+  assert.doesNotMatch(renderCourseMarkdown('[资料](https://pan.baidu.com.evil.test/s/abcd)'), /baidu-pan.ico/);
+});
+
+test('next draft stays within course and category, skips published rows and wraps on skip', () => {
+  const rows = [
+    { id: 'a', courseCode: 'BIO2110F', type: 'experience', status: 'draft' },
+    { id: 'other', courseCode: 'BIO2019F', type: 'experience', status: 'draft' },
+    { id: 'b', courseCode: 'BIO2110F', type: 'experience', status: 'published' },
+    { id: 'c', courseCode: 'BIO2110F', type: 'experience', status: 'draft' },
+  ];
+  const filters = { courseCode: 'BIO2110F', type: 'experience' };
+  assert.equal(nextAdminDraft(rows, 'a', filters).id, 'c');
+  assert.equal(nextAdminDraft(rows, 'c', filters).id, 'a');
+  assert.equal(nextAdminDraft([rows[0]], 'a', filters), null);
+  assert.equal(nextAdminDraft([], 'a', filters), null);
 });
 
 test('original publication date persists through admin creation updates batch import and export', () => {

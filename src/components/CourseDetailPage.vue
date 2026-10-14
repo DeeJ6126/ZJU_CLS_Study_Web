@@ -277,11 +277,6 @@ function emitContribution(payload) {
               :aria-label="gradeVisible ? '隐藏成绩' : '查看成绩'"
               @click="gradeVisible = !gradeVisible"
             >{{ gradeVisible ? `成绩 ${activeItemGradeLabel}` : '查看成绩' }}</button>
-            <span
-              v-else
-              class="article-detail-card__grade article-detail-card__grade--empty"
-              aria-label="本资源暂无成绩"
-            >暂无成绩</span>
             <button
               class="article-action-button"
               :class="{ 'is-active': activeItem.viewerLiked }"
@@ -376,11 +371,6 @@ function emitContribution(payload) {
               :aria-label="gradeVisible ? '隐藏成绩' : '查看成绩'"
               @click="gradeVisible = !gradeVisible"
             >{{ gradeVisible ? `成绩 ${activeItemGradeLabel}` : '查看成绩' }}</button>
-            <span
-              v-else
-              class="article-detail-card__grade article-detail-card__grade--empty"
-              aria-label="本资源暂无成绩"
-            >暂无成绩</span>
             <button
               class="article-action-button"
               :class="{ 'is-active': activeItem.viewerLiked }"
