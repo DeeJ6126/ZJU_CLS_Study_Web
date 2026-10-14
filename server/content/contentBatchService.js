@@ -10,7 +10,7 @@ export const MAX_BATCH_BYTES = 8 * 1024 * 1024;
 const batchTypes = new Set(['experience', 'material']);
 const fields = [
   'courseCode', 'type', 'title', 'summary', 'author', 'teacher', 'sourcePlatform',
-  'sourceUrl', 'bodyFormat', 'body', 'externalUrl', 'gpa', 'gradePercentage', 'year',
+  'sourceUrl', 'bodyFormat', 'body', 'externalUrl', 'gpa', 'gradePercentage', 'year', 'sourcePublishedDate',
 ];
 const acceptedFields = new Set([...fields, 'cc98Url']);
 const object = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);

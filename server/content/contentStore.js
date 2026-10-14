@@ -27,6 +27,7 @@ function mapItem(row) {
     gpa: row.gpa,
     gradePercentage: row.gradePercentage ?? '',
     year: row.year,
+    sourcePublishedDate: row.sourcePublishedDate ?? '',
     teacher: row.teacher,
     status: row.status,
     sourcePath: row.sourcePath,
@@ -99,6 +100,7 @@ const selectColumns = `
   gpa,
   grade_percentage as gradePercentage,
   academic_year as year,
+  source_published_date as sourcePublishedDate,
   teacher,
   status,
   source_path as sourcePath,
@@ -343,6 +345,10 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
         if (!activityColumns.some((column) => column.name === 'external_url')) {
           db.exec("alter table activity_items add column external_url text not null default ''");
         }
+      const contentDateColumns = db.prepare('pragma table_info(content_items)').all();
+      if (!contentDateColumns.some(column => column.name === 'source_published_date')) {
+        db.exec("alter table content_items add column source_published_date text not null default ''");
+      }
       const submissionColumns = db.prepare('pragma table_info(content_submissions)').all();
       for (const name of ['source_platform', 'source_url']) {
         if (!submissionColumns.some((column) => column.name === name)) {
@@ -390,8 +396,8 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
           id, route_id, course_code, type, title, summary, author, body, body_format, external_url, cc98_url, gpa,
           grade_percentage, academic_year, teacher, status, source_path, owner_id, created_by, updated_by,
           created_at, updated_at, file_name, stored_name, mime_type, file_size, file_url,
-          source_platform, source_url, create_request_id
-        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          source_platform, source_url, create_request_id, source_published_date
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         id, input.routeId ?? id, input.courseCode, input.type, input.title, input.summary ?? '', input.author ?? '',
         input.body ?? '', input.bodyFormat ?? 'markdown', input.externalUrl ?? '', source.cc98Url,
@@ -400,7 +406,7 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
         input.updatedBy ?? input.createdBy ?? null, now, input.updatedAt ?? now,
         input.file?.fileName ?? '', input.file?.storedName ?? '', input.file?.mimeType ?? '',
         input.file?.size ?? 0, input.file?.url ?? '',
-        source.sourcePlatform, source.sourceUrl, input.requestId ?? '',
+        source.sourcePlatform, source.sourceUrl, input.requestId ?? '', input.sourcePublishedDate ?? '',
       );
       return this.findById(id);
       return this.findById(id);
@@ -487,12 +493,12 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
         update content_items set
           title = ?, summary = ?, author = ?, body = ?, body_format = ?, external_url = ?, cc98_url = ?, gpa = ?,
           grade_percentage = ?, academic_year = ?, teacher = ?, updated_by = ?, updated_at = ?,
-          source_platform = ?, source_url = ?
+          source_platform = ?, source_url = ?, source_published_date = ?
         where id = ?
       `).run(
         next.title, next.summary, next.author, next.body, next.bodyFormat, next.externalUrl, next.cc98Url, next.gpa,
         next.gradePercentage, next.year, next.teacher, next.updatedBy ?? null, next.updatedAt,
-        next.sourcePlatform, next.sourceUrl, id,
+        next.sourcePlatform, next.sourceUrl, next.sourcePublishedDate ?? '', id,
       );
       return this.findById(id);
     },

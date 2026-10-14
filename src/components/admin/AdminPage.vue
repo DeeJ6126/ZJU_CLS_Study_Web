@@ -282,6 +282,7 @@ function emptyForm() {
     sourceUrl: '',
     gpa: '',
     year: '',
+    sourcePublishedDate: '',
     teacher: '',
   };
 }
@@ -1274,6 +1275,10 @@ onBeforeUnmount(() => { persistDraft(); disposed = true; ++auditSequence; clearT
             <label>
               <span>老师姓名（选填）</span>
               <TeacherNameInput v-model="form.teacher" :names="courseTeacherNames(form.courseCode)" />
+            </label>
+            <label>
+              <span>原帖发布日期（选填）</span>
+              <input v-model="form.sourcePublishedDate" type="date">
             </label>
             <label class="admin-editor__wide">
               <span>正文</span>

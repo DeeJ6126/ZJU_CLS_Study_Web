@@ -1,5 +1,6 @@
 import { Marked } from './vendor/marked.esm.js';
 import { renderAttachmentLink, safeAttachmentUrl } from './attachmentLinks.js';
+import { cc98LinkIcon } from './cc98LinkIcon.js';
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (character) => ({
@@ -38,7 +39,7 @@ const markdown = new Marked({
         return caption + file;
       }
       const titleAttribute = title ? ` title="${escapeHtml(title)}"` : '';
-      return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"${titleAttribute}>${label}</a>`;
+      return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"${titleAttribute}>${cc98LinkIcon(url)}${label}</a>`;
     },
     image({ href, title, text }) {
       const url = safeUrl(href);

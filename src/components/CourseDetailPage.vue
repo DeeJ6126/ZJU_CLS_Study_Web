@@ -11,6 +11,7 @@ import { validateContentSource } from '../services/contentSourceService.js';
 import { renderCourseMarkdown } from '../utils/renderCourseMarkdown.js';
 import { isUbbFormat, ubbToHtml } from '../utils/ubbParser.js';
 import { renderLegacyResourceLink } from '../utils/attachmentLinks.js';
+import { formatContentPublicationDate } from '../utils/contentPublicationDate.js';
 
 const props = defineProps({
   course: {
@@ -241,7 +242,7 @@ function emitContribution(payload) {
               <p class="course-detail__kicker">学习心得</p>
               <h1 id="experience-title">{{ activeItem.title }}</h1>
               <p v-if="activeItem.subtitle" class="article-detail-card__subtitle">{{ activeItem.subtitle }}</p>
-              <p class="article-detail-card__context">授课老师：{{ activeItem.teacher || '未注明' }} <span>适用学年：{{ activeItem.year || '未注明' }}</span></p>
+              <p class="article-detail-card__context">授课老师：{{ activeItem.teacher || '未注明' }} <span>发布日期：{{ formatContentPublicationDate(activeItem) }}</span></p>
             </div>
             <div class="article-detail-card__author">
               <a v-if="activeItem.owner" class="article-author-link" :href="getProfileHref(activeItem.owner.publicId)">{{ activeItem.owner.nickname }}</a>
@@ -322,7 +323,7 @@ function emitContribution(payload) {
             <a class="learning-card__main-link" :href="item.href">
               <strong class="learning-card__title">{{ item.title }}</strong>
               <p>{{ item.summary }}</p>
-              <span class="learning-card__metadata">授课老师：{{ item.teacher || '未注明' }} · 适用学年：{{ item.year || '未注明' }}</span>
+              <span class="learning-card__metadata">授课老师：{{ item.teacher || '未注明' }} · 发布日期：{{ formatContentPublicationDate(item) }}</span>
             </a>
             <a v-if="item.owner" class="learning-card__author" :href="getProfileHref(item.owner.publicId)">{{ item.owner.nickname }}</a>
             <span v-else class="learning-card__author">{{ item.author }}</span>
@@ -340,7 +341,7 @@ function emitContribution(payload) {
               <p class="course-detail__kicker">复习资料</p>
               <h1 id="material-title">{{ activeItem.title }}</h1>
               <p v-if="activeItem.subtitle" class="article-detail-card__subtitle">{{ activeItem.subtitle }}</p>
-              <p class="article-detail-card__context">授课老师：{{ activeItem.teacher || '未注明' }} <span>适用学年：{{ activeItem.year || '未注明' }}</span></p>
+              <p class="article-detail-card__context">授课老师：{{ activeItem.teacher || '未注明' }} <span>发布日期：{{ formatContentPublicationDate(activeItem) }}</span></p>
             </div>
             <div class="article-detail-card__author">
               <a v-if="activeItem.owner" class="article-author-link" :href="getProfileHref(activeItem.owner.publicId)">{{ activeItem.owner.nickname }}</a>
@@ -421,7 +422,7 @@ function emitContribution(payload) {
             <a class="learning-card__main-link" :href="item.href">
               <strong class="learning-card__title">{{ item.title }}</strong>
               <p>{{ item.summary }}</p>
-              <span class="learning-card__metadata">授课老师：{{ item.teacher || '未注明' }} · 适用学年：{{ item.year || '未注明' }}</span>
+              <span class="learning-card__metadata">授课老师：{{ item.teacher || '未注明' }} · 发布日期：{{ formatContentPublicationDate(item) }}</span>
             </a>
             <a v-if="item.owner" class="learning-card__author" :href="getProfileHref(item.owner.publicId)">{{ item.owner.nickname }}</a>
             <span v-else class="learning-card__author">{{ item.author }}</span>
@@ -438,7 +439,7 @@ function emitContribution(payload) {
             <div>
               <p class="course-detail__kicker">历年试卷</p>
               <h1 id="paper-title">{{ activeItem.title }}</h1>
-              <p class="paper-detail__context">授课老师：{{ activeItem.teacher || '未注明' }} · 适用学年：{{ activeItem.year || '未注明' }}</p>
+              <p class="paper-detail__context">授课老师：{{ activeItem.teacher || '未注明' }} · 发布日期：{{ formatContentPublicationDate(activeItem) }}</p>
               <p v-for="paragraph in activeItem.paragraphs" :key="paragraph">{{ paragraph }}</p>
             </div>
             <div class="paper-actions">
@@ -491,7 +492,7 @@ function emitContribution(payload) {
               <strong>{{ paper.title }}</strong>
               <em>{{ paper.summary }}</em>
             </span>
-            <span>学年：{{ paper.year || '未注明' }}</span>
+            <span>发布日期：{{ formatContentPublicationDate(paper) }}</span>
             <span>老师：{{ paper.teacher || '未注明' }}</span>
           </a>
         </div>

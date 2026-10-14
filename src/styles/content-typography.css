@@ -168,3 +168,11 @@ html .article-body a.course-action-link {
   color: var(--detail-action-text); font-weight: 600; text-decoration: none; vertical-align: middle;
 }
 .content-file-caption { margin-right: 8px; }
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown) a.content-file-link {
+  display: flex; width: max-content; max-width: 100%; box-sizing: border-box;
+  clear: both;
+}
+html :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown) img.content-cc98-icon {
+  display: inline-block; width: 20px; height: 20px; max-width: none;
+  margin: 0 6px 0 0; vertical-align: -4px; object-fit: contain;
+}

@@ -20,11 +20,12 @@ test('article details render Markdown or UBB and keep grades concealed by defaul
   assert.match(courseDetail, /gradeVisible \? `成绩 \$\{activeItemGradeLabel\}` : '查看成绩'/);
 });
 
-test('resource lists and details distinguish teacher and applicable academic year', () => {
+test('resource lists and details distinguish teacher and publication date', () => {
   assert.equal((courseDetail.match(/授课老师：\{\{ activeItem\.teacher \|\| '未注明' \}\}/g) ?? []).length, 3);
   assert.equal((courseDetail.match(/class="learning-card__metadata"/g) ?? []).length, 2);
-  assert.match(courseDetail, /适用学年：\{\{ item\.year \|\| '未注明' \}\}/);
-  assert.match(courseDetail, /学年：\{\{ paper\.year \|\| '未注明' \}\}/);
+  assert.match(courseDetail, /发布日期：\{\{ formatContentPublicationDate\(item\) \}\}/);
+  assert.match(courseDetail, /发布日期：\{\{ formatContentPublicationDate\(paper\) \}\}/);
+  assert.doesNotMatch(courseDetail, /适用学年/);
 });
 
 test('like and favorite icons expose pressed state and remain reversible', () => {

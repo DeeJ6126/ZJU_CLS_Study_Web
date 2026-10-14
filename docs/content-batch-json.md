@@ -33,6 +33,7 @@
 - `type` 为 `experience`（学习心得）或 `material`（复习资料）。第一版不导入历年试卷。
 - 心得必须有 `body`；资料至少有 `body` 或 `externalUrl`。
 - `bodyFormat` 为 `markdown` 或 `ubb`，默认 Markdown。正文换行在 JSON 中写成 `\n`，由 JSON 编辑器或生成工具正确转义。
+- `sourcePublishedDate` 可选，为原帖发布日 `YYYY-MM-DD`。网站显示该日期；未填写时显示站内记录创建日。
 - `sourcePlatform` 为 `cc98`、`duoduo` 或 `other`。原帖链接使用 HTTP(S)；旧 `cc98Url` 字段仍兼容。
 - `gpa` 为 0 到 5，最多两位小数；`gradePercentage` 为 0 到 100 的整数字符串。选填字段可以省略或留空。
 - 每批 1 到 200 条，文件最大 8 MiB。未知字段会显示校验错误，不导入数据库 ID、作者账号 ID、状态、审计记录或文件本体。

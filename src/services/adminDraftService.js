@@ -3,7 +3,7 @@ const TYPES = new Set(['experience', 'material', 'paper']);
 const FIELDS = {
   courseCode: 24, type: 20, title: 80, summary: 200, author: 40, body: 100000,
   bodyFormat: 20, externalUrl: 2000, cc98Url: 2000, sourcePlatform: 20, sourceUrl: 2000,
-  gpa: 10, year: 20, teacher: 40,
+  gpa: 10, year: 20, teacher: 40, sourcePublishedDate: 10,
 };
 
 function storageOrDefault(storage) {

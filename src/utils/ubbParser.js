@@ -6,6 +6,7 @@
 // token rather than disappearing. Output is HTML-safe: source text is escaped
 // first, then UBB tags are mapped to a constrained tag allowlist.
 import { renderAttachmentLink } from './attachmentLinks.js';
+import { cc98LinkIcon, linkBareCc98Urls } from './cc98LinkIcon.js';
 
 /**
  * Escape characters that have HTML semantics. Used as the first pass before
@@ -68,14 +69,14 @@ function applyReplacements(input) {
   text = text.replace(/\[url=([^\]\n]+)\]([\s\S]*?)\[\/url\]/g, (_, href, content) => {
     const safeHref = sanitizeUrl(href);
     if (!safeHref) return content;
-    return `<a class="ubb-link" href="${safeHref}" target="_blank" rel="noopener noreferrer">${content}</a>`;
+    return `<a class="ubb-link" href="${safeHref}" target="_blank" rel="noopener noreferrer">${cc98LinkIcon(unescapeHtml(safeHref))}${content}</a>`;
   });
 
   // [url]href[/url] — single-value form (link text is the URL itself).
   text = text.replace(/\[url\]([^\[\n]+?)\[\/url\]/g, (_, href) => {
     const safeHref = sanitizeUrl(href.trim());
     if (!safeHref) return href;
-    return `<a class="ubb-link" href="${safeHref}" target="_blank" rel="noopener noreferrer">${safeHref}</a>`;
+    return `<a class="ubb-link" href="${safeHref}" target="_blank" rel="noopener noreferrer">${cc98LinkIcon(unescapeHtml(safeHref))}${safeHref}</a>`;
   });
 
   // [img]src[/img]
@@ -115,7 +116,7 @@ function applyReplacements(input) {
   text = text.replace(/\[u\]([\s\S]*?)\[\/u\]/g, '<u>$1</u>');
   text = text.replace(/\[(s|del)\]([\s\S]*?)\[\/\1\]/g, '<s>$2</s>');
 
-  text = text.replace(/\[upload\]([\s\S]*?)\[\/upload\]/gi, (_, value) => {
+  text = text.replace(/\[upload(?:=[^\]\n]*)?\]([\s\S]*?)\[\/upload\]/gi, (_, value) => {
     return renderAttachmentLink(unescapeHtml(value), { force: true }) || value;
   });
 
@@ -127,7 +128,7 @@ function paragraphsToHtml(escaped) {
     .split(/\n{2,}/)
     .map((paragraph) => paragraph.trim())
     .filter(Boolean)
-    .map((paragraph) => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`)
+    .map((paragraph) => `<p>${linkBareCc98Urls(paragraph.replace(/\n/g, '<br>'))}</p>`)
     .join('');
 }
 

@@ -35,6 +35,11 @@ export function validateContentInput(input, { partial = false, current = null } 
   const gradePercentage = clean(data.gradePercentage);
   const year = clean(data.year);
   const teacher = clean(data.teacher);
+  const sourcePublishedDate = clean(data.sourcePublishedDate);
+  if (sourcePublishedDate && (!/^\d{4}-\d{2}-\d{2}$/.test(sourcePublishedDate)
+    || !Number.isFinite(Date.parse(sourcePublishedDate)) || new Date(sourcePublishedDate).toISOString().slice(0, 10) !== sourcePublishedDate)) {
+    return { ok: false, status: 400, message: '发布日期需要是有效的 YYYY-MM-DD 日期。' };
+  }
 
   if (!/^[A-Z0-9-]{3,24}$/.test(courseCode) || !contentTypes.has(type)) {
     return { ok: false, status: 400, message: '课程代码或内容类型无效。' };
@@ -66,7 +71,7 @@ export function validateContentInput(input, { partial = false, current = null } 
 
   return {
     ok: true,
-    value: { courseCode, type, title, summary, author, body, bodyFormat, externalUrl, sourcePlatform, sourceUrl, cc98Url, gpa, gradePercentage, year, teacher },
+    value: { courseCode, type, title, summary, author, body, bodyFormat, externalUrl, sourcePlatform, sourceUrl, cc98Url, gpa, gradePercentage, year, teacher, sourcePublishedDate },
   };
 }
 
@@ -96,6 +101,8 @@ export function toPublicContentItem(item, likeState = {}, owner = null) {
     gpa: item.gpa,
     gradePercentage: item.gradePercentage,
     year: item.year,
+    sourcePublishedDate: item.sourcePublishedDate || '',
+    createdAt: item.createdAt,
     teacher: item.teacher,
     file: item.file ? {
       fileName: item.file.fileName,

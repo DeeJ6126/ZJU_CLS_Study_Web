@@ -4,7 +4,7 @@ test.use({ viewport: { width: 1440, height: 1000 } });
 const base = 'https://file.cc98.org/v4-upload/d/2025/0922/';
 const pdf = `${base}fmejnx4u.pdf`, md = `${base}fnelypkx.md`;
 const posts = [
-  { id: 'ubb-files', routeId: 'ubb-files', courseCode: 'BIO2110F', type: 'material', title: '附件资料', author: '整理者', bodyFormat: 'ubb', body: `报告[upload]${pdf}[/upload]\nMarkdown源码[upload]${md}[/upload]\n\n[code][upload]${md}[/upload][/code]`, externalUrl: 'https://example.org/legacy.pdf' },
+  { id: 'ubb-files', routeId: 'ubb-files', courseCode: 'BIO2110F', type: 'material', title: '附件资料', author: '整理者', sourcePublishedDate: '2024-11-06', bodyFormat: 'ubb', body: `报告[upload]${pdf}[/upload]\nMarkdown源码[upload]${md}[/upload]\n\n[url=https://www.cc98.org/topic/6028874/1#2][b]原帖补充：闽山苍翠 · 2L[/b][/url]\n\n[code][upload]${md}[/upload][/code]`, externalUrl: 'https://example.org/legacy.pdf' },
   { id: 'md-files', routeId: 'md-files', courseCode: 'BIO2110F', type: 'experience', title: '心得附件', author: '分享者', bodyFormat: 'markdown', body: `[生态学笔记](${md})\n\n[PDF版](${pdf})\n\n[原帖](https://www.cc98.org/topic/123)\n\n\`[文件](${md})\`` },
 ];
 
@@ -40,6 +40,14 @@ for (const theme of ['light', 'dark']) {
     await expect(body.locator('pre')).toContainText('[upload]');
     expect(state.externalRequests).toEqual([]);
     const pdfLink = body.getByRole('link', { name: '点击查看PDF', exact: true }).first();
+    await expect(page.locator('.article-detail-card__context')).toContainText('发布日期：2024-11-06');
+    expect(await pdfLink.evaluate(element => getComputedStyle(element).display)).toBe('flex');
+    const boxes = await body.locator('.content-file-link').evaluateAll(elements => elements.map(element => ({ top: element.getBoundingClientRect().top, bottom: element.getBoundingClientRect().bottom })));
+    for (let index = 1; index < boxes.length; index++) expect(boxes[index].top).toBeGreaterThanOrEqual(boxes[index - 1].bottom);
+    const supplement = body.getByRole('link', { name: '原帖补充：闽山苍翠 · 2L', exact: true });
+    await expect(supplement).toHaveAttribute('href', 'https://www.cc98.org/topic/6028874/1#2');
+    await expect(supplement.locator('img.content-cc98-icon')).toHaveCount(1);
+    await expect.poll(() => supplement.locator('img').evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
     await expect(pdfLink).toHaveAttribute('href', pdf);
     await expect(pdfLink).toHaveAttribute('target', '_blank');
     await expect(pdfLink).toHaveAttribute('rel', 'noopener noreferrer');

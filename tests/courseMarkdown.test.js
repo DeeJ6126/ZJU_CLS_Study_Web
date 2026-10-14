@@ -27,5 +27,6 @@ test('course Markdown supports the editor tools without requiring images', () =>
   for (const tag of ['<h2>', '<strong>', '<em>', '<del>', '<a ', '<blockquote>', '<pre>', '<ul>']) {
     assert.ok(html.includes(tag), `missing ${tag}`);
   }
-  assert.doesNotMatch(html, /<img/);
+  assert.match(html, /class="content-cc98-icon"/);
+  assert.doesNotMatch(html, /<img(?! class="content-cc98-icon")/);
 });

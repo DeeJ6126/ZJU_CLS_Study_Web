@@ -10,6 +10,7 @@ This directory owns the first-phase course-content administration backend.
 - Administrator JSON batch preview/import and filtered export of published experiences/materials. Batches are limited to 200 items and 8 MiB; creation plus audit entries is transactional, request IDs are administrator-scoped, and imports always create unowned drafts. See `docs/content-batch-json.md`.
 - Idempotent import from `public/resource/courses/`.
 - Draft, published, and archived status transitions.
+- Optional `sourcePublishedDate` stores the original post date separately from site creation/audit timestamps. Administrator edits and batch JSON support `YYYY-MM-DD`; readers fall back to the Shanghai site creation date when unknown.
 - PDF validation and storage outside the frontend build.
 - Public read models that omit internal storage metadata.
 - Pending student submissions and administrator review decisions.
