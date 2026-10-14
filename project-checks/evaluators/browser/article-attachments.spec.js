@@ -35,6 +35,13 @@ for (const theme of ['light', 'dark']) {
     await page.goto('/#resources/#BIO2110F/#materials/#ubb-files');
     if ((await page.locator('html').getAttribute('data-theme')) !== theme) await page.locator('.theme-switch').click();
     const body = page.locator('.article-body');
+    const readerWidth = await body.evaluate(element => {
+      const parent = element.closest('.article-detail-card');
+      const style = getComputedStyle(parent);
+      return { body: element.getBoundingClientRect().width,
+        available: parent.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) };
+    });
+    expect(Math.abs(readerWidth.body - readerWidth.available)).toBeLessThan(2);
     await expect(body.getByRole('link', { name: '点击查看PDF', exact: true })).toHaveCount(2);
     await expect(body.getByRole('link', { name: '点击下载文件', exact: true })).toHaveCount(1);
     await expect(body.locator('pre')).toContainText('[upload]');

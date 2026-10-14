@@ -11,6 +11,12 @@ html :is(.article-detail-card, .comment-item, .notice-detail, .notice-admin, .ab
   overflow-wrap: anywhere;
 }
 
+html :is(.article-detail-card, .paper-detail) .article-body {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
 html :is(.article-detail-card, .comment-item, .notice-detail, .notice-admin, .about-page, .practice-result) :is(.article-body, .comment-body, .notice-body, .notice-admin__markdown, .about-page__body, .markdown-answer) :is(h1, h2, h3, h4, h5, h6) {
   max-width: 100%;
   margin: 28px 0 12px;
