@@ -11,6 +11,7 @@ This directory owns the first-phase course-content administration backend.
 - Idempotent import from `public/resource/courses/`.
 - Draft, published, and archived status transitions.
 - Optional `sourcePublishedDate` stores the original post date separately from site creation/audit timestamps. Administrator edits and batch JSON support `YYYY-MM-DD`; readers fall back to the Shanghai site creation date when unknown.
+- Optional `subtitle` (up to 200 characters) preserves the original post title. `supplementBody` (up to 100000 characters) stores comment supplements separately from `body`, sharing its `bodyFormat`. Administrator content APIs and public reads expose both fields; omitted update fields retain their stored values. Existing databases migrate to empty defaults. The batch JSON schema is unchanged.
 - PDF validation and storage outside the frontend build.
 - Public read models that omit internal storage metadata.
 - Pending student submissions and administrator review decisions.

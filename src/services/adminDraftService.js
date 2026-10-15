@@ -1,7 +1,7 @@
 const PREFIX = 'zjubio:admin-drafts:v1:';
 const TYPES = new Set(['experience', 'material', 'paper']);
 const FIELDS = {
-  courseCode: 24, type: 20, title: 80, summary: 200, author: 40, body: 100000,
+  courseCode: 24, type: 20, title: 80, subtitle: 200, summary: 200, author: 40, body: 100000, supplementBody: 100000,
   bodyFormat: 20, externalUrl: 2000, cc98Url: 2000, sourcePlatform: 20, sourceUrl: 2000,
   gpa: 10, year: 20, teacher: 40, sourcePublishedDate: 10,
 };
@@ -82,6 +82,6 @@ export function removeAdminDraft(scope, key, storage, expectedRevision = '') {
 }
 
 export function hasAdminDraftContent(form, fileName = '') {
-  return Boolean(fileName || ['title', 'summary', 'author', 'body', 'externalUrl', 'sourceUrl', 'cc98Url', 'teacher', 'year', 'gpa']
+  return Boolean(fileName || ['title', 'subtitle', 'summary', 'author', 'body', 'supplementBody', 'externalUrl', 'sourceUrl', 'cc98Url', 'teacher', 'year', 'gpa']
     .some((field) => String(form?.[field] ?? '').trim()));
 }

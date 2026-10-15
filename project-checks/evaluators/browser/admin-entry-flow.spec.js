@@ -147,6 +147,34 @@ test('immediate reload preserves an unsent draft and restores every populated fi
   expect(state.errors).toEqual([]);
 });
 
+test('paper original title and supplementary text survive local recovery and server editing', async ({ page }) => {
+  const state = await fixture(page);
+  const editor = await newEntry(page, 'paper');
+  await editor.getByLabel('原帖标题（选填）', { exact: true }).fill('论坛里的完整原帖标题');
+  await editor.getByRole('combobox', { name: '内容格式', exact: true }).selectOption('ubb');
+  await editor.getByRole('textbox', { name: '正文', exact: true }).fill('[b]考试心得主文[/b]');
+  await editor.getByRole('textbox', { name: '补充正文（选填）', exact: true }).fill('[b]后续补充[/b]');
+  await page.reload();
+  await page.getByRole('region', { name: '本机未完成草稿', exact: true }).getByRole('button', { name: '继续录入', exact: true }).click();
+  await expect(editor.getByLabel('原帖标题（选填）', { exact: true })).toHaveValue('论坛里的完整原帖标题');
+  await expect(editor.getByRole('combobox', { name: '内容格式', exact: true })).toHaveValue('ubb');
+  await expect(editor.getByRole('textbox', { name: '正文', exact: true })).toHaveValue('[b]考试心得主文[/b]');
+  await expect(editor.getByRole('textbox', { name: '补充正文（选填）', exact: true })).toHaveValue('[b]后续补充[/b]');
+  await editor.getByRole('button', { name: '保存草稿', exact: true }).click();
+  await expect(page.locator('.admin-notice')).toContainText('已保存');
+  expect(state.items[0]).toMatchObject({ subtitle: '论坛里的完整原帖标题', body: '[b]考试心得主文[/b]', supplementBody: '[b]后续补充[/b]', bodyFormat: 'ubb' });
+  await page.getByRole('button', { name: '编辑', exact: true }).click();
+  await expect(editor.getByLabel('原帖标题（选填）', { exact: true })).toHaveValue('论坛里的完整原帖标题');
+  await expect(editor.getByRole('textbox', { name: '补充正文（选填）', exact: true })).toHaveValue('[b]后续补充[/b]');
+  await editor.getByRole('textbox', { name: '补充正文（选填）', exact: true }).fill('[b]修改后的补充[/b]');
+  await editor.getByRole('button', { name: '保存修改', exact: true }).click();
+  await expect(page.locator('.admin-notice')).toContainText('已保存');
+  await expect.poll(() => state.items[0].supplementBody).toBe('[b]修改后的补充[/b]');
+  expect(state.items[0].subtitle).toBe('论坛里的完整原帖标题');
+  expect(createWrites(state)).toHaveLength(1);
+  expect(state.errors).toEqual([]);
+});
+
 test('publication failure retains input and retries by updating the created content ID', async ({ page }) => {
   const state = await fixture(page);
   state.publishFailures = 1;

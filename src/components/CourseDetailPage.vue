@@ -104,17 +104,30 @@ const activeItemFavoriteKey = computed(() => {
   return activeItem.value?.contentId ?? '';
 });
 
-const activeItemBody = computed(() => {
-  const item = activeItem.value;
+function renderItemBody(item, field = 'body') {
   if (!item) return { html: '', isUbb: false };
-  const body = String(item.body ?? '');
+  const body = String(item[field] ?? '');
   const isUbb = isUbbFormat(item.bodyFormat)
     || (!item.bodyFormat && /\[\/?(b|i|u|s|del|url|img|size|color|quote|code|smiley|align|upload)\b/i.test(body));
-  const legacyLink = renderLegacyResourceLink(item.externalUrl);
+  const legacyLink = field === 'body' ? renderLegacyResourceLink(item.externalUrl) : '';
   return {
     html: (isUbb ? ubbToHtml(body) : renderCourseMarkdown(body)) + (legacyLink ? `<p>${legacyLink}</p>` : ''),
     isUbb,
   };
+}
+
+const activeItemBody = computed(() => renderItemBody(activeItem.value));
+const activeItemSupplementBody = computed(() => renderItemBody(activeItem.value, 'supplementBody'));
+const paperPdfUrl = computed(() => {
+  const url = String(activeItem.value?.file?.url ?? '');
+  if (!url) return '';
+  const hashIndex = url.indexOf('#');
+  const path = hashIndex < 0 ? url : url.slice(0, hashIndex);
+  const fragment = hashIndex < 0 ? '' : url.slice(hashIndex + 1);
+  const fitted = /(^|&)view=[^&]*/i.test(fragment)
+    ? fragment.replace(/(^|&)view=[^&]*/i, '$1view=FitH')
+    : `${fragment}${fragment ? '&' : ''}view=FitH`;
+  return `${path}#${fitted}`;
 });
 
 const gradeVisible = ref(false);
@@ -419,6 +432,7 @@ function emitContribution(payload) {
             <div class="article-detail-card__title-block">
               <p class="course-detail__kicker">历年试卷</p>
               <h1 id="paper-title">{{ activeItem.title }}</h1>
+              <p v-if="activeItem.subtitle" class="article-detail-card__subtitle">{{ activeItem.subtitle }}</p>
               <p class="paper-detail__context">
                 <span v-if="activeItem.teacher">授课老师：{{ activeItem.teacher }}</span>
                 <time>{{ formatContentPublicationDate(activeItem) }}</time>
@@ -438,17 +452,23 @@ function emitContribution(payload) {
               />
             </div>
           </div>
-          <object v-if="activeItem.file" class="pdf-viewer" :data="activeItem.file.url" type="application/pdf">
+          <div
+            v-if="activeItemBody.html"
+            class="article-body"
+            :class="activeItemBody.isUbb ? 'article-body--ubb' : 'article-body--markdown'"
+            v-html="activeItemBody.html"
+          ></div>
+          <object v-if="activeItem.file" class="pdf-viewer" :data="paperPdfUrl" type="application/pdf">
             <p>
               当前浏览器无法直接预览 PDF。
               <a :href="activeItem.file.url" target="_blank" rel="noreferrer">打开 PDF 文件</a>
             </p>
           </object>
           <div
-            v-if="activeItemBody.html"
+            v-if="activeItemSupplementBody.html"
             class="article-body"
-            :class="activeItemBody.isUbb ? 'article-body--ubb' : 'article-body--markdown'"
-            v-html="activeItemBody.html"
+            :class="activeItemSupplementBody.isUbb ? 'article-body--ubb' : 'article-body--markdown'"
+            v-html="activeItemSupplementBody.html"
           ></div>
         </article>
       </template>
@@ -466,7 +486,10 @@ function emitContribution(payload) {
         <p v-else-if="!activeCollection.length" class="resource-empty">暂无历年试卷，欢迎认证用户投稿。</p>
         <div v-else class="paper-list">
           <a v-for="paper in activeCollection" :key="paper.id" class="paper-row-card" :href="paper.href">
-            <strong class="paper-row-card__title">{{ paper.title }}</strong>
+            <div class="paper-row-card__heading">
+              <strong class="paper-row-card__title">{{ paper.title }}</strong>
+              <p v-if="paper.subtitle" class="paper-row-card__subtitle">{{ paper.subtitle }}</p>
+            </div>
             <span class="paper-row-card__author">{{ paper.owner?.nickname || paper.author }}</span>
             <time class="paper-row-card__date">{{ formatContentPublicationDate(paper) }}</time>
             <span v-if="paper.teacher" class="paper-row-card__teacher">授课老师：{{ paper.teacher }}</span>

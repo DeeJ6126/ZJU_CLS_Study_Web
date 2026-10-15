@@ -15,9 +15,11 @@ function mapItem(row) {
     courseCode: row.courseCode,
     type: row.type,
     title: row.title,
+    subtitle: row.subtitle ?? '',
     summary: row.summary,
     author: row.author,
     body: row.body,
+    supplementBody: row.supplementBody ?? '',
     bodyFormat: row.bodyFormat ?? 'markdown',
     externalUrl: row.externalUrl,
     cc98Url: row.cc98Url,
@@ -89,9 +91,11 @@ const selectColumns = `
   course_code as courseCode,
   type,
   title,
+  subtitle,
   summary,
   author,
   body,
+  supplement_body as supplementBody,
   body_format as bodyFormat,
   external_url as externalUrl,
   cc98_url as cc98Url,
@@ -168,9 +172,11 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
           course_code text not null,
           type text not null check(type in ('experience', 'material', 'paper')),
           title text not null,
+          subtitle text not null default '',
           summary text not null default '',
           author text not null default '',
           body text not null default '',
+          supplement_body text not null default '',
           external_url text not null default '',
           cc98_url text not null default '',
           gpa text not null default '',
@@ -332,6 +338,11 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
       if (!columns.some((column) => column.name === 'body_format')) {
         db.exec("alter table content_items add column body_format text not null default 'markdown'");
       }
+      for (const name of ['subtitle', 'supplement_body']) {
+        if (!columns.some((column) => column.name === name)) {
+          db.exec(`alter table content_items add column ${name} text not null default ''`);
+        }
+      }
       if (!columns.some((column) => column.name === 'grade_percentage')) {
         db.exec("alter table content_items add column grade_percentage text not null default ''");
       }
@@ -396,8 +407,8 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
           id, route_id, course_code, type, title, summary, author, body, body_format, external_url, cc98_url, gpa,
           grade_percentage, academic_year, teacher, status, source_path, owner_id, created_by, updated_by,
           created_at, updated_at, file_name, stored_name, mime_type, file_size, file_url,
-          source_platform, source_url, create_request_id, source_published_date
-        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          source_platform, source_url, create_request_id, source_published_date, subtitle, supplement_body
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         id, input.routeId ?? id, input.courseCode, input.type, input.title, input.summary ?? '', input.author ?? '',
         input.body ?? '', input.bodyFormat ?? 'markdown', input.externalUrl ?? '', source.cc98Url,
@@ -407,6 +418,7 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
         input.file?.fileName ?? '', input.file?.storedName ?? '', input.file?.mimeType ?? '',
         input.file?.size ?? 0, input.file?.url ?? '',
         source.sourcePlatform, source.sourceUrl, input.requestId ?? '', input.sourcePublishedDate ?? '',
+        input.subtitle ?? '', input.supplementBody ?? '',
       );
       return this.findById(id);
       return this.findById(id);
@@ -493,12 +505,12 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
         update content_items set
           title = ?, summary = ?, author = ?, body = ?, body_format = ?, external_url = ?, cc98_url = ?, gpa = ?,
           grade_percentage = ?, academic_year = ?, teacher = ?, updated_by = ?, updated_at = ?,
-          source_platform = ?, source_url = ?, source_published_date = ?
+          source_platform = ?, source_url = ?, source_published_date = ?, subtitle = ?, supplement_body = ?
         where id = ?
       `).run(
         next.title, next.summary, next.author, next.body, next.bodyFormat, next.externalUrl, next.cc98Url, next.gpa,
         next.gradePercentage, next.year, next.teacher, next.updatedBy ?? null, next.updatedAt,
-        next.sourcePlatform, next.sourceUrl, next.sourcePublishedDate ?? '', id,
+        next.sourcePlatform, next.sourceUrl, next.sourcePublishedDate ?? '', next.subtitle, next.supplementBody, id,
       );
       return this.findById(id);
     },

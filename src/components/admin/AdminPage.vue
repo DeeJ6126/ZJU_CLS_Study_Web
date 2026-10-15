@@ -274,9 +274,11 @@ function emptyForm() {
     courseCode: '',
     type: 'experience',
     title: '',
+    subtitle: '',
     summary: '',
     author: '',
     body: '',
+    supplementBody: '',
     bodyFormat: 'markdown',
     externalUrl: '',
     cc98Url: '',
@@ -1299,6 +1301,10 @@ onBeforeUnmount(() => { persistDraft(); disposed = true; ++auditSequence; clearT
               <span>标题</span>
               <input v-model.trim="form.title" required maxlength="80">
             </label>
+            <label v-if="form.type === 'paper'" class="admin-editor__wide">
+              <span>原帖标题（选填）</span>
+              <input v-model.trim="form.subtitle" maxlength="200">
+            </label>
             <label class="admin-editor__wide">
               <span>摘要</span>
               <textarea v-model.trim="form.summary" rows="2" maxlength="200"></textarea>
@@ -1335,6 +1341,10 @@ onBeforeUnmount(() => { persistDraft(); disposed = true; ++auditSequence; clearT
               <span>正文</span>
               <select v-model="form.bodyFormat" aria-label="内容格式"><option value="markdown">Markdown</option><option value="ubb">UBB</option></select>
               <textarea v-model="form.body" aria-label="正文" rows="10" maxlength="100000"></textarea>
+            </label>
+            <label v-if="form.type === 'paper'" class="admin-editor__wide">
+              <span>补充正文（选填）</span>
+              <textarea v-model="form.supplementBody" aria-label="补充正文（选填）" rows="6" maxlength="100000"></textarea>
             </label>
             <label v-if="['material', 'paper'].includes(form.type)" class="admin-editor__wide admin-file-field">
               <span>PDF 文件</span>

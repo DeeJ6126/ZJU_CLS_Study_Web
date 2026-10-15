@@ -23,9 +23,11 @@ export function validateContentInput(input, { partial = false, current = null } 
   const courseCode = clean(data.courseCode);
   const type = clean(data.type);
   const title = clean(data.title);
+  const subtitle = clean(data.subtitle);
   const summary = clean(data.summary);
   const author = clean(data.author);
   const body = clean(data.body);
+  const supplementBody = clean(data.supplementBody);
   const bodyFormat = clean(data.bodyFormat || 'markdown');
   const externalUrl = clean(data.externalUrl);
   const source = validateContentSource(input, partial ? current : {});
@@ -47,7 +49,8 @@ export function validateContentInput(input, { partial = false, current = null } 
   if (!title || title.length > 80) {
     return { ok: false, status: 400, message: '标题需要填写且不能超过 80 个字符。' };
   }
-  if (summary.length > 200 || author.length > 40 || body.length > 100000) {
+  if (summary.length > 200 || subtitle.length > 200 || author.length > 40
+    || body.length > 100000 || supplementBody.length > 100000) {
     return { ok: false, status: 400, message: '内容字段超过长度限制。' };
   }
   if (!['markdown', 'ubb'].includes(bodyFormat)) {
@@ -71,7 +74,7 @@ export function validateContentInput(input, { partial = false, current = null } 
 
   return {
     ok: true,
-    value: { courseCode, type, title, summary, author, body, bodyFormat, externalUrl, sourcePlatform, sourceUrl, cc98Url, gpa, gradePercentage, year, teacher, sourcePublishedDate },
+    value: { courseCode, type, title, subtitle, summary, author, body, supplementBody, bodyFormat, externalUrl, sourcePlatform, sourceUrl, cc98Url, gpa, gradePercentage, year, teacher, sourcePublishedDate },
   };
 }
 
@@ -92,9 +95,11 @@ export function toPublicContentItem(item, likeState = {}, owner = null) {
     courseCode: item.courseCode,
     type: item.type,
     title: item.title,
+    subtitle: item.subtitle || '',
     summary: item.summary,
     author: item.author,
     body: item.body,
+    supplementBody: item.supplementBody || '',
     bodyFormat: item.bodyFormat,
     externalUrl: item.externalUrl,
     ...normalizeContentSource(item),

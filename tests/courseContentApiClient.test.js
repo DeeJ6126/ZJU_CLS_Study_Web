@@ -77,3 +77,17 @@ test('course content client keeps legacy CC98 sources and generic forum links se
   assert.equal(result.experiences[1].sourceUrl, 'https://duoduo.example/topic/2');
   assert.equal(result.experiences[2].sourceUrl, '');
 });
+
+test('API and static paper content preserve the original title, format and supplementary body', async () => {
+  const metadata = { subtitle: '原帖标题', supplementBody: '[b]补充正文[/b]', bodyFormat: 'ubb' };
+  const api = await loadCourseContent(course, { fetchImpl: async () => ({ ok: true,
+    json: async () => ({ items: [{ id: 'paper', type: 'paper', body: '[b]主文[/b]', ...metadata }] }) }) });
+  for (const [field, value] of Object.entries(metadata)) assert.equal(api.papers[0][field], value);
+  const fallback = await loadCourseContent({ ...course, experiences: [], papers: [{ id: 'paper', url: '/paper.md' }] }, {
+    fetchImpl: async url => String(url).includes('api/content') ? { ok: false } : {
+      ok: true, text: async () => '---\nid: paper\nsubtitle: 原帖标题\nsupplementBody: [b]补充正文[/b]\nbodyFormat: ubb\n---\n[b]主文[/b]',
+    },
+  });
+  for (const [field, value] of Object.entries(metadata)) assert.equal(fallback.papers[0][field], value);
+  assert.equal(fallback.papers[0].body, '[b]主文[/b]');
+});

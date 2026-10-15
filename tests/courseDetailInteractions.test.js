@@ -39,12 +39,17 @@ test('papers show compact authors, plain dates and optional teachers without lis
   assert.match(papers, /class="article-cc98-badge"/);
 });
 
-test('paper notes reuse safe full-width article formatting below the embedded PDF', () => {
+test('paper main and supplementary notes share safe article formatting around the embedded PDF', () => {
   const papers = courseDetail.slice(courseDetail.indexOf('<article class="paper-detail article-detail-card">'));
   assert.doesNotMatch(papers, /activeItem\.paragraphs/);
   assert.match(papers, /class="article-body"/);
   assert.match(papers, /v-html="activeItemBody.html"/);
-  assert.ok(papers.indexOf('</object>') < papers.indexOf('class="article-body"'));
+  assert.ok(papers.indexOf('v-html="activeItemBody.html"') < papers.indexOf('<object'));
+  assert.ok(papers.indexOf('</object>') < papers.indexOf('v-html="activeItemSupplementBody.html"'));
+  assert.match(courseDetail, /renderItemBody\(activeItem.value, 'supplementBody'\)/);
+  assert.match(papers, /:data="paperPdfUrl"/);
+  assert.match(papers, /paper\.subtitle/);
+  assert.match(papers, /activeItem\.subtitle/);
 });
 
 test('like and favorite icons expose pressed state and remain reversible', () => {

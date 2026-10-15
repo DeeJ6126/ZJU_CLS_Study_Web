@@ -54,7 +54,7 @@ async function newEntry(page, type = 'experience') {
   await editor.getByRole('option').filter({ hasText: 'BIO2110F' }).click();
   await editor.getByRole('combobox', { name: '内容类型', exact: true }).selectOption(type);
   await editor.getByRole('textbox', { name: '标题', exact: true }).fill('草稿安全测试');
-  await editor.locator('textarea').last().fill('待核对的论坛正文。');
+  await editor.getByRole('textbox', { name: '正文', exact: true }).fill('待核对的论坛正文。');
   return editor;
 }
 

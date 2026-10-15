@@ -45,6 +45,20 @@ test('storage errors report failure while leaving other drafts intact', () => {
   assert.equal(saveAdminDraft('', draft(), storage()).ok, false);
 });
 
+test('paper drafts retain the original title and supplementary body when saved and restored', () => {
+  const s = storage();
+  const form = { ...draft().form, type: 'paper', subtitle: '原帖标题', bodyFormat: 'ubb',
+    body: '[b]主文[/b]', supplementBody: '[url=https://example.org/notes.pdf]补充[/url]' };
+  assert.equal(saveAdminDraft('real:1', { ...draft(), form }, s).ok, true);
+  const recovered = readAdminDrafts('real:1', s).drafts[0].form;
+  for (const field of ['subtitle', 'body', 'bodyFormat', 'supplementBody']) assert.equal(recovered[field], form[field]);
+  assert.equal(hasAdminDraftContent({ subtitle: '原帖标题' }), true);
+  assert.equal(hasAdminDraftContent({ supplementBody: '补充' }), true);
+  const bounded = saveAdminDraft('real:2', { ...draft(), form: { ...form, subtitle: 'x'.repeat(201), supplementBody: 'x'.repeat(100001) } }, s);
+  assert.equal(bounded.draft.form.subtitle.length, 200);
+  assert.equal(bounded.draft.form.supplementBody.length, 100000);
+});
+
 test('empty next-entry templates are not unfinished content and capacity never silently drops existing drafts', () => {
   assert.equal(hasAdminDraftContent({ courseCode: 'BIO2011F', type: 'experience', sourcePlatform: 'cc98' }), false);
   assert.equal(hasAdminDraftContent({ body: '内容' }), true);
