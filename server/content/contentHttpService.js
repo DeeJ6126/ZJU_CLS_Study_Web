@@ -222,7 +222,7 @@ export async function handleContentHttpRequest({
   const publicFileMatch = url.pathname.match(/^\/api\/content\/files\/([^/]+)$/);
   if (request.method === 'GET' && publicFileMatch) {
     const item = contentStore.findById(decodeURIComponent(publicFileMatch[1]));
-    if (!item || item.status !== 'published' || !item.file?.storedName) {
+    if (!item || (item.status !== 'published' && user?.role !== 'admin') || !item.file?.storedName) {
       sendJson(response, 404, { message: '文件不存在。' });
       return true;
     }
@@ -238,6 +238,7 @@ export async function handleContentHttpRequest({
         'content-length': file.length,
         'content-disposition': `inline; filename*=UTF-8''${encodeURIComponent(item.file.fileName)}`,
         'x-content-type-options': 'nosniff',
+        'cache-control': 'private, no-store',
       });
       response.end(file);
     } catch {

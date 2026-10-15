@@ -14,6 +14,7 @@ Lightweight Node backend for the current application.
 - Administrator-only course-content maintenance.
 - Public notices and administrator-only draft/edit/publish/pin/archive operations. Notice tables share `content.sqlite`; attachments live under the existing content upload directory's `notice-attachments/` subdirectory and existing backup coverage. PDF, DOCX and XLSX files are limited to 25 MB; Office containers are validated without extraction and reject macros, encryption and unsafe embedded content. Public downloads require published status. No public notice applications, comments or submissions exist.
 - Published course-content API and controlled PDF delivery.
+- Administrators can preview attached draft/archived course PDFs through the same file link; all file responses are private and non-cacheable. Visitors and students can only read published PDFs.
 - Student submission intake and administrator moderation.
 - Published activity catalog plus administrator activity drafting, homepage recommendation, ordering, publishing, and archiving.
 - Student-ID-verified post likes and administrator operation logs.
