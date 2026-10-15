@@ -1,6 +1,5 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import CommentSection from './CommentSection.vue';
 import ContributionBox from './ContributionBox.vue';
 import FavoriteButton from './FavoriteButton.vue';
 import { buildCourseRoute, courseDetailTabs } from '../data/courses/resourcePaths.js';
@@ -104,7 +103,6 @@ const favoriteCountLabel = computed(() => {
 const activeItemFavoriteKey = computed(() => {
   return activeItem.value?.contentId ?? '';
 });
-const activeItemComments = computed(() => props.commentsByKey[activeItemFavoriteKey.value] ?? []);
 
 const activeItemBody = computed(() => {
   const item = activeItem.value;
@@ -148,13 +146,6 @@ function emitFavorite(contentId) {
     return;
   }
   emit('toggle-favorite', contentId);
-}
-
-function emitComment(payload) {
-  emit('add-comment', {
-    contentId: activeItemFavoriteKey.value,
-    ...payload,
-  });
 }
 
 function emitContribution(payload) {
@@ -423,18 +414,20 @@ function emitContribution(payload) {
 
     <section v-else class="course-subpage" aria-labelledby="paper-title">
       <template v-if="activeItem">
-        <a class="course-subpage__return" :href="tabHref('papers')">返回历年试卷</a>
         <article class="paper-detail">
           <div class="paper-detail__head">
             <div>
               <p class="course-detail__kicker">历年试卷</p>
               <h1 id="paper-title">{{ activeItem.title }}</h1>
-              <p class="paper-detail__context">授课老师：{{ activeItem.teacher || '未注明' }} · 发布日期：{{ formatContentPublicationDate(activeItem) }}</p>
+              <p class="paper-detail__context">
+                <span v-if="activeItem.teacher">授课老师：{{ activeItem.teacher }}</span>
+                <time>{{ formatContentPublicationDate(activeItem) }}</time>
+              </p>
               <p v-for="paragraph in activeItem.paragraphs" :key="paragraph">{{ paragraph }}</p>
             </div>
             <div class="paper-actions">
-              <a v-if="activeItem.file" :href="activeItem.file.url" target="_blank" rel="noreferrer">打开 PDF</a>
-              <a v-if="activeItem.file" :href="activeItem.file.url" :download="activeItem.file.fileName">下载 PDF</a>
+              <a v-if="activeItem.owner" class="article-author-link" :href="getProfileHref(activeItem.owner.publicId)">{{ activeItem.owner.nickname }}</a>
+              <strong v-else>{{ activeItem.author }}</strong>
               <a v-if="activeItemSource.sourceUrl" class="article-cc98-badge" :href="activeItemSource.sourceUrl" target="_blank" rel="noopener noreferrer" :title="sourceLinkTitle" :aria-label="sourceLinkTitle">
                 <img v-if="activeItemSource.sourcePlatform === 'cc98'" class="cc98-icon" :src="cc98IconUrl" alt="CC98" />
                 <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path v-for="path in linkPaths" :key="path" :d="path" /></svg>
@@ -453,16 +446,6 @@ function emitContribution(payload) {
             </p>
           </object>
         </article>
-        <CommentSection
-          :comments="activeItemComments"
-          :can-comment="canComment"
-          :user="user"
-          :busy="commentBusy"
-          :notice="commentNotice"
-          @add-comment="emitComment"
-          @update-comment="emit('update-comment', $event)"
-          @delete-comment="emit('delete-comment', $event)"
-        />
       </template>
 
       <template v-else>
@@ -478,12 +461,10 @@ function emitContribution(payload) {
         <p v-else-if="!activeCollection.length" class="resource-empty">暂无历年试卷，欢迎认证用户投稿。</p>
         <div v-else class="paper-list">
           <a v-for="paper in activeCollection" :key="paper.id" class="paper-row-card" :href="paper.href">
-            <span>
-              <strong>{{ paper.title }}</strong>
-              <em>{{ paper.summary }}</em>
-            </span>
-            <span>发布日期：{{ formatContentPublicationDate(paper) }}</span>
-            <span>老师：{{ paper.teacher || '未注明' }}</span>
+            <strong class="paper-row-card__title">{{ paper.title }}</strong>
+            <span class="paper-row-card__author">{{ paper.owner?.nickname || paper.author }}</span>
+            <time class="paper-row-card__date">{{ formatContentPublicationDate(paper) }}</time>
+            <span v-if="paper.teacher" class="paper-row-card__teacher">授课老师：{{ paper.teacher }}</span>
           </a>
         </div>
       </template>

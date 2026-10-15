@@ -647,7 +647,6 @@ html[data-theme="dark"] .cc98-icon {
 }
 
 .course-action-link,
-.paper-actions a,
 .comment-form button,
 .contribution-trigger,
 .contribution-form__actions button,
@@ -1177,41 +1176,49 @@ html[data-theme="dark"] .cc98-icon {
 .paper-row-card {
   min-height: 96px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 140px 150px;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 220px) minmax(125px, max-content);
+  column-gap: 24px;
+  row-gap: 6px;
   align-items: center;
   padding: 18px;
   transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
-.paper-row-card span:first-child {
-  display: grid;
-  gap: 4px;
-}
-
-.paper-row-card strong {
+.paper-row-card__title {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  min-width: 0;
   color: var(--color-ink);
   font-size: 18px;
   font-weight: 600;
-}
-
-.paper-row-card em {
-  font-style: normal;
-}
-
-.paper-row-card span:not(:first-child) {
-  min-height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--detail-border);
-  border-radius: var(--radius-sm);
-  background: var(--detail-chip-bg);
-  color: var(--detail-chip-text);
-  font-weight: 600;
-  padding: 4px 6px;
   overflow-wrap: anywhere;
-  text-align: center;
+}
+
+.paper-row-card__author {
+  grid-column: 3;
+  grid-row: 1;
+  text-align: right;
+  color: var(--color-ink);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.paper-row-card__date {
+  grid-column: 3;
+  grid-row: 2;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.paper-row-card__teacher {
+  grid-column: 2;
+  grid-row: 2;
+  color: var(--color-muted);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+  text-align: right;
 }
 
 .paper-detail {
@@ -1238,6 +1245,16 @@ html[data-theme="dark"] .cc98-icon {
   flex-wrap: wrap;
   gap: 10px;
   justify-content: flex-end;
+  align-items: center;
+  flex: 0 0 auto;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.paper-detail__context {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
 }
 
 .pdf-viewer {
@@ -1444,9 +1461,24 @@ html[data-theme="dark"] .cc98-icon {
 
   .course-detail__hero,
   .course-detail__section--teachers,
-  .course-detail__split,
-  .paper-row-card {
+  .course-detail__split {
     grid-template-columns: 1fr;
+  }
+
+  .paper-row-card {
+    grid-template-columns: minmax(0, 1fr) max-content;
+    column-gap: 16px;
+  }
+
+  .paper-row-card__author,
+  .paper-row-card__date {
+    grid-column: 2;
+  }
+
+  .paper-row-card__teacher {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    text-align: left;
   }
 
   .course-tabs {
