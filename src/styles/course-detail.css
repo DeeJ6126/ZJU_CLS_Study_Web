@@ -1236,10 +1236,6 @@ html[data-theme="dark"] .cc98-icon {
   border-bottom: 1px solid var(--detail-border);
 }
 
-.paper-detail__head p:not(.course-detail__kicker) {
-  max-width: 760px;
-}
-
 .paper-actions {
   display: flex;
   flex-wrap: wrap;

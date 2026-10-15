@@ -414,16 +414,15 @@ function emitContribution(payload) {
 
     <section v-else class="course-subpage" aria-labelledby="paper-title">
       <template v-if="activeItem">
-        <article class="paper-detail">
-          <div class="paper-detail__head">
-            <div>
+        <article class="paper-detail article-detail-card">
+          <div class="paper-detail__head article-detail-card__head">
+            <div class="article-detail-card__title-block">
               <p class="course-detail__kicker">历年试卷</p>
               <h1 id="paper-title">{{ activeItem.title }}</h1>
               <p class="paper-detail__context">
                 <span v-if="activeItem.teacher">授课老师：{{ activeItem.teacher }}</span>
                 <time>{{ formatContentPublicationDate(activeItem) }}</time>
               </p>
-              <p v-for="paragraph in activeItem.paragraphs" :key="paragraph">{{ paragraph }}</p>
             </div>
             <div class="paper-actions">
               <a v-if="activeItem.owner" class="article-author-link" :href="getProfileHref(activeItem.owner.publicId)">{{ activeItem.owner.nickname }}</a>
@@ -445,6 +444,12 @@ function emitContribution(payload) {
               <a :href="activeItem.file.url" target="_blank" rel="noreferrer">打开 PDF 文件</a>
             </p>
           </object>
+          <div
+            v-if="activeItemBody.html"
+            class="article-body"
+            :class="activeItemBody.isUbb ? 'article-body--ubb' : 'article-body--markdown'"
+            v-html="activeItemBody.html"
+          ></div>
         </article>
       </template>
 

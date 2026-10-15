@@ -21,6 +21,7 @@ This file is the short-term recovery point for future AI sessions. Keep it curre
 
 ## Recently Completed
 
+- Past-paper details now render their non-exam notes below the embedded PDF with the same safe Markdown/UBB reader and full-width typography as review materials, instead of flattening body text into header paragraphs. Light/dark browser coverage checks formatting, attachment links, source supplements, placement and width. Exam questions belong in the attached PDF; existing author-created exam PDFs are retained unchanged.
 - Past-paper lists now omit subtitles and display the contributor above the date on the right, with teacher text only when provided. Paper readers retain the embedded PDF and favorite control, remove duplicate return/open/download controls and comments, and share the borderless source-icon styling used by review materials. Verified light/dark browser flows, the build and Node tests; no content data changed.
 - Administrator course editors can open PDF files attached to unpublished drafts and archived records. Guest/student requests remain limited to published PDFs; file responses use private no-store caching. Verified role/status combinations, missing files and path traversal, plus the full Node suite.
 - Course article bodies now use the full title/content width instead of the shared 880px reader cap, keeping parent padding, author formatting and overflow handling. Other reader surfaces retain their existing width limit. Desktop light/dark attachment tests assert the body fills the available article width.
