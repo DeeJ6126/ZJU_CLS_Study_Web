@@ -1206,6 +1206,26 @@ html[data-theme="dark"] .cc98-icon {
   font-size: 14px;
 }
 
+.paper-archive-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 110px;
+  min-height: 40px;
+  padding: 6px 14px;
+  border: 1px solid var(--detail-link);
+  border-radius: var(--radius-sm);
+  background: var(--detail-link);
+  color: var(--color-on-primary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.paper-archive-download svg { width: 18px; height: 18px; }
+.paper-archive-download:disabled { opacity: 0.55; cursor: default; }
+.paper-archive-download:focus-visible { outline: 2px solid var(--detail-link); outline-offset: 3px; }
+
 .paper-row-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 50px;

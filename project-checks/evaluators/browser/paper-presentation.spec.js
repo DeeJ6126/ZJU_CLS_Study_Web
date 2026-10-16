@@ -1,6 +1,8 @@
 import { test as base, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
+import { ZipFile } from 'yazl';
+import { Open } from 'unzipper-esm';
 
 const test = base.extend({
   paperOrigin: async ({ baseURL }, use) => {
@@ -40,6 +42,14 @@ test.use({ channel: 'chromium' });
 
 const pdf = readFileSync(new URL('../../../public/resource/courses/basic/BIO2110F_microbiology-a/papers/25-26-midterm-lv.pdf', import.meta.url));
 
+async function pdfArchive(items) {
+  const zip = new ZipFile(), chunks = [];
+  for (const item of items) zip.addBuffer(pdf, `${item.id}.pdf`, { compress: false });
+  zip.end();
+  for await (const chunk of zip.outputStream) chunks.push(chunk);
+  return Buffer.concat(chunks);
+}
+
 const papers = [
   { id: 'paper-first', routeId: 'paper-first', courseCode: 'BIO2019F', type: 'paper', title: '2024–2025春夏 植物学及实验（甲）期末回忆卷', subtitle: '植物学期末回忆与课程复习记录', summary: '应隐藏的列表摘要', author: '原帖分享者', sourcePublishedDate: '2025-06-18', sourcePlatform: 'cc98', sourceUrl: 'https://www.cc98.org/topic/6217956', body: '## 考试心得\n\n**复习建议**：回归课件。\n\n[课前资料](https://file.cc98.org/course.pdf)', supplementBody: '### [原帖补充：分享者 · 4L](https://www.cc98.org/topic/6217956/1#4)\n\n**补充建议**：对照笔记。\n\n[配套资料](https://file.cc98.org/notes.pdf)\n\n<script>window.paperUnsafe=true</script>', bodyFormat: 'markdown', file: { url: '/zjubio/api/content/files/paper-first', fileName: '回忆卷.pdf' } },
   { id: 'paper-teacher', routeId: 'paper-teacher', courseCode: 'BIO2019F', type: 'paper', title: '植物学及实验（甲）期末回忆', subtitle: '我的植物学复习和考试记录', summary: '应隐藏的另一条摘要', author: '另一位分享者', teacher: '李攀/赵云鹏', sourcePublishedDate: '2021-01-22', owner: { publicId: 'paper-contributor', nickname: '投稿同学' }, sourcePlatform: 'cc98', sourceUrl: 'https://www.cc98.org/topic/5026202', body: '[b]复习经验[/b]\n保持平时学习。\n\n课前PDF[upload]https://file.cc98.org/course.pdf[/upload]', supplementBody: '[b]原帖补充[/b]\n[color=red]补充说明[/color]\n\n配套PDF[upload]https://file.cc98.org/notes.pdf[/upload]\n[url=javascript:alert(1)]不安全链接[/url]', bodyFormat: 'ubb', file: { url: '/zjubio/api/content/files/paper-teacher#page=2&view=FitV&toolbar=1', fileName: '回忆.pdf' } },
@@ -51,9 +61,19 @@ for (const theme of ['light', 'dark']) {
   test(`paper list and reader use compact metadata in ${theme}`, async ({ page, context, paperOrigin }) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
     const errors = [];
+    const archiveRequests = [];
+    let archiveFailure = false;
     page.on('pageerror', error => errors.push(error.message));
     await context.route('**/api/**', async route => {
-      const path = new URL(route.request().url()).pathname.replace(/^\/zjubio/, '');
+      const requestUrl = new URL(route.request().url());
+      const path = requestUrl.pathname.replace(/^\/zjubio/, '');
+      if (path.endsWith('/papers/download')) {
+        archiveRequests.push({ year: requestUrl.searchParams.get('year'), teacher: requestUrl.searchParams.get('teacher') });
+        if (archiveFailure) return route.fulfill({ status: 429, json: { message: '下载请求较多，请稍后重试。' } });
+        const items = requestUrl.searchParams.has('year') ? [papers[0]] : papers;
+        return route.fulfill({ contentType: 'application/zip', body: await pdfArchive(items),
+          headers: { 'content-disposition': "attachment; filename*=UTF-8''" + encodeURIComponent('历年试卷.zip') } });
+      }
       let result = { items: [], courses: [], initialized: true, favorites: [], notifications: [], unreadCount: 0, homepages: [], activities: [] };
       if (path === '/api/auth/me') result = { user: { id: 11, publicId: 'paper-tester', role: 'student', nickname: '测试用户', verifications: { email: true } } };
       if (path.startsWith('/api/content/courses/')) result = { items: papers };
@@ -81,11 +101,42 @@ for (const theme of ['light', 'dark']) {
     await teacherFilter.selectOption('赵云鹏');
     await expect(rows).toHaveCount(0);
     await expect(page.getByText('没有符合筛选条件的试卷。')).toBeVisible();
+    await expect(page.getByRole('button', { name: '下载', exact: true })).toBeDisabled();
     await expect(page.locator('.course-tabs__item.is-active small')).toHaveText('2');
     await page.getByRole('button', { name: '清除筛选', exact: true }).click();
     await expect(rows).toHaveCount(2);
     await expect(yearFilter).toHaveValue('');
     await expect(teacherFilter).toHaveValue('');
+    const batchButton = page.getByRole('button', { name: '下载', exact: true });
+    const batchDownload = page.waitForEvent('download');
+    await batchButton.click();
+    const allZip = await batchDownload;
+    expect(await allZip.failure()).toBeNull();
+    expect(allZip.suggestedFilename()).toBe('历年试卷.zip');
+    const unzipped = await Open.buffer(readFileSync(await allZip.path()));
+    expect(unzipped.files.map(file => file.path)).toEqual(['paper-first.pdf', 'paper-teacher.pdf']);
+    for (const file of unzipped.files) expect(await file.buffer()).toEqual(pdf);
+    expect(archiveRequests.at(-1)).toEqual({ year: null, teacher: null });
+    await yearFilter.selectOption('2024-2025');
+    await teacherFilter.selectOption('__unspecified__');
+    const filteredDownload = page.waitForEvent('download');
+    await batchButton.click();
+    const filteredZip = await filteredDownload;
+    expect(await filteredZip.failure()).toBeNull();
+    expect((await Open.buffer(readFileSync(await filteredZip.path()))).files).toHaveLength(1);
+    expect(archiveRequests.at(-1)).toEqual({ year: '2024-2025', teacher: '__unspecified__' });
+    archiveFailure = true;
+    await batchButton.click();
+    await expect(page.getByRole('alert')).toHaveText('下载请求较多，请稍后重试。');
+    await expect(batchButton).toBeEnabled();
+    archiveFailure = false;
+    await yearFilter.selectOption('');
+    await teacherFilter.selectOption('');
+    const positions = await page.locator('.paper-filters').evaluate(el => ({
+      button: el.querySelector('.paper-archive-download').getBoundingClientRect().toJSON(),
+      count: el.querySelector('.paper-filters__count').getBoundingClientRect().toJSON(),
+    }));
+    expect(positions.count.x).toBeGreaterThanOrEqual(positions.button.right);
     await expect(rows.first().locator('.paper-download')).toHaveAttribute('href', '/zjubio/api/content/files/paper-first?download=1');
     await expect(rows.first().locator('.paper-download')).toHaveAttribute('download', papers[0].file.fileName);
     await expect(rows.first().locator('.paper-row-card__main-link a')).toHaveCount(0);

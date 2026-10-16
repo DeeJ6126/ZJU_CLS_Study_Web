@@ -13,6 +13,7 @@ This directory owns the first-phase course-content administration backend.
 - Optional `sourcePublishedDate` stores the original post date separately from site creation/audit timestamps. Administrator edits and batch JSON support `YYYY-MM-DD`; readers fall back to the Shanghai site creation date when unknown.
 - Optional `subtitle` (up to 200 characters) preserves the original post title. `supplementBody` (up to 100000 characters) stores comment supplements separately from `body`, sharing its `bodyFormat`. Administrator content APIs and public reads expose both fields; omitted update fields retain their stored values. Existing databases migrate to empty defaults. The batch JSON schema is unchanged.
 - PDF validation and storage outside the frontend build.
+- `GET /api/content/courses/:courseCode/papers/download` streams published built-in PDFs as one ZIP, using the list's exact `year` and `teacher` filters. It includes validated stored/static files, never fetches external URLs, and limits each archive to 200 PDFs/100 MiB and two simultaneous streams. No temporary archive or database writes occur.
 - The same controlled PDF endpoint previews files inline by default and downloads them as attachments with `download=1`; draft/archived access remains administrator-only. Legacy combined-microbiology reads support canonical redirection without mixing theory/lab lists.
 - Public read models that omit internal storage metadata.
 - Pending student submissions and administrator review decisions.

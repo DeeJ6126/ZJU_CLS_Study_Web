@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
+import { pipeline } from 'node:stream/promises';
 import { canLeaveSiteTrace } from '../authService.js';
 import { publicApiPath } from '../publicApiPath.js';
 
@@ -19,10 +20,13 @@ import {
 } from './submissionService.js';
 import { createComment, deleteComment, updateComment } from './commentService.js';
 import { addAdministrator } from '../administratorService.js';
+import { createPaperArchive, preparePaperArchive } from './paperArchiveService.js';
 import {
   exportContentBatch, importContentBatch, listContentBatchCourses,
   MAX_BATCH_BYTES, previewContentBatch,
 } from './contentBatchService.js';
+
+let activePaperArchives = 0;
 
 async function readBuffer(request, limit) {
   const declaredLength = Number(request.headers['content-length'] ?? 0);
@@ -130,6 +134,7 @@ export async function handleContentHttpRequest({
   courseCatalog,
   authStore,
   uploadDirectory,
+  publicDirectory,
   sendJson,
   readJsonBody,
 }) {
@@ -201,6 +206,37 @@ export async function handleContentHttpRequest({
     sendJson(response, result.status, result.ok
       ? { comment: publicComment(result.comment, authStore, { id: userId, role: user.role }) }
       : { message: result.message });
+    return true;
+  }
+
+  const paperArchiveMatch = url.pathname.match(/^\/api\/content\/courses\/([^/]+)\/papers\/download$/);
+  if (request.method === 'GET' && paperArchiveMatch) {
+    if (activePaperArchives >= 2) {
+      sendJson(response, 429, { message: '下载请求较多，请稍后重试。' });
+      return true;
+    }
+    activePaperArchives += 1;
+    try {
+      const archive = await preparePaperArchive({
+        courseCode: decodeURIComponent(paperArchiveMatch[1]),
+        year: url.searchParams.get('year') || '', teacher: url.searchParams.get('teacher') || '',
+        contentStore, uploadDirectory, publicDirectory,
+      });
+      if (!archive.ok) {
+        sendJson(response, archive.status, { message: archive.message });
+        return true;
+      }
+      const zip = createPaperArchive(archive.files);
+      zip.on('error', error => zip.outputStream.destroy(error));
+      response.writeHead(200, {
+        'content-type': 'application/zip',
+        'content-disposition': `attachment; filename*=UTF-8''${encodeURIComponent(archive.filename)}`,
+        'x-content-type-options': 'nosniff', 'cache-control': 'private, no-store',
+      });
+      zip.end();
+      try { await pipeline(zip.outputStream, response); }
+      catch { if (!response.destroyed) response.destroy(); }
+    } finally { activePaperArchives -= 1; }
     return true;
   }
 

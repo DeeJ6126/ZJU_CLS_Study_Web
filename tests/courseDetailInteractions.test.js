@@ -51,6 +51,9 @@ test('paper filters use combined metadata choices and reset only when changing c
   assert.match(courseDetail, /没有符合筛选条件的试卷/);
   assert.match(courseDetail, /@click="clearPaperFilters">清除筛选/);
   assert.match(courseDetail, /filteredPapers.length \}\} \/ \{\{ activeCollection.length/);
+  assert.match(courseDetail, /class="paper-archive-download"/);
+  assert.ok(courseDetail.indexOf('class="paper-archive-download"') < courseDetail.indexOf('class="paper-filters__count"'));
+  assert.match(courseDetail, /@click="downloadFilteredPapers"/);
 });
 
 test('paper main and supplementary notes share safe article formatting around the embedded PDF', () => {

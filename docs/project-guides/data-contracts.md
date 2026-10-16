@@ -105,6 +105,8 @@ HTTP(S) `sourceUrl`。CC98 来源镜像 `cc98Url`；其他来源不冒用 CC98 �
 
 历年试卷列表按实际 `year`（考试学年）和 `teacher` 元数据联合筛选，不以发帖年份推测考试年份。返回列表保留筛选，切换课程重置。内置 PDF 的下载链接在原文件 URL 上添加 `download=1`，文件接口改用 `Content-Disposition: attachment`，预览保持 `inline`；两者沿用相同的发布状态/管理员权限检查。
 
+筛选栏的“下载”将当前筛选结果内的内置 PDF 打包为一个 ZIP，数量位于按钮右侧。`GET /api/content/courses/:courseCode/papers/download?year=...&teacher=...` 只包含该课程已发布的试卷，并复用同一筛选规则；没有结果返回 404，文件缺失返回 409，超过 200 份或合计 100 MiB 返回 413。包内原 PDF 不重排，静态试卷也可收录，外部链接不由本站代理抓取。
+
 管理员连续录入通过 `requestId` 防止创建请求重试产生重复记录，通过
 `expectedUpdatedAt` 检查编辑冲突。本机未完成草稿按真实/演示身份及稳定用户 ID
 隔离，键前缀为 `zjubio:admin-drafts:v1:`；仅保存表单字段及文件元数据，上传中的

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import ContributionBox from './ContributionBox.vue';
 import FavoriteButton from './FavoriteButton.vue';
 import { buildCourseRoute, courseDetailTabs } from '../data/courses/resourcePaths.js';
@@ -7,6 +7,7 @@ import { getProfileHref } from '../services/demoNavigationService.js';
 import { formatGrade } from '../utils/gradeConversion.js';
 import { downloadPaths, linkPaths, thumbsUpPaths } from '../utils/vendor/lucidePaths.js';
 import { filterPapers, paperDownload, paperFilterChoices, safePaperFileUrl } from '../services/paperFilterService.js';
+import { createPaperArchiveApiClient, savePaperArchive } from '../services/paperArchiveApiClient.js';
 import { validateContentSource } from '../services/contentSourceService.js';
 import { renderCourseMarkdown } from '../utils/renderCourseMarkdown.js';
 import { isUbbFormat, ubbToHtml } from '../utils/ubbParser.js';
@@ -101,6 +102,37 @@ const paperChoices = computed(() => paperFilterChoices(props.course.papers ?? []
 const filteredPapers = computed(() => filterPapers(props.course.papers ?? [], { year: paperYear.value, teacher: paperTeacher.value })
   .map(paper => ({ ...paper, download: paperDownload(paper.file) })));
 const activePaperDownload = computed(() => paperDownload(activeItem.value?.file));
+const paperArchiveBusy = ref(false);
+const paperArchiveNotice = ref('');
+const paperArchiveClient = createPaperArchiveApiClient();
+let paperArchiveController;
+async function downloadFilteredPapers() {
+  if (paperArchiveBusy.value || !filteredPapers.value.some(paper => paper.download)) return;
+  paperArchiveBusy.value = true;
+  paperArchiveNotice.value = '';
+  const controller = new AbortController();
+  paperArchiveController = controller;
+  try {
+    const result = await paperArchiveClient.download(props.course.code,
+      { year: paperYear.value, teacher: paperTeacher.value }, { signal: controller.signal });
+    if (controller.signal.aborted) return;
+    if (result.ok) savePaperArchive(result);
+    else paperArchiveNotice.value = result.message;
+  } catch {
+    if (!controller.signal.aborted) paperArchiveNotice.value = '试卷下载失败，请稍后重试。';
+  } finally {
+    if (paperArchiveController === controller) {
+      paperArchiveBusy.value = false;
+      paperArchiveController = null;
+    }
+  }
+}
+watch(() => props.course.code, () => {
+  paperArchiveController?.abort();
+  paperArchiveNotice.value = '';
+});
+watch([paperYear, paperTeacher], () => { paperArchiveNotice.value = ''; });
+onBeforeUnmount(() => paperArchiveController?.abort());
 function clearPaperFilters() {
   paperYear.value = '';
   paperTeacher.value = '';
@@ -514,8 +546,14 @@ function emitContribution(payload) {
               <option v-for="choice in paperChoices.teachers" :key="choice.value" :value="choice.value">{{ choice.label }}</option>
             </select>
           </label>
+          <button class="paper-archive-download" type="button" :disabled="paperArchiveBusy || !filteredPapers.some(paper => paper.download)"
+            :aria-busy="paperArchiveBusy" title="将当前筛选结果中的内置 PDF 打包下载" @click="downloadFilteredPapers">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path v-for="path in downloadPaths" :key="path" :d="path" /></svg>
+            {{ paperArchiveBusy ? '正在打包...' : '下载' }}
+          </button>
           <span class="paper-filters__count" aria-live="polite">{{ filteredPapers.length }} / {{ activeCollection.length }} 份试卷</span>
         </div>
+        <p v-if="paperArchiveNotice" class="resource-empty" role="alert">{{ paperArchiveNotice }}</p>
         <div v-if="!filteredPapers.length" class="resource-empty">
           <p>没有符合筛选条件的试卷。</p>
           <button class="course-subpage__return" type="button" @click="clearPaperFilters">清除筛选</button>
