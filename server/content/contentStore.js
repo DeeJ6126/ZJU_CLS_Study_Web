@@ -548,6 +548,15 @@ export function createContentStore({ filename = 'server/data/content.sqlite' } =
       `).all(courseCode).map(mapItem);
     },
 
+    listPublishedByLegacyCourse(courseCode) {
+      if (courseCode !== 'BIO2009F') return this.listPublishedByCourse(courseCode);
+      return db.prepare(`
+        select ${selectColumns} from content_items
+        where course_code in ('BIO2009F', 'BIO2110F', 'BIO2113F') and status = 'published'
+        order by type, created_at, id
+      `).all().map(mapItem);
+    },
+
     listPublishedByOwner(ownerId) {
       return db.prepare(`
         select ${selectColumns} from content_items

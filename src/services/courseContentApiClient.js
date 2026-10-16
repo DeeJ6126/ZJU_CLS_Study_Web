@@ -22,13 +22,22 @@ function normalizeItem(item, courseCode, tabId) {
     ...(validateContentSource(item).value ?? { sourcePlatform: 'other', sourceUrl: '', cc98Url: '' }),
     contentId: String(item.id),
     id: routeId,
-    href: buildCourseRoute(courseCode, tabId, routeId),
+    href: buildCourseRoute(item.courseCode || courseCode, tabId, routeId),
     paragraphs: bodyToParagraphs(item.body),
     file: item.file ? {
       ...item.file,
       url: publicAssetPath(item.file.url),
     } : null,
   };
+}
+
+export function getLegacyCourseRedirect(route, collections = {}) {
+  if (route.courseCode !== 'BIO2009F') return '';
+  if (!route.itemId) return buildCourseRoute('BIO2110F', route.tabId);
+  const items = collections[route.tabId] ?? [];
+  const item = items.find((entry) => entry.contentId === route.itemId)
+    ?? items.find((entry) => entry.id === route.itemId);
+  return ['BIO2110F', 'BIO2113F'].includes(item?.courseCode) ? item.href : '';
 }
 
 async function loadFromApi(courseCode, fetchRaw) {

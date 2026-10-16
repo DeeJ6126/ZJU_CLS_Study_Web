@@ -179,7 +179,7 @@ The scheduled consultation room is an explicit exception to the usual verified-a
 
 ### 22. Resource search preserves historical course ownership
 
-The published-resource search uses canonical course-code and `routeId` links and never returns draft content. `BIO2009F` was the combined microbiology theory-and-lab course; students searching the current split courses `BIO2110F` or `BIO2113F` should also discover its historical resources. This is a search alias only: no content is copied or silently moved between course records.
+The published-resource search uses canonical course-code and `routeId` links and never returns draft content. At the owner's request, historical `BIO2009F` microbiology content is reassigned by subject to theory `BIO2110F` or lab `BIO2113F`, retaining original IDs and PDFs. Mixed source experiences are split by original passages. Old-course searches include both destinations; new-course searches stay isolated. Legacy article links resolve to their actual course and legacy directory links default to theory.
 
 ### 23. Public notices are separate from private account messages
 

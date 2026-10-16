@@ -29,14 +29,28 @@ test('resource lists and details distinguish teacher and publication date', () =
   assert.doesNotMatch(courseDetail, /适用学年/);
 });
 
-test('papers show compact authors, plain dates and optional teachers without list summaries or duplicate PDF actions', () => {
+test('papers show compact metadata with a return link and separate one-click PDF actions', () => {
   const papers = courseDetail.slice(courseDetail.indexOf('<article class="paper-detail article-detail-card">'));
   assert.match(papers, /paper\.owner\?\.nickname \|\| paper\.author/);
   assert.match(papers, /v-if="paper.teacher" class="paper-row-card__teacher"/);
   assert.match(papers, /v-if="activeItem.teacher"/);
-  assert.doesNotMatch(papers, /未注明|paper\.summary|<em>|返回历年试卷|>打开 PDF<|>下载 PDF</);
-  assert.match(papers, /<object v-if="activeItem.file" class="pdf-viewer"/);
+  assert.doesNotMatch(papers, /paper\.summary|<em>|>打开 PDF<|>下载 PDF</);
+  assert.match(courseDetail, /:href="tabHref\('papers'\)">返回历年试卷/);
+  assert.match(papers, /<object v-if="paperPdfUrl" class="pdf-viewer"/);
+  assert.match(papers, /class="paper-row-card__main-link" :href="paper.href"/);
+  assert.match(papers, /:href="paper.download.url" :download="paper.download.fileName"/);
+  assert.match(papers, /:href="activePaperDownload.url" :download="activePaperDownload.fileName"/);
   assert.match(papers, /class="article-cc98-badge"/);
+});
+
+test('paper filters use combined metadata choices and reset only when changing courses', () => {
+  assert.match(courseDetail, /v-model="paperYear" aria-label="试卷年份"/);
+  assert.match(courseDetail, /v-model="paperTeacher" aria-label="试卷授课老师"/);
+  assert.match(courseDetail, /filterPapers\(props.course.papers \?\? \[\], \{ year: paperYear.value, teacher: paperTeacher.value \}\)/);
+  assert.match(courseDetail, /watch\(\(\) => props.course.code, clearPaperFilters\)/);
+  assert.match(courseDetail, /没有符合筛选条件的试卷/);
+  assert.match(courseDetail, /@click="clearPaperFilters">清除筛选/);
+  assert.match(courseDetail, /filteredPapers.length \}\} \/ \{\{ activeCollection.length/);
 });
 
 test('paper main and supplementary notes share safe article formatting around the embedded PDF', () => {

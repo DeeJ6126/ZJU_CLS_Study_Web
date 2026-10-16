@@ -207,8 +207,11 @@ export async function handleContentHttpRequest({
   const publicCourseMatch = url.pathname.match(/^\/api\/content\/courses\/([^/]+)$/);
   if (request.method === 'GET' && publicCourseMatch) {
     const courseCode = decodeURIComponent(publicCourseMatch[1]);
+    const items = courseCode === 'BIO2009F'
+      ? contentStore.listPublishedByLegacyCourse(courseCode)
+      : contentStore.listPublishedByCourse(courseCode);
     sendJson(response, 200, {
-      items: contentStore.listPublishedByCourse(courseCode).map((item) => (
+      items: items.map((item) => (
         toPublicContentItem(
           item,
           contentStore.getLikeState(item.id, traceIdentity),
@@ -236,7 +239,7 @@ export async function handleContentHttpRequest({
       response.writeHead(200, {
         'content-type': 'application/pdf',
         'content-length': file.length,
-        'content-disposition': `inline; filename*=UTF-8''${encodeURIComponent(item.file.fileName)}`,
+        'content-disposition': `${url.searchParams.get('download') === '1' ? 'attachment' : 'inline'}; filename*=UTF-8''${encodeURIComponent(item.file.fileName)}`,
         'x-content-type-options': 'nosniff',
         'cache-control': 'private, no-store',
       });

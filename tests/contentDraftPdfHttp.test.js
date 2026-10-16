@@ -12,10 +12,11 @@ test('course PDF drafts and archived PDFs are previewable only by administrators
   try {
     for (const status of ['draft', 'archived', 'published']) {
       for (const role of [null, 'guest', 'student', 'admin']) {
+       for (const download of [false, true]) {
         let code, headers, body;
         const response = { writeHead(value, fields) { code = value; headers = fields; }, end(value) { body = value; } };
         const handled = await handleContentHttpRequest({ request: { method: 'GET' }, response,
-          url: new URL('http://localhost/api/content/files/fixture'), user: role ? { role } : null,
+          url: new URL(`http://localhost/api/content/files/fixture${download ? '?download=1' : ''}`), user: role ? { role } : null,
           contentStore: { findById: () => ({ status, file: { storedName: 'fixture.pdf', fileName: '试卷.pdf' } }) },
           uploadDirectory: directory,
           sendJson(_response, value, data) { code = value; body = data; },
@@ -27,13 +28,15 @@ test('course PDF drafts and archived PDFs are previewable only by administrators
           assert.deepEqual(body, bytes);
           assert.equal(headers['content-type'], 'application/pdf');
           assert.equal(headers['cache-control'], 'private, no-store');
+          assert.equal(headers['content-disposition'], `${download ? 'attachment' : 'inline'}; filename*=UTF-8''${encodeURIComponent('试卷.pdf')}`);
         }
+       }
       }
     }
     for (const file of [null, { storedName: '../fixture.pdf' }, { storedName: 'missing.pdf' }]) {
       let status;
       await handleContentHttpRequest({ request: { method: 'GET' }, response: {},
-        url: new URL('http://localhost/api/content/files/fixture'), user: { role: 'admin' },
+        url: new URL('http://localhost/api/content/files/fixture?download=1'), user: { role: 'admin' },
         contentStore: { findById: () => ({ status: 'draft', file }) }, uploadDirectory: directory,
         sendJson(_response, value) { status = value; },
       });

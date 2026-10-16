@@ -1173,7 +1173,48 @@ html[data-theme="dark"] .cc98-icon {
   gap: 10px;
 }
 
+.paper-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.paper-filters label {
+  display: grid;
+  gap: 6px;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.paper-filters select {
+  min-width: 160px;
+  max-width: 100%;
+  min-height: 40px;
+  padding: 6px 32px 6px 10px;
+  border: 1px solid var(--detail-border);
+  border-radius: var(--radius-sm);
+  background: var(--detail-surface);
+  color: var(--color-ink);
+  font: inherit;
+}
+
+.paper-filters__count {
+  padding-bottom: 10px;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
 .paper-row-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 50px;
+  align-items: center;
+  padding: 0;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.paper-row-card__main-link {
   min-height: 96px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 220px) minmax(125px, max-content);
@@ -1181,7 +1222,35 @@ html[data-theme="dark"] .cc98-icon {
   row-gap: 6px;
   align-items: center;
   padding: 18px;
-  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  min-width: 0;
+  color: inherit;
+}
+
+.paper-download {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--detail-link);
+}
+
+.paper-download svg {
+  width: 20px;
+  height: 20px;
+}
+
+.paper-download:hover {
+  background: var(--detail-surface-strong);
+}
+
+.paper-download:focus-visible,
+.paper-row-card__main-link:focus-visible,
+.paper-filters select:focus-visible {
+  outline: 2px solid var(--detail-link);
+  outline-offset: 2px;
 }
 
 .paper-row-card__heading {
@@ -1476,7 +1545,7 @@ html[data-theme="dark"] .cc98-icon {
     grid-template-columns: 1fr;
   }
 
-  .paper-row-card {
+  .paper-row-card__main-link {
     grid-template-columns: minmax(0, 1fr) max-content;
     column-gap: 16px;
   }

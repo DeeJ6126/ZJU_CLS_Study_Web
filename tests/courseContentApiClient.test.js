@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { loadCourseContent } from '../src/services/courseContentApiClient.js';
+import { getLegacyCourseRedirect, loadCourseContent } from '../src/services/courseContentApiClient.js';
+import { parseResourceHash } from '../src/data/courses/resourcePaths.js';
 
 const course = {
   code: 'BIO2110F',
@@ -38,6 +39,45 @@ test('a successful empty API response stays empty instead of restoring static co
   });
   assert.equal(result.source, 'api');
   assert.deepEqual(result.experiences, []);
+});
+
+test('legacy microbiology article routes resolve to the migrated course without changing content identity', async () => {
+  const result = await loadCourseContent({ ...course, code: 'BIO2009F' }, {
+    fetchImpl: async (url) => {
+      assert.match(String(url), /api\/content\/courses\/BIO2009F$/);
+      return { ok: true, json: async () => ({ items: [
+        { id: 'theory-original', routeId: 'theory-route', courseCode: 'BIO2110F', type: 'material' },
+        { id: 'lab-original', routeId: 'lab-route', courseCode: 'BIO2113F', type: 'paper' },
+      ] }) };
+    },
+  });
+  assert.equal(result.papers[0].contentId, 'lab-original');
+  assert.equal(result.papers[0].id, 'lab-route');
+  assert.equal(result.papers[0].href, '#resources/#BIO2113F/#papers/#lab-route');
+  for (const itemId of ['lab-route', 'lab-original']) {
+    const href = getLegacyCourseRedirect({ courseCode: 'BIO2009F', tabId: 'papers', itemId }, result);
+    assert.deepEqual(parseResourceHash(href), {
+      section: 'resources', courseCode: 'BIO2113F', tabId: 'papers', itemId: 'lab-route',
+    });
+  }
+  assert.equal(getLegacyCourseRedirect({ courseCode: 'BIO2009F', tabId: 'materials', itemId: 'theory-route' }, result),
+    '#resources/#BIO2110F/#materials/#theory-route');
+  assert.equal(getLegacyCourseRedirect({ courseCode: 'BIO2009F', tabId: 'papers', itemId: 'missing' }, result), '');
+  assert.equal(getLegacyCourseRedirect({ courseCode: 'BIO2110F', tabId: 'papers', itemId: 'lab-route' }, result), '');
+  assert.equal(getLegacyCourseRedirect({ courseCode: 'BIO2009F', tabId: 'papers', itemId: 'lab-original' }, {
+    papers: [{ id: 'lab-original', contentId: 'another-item', courseCode: 'BIO2110F', href: 'wrong-route' }, ...result.papers],
+  }), '#resources/#BIO2113F/#papers/#lab-route');
+});
+
+test('legacy microbiology directory routes default to the theory course and unmatched old records stay available', () => {
+  for (const tabId of ['overview', 'materials', 'papers', 'experiences']) {
+    const href = getLegacyCourseRedirect({ courseCode: 'BIO2009F', tabId, itemId: '' });
+    assert.equal(parseResourceHash(href).courseCode, 'BIO2110F');
+    assert.equal(parseResourceHash(href).tabId, tabId);
+  }
+  assert.equal(getLegacyCourseRedirect({ courseCode: 'BIO2009F', tabId: 'papers', itemId: 'old' }, {
+    papers: [{ id: 'old', contentId: 'old-id', courseCode: 'BIO2009F', href: '#resources/#BIO2009F/#papers/#old' }],
+  }), '');
 });
 
 test('course content client falls back to static markdown only when the API is unavailable', async () => {

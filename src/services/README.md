@@ -74,6 +74,8 @@ npm.cmd run check:architecture
 
 ## Profiles
 
+`paperFilterService.js` owns academic-year/teacher choices, combined paper filtering and safe stored-PDF download URLs. `courseContentApiClient.js` preserves canonical course routes and resolves historical combined-microbiology links after content reassignment.
+
 `profileApiClient.js` owns public profile search/read calls and authenticated profile,
 avatar, post-revision, submission edit/withdraw/resubmission/delete, and archive requests. Components
 must not reproduce these endpoint or permission rules.

@@ -77,7 +77,7 @@ test('resource search combines filters, has recent default, and treats LIKE wild
   store.close();
 });
 
-test('split microbiology courses find historical posts without changing their original routes', () => {
+test('migrated microbiology resources have separate course ownership and old-code searches find both courses', () => {
   const store = createStore();
   const splitCatalog = { courses: [
     { code: 'BIO2009F', name: '微生物学及实验（甲）' },
@@ -87,17 +87,24 @@ test('split microbiology courses find historical posts without changing their or
   ] };
   store.createItem({ id: 'old', routeId: '5', courseCode: 'BIO2009F', type: 'experience', title: '资源楼', status: 'published' });
   store.createItem({ id: 'new', routeId: '7', courseCode: 'BIO2110F', type: 'experience', title: '资源楼', status: 'published' });
+  store.createItem({ id: 'lab', routeId: '8', courseCode: 'BIO2113F', type: 'experience', title: '资源楼', status: 'published' });
+  store.createItem({ id: 'hidden-lab', courseCode: 'BIO2113F', type: 'experience', title: '资源楼', status: 'draft' });
   store.createItem({ id: 'other', courseCode: 'BIO2028M', type: 'experience', title: '资源楼', status: 'published' });
 
   const theory = searchResources({ course: 'BIO2110F', contentStore: store, courseCatalog: splitCatalog });
-  assert.deepEqual(theory.items.map((item) => item.id).sort(), ['new', 'old']);
-  const historical = theory.items.find((item) => item.id === 'old');
-  assert.equal(historical.courseCode, 'BIO2009F');
-  assert.equal(historical.href, '#resources/#BIO2009F/#experiences/#5');
-  assert.equal(historical.courseName, '微生物学及实验（甲）');
-  assert.deepEqual(searchResources({ course: '微生物学实验', contentStore: store, courseCatalog: splitCatalog }).items.map((item) => item.id), ['old']);
-  assert.deepEqual(searchResources({ query: 'BIO2113F', contentStore: store, courseCatalog: splitCatalog }).items.map((item) => item.id), ['old']);
-  assert.deepEqual(searchResources({ query: '微生物学（甲）', contentStore: store, courseCatalog: splitCatalog }).items.map((item) => item.id).sort(), ['new', 'old']);
+  assert.deepEqual(theory.items.map((item) => item.id), ['new']);
+  assert.equal(theory.items[0].href, '#resources/#BIO2110F/#experiences/#7');
+  const lab = searchResources({ course: '微生物学实验', contentStore: store, courseCatalog: splitCatalog });
+  assert.deepEqual(lab.items.map((item) => item.id), ['lab']);
+  assert.equal(lab.items[0].href, '#resources/#BIO2113F/#experiences/#8');
+  assert.equal(lab.items[0].courseName, '微生物学实验');
+  assert.deepEqual(searchResources({ query: 'BIO2113F', contentStore: store, courseCatalog: splitCatalog }).items.map((item) => item.id), ['lab']);
+  assert.deepEqual(searchResources({ query: '微生物学（甲）', contentStore: store, courseCatalog: splitCatalog }).items.map((item) => item.id), ['new']);
+  for (const filter of [{ query: 'bio2009f' }, { course: 'BIO2009F' }, { course: '微生物学及实验（甲）' }]) {
+    assert.deepEqual(searchResources({ ...filter, contentStore: store, courseCatalog: splitCatalog }).items.map((item) => item.id).sort(), ['lab', 'new', 'old']);
+  }
+  const withoutLegacyCourse = { courses: splitCatalog.courses.filter((item) => item.code !== 'BIO2009F') };
+  assert.deepEqual(searchResources({ course: 'BIO2009F', contentStore: store, courseCatalog: withoutLegacyCourse }).items.map((item) => item.id).sort(), ['lab', 'new', 'old']);
   assert.deepEqual(searchResources({ course: 'BIO2028M', contentStore: store, courseCatalog: splitCatalog }).items.map((item) => item.id), ['other']);
   store.close();
 });

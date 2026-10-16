@@ -5,7 +5,8 @@ import FavoriteButton from './FavoriteButton.vue';
 import { buildCourseRoute, courseDetailTabs } from '../data/courses/resourcePaths.js';
 import { getProfileHref } from '../services/demoNavigationService.js';
 import { formatGrade } from '../utils/gradeConversion.js';
-import { linkPaths, thumbsUpPaths } from '../utils/vendor/lucidePaths.js';
+import { downloadPaths, linkPaths, thumbsUpPaths } from '../utils/vendor/lucidePaths.js';
+import { filterPapers, paperDownload, paperFilterChoices, safePaperFileUrl } from '../services/paperFilterService.js';
 import { validateContentSource } from '../services/contentSourceService.js';
 import { renderCourseMarkdown } from '../utils/renderCourseMarkdown.js';
 import { isUbbFormat, ubbToHtml } from '../utils/ubbParser.js';
@@ -94,6 +95,17 @@ const activeCollection = computed(() => (
   Array.isArray(props.course[activeTab.value.id]) ? props.course[activeTab.value.id] : []
 ));
 const activeItem = computed(() => activeCollection.value.find((item) => item.id === props.activeItemId) ?? null);
+const paperYear = ref('');
+const paperTeacher = ref('');
+const paperChoices = computed(() => paperFilterChoices(props.course.papers ?? []));
+const filteredPapers = computed(() => filterPapers(props.course.papers ?? [], { year: paperYear.value, teacher: paperTeacher.value })
+  .map(paper => ({ ...paper, download: paperDownload(paper.file) })));
+const activePaperDownload = computed(() => paperDownload(activeItem.value?.file));
+function clearPaperFilters() {
+  paperYear.value = '';
+  paperTeacher.value = '';
+}
+watch(() => props.course.code, clearPaperFilters);
 const activeItemSource = computed(() => validateContentSource(activeItem.value ?? {}).value ?? {});
 const sourceLinkTitle = computed(() => ({ cc98: '查看作者的 CC98 帖子', duoduo: '查看作者的朵朵帖子', other: '查看原帖' }[activeItemSource.value.sourcePlatform] ?? '查看原帖'));
 const favoriteCountLabel = computed(() => {
@@ -119,7 +131,7 @@ function renderItemBody(item, field = 'body') {
 const activeItemBody = computed(() => renderItemBody(activeItem.value));
 const activeItemSupplementBody = computed(() => renderItemBody(activeItem.value, 'supplementBody'));
 const paperPdfUrl = computed(() => {
-  const url = String(activeItem.value?.file?.url ?? '');
+  const url = safePaperFileUrl(activeItem.value?.file);
   if (!url) return '';
   const hashIndex = url.indexOf('#');
   const path = hashIndex < 0 ? url : url.slice(0, hashIndex);
@@ -427,6 +439,7 @@ function emitContribution(payload) {
 
     <section v-else class="course-subpage" aria-labelledby="paper-title">
       <template v-if="activeItem">
+        <a class="course-subpage__return" :href="tabHref('papers')">返回历年试卷</a>
         <article class="paper-detail article-detail-card">
           <div class="paper-detail__head article-detail-card__head">
             <div class="article-detail-card__title-block">
@@ -445,6 +458,9 @@ function emitContribution(payload) {
                 <img v-if="activeItemSource.sourcePlatform === 'cc98'" class="cc98-icon" :src="cc98IconUrl" alt="CC98" />
                 <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path v-for="path in linkPaths" :key="path" :d="path" /></svg>
               </a>
+              <a v-if="activePaperDownload" class="paper-download" :href="activePaperDownload.url" :download="activePaperDownload.fileName" title="下载 PDF" aria-label="下载 PDF">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path v-for="path in downloadPaths" :key="path" :d="path" /></svg>
+              </a>
               <FavoriteButton
                 :active="favoriteKeys.includes(activeItemFavoriteKey)"
                 :disabled="!canFavorite"
@@ -458,10 +474,10 @@ function emitContribution(payload) {
             :class="activeItemBody.isUbb ? 'article-body--ubb' : 'article-body--markdown'"
             v-html="activeItemBody.html"
           ></div>
-          <object v-if="activeItem.file" class="pdf-viewer" :data="paperPdfUrl" type="application/pdf">
+          <object v-if="paperPdfUrl" class="pdf-viewer" :data="paperPdfUrl" type="application/pdf">
             <p>
               当前浏览器无法直接预览 PDF。
-              <a :href="activeItem.file.url" target="_blank" rel="noreferrer">打开 PDF 文件</a>
+              <a :href="safePaperFileUrl(activeItem.file)" target="_blank" rel="noreferrer">打开 PDF 文件</a>
             </p>
           </object>
           <div
@@ -484,8 +500,29 @@ function emitContribution(payload) {
         <p v-if="isLoading" class="resource-empty">正在加载历年试卷...</p>
         <p v-else-if="loadError" class="resource-empty">{{ loadError }}</p>
         <p v-else-if="!activeCollection.length" class="resource-empty">暂无历年试卷，欢迎认证用户投稿。</p>
+        <template v-else>
+        <div class="paper-filters" aria-label="试卷筛选">
+          <label>年份
+            <select v-model="paperYear" aria-label="试卷年份">
+              <option value="">全部年份</option>
+              <option v-for="choice in paperChoices.years" :key="choice.value" :value="choice.value">{{ choice.label }}</option>
+            </select>
+          </label>
+          <label>授课老师
+            <select v-model="paperTeacher" aria-label="试卷授课老师">
+              <option value="">全部老师</option>
+              <option v-for="choice in paperChoices.teachers" :key="choice.value" :value="choice.value">{{ choice.label }}</option>
+            </select>
+          </label>
+          <span class="paper-filters__count" aria-live="polite">{{ filteredPapers.length }} / {{ activeCollection.length }} 份试卷</span>
+        </div>
+        <div v-if="!filteredPapers.length" class="resource-empty">
+          <p>没有符合筛选条件的试卷。</p>
+          <button class="course-subpage__return" type="button" @click="clearPaperFilters">清除筛选</button>
+        </div>
         <div v-else class="paper-list">
-          <a v-for="paper in activeCollection" :key="paper.id" class="paper-row-card" :href="paper.href">
+          <article v-for="paper in filteredPapers" :key="paper.id" class="paper-row-card">
+            <a class="paper-row-card__main-link" :href="paper.href">
             <div class="paper-row-card__heading">
               <strong class="paper-row-card__title">{{ paper.title }}</strong>
               <p v-if="paper.subtitle" class="paper-row-card__subtitle">{{ paper.subtitle }}</p>
@@ -493,8 +530,13 @@ function emitContribution(payload) {
             <span class="paper-row-card__author">{{ paper.owner?.nickname || paper.author }}</span>
             <time class="paper-row-card__date">{{ formatContentPublicationDate(paper) }}</time>
             <span v-if="paper.teacher" class="paper-row-card__teacher">授课老师：{{ paper.teacher }}</span>
-          </a>
+            </a>
+            <a v-if="paper.download" class="paper-download" :href="paper.download.url" :download="paper.download.fileName" :title="`下载 PDF：${paper.title}`" :aria-label="`下载 PDF：${paper.title}`">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path v-for="path in downloadPaths" :key="path" :d="path" /></svg>
+            </a>
+          </article>
         </div>
+        </template>
       </template>
     </section>
     </main>

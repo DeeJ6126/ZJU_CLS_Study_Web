@@ -130,7 +130,7 @@ import {
   isAuthenticated,
   isAdministrator,
 } from './services/authService.js';
-import { loadCourseContent } from './services/courseContentApiClient.js';
+import { getLegacyCourseRedirect, loadCourseContent } from './services/courseContentApiClient.js';
 import { accountDataApiClient } from './services/accountDataApiClient.js';
 import {
   readLocalWorkspace, recordLocalQuiz, toggleLocalContentFavorite,
@@ -2142,7 +2142,15 @@ async function syncPageFromHash() {
     return;
   }
 
-  const nextRoute = parseResourceHash(window.location.hash);
+  const requestedResourceHash = window.location.hash;
+  const routeQuery = requestedResourceHash.match(/\?.*$/)?.[0] ?? '';
+  const nextRoute = parseResourceHash(requestedResourceHash);
+  const legacyListHref = !nextRoute.itemId && getLegacyCourseRedirect(nextRoute);
+  if (legacyListHref) {
+    window.history.replaceState(null, '', `${legacyListHref}${routeQuery}`);
+    await syncPageFromHash();
+    return;
+  }
   overviewRoute.value = nextRoute;
   if (!nextRoute.courseCode) {
     activeOverviewCourse.value = null;
@@ -2183,6 +2191,13 @@ async function syncPageFromHash() {
         };
       }
       if (overviewRoute.value.courseCode === requestedCourseCode) {
+        const legacyItemHref = window.location.hash === requestedResourceHash
+          && getLegacyCourseRedirect(nextRoute, content);
+        if (legacyItemHref) {
+          window.history.replaceState(null, '', `${legacyItemHref}${routeQuery}`);
+          await syncPageFromHash();
+          return;
+        }
         activeOverviewCourse.value = { ...detail, ...content };
         await nextTick();
         await loadActiveItemComments();

@@ -22,6 +22,23 @@ function createTestStore() {
   return store;
 }
 
+test('legacy microbiology reads find published migrated items without mixing current course listings', () => {
+  const store = createTestStore();
+  for (const [id, courseCode, status] of [
+    ['old', 'BIO2009F', 'published'], ['theory', 'BIO2110F', 'published'],
+    ['lab', 'BIO2113F', 'published'], ['draft', 'BIO2113F', 'draft'],
+    ['archived', 'BIO2110F', 'archived'], ['other', 'BIO2028M', 'published'],
+  ]) {
+    store.createItem({ id, routeId: id, courseCode, status, type: 'material', title: id });
+  }
+  assert.deepEqual(store.listPublishedByLegacyCourse('BIO2009F').map((item) => item.id).sort(), ['lab', 'old', 'theory']);
+  assert.deepEqual(store.listPublishedByCourse('BIO2009F').map((item) => item.id), ['old']);
+  assert.deepEqual(store.listPublishedByCourse('BIO2110F').map((item) => item.id), ['theory']);
+  assert.deepEqual(store.listPublishedByCourse('BIO2113F').map((item) => item.id), ['lab']);
+  assert.deepEqual(store.listPublishedByLegacyCourse('BIO2110F').map((item) => item.id), ['theory']);
+  store.close();
+});
+
 test('draft content stays private until publish and disappears after archive', () => {
   const store = createTestStore();
   const created = createContentItem(store, {

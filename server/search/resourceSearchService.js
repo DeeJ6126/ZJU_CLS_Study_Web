@@ -5,11 +5,9 @@ const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 30;
 const MAX_PAGE = 1000;
 const TABS = { experience: 'experiences', material: 'materials', paper: 'papers' };
-// BIO2009F was split into these courses; its existing posts still belong to
-// the original course and must keep their original routes.
+// Old combined-course searches discover both destinations after migration.
 const historicalCourseAliases = {
-  BIO2110F: ['BIO2009F'],
-  BIO2113F: ['BIO2009F'],
+  BIO2009F: ['BIO2110F', 'BIO2113F'],
 };
 
 function boundedText(value) {
@@ -27,6 +25,7 @@ function matchingCourseCodes(courses, term) {
   const codes = courses.filter((course) => [course.code, course.name]
     .some((value) => String(value ?? '').toLowerCase().includes(needle)))
     .map((course) => course.code);
+  codes.push(...Object.keys(historicalCourseAliases).filter((code) => code.toLowerCase().includes(needle)));
   return [...new Set(codes.flatMap((code) => [code, ...(historicalCourseAliases[code] ?? [])]))];
 }
 
